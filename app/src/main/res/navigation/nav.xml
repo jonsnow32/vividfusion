@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/nav"
+  app:startDestination="@id/mainFragment">
+
+  <fragment
+    android:id="@+id/aboutFragment"
+    android:name="cloud.app.avp.ui.setting.AboutFragment"
+    android:label="AboutFragment" />
+
+  <fragment
+    android:id="@+id/mainFragment"
+    android:name="cloud.app.avp.ui.main.MainFragment"
+    android:label="MainFragment" />
+
+  <fragment
+    android:id="@+id/settingsFragment"
+    android:name="cloud.app.avp.ui.setting.SettingsFragment"
+    android:label="SettingsFragment" />
+</navigation>

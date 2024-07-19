@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <dimen name="collapsed_cover_size">64dp</dimen>
+  <dimen name="max_cover_size">384dp</dimen>
+  <dimen name="nav_width">@dimen/collapsed_cover_size</dimen>
+  <dimen name="nav_height">@dimen/collapsed_cover_size</dimen>
+  <dimen name="rounded_radius">10dp</dimen>
+</resources>
