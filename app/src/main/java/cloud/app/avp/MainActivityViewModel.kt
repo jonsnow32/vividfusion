@@ -11,7 +11,7 @@ import androidx.core.view.updatePaddingRelative
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
-import cloud.app.avp.utils.dpToPx
+import cloud.app.avp.utils.toPx
 import cloud.app.avp.utils.observe
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -84,7 +84,7 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun View.applyContentInsets(insets: Insets, paddingDp: Int = 8) {
-      val verticalPadding = paddingDp.dpToPx(context)
+      val verticalPadding = paddingDp.toPx
       updatePaddingRelative(
         top = verticalPadding,
         bottom = insets.bottom + verticalPadding,
@@ -94,7 +94,7 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun View.applyInsets(it: Insets, paddingDp: Int = 0) {
-      val padding = paddingDp.dpToPx(context)
+      val padding = paddingDp.toPx
       updatePaddingRelative(
         top = it.top + padding,
         bottom = it.bottom + padding,
@@ -104,7 +104,7 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun View.applyFabInsets(it: Insets, system: Insets, paddingDp: Int = 0) {
-      val padding = paddingDp.dpToPx(context)
+      val padding = paddingDp.toPx
       updatePaddingRelative(
         bottom = it.bottom - system.bottom + padding,
         start = it.start + padding,

@@ -1,5 +1,8 @@
 package cloud.app.avp.utils
 
-import android.content.Context
+import android.content.res.Resources
 
-fun Int.dpToPx(context: Context) = (this * context.resources.displayMetrics.density).toInt()
+val Int.toPx : Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+val Float.toPx: Float get() = (this * Resources.getSystem().displayMetrics.density)
+val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
+val Float.toDp: Float get() = (this / Resources.getSystem().displayMetrics.density)

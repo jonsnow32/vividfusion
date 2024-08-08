@@ -93,7 +93,7 @@ open class LinearListLayout(context: Context?) :
             View.NO_ID -> null
             FOCUS_SELF -> focused
             else ->
-              NextFocuser().continueGetNextFocus(
+              FocusUtils().continueGetNextFocus(
                 focused,
                 focused ?: return null,
                 direction,
