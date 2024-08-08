@@ -1,0 +1,19 @@
+apply plugin: "de.mannodermaus.android-junit5"
+apply plugin: 'kotlin-kapt'
+apply plugin: 'com.google.dagger.hilt.android'
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation libraries.okHttp
+    implementation libraries.tmdb
+    implementation libraries.thetvdb
+    implementation(libraries.trakt) {
+        exclude group: 'org.threeten', module: 'threetenbp' // using ThreeTenABP instead
+    }
+    implementation libraries.coroutines
+    implementation libraries.retrofit
+
+    implementation libraries.glide
+    kapt annotationProcessors.glide
+
+}

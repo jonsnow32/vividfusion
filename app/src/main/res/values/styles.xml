@@ -10,17 +10,22 @@
     <item name="layout_scrollFlags">scroll|exitUntilCollapsed|snap</item>
   </style>
 
-  <style name="CollapsingBar" parent="TopCollapsingBar" />
+  <style name="CollapsingBar" parent="TopCollapsingBar" >
+  </style>
 
   <style name="Toolbar" parent="Widget.Material3.Toolbar">
     <item name="android:layout_marginStart">8dp</item>
     <item name="android:layout_marginEnd">8dp</item>
     <item name="android:layout_width">match_parent</item>
     <item name="android:layout_height">?actionBarSize</item>
-    <item name="android:background">@android:color/transparent</item>
+<!--    <item name="android:background">@android:color/transparent</item>-->
     <item name="layout_collapseMode">pin</item>
-    <item name="navigationContentDescription">@string/back</item>
+  </style>
+
+  <style name="ToolbarWithBack" parent="@style/Toolbar">
     <item name="navigationIcon">@drawable/ic_back</item>
+    <item name="navigationContentDescription">@string/back</item>
+    <item name="android:descendantFocusability">afterDescendants</item>
   </style>
 
   <style name="AppBarOutline">
@@ -32,5 +37,74 @@
     <item name="android:background">?colorOutlineVariant</item>
   </style>
 
-  <string name="back">Back</string>
+  <style name="BottomNavbarActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+    <item name="android:width">56dp</item>
+    <item name="android:height">24dp</item>
+    <item name="android:color">?attr/colorPrimaryInverse</item>
+  </style>
+
+  <style name="NavView" parent="Widget.Material3.BottomNavigationView">
+    <item name="android:background">?attr/colorSurfaceContainer</item>
+    <item name="itemActiveIndicatorStyle">@style/BottomNavbarActiveIndicator</item>
+    <item name="labelVisibilityMode">labeled</item>
+    <item name="itemPaddingBottom">12dp</item>
+    <item name="itemPaddingTop">12dp</item>
+    <item name="itemMinHeight">64dp</item>
+    <item name="android:paddingTop">0dp</item>
+    <item name="android:paddingBottom">0dp</item>
+    <item name="itemIconTint">@color/item_select_color</item>
+    <item name="itemTextColor">@color/item_select_color</item>
+  </style>
+
+  <style name="NavRailView" parent="Widget.Material3.BottomNavigationView">
+    <item name="android:background">?attr/colorSurfaceContainer</item>
+    <item name="itemActiveIndicatorStyle">@style/BottomNavbarActiveIndicator</item>
+    <item name="labelVisibilityMode">labeled</item>
+    <item name="itemPaddingBottom">12dp</item>
+    <item name="itemPaddingTop">12dp</item>
+    <item name="itemMinHeight">64dp</item>
+    <item name="android:paddingTop">0dp</item>
+    <item name="android:paddingBottom">0dp</item>
+    <item name="itemIconTint">@color/item_select_color</item>
+    <item name="itemTextColor">@color/item_select_color</item>
+    <item name="android:focusable">true</item>
+    <item name="android:focusableInTouchMode">true</item>
+    <item name="elevation">0dp</item>
+    <item name="menuGravity">center</item>
+    <item name="android:minWidth">@dimen/nav_height</item>
+  </style>
+
+  <style name="TabLayout">
+    <item name="android:background">@android:color/transparent</item>
+    <item name="android:clipToPadding">false</item>
+    <item name="android:paddingStart">16dp</item>
+    <item name="android:paddingEnd">16dp</item>
+    <item name="tabIndicator">@drawable/tab_indicator</item>
+    <item name="tabGravity">start</item>
+    <item name="tabIndicatorFullWidth">true</item>
+    <item name="tabMinWidth">0dp</item>
+    <item name="tabMode">scrollable</item>
+    <item name="tabPaddingEnd">16dp</item>
+    <item name="tabPaddingStart">16dp</item>
+    <item name="android:focusable">true</item>
+  </style>
+
+  <style name="ListViewStyle" parent="Widget.AppCompat.ListView">
+    <item name="android:divider">@null</item>
+    <item name="android:listSelector">@drawable/outline_drawable_forced</item>
+    <item name="android:drawSelectorOnTop">false</item>
+  </style>
+
+  <style name="Selectable">
+    <item name="android:focusable">true</item>
+    <item name="android:foreground">@drawable/ripple_item_container</item>
+  </style>
+
+  <style name="IconButton" parent="Widget.Material3.Button.IconButton">
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:layout_width">wrap_content</item>
+    <item name="iconTint">?colorOnSurface</item>
+    <item name="iconSize">24dp</item>
+    <item name="android:padding">8dp</item>
+  </style>
 </resources>

@@ -10,8 +10,8 @@ import android.view.ViewGroup
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import cloud.app.avp.ExceptionActivity
-import cloud.app.avp.MainViewModel.Companion.applyContentInsets
-import cloud.app.avp.MainViewModel.Companion.applyInsets
+import cloud.app.avp.MainActivityViewModel.Companion.applyContentInsets
+import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentExceptionBinding
 import cloud.app.avp.utils.autoCleared
@@ -46,7 +46,6 @@ class ExceptionFragment : Fragment() {
     binding.exceptionMessage.apply {
       val icon = navigationIcon
       navigationIcon = icon.takeIf { parentFragmentManager.fragments.size > 1 }
-
       setNavigationOnClickListener {
         parentFragmentManager.popBackStack()
       }
@@ -54,7 +53,6 @@ class ExceptionFragment : Fragment() {
 
     binding.exceptionMessage.title = requireContext().getTitle(throwable)
     binding.exceptionDetails.text = requireContext().getDetails(throwable)
-
     binding.exceptionMessage.setOnMenuItemClickListener { item ->
       when (item.itemId) {
         R.id.exception_copy -> {
@@ -63,7 +61,6 @@ class ExceptionFragment : Fragment() {
           }
           true
         }
-
         else -> false
       }
     }

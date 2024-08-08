@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="@dimen/item_poster_height"
+  app:cardBackgroundColor="?attr/colorSurfaceContainer"
+  app:cardCornerRadius="@dimen/rounded_radius">
+
+  <ImageView
+    android:id="@+id/movieImageView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:importantForAccessibility="no"
+    tools:srcCompat="@drawable/art_video" />
+
+  <androidx.cardview.widget.CardView
+    android:id="@+id/iconContainer"
+    android:layout_width="wrap_content"
+    android:layout_height="24dp"
+    android:layout_gravity="top|end"
+    android:layout_margin="4dp"
+    android:alpha="0.66"
+    app:cardCornerRadius="@dimen/rounded_radius"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer">
+
+    <TextView
+      android:id="@+id/rating"
+      android:layout_width="wrap_content"
+      android:layout_height="18dp"
+      android:layout_gravity="center"
+      android:gravity="center_horizontal"
+      android:layout_marginHorizontal="@dimen/rounded_radius"
+      tools:text="@string/rating_7_8"/>
+
+  </androidx.cardview.widget.CardView>
+
+</androidx.cardview.widget.CardView>

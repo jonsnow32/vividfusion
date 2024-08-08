@@ -1,6 +1,5 @@
 package cloud.app.avp.utils
 
-import android.util.TypedValue
 import android.view.View
 import android.view.ViewPropertyAnimator
 import androidx.core.view.doOnPreDraw

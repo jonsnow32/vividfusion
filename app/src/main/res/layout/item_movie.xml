@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  style="@style/Selectable"
+  android:layout_width="@dimen/item_poster_width"
+  android:layout_height="wrap_content"
+  android:orientation="vertical"
+  android:foreground="@drawable/outline_drawable"
+  android:layout_margin="@dimen/item_poster_margin">
+
+  <include
+    android:id="@+id/cover"
+    layout="@layout/item_movie_cover" />
+
+  <include
+    layout="@layout/item_media_title"/>
+
+</LinearLayout>

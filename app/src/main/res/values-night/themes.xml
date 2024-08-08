@@ -51,7 +51,6 @@
     <item name="colorOnCustomColor">@color/colorOnCustomColor</item>
     <item name="colorCustomColorContainer">@color/colorCustomColorContainer</item>
     <item name="colorOnCustomColorContainer">@color/colorOnCustomColorContainer</item>
-    <item name="android:statusBarColor">?android:colorBackground</item>
-    <item name="statusBarBackground">?colorPrimary</item>
+
   </style>
 </resources>

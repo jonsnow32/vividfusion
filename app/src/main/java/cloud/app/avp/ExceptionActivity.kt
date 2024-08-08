@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.commit
 import cloud.app.avp.AVPApplication.Companion.restartApp
-import cloud.app.avp.MainViewModel.Companion.applyInsets
 import cloud.app.avp.databinding.ActivityExceptionBinding
 import cloud.app.avp.ui.exception.ExceptionFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,17 +16,17 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class ExceptionActivity : AppCompatActivity() {
 
-  val binding by lazy { ActivityExceptionBinding.inflate(layoutInflater) }
-  val exception: String by lazy { intent.getStringExtra(EXTRA_STACKTRACE)!! }
-  val mainViewModel by viewModels<MainViewModel>()
+  private val binding by lazy { ActivityExceptionBinding.inflate(layoutInflater) }
+  private val exception: String by lazy { intent.getStringExtra(EXTRA_STACKTRACE)!! }
+  private val mainActivityViewModel by viewModels<MainActivityViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(binding.root)
     enableEdgeToEdge()
     ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
-      mainViewModel.setSystemInsets(this, insets)
-      binding.fabContainer.applyInsets(mainViewModel.systemInsets.value)
+      mainActivityViewModel.setSystemInsets(this, insets)
+      //binding.fabContainer.applyInsets(mainViewModel.systemInsets.value)
       insets
     }
     supportFragmentManager.commit {

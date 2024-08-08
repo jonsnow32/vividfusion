@@ -25,7 +25,7 @@ class AboutFragment : BaseSettingsFragment() {
                     .versionName
                 title = getString(R.string.version)
                 summary = version
-                layoutResource = R.layout.preference
+                layoutResource = R.layout.custom_preference
                 isIconSpaceReserved = false
                 isSelectable = false
                 screen.addPreference(this)

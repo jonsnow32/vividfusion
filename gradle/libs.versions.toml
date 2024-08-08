@@ -16,17 +16,22 @@ lifecycle = "2.7.0"
 work = "2.9.0"
 preference = "1.2.1"
 timber = "5.0.1"
-paging = "3.2.1"
+paging = "3.3.0"
 thetvdb = "2.4.0"
-tmdb =  '2.8.1'
-trakt = '6.11.2'
-
+tmdb = "2.10.0"
+trakt = "6.11.2"
+swiperefresh = "1.1.0"
+okhttp = "4.11.0"
+cookiejar = "v1.0.1"
+serialize = "1.6.2"
+glide = "4.16.0"
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 
 # Android core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+kotlinx-serialize-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialize" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
@@ -39,6 +44,7 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 androidx-preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference" }
 androidx-paging-common = { group = "androidx.paging", name = "paging-common-ktx", version.ref = "paging" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefresh" }
 
 # Dagger
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
@@ -56,12 +62,22 @@ androidx-media3-exoplayer-dash = { group = "androidx.media3", name = "media3-exo
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3" }
 
 # Logging
-timber = {group = "com.jakewharton.timber", name = "timber", version.ref = "timber"}
+timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 # service
-tmdb = {group = "com.uwetrottmann.tmdb2", name="tmdb-java", version.ref="tmdb"}
-thetvdb = {group = "com.uwetrottmann.thetvdb-java", name="thetvdb-java", version.ref="thetvdb"}
-trakt = {group = "com.uwetrottmann.trakt5", name="trakt-java", version.ref="trakt"}
+tmdb = { group = "com.uwetrottmann.tmdb2", name = "tmdb-java", version.ref = "tmdb" }
+thetvdb = { group = "com.uwetrottmann.thetvdb-java", name = "thetvdb-java", version.ref = "thetvdb" }
+trakt = { group = "com.uwetrottmann.trakt5", name = "trakt-java", version.ref = "trakt" }
+
+# network
+squareup-okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+squareup-okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
+squareup-okhttp-dns = { group = "com.squareup.okhttp3", name = "okhttp-dnsoverhttps", version.ref = "okhttp" }
+cookiejar = { group = "com.github.franmontiel", name = "PersistentCookieJar", version.ref = "cookiejar" }
+
+# ui
+glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+glide-compiler = { group = "com.github.bumptech.glide", name = "ksp", version.ref = "glide" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -69,4 +85,8 @@ jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = 
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
+
+
 

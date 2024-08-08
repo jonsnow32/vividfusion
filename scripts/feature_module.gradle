@@ -1,0 +1,23 @@
+
+apply plugin: 'kotlin-android'
+apply plugin: 'com.google.dagger.hilt.android'
+
+apply from: "$rootProject.projectDir/scripts/default_android_config.gradle"
+apply from: "$rootProject.projectDir/scripts/default_dependencies.gradle"
+
+android {
+    buildFeatures {
+        dataBinding = true
+    }
+}
+
+dependencies {
+    implementation libraries.fragment
+    implementation libraries.paging
+    implementation libraries.lifecycle
+    implementation libraries.liveDataKTX
+    implementation libraries.navigation
+    implementation libraries.constraintLayout
+    implementation libraries.swipeRefreshLayout
+    testImplementation testLibraries.coroutinesTest
+}

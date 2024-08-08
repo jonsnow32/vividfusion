@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  style="@style/Selectable"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_marginHorizontal="8dp"
+  android:baselineAligned="false"
+  android:clipToPadding="false"
+  android:padding="8dp">
+
+  <FrameLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clipToPadding="false"
+    android:padding="8dp">
+
+    <androidx.cardview.widget.CardView
+      android:id="@+id/background"
+      android:layout_width="@dimen/item_poster_width"
+      android:layout_height="@dimen/item_poster_width"
+      android:elevation="10dp">
+      <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/item_video"
+        android:duplicateParentState="true"
+        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/sample_video_poster" />
+    </androidx.cardview.widget.CardView>
+  </FrameLayout>
+
+  <LinearLayout
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_weight="1"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+      android:id="@+id/title"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:ellipsize="end"
+      android:gravity="center_vertical"
+      android:maxLines="2"
+      tools:text="@tools:sample/full_names" />
+
+    <TextView
+      android:id="@+id/subtitle"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:alpha="0.66"
+      android:ellipsize="end"
+      android:gravity="center_vertical"
+      android:maxLines="2"
+      tools:text="@tools:sample/first_names" />
+
+  </LinearLayout>
+
+  <FrameLayout
+    android:layout_marginTop="-8dp"
+    android:layout_marginEnd="-8dp"
+    android:layout_marginBottom="-8dp"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/more"
+      style="@style/IconButton"
+      android:layout_gravity="end"
+      android:contentDescription="@string/more"
+      app:icon="@drawable/ic_more_horiz" />
+
+  </FrameLayout>
+</LinearLayout>

@@ -7,7 +7,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
-import cloud.app.avp.MainViewModel.Companion.openFragment
+import cloud.app.avp.ExceptionActivity
 import cloud.app.avp.R
 
 
@@ -26,11 +26,9 @@ class SettingsFragment : BaseSettingsFragment() {
 
             fun Preference.add(block: Preference.() -> Unit = {}) {
                 block()
-                layoutResource = R.layout.preference
+                layoutResource = R.layout.custom_preference
                 screen.addPreference(this)
             }
-
-
 
             TransitionPreference(context).add {
                 title = getString(R.string.about)
@@ -57,7 +55,8 @@ class SettingsFragment : BaseSettingsFragment() {
             }
 
             val view = listView.findViewById<View>(preference.key.hashCode())
-            parentFragment?.openFragment(fragment, view)
+            //parentFragment?.openFragment(fragment, view)
+            ExceptionActivity.start(requireContext(), Throwable("testing"))
             return true
         }
     }

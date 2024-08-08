@@ -3,4 +3,5 @@
     <attr name="colorOnCustomColor" format="color" />
     <attr name="colorCustomColorContainer" format="color" />
     <attr name="colorOnCustomColorContainer" format="color" />
+    <attr name="iconColor" format="color" />
 </resources>

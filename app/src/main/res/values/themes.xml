@@ -1,6 +1,18 @@
 <resources>
   <style name="BaseTheme" parent="Theme.Material3.Light.NoActionBar">
     <item name="android:fontFamily">@font/google_sans</item>
+    <item name="collapsingToolbarLayoutStyle">@style/CollapsingBar</item>
+    <item name="android:statusBarColor">?attr/colorSurfaceContainer</item>
+    <item name="statusBarBackground">?colorPrimary</item>
+    <item name="android:textColorPrimary">?colorOnBackground</item>
+    <item name="android:textColor">?colorOnBackground</item>
+    <item name="android:textColorSecondary">?colorSecondary</item>
+    <item name="android:textColorHint">?colorSecondary</item>
+    <item name="android:colorEdgeEffect">?android:attr/textColor</item>
+    <!-- colorPrimarySecond used because colorPrimary fails for no reason -->
+    <item name="colorControlActivated">?attr/colorPrimary</item>
+    <item name="android:listViewStyle">@style/ListViewStyle</item>
+    <item name="iconColor">?android:textColor</item>
   </style>
 
   <style name="AppTheme" parent="@style/BaseTheme">
@@ -54,7 +66,5 @@
     <item name="colorOnCustomColor">@color/colorOnCustomColor</item>
     <item name="colorCustomColorContainer">@color/colorCustomColorContainer</item>
     <item name="colorOnCustomColorContainer">@color/colorOnCustomColorContainer</item>
-    <item name="android:statusBarColor">?android:colorBackground</item>
-    <item name="statusBarBackground">?colorPrimary</item>
   </style>
 </resources>

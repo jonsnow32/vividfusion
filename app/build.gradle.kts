@@ -3,6 +3,7 @@ plugins {
   alias(libs.plugins.jetbrains.kotlin.android)
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.dagger.hilt)
+  alias(libs.plugins.kotlin.parcelize)
 }
 
 android {
@@ -15,7 +16,7 @@ android {
     targetSdk = 34
     versionCode = 1
     versionName = "1.0"
-
+    buildConfigField("int", "VERSION_CODE", "$versionCode")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
@@ -38,14 +39,15 @@ android {
   viewBinding {
     enable = true
   }
+  buildFeatures {
+    buildConfig = true
+  }
 }
 
 dependencies {
 
-  //Testing
-  testImplementation(libs.junit)
-  androidTestImplementation(libs.androidx.junit)
-  androidTestImplementation(libs.androidx.espresso.core)
+  implementation(project(":common"))
+  implementation(project(":plugger"))
 
   //Android
   implementation(libs.androidx.core.ktx)
@@ -57,7 +59,7 @@ dependencies {
   implementation(libs.androidx.preference)
   implementation(libs.androidx.paging.common)
   implementation(libs.androidx.paging.runtime)
-
+  implementation(libs.androidx.swiperefreshlayout)
   //Media 3
   implementation(libs.androidx.media3.ui)
   implementation(libs.androidx.media3.cast)
@@ -75,6 +77,8 @@ dependencies {
 
   //UI
   implementation(libs.material)
+  implementation(libs.glide)
+  ksp(libs.glide.compiler)
 
   //Worker
   implementation(libs.androidx.work.runtime)
@@ -87,4 +91,14 @@ dependencies {
   implementation(libs.tmdb)
   implementation(libs.trakt)
   implementation(libs.thetvdb)
+
+  //network
+  implementation(libs.squareup.okhttp)
+  implementation(libs.squareup.okhttp.logging)
+  implementation(libs.squareup.okhttp.dns)
+  implementation(libs.cookiejar)
+
+  implementation ("androidx.browser:browser:1.5.0")
+  implementation("jp.wasabeef:glide-transformations:4.3.0")
+  implementation("me.zhanghai.android.fastscroll:library:1.3.0")
 }

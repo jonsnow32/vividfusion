@@ -8,12 +8,15 @@ import androidx.core.view.setMargins
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cloud.app.avp.ExceptionActivity
 import cloud.app.avp.R
 import cloud.app.avp.ui.exception.ExceptionFragment.Companion.getTitle
 import cloud.app.avp.utils.observe
+import com.google.android.material.navigation.NavigationBarView
+import com.google.android.material.navigationrail.NavigationRailView
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -56,7 +59,7 @@ class SnackBarViewModel @Inject constructor(
     }
 
     companion object {
-        fun AppCompatActivity.configureSnackBar(root: View) {
+        fun Fragment.configureSnackBar(root: View) {
             val viewModel by viewModels<SnackBarViewModel>()
             fun createSnackBar(message: Message) {
                 val snackBar = Snackbar.make(
@@ -66,7 +69,7 @@ class SnackBarViewModel @Inject constructor(
                 )
                 snackBar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
                 snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> { setMargins(0) }
-                snackBar.anchorView = root
+                if(root !is NavigationRailView) snackBar.anchorView = root
                 message.action?.run { snackBar.setAction(name) { handler() } }
                 snackBar.addCallback(object : Snackbar.Callback() {
                     override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
@@ -83,15 +86,14 @@ class SnackBarViewModel @Inject constructor(
             observe(viewModel.throwableFlow) { throwable ->
                 throwable.printStackTrace()
                 val message = Message(
-                  message = getTitle(throwable),
+                  message = requireActivity().getTitle(throwable),
                   action = Action(getString(R.string.view)) {
-                    ExceptionActivity.start(this, throwable)
+                    ExceptionActivity.start(requireContext(), throwable)
                   }
                 )
                 viewModel.create(message)
             }
         }
-
         fun Fragment.createSnack(message: Message) {
             val viewModel by activityViewModels<SnackBarViewModel>()
             viewModel.create(message)
