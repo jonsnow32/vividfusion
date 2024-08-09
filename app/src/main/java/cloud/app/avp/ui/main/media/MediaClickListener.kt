@@ -1,21 +1,18 @@
 package cloud.app.avp.ui.main.media
 
+import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.paging.PagingData
-import androidx.paging.map
+import androidx.navigation.NavArgs
 import cloud.app.avp.AVPApplication.Companion.noClient
 import cloud.app.avp.R
-import cloud.app.avp.ui.main.movies.MoviesViewModel
-import cloud.app.avp.ui.paging.toFlow
+import cloud.app.avp.ui.browse.BrowseViewModel
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.MediaItemsContainer
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 class MediaClickListener(
   private val fragmentManager: FragmentManager, private val afterOpening: (() -> Unit)? = null
@@ -27,7 +24,18 @@ class MediaClickListener(
   override fun onClick(
     clientId: String?, item: AVPMediaItem, transitionView: View?
   ) {
-    TODO("Not yet implemented")
+    when(item) {
+      is AVPMediaItem.MovieItem -> {
+        val bundle = Bundle()
+        bundle.putString("clientId", clientId)
+        bundle.putParcelable("movieItem", item)
+        fragment.navigate(R.id.movieFragment, transitionView, bundle)
+      }
+
+      is AVPMediaItem.ActorItem -> TODO()
+      is AVPMediaItem.EpisodeItem -> TODO()
+      is AVPMediaItem.ShowItem -> TODO()
+    }
   }
 
   override fun onLongClick(
@@ -55,9 +63,9 @@ class MediaClickListener(
     pagedData : PagedData<AVPMediaItem>?
   ) {
     clientId ?: return noClient()
-    val viewModel by fragment.activityViewModels<MoviesViewModel>()
+    val viewModel by fragment.activityViewModels<BrowseViewModel>()
     viewModel.moreFlow = pagedData
-    fragment.navigate(R.id.moviesFragment, transitionView)
+    fragment.navigate(R.id.browseFragment, transitionView)
     afterOpening?.invoke()
   }
 

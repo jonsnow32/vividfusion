@@ -15,7 +15,10 @@ import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingList
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.Settings
+import com.uwetrottmann.tmdb2.entities.CastMember
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
+import com.uwetrottmann.tmdb2.entities.Movie
+import com.uwetrottmann.tmdb2.entities.TvShow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -131,19 +134,82 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
       )
     }.toList()
 
-
   //Searching
   override suspend fun quickSearch(query: String?): List<QuickSearchItem> {
-    TODO("Not yet implemented")
+    val results = mutableListOf<QuickSearchItem>()
+    return withContext(Dispatchers.IO) {
+      val mediaResultsPage = tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
+      mediaResultsPage?.results?.forEach {
+        it.movie?.let { movie ->
+          results.add(QuickSearchItem.SearchMediaItem(movie.toMediaItem()))
+        }
+        it.tvShow?.let { tvShow ->
+          results.add(QuickSearchItem.SearchMediaItem(tvShow.toMediaItem()))
+        }
+        it.person?.let { person ->
+          results.add(QuickSearchItem.SearchMediaItem(person.toMediaItem()))
+        }
+      }
+      results
+    }
   }
 
   override suspend fun searchTabs(query: String?): List<Tab> =
-    listOf("Movies", "TV Shows", "Actors").map { Tab(it, it) }
+    listOf("All", "Movies", "TV Shows", "Actors").map { Tab(it, it) }
 
   override fun searchFeed(query: String?, tab: Tab?): PagedData<MediaItemsContainer> {
-    tmdb.searchService().multi(query, 1, "en", "en_US", true)
+    return when (tab?.id) {
+      "Movies" -> searchMoviesFeed(query)
+      "TV Shows" -> searchTvShowsFeed(query)
+      "Actors" -> searchActorsFeed(query)
+      else -> searchAll(query)
+    }
+  }
+
+  private fun searchActorsFeed(query: String?): PagedData<MediaItemsContainer> {
     TODO("Not yet implemented")
   }
+
+  private fun searchTvShowsFeed(query: String?): PagedData<MediaItemsContainer> {
+    TODO("Not yet implemented")
+  }
+
+  private fun searchMoviesFeed(query: String?): PagedData<MediaItemsContainer> {
+    TODO("Not yet implemented")
+  }
+
+  private fun List<AVPMediaItem>.toPaged() = PagedData.Single { this }
+  private  fun searchAll(query: String?) = PagedData.Single {
+    withContext(Dispatchers.IO) {
+      val movies = mutableListOf<AVPMediaItem.MovieItem>()
+      val shows = mutableListOf<AVPMediaItem.ShowItem>()
+      val casts = mutableListOf<AVPMediaItem.ActorItem>()
+      val mediaResultsPage = tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
+      mediaResultsPage?.results?.forEach {
+        it.movie?.let { movie ->
+          movies.add(movie.toMediaItem())
+        }
+        it.tvShow?.let { tvShow ->
+          shows.add(tvShow.toMediaItem())
+        }
+        it.person?.let { person ->
+          casts.add(person.toMediaItem())
+        }
+      }
+      val mediaContainer = mutableListOf<MediaItemsContainer>()
+      if (movies.isNotEmpty()) {
+        mediaContainer.add(toMediaItemsContainer("Movies", "", movies.toPaged()))
+      }
+      if (shows.isNotEmpty()) {
+        mediaContainer.add(toMediaItemsContainer("TV Shows", "", shows.toPaged()))
+      }
+      if (casts.isNotEmpty()) {
+        mediaContainer.add(toMediaItemsContainer("Actors", "", casts.toPaged()))
+      }
+      mediaContainer
+    }
+  }
+
 
   companion object {
 

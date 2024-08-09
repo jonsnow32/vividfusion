@@ -73,7 +73,7 @@ sealed class MediaContainerViewHolder(
     }
 
     val layoutManager get() = binding.recyclerView.layoutManager
-    override val clickView: View = binding.more
+    override val clickView: View = binding.titleCard
     override val transitionView: View = binding.titleCard
 
     companion object {

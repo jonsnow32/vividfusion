@@ -12,8 +12,6 @@ import cloud.app.avp.MainActivityViewModel
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentMainBinding
 import cloud.app.avp.ui.main.home.HomeFragment
-import cloud.app.avp.ui.main.movies.MoviesFragment
-import cloud.app.avp.ui.main.home.ShowsFragment
 import cloud.app.avp.ui.main.library.LibraryFragment
 import cloud.app.avp.ui.main.search.SearchFragment
 import cloud.app.avp.utils.SlideInPageTransformer
@@ -47,25 +45,22 @@ class MainFragment : Fragment() {
       override fun onPageSelected(position: Int) {
         super.onPageSelected(position)
         when (position) {
-          0 -> navView.selectedItemId = R.id.moviesFragment
-          1 -> navView.selectedItemId = R.id.showsFragment
-          2 -> navView.selectedItemId = R.id.searchFragment
-          3 -> navView.selectedItemId = R.id.libraryFragment
-          4 -> navView.selectedItemId = R.id.homeFragment
+          0 -> navView.selectedItemId = R.id.homeFragment
+          1 -> navView.selectedItemId = R.id.searchFragment
+          2 -> navView.selectedItemId = R.id.libraryFragment
         }
       }
     })
 
-    binding.vpContainer.setCurrentItem(4, false)
+    binding.vpContainer.setCurrentItem(0, false)
     configureSnackBar(binding.navView)
 
     navView.setOnItemSelectedListener {
       when (it.itemId) {
-        R.id.moviesFragment -> binding.vpContainer.setCurrentItem(0, false)
-        R.id.showsFragment -> binding.vpContainer.setCurrentItem(1, false)
-        R.id.searchFragment -> binding.vpContainer.setCurrentItem(2, false)
-        R.id.libraryFragment -> binding.vpContainer.setCurrentItem(3, false)
-        R.id.homeFragment -> binding.vpContainer.setCurrentItem(4, false)
+        R.id.homeFragment -> binding.vpContainer.setCurrentItem(0, false)
+        R.id.searchFragment -> binding.vpContainer.setCurrentItem(1, false)
+        R.id.libraryFragment -> binding.vpContainer.setCurrentItem(2, false)
+
       }
       true
     }
@@ -84,15 +79,16 @@ class MainFragment : Fragment() {
   }
 
   class MainAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
-    override fun getItemCount(): Int = 5
+    override fun getItemCount(): Int = 3
     override fun createFragment(position: Int): Fragment {
       return when (position) {
-        0 -> MoviesFragment()
-        1 -> ShowsFragment()
-        2 -> SearchFragment()
-        3 -> LibraryFragment()
-        4 -> HomeFragment()
-        else -> throw IllegalArgumentException("Invalid position")
+
+        0 -> HomeFragment()
+        1 -> SearchFragment()
+        2 -> LibraryFragment()
+        else -> {
+          throw IllegalArgumentException("Invalid position")
+        }
       }
     }
   }

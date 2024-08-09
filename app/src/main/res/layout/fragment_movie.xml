@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  tools:visibility="visible">
+
+  <androidx.core.widget.NestedScrollView
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:paddingBottom="100dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="?android:colorBackground"
+      android:orientation="vertical">
+
+      <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <FrameLayout
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintDimensionRatio="H,16:9"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent">
+
+          <ImageView
+            android:id="@+id/headerBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+          <View
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_gravity="bottom"
+            android:background="@drawable/background_shadow" />
+        </FrameLayout>
+      </androidx.constraintlayout.widget.ConstraintLayout>
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="15dp"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:orientation="vertical">
+
+          <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:maxLines="2"
+            android:textColor="?android:textColor"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:text="The Perfect Run The Perfect Run" />
+
+          <cloud.app.avp.ui.widget.FlowLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:itemSpacing="10dp">
+
+            <com.google.android.material.button.MaterialButton
+              android:id="@+id/genre1"
+              android:layout_gravity="center_vertical"
+              style="@style/SmallButton"
+              tools:text="Action" />
+
+            <com.google.android.material.button.MaterialButton
+              android:id="@+id/genre2"
+              android:layout_gravity="center_vertical"
+              style="@style/SmallButton"
+              tools:text="Drama" />
+
+            <com.google.android.material.button.MaterialButton
+              android:id="@+id/genre3"
+              android:layout_gravity="center_vertical"
+              style="@style/SmallButton"
+              tools:text="Animation" />
+            <com.google.android.material.button.MaterialButton
+              android:id="@+id/contentRating"
+              android:layout_gravity="center_vertical"
+              style="@style/SmallButton"
+              tools:text="PG-13" />
+
+            <TextView
+              android:id="@+id/mediaType"
+              style="@style/ResultInfoText"
+              tools:text="Movie" />
+
+            <TextView
+              android:id="@+id/mediaReleaseYear"
+              style="@style/ResultInfoText"
+              tools:text="2022" />
+
+            <TextView
+              android:id="@+id/mediaRating"
+              style="@style/ResultInfoText"
+              tools:text="Rated: 8.5/10.0" />
+
+            <TextView
+              android:id="@+id/mediaStatus"
+              style="@style/ResultInfoText"
+              tools:text="Ongoing" />
+
+            <TextView
+              android:id="@+id/mediaRuntime"
+              style="@style/ResultInfoText"
+              tools:text="121min" />
+          </cloud.app.avp.ui.widget.FlowLayout>
+
+          <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+              android:id="@+id/mediaOverview"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:ellipsize="end"
+              android:maxLines="10"
+              android:foreground="@drawable/outline_drawable"
+              android:paddingTop="5dp"
+              android:textColor="?android:textColor"
+              android:textSize="15sp"
+              tools:text="Ryan Quicksave Romano is an eccentric adventurer with a strange power: he can create a save-point in time and redo his life whenever he dies. Arriving in New Rome, the glitzy capital of sin of a rebuilding Europe, he finds the city torn between mega-corporations, sponsored heroes, superpowered criminals, and true monsters. It's a time of chaos, where potions can grant the power to rule the world and dangers lurk everywhere. " />
+
+            <ImageView
+              android:layout_width="match_parent"
+              android:layout_height="30dp"
+              android:layout_gravity="bottom"
+              android:src="@drawable/background_shadow"
+              android:visibility="gone"
+              tools:ignore="ContentDescription" />
+          </FrameLayout>
+
+          <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvActors"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:descendantFocusability="afterDescendants"
+            android:fadingEdge="horizontal"
+            android:nextFocusUp="@id/mediaOverview"
+            android:orientation="horizontal"
+            android:paddingTop="5dp"
+            android:requiresFadingEdge="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:itemCount="2"
+            tools:listitem="@layout/item_actor"
+            tools:visibility="visible" />
+        </LinearLayout>
+
+      </LinearLayout>
+    </LinearLayout>
+  </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

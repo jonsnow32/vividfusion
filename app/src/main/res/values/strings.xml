@@ -48,4 +48,8 @@
     <string name="media_type">Media Type</string>
   <string name="rating_7_8">7.39454588</string>
     <string name="error_no_client">Error, no extension was selected</string>
+    <string name="trailer">Trailer</string>
+  <string name="filler">Filter</string>
+  <string name="backdropDescription">Backdrop</string>
+  <string name="clear_history">Clear history</string>
 </resources>

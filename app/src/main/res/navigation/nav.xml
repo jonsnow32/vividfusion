@@ -9,17 +9,16 @@
     android:id="@id/aboutFragment"
     android:name="cloud.app.avp.ui.setting.AboutFragment"
     android:label="AboutFragment" />
+
   <fragment
     android:id="@id/settingsFragment"
     android:name="cloud.app.avp.ui.setting.SettingsFragment"
     android:label="SettingsFragment" />
-
   <fragment
-    android:id="@id/moviesFragment"
-    android:name="cloud.app.avp.ui.main.movies.MoviesFragment"
-    android:label="HomeFragment" >
+    android:id="@id/browseFragment"
+    android:name="cloud.app.avp.ui.browse.BrowseFragment"
+    android:label="BrowseFragment" >
   </fragment>
-
   <fragment
     android:id="@id/mainFragment"
     android:name="cloud.app.avp.ui.main.MainFragment"
@@ -29,5 +28,16 @@
     android:name="cloud.app.avp.MainActivity"
     android:label="fragment_search"
     tools:layout="@layout/fragment_search" />
+  <fragment
+    android:id="@+id/movieFragment"
+    android:name="cloud.app.avp.ui.detail.movie.MovieFragment"
+    android:label="MovieFragment" >
+    <argument
+      android:name="clientId"
+      app:argType="string" />
+    <argument
+      android:name="movieItem"
+      app:argType="cloud.app.common.models.AVPMediaItem$MovieItem" />
+  </fragment>
 
 </navigation>

@@ -3,11 +3,12 @@
   <dimen name="collapsed_cover_size">64dp</dimen>
   <dimen name="max_cover_size">384dp</dimen>
   <dimen name="nav_height">@dimen/collapsed_cover_size</dimen>
-  <dimen name="rounded_radius">10dp</dimen>
-  <dimen name="rounded_image_radius">10dp</dimen>
   <dimen name="item_poster_width">100dp</dimen>
   <dimen name="item_poster_height">150dp</dimen>
   <dimen name="item_title_height">70dp</dimen>
   <dimen name="item_poster_margin">4dp</dimen>
-  <dimen name="column_width">108dp</dimen> <!--item_poster_width + item_poster_margin*2-->
+  <dimen name="rounded_radius">10dp</dimen>
+  <dimen name="rounded_image_radius">10dp</dimen>
+  <dimen name="rounded_button_radius">4dp</dimen>
+  <dimen name="layout_detail_padding">10dp</dimen>
 </resources>

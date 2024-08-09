@@ -90,7 +90,7 @@
       android:layout_height="match_parent"
       android:clipToPadding="false"
       app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-      tools:listitem="@layout/item_movie"/>
+      tools:listitem="@layout/item_media"/>
 
   </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

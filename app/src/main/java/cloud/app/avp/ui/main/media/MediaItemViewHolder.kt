@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import cloud.app.avp.R
 import cloud.app.avp.databinding.ItemActorBinding
 import cloud.app.avp.databinding.ItemMediaTitleBinding
-import cloud.app.avp.databinding.ItemMovieBinding
+import cloud.app.avp.databinding.ItemMediaBinding
 import cloud.app.avp.databinding.ItemMovieCoverBinding
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.roundTo
@@ -32,7 +32,7 @@ sealed class MediaItemViewHolder(itemView: View) :
     this.rating.text = item.rating?.roundTo(1).toString()
   }
 
-  class Movie(val binding: ItemMovieBinding) : MediaItemViewHolder(binding.root) {
+  class Movie(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
     private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
     override val transitionView: View
       get() = binding.cover.root
@@ -48,14 +48,14 @@ sealed class MediaItemViewHolder(itemView: View) :
       ): MediaItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return Movie(
-          ItemMovieBinding.inflate(layoutInflater, parent, false)
+          ItemMediaBinding.inflate(layoutInflater, parent, false)
         )
       }
     }
   }
 
 
-  class Episode(val binding: ItemMovieBinding) : MediaItemViewHolder(binding.root) {
+  class Episode(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
     private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
     override val transitionView: View
       get() = binding.cover.root
@@ -71,13 +71,13 @@ sealed class MediaItemViewHolder(itemView: View) :
       ): MediaItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return Episode(
-          ItemMovieBinding.inflate(layoutInflater, parent, false)
+          ItemMediaBinding.inflate(layoutInflater, parent, false)
         )
       }
     }
   }
 
-  class Show(val binding: ItemMovieBinding) : MediaItemViewHolder(binding.root) {
+  class Show(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
     private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
     override val transitionView: View
       get() = binding.cover.root
@@ -93,7 +93,7 @@ sealed class MediaItemViewHolder(itemView: View) :
       ): MediaItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return Show(
-          ItemMovieBinding.inflate(layoutInflater, parent, false)
+          ItemMediaBinding.inflate(layoutInflater, parent, false)
         )
       }
     }
@@ -117,8 +117,8 @@ sealed class MediaItemViewHolder(itemView: View) :
         parent: ViewGroup
       ): MediaItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        return Show(
-          ItemMovieBinding.inflate(layoutInflater, parent, false)
+        return Actor(
+          ItemActorBinding.inflate(layoutInflater, parent, false)
         )
       }
     }
@@ -130,14 +130,14 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.MovieItem -> R.drawable.rounded_rectangle
       is AVPMediaItem.ShowItem -> R.drawable.rounded_rectangle
       is AVPMediaItem.EpisodeItem -> R.drawable.art_user
-      is AVPMediaItem.ActorItem -> R.drawable.art_album
+      is AVPMediaItem.ActorItem -> R.drawable.art_user
     }
 
     fun AVPMediaItem.icon() = when (this) {
       is AVPMediaItem.MovieItem -> R.drawable.ic_video
       is AVPMediaItem.ShowItem -> R.drawable.ic_album
-      is AVPMediaItem.EpisodeItem -> R.drawable.ic_person
-      is AVPMediaItem.ActorItem -> R.drawable.ic_album
+      is AVPMediaItem.EpisodeItem -> R.drawable.ic_video
+      is AVPMediaItem.ActorItem -> R.drawable.ic_person
     }
 
   }

@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.main.movies
+package cloud.app.avp.ui.browse
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,40 +7,43 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
+import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.R
-import cloud.app.avp.databinding.FragmentMoviesBinding
-import cloud.app.avp.ui.main.media.MediaContainerAdapter
+import cloud.app.avp.databinding.FragmentBrowseBinding
 import cloud.app.avp.ui.main.media.MediaItemAdapter
 import cloud.app.avp.utils.FastScrollerHelper
 import cloud.app.avp.utils.autoCleared
+import cloud.app.avp.utils.configure
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
-import cloud.app.avp.utils.tv.FOCUS_SELF
-import cloud.app.avp.utils.tv.setLinearListLayout
 import cloud.app.common.models.AVPMediaItem
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
-class MoviesFragment : Fragment(), MediaItemAdapter.Listener {
-  private var binding by autoCleared<FragmentMoviesBinding>()
-  private val activityViewModel by activityViewModels<MoviesViewModel>()
-  private val viewModel by viewModels<MoviesViewModel>()
+class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
+  private var binding by autoCleared<FragmentBrowseBinding>()
+  private val activityViewModel by activityViewModels<BrowseViewModel>()
+  private val viewModel by viewModels<BrowseViewModel>()
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
-    binding = FragmentMoviesBinding.inflate(inflater, container, false)
+    binding = FragmentBrowseBinding.inflate(inflater, container, false)
     return binding.root
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
+
+    applyInsets {
+      binding.appBarLayoutCustom.setPadding(0,it.top, 0,0)
+      binding.recyclerView.setPadding(0, 0, 0, it.bottom)
+    }
+
 
     binding.btnSettings.setOnClickListener {
       navigate(R.id.settingsFragment)
@@ -57,6 +60,14 @@ class MoviesFragment : Fragment(), MediaItemAdapter.Listener {
     val concatAdapter = adapter.withLoaders()
     binding.recyclerView.adapter = adapter
 
+    binding.swipeRefresh.configure {
+      //adapter.refresh()
+      viewModel.refresh()
+    }
+
+    observe(viewModel.loading) {
+      binding.swipeRefresh.isRefreshing = it
+    }
     context?.let { ctx ->
       var viewWidth = view.width
       if (viewWidth <= 0) {

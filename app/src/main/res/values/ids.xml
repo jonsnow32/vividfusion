@@ -4,7 +4,7 @@
   <item name="settingsFragment" type="id"/>
   <item name="mainFragment" type="id"/>
   <item name="homeFragment" type="id"/>
-  <item name="moviesFragment" type="id"/>
+  <item name="browseFragment" type="id"/>
   <item name="showsFragment" type="id"/>
   <item name="searchFragment" type="id"/>
   <item name="libraryFragment" type="id"/>

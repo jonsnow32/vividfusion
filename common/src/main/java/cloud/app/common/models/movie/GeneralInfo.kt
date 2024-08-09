@@ -14,6 +14,6 @@ data class GeneralInfo(
   var logo: String? = null,
   var runtime: Int? = null,
   var genres: List<String>? = null,
-  var certification: String? = null,
+  var contentRating: String? = null,
   var rating: Double? = null
 ) : Parcelable

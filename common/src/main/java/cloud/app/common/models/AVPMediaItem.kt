@@ -67,6 +67,13 @@ sealed class AVPMediaItem : Parcelable {
       is EpisodeItem -> episode.generalInfo.poster?.toImageHolder()
     }
 
+  val backdrop
+    get() = when (this) {
+      is ActorItem -> actorData.actor.image
+      is MovieItem -> movie.generalInfo.backdrop?.toImageHolder()
+      is ShowItem -> show.generalInfo.backdrop?.toImageHolder()
+      is EpisodeItem -> episode.generalInfo.backdrop?.toImageHolder()
+    }
   val subtitle
     get() = when(this) {
       is ActorItem -> actorData.roleString

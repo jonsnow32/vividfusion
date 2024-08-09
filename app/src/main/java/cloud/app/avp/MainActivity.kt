@@ -20,6 +20,7 @@ import cloud.app.avp.MainActivityViewModel.Companion.isNightMode
 import cloud.app.avp.databinding.ActivityMainBinding
 import cloud.app.avp.utils.Utils.isAndroidTV
 import cloud.app.avp.utils.tv.screenHeight
+import cloud.app.avp.utils.tv.screenWidth
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -46,13 +47,15 @@ class MainActivity : AppCompatActivity() {
       supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
     val navController = navHostFragment.navController
 
+    val inputManager = getSystemService(Context.INPUT_SERVICE) as InputManager
+    val deviceIds = inputManager.inputDeviceIds
+    val hasController = isAndroidTV(this) || isControllerConnected(inputManager, deviceIds.toList())
     //center view on focus change
-    if (isAndroidTV(this)) {
+    if (hasController) {
       navController.addOnDestinationChangedListener { _: NavController, navDestination: NavDestination, bundle: Bundle? ->
         Timber.i(navDestination.id.toString())
       }
     }
-
     onBackPressedDispatcher.addCallback(
       this,
       object : OnBackPressedCallback(true) {
@@ -60,14 +63,10 @@ class MainActivity : AppCompatActivity() {
           if (!navController.popBackStack())
             finish()
           // if you want onBackPressed() to be called as normal afterwards
-
         }
       }
     )
-
-    val inputManager = getSystemService(Context.INPUT_SERVICE) as InputManager
-    val deviceIds = inputManager.inputDeviceIds
-    if(isAndroidTV(this) || isControllerConnected(inputManager, deviceIds.toList())) {
+    if(hasController) {
       binding.root.viewTreeObserver.addOnGlobalFocusChangeListener { _, view ->
         centerView(view)
       }
@@ -83,7 +82,7 @@ class MainActivity : AppCompatActivity() {
       view.getDrawingRect(r)
       val x = r.centerX()
       val y = r.centerY()
-      val dx = r.width() / 2 //screenWidth / 2
+      val dx = screenWidth / 2
       val dy = screenHeight / 2
       val newRect = Rect(x - dx, y - dy, x + dx, y + dy)
       view.requestRectangleOnScreen(newRect, false)

@@ -5,19 +5,6 @@
     android:id="@id/homeFragment"
     android:icon="@drawable/anim_home"
     android:title="@string/home" />
-
-  <item
-    android:id="@id/moviesFragment"
-    android:icon="@drawable/anim_home"
-    android:title="@string/movies"
-    android:visible="false"/>
-
-  <item
-    android:id="@id/showsFragment"
-    android:icon="@drawable/anim_home"
-    android:title="@string/shows"
-    android:visible="false" />
-
   <item
     android:id="@id/searchFragment"
     android:icon="@drawable/anim_search"

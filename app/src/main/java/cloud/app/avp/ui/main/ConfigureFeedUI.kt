@@ -2,22 +2,16 @@ package cloud.app.avp.ui.main
 
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import cloud.app.avp.R
 import cloud.app.avp.ui.main.media.MediaContainerAdapter
 import cloud.app.avp.utils.applyAdapter
 import cloud.app.avp.utils.collect
 import cloud.app.avp.utils.configure
 import cloud.app.avp.utils.observe
-import cloud.app.avp.utils.tv.FOCUS_SELF
-import cloud.app.avp.utils.tv.setLinearListLayout
 import cloud.app.common.clients.infos.FeedClient
-import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.Tab
 import com.google.android.material.tabs.TabLayout
-import kotlinx.coroutines.launch
 
 fun Fragment.configureFeedUI(
   id: Int,
@@ -48,7 +42,6 @@ fun Fragment.configureFeedUI(
       recyclerView.applyAdapter<FeedClient>(it, id, concatAdapter)
     }
   }
-
 
   val tabListener = object : TabLayout.OnTabSelectedListener {
     var enabled = true

@@ -1,5 +1,7 @@
 package cloud.app.avp.utils
 
+import androidx.core.view.doOnLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.avp.ui.main.ClientNotSupportedAdapter
 import cloud.app.avp.ui.main.home.ClientLoadingAdapter
@@ -19,4 +21,15 @@ inline fun <reified T> RecyclerView.applyAdapter(
       ClientNotSupportedAdapter(name, extension::class.java.simpleName)
     else adapter
   )
+}
+
+fun RecyclerView.first() =
+  (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+
+fun RecyclerView.scrollTo(position: Int, block: (Int) -> Unit) = doOnLayout {
+  if (position < 1) return@doOnLayout
+  (layoutManager as LinearLayoutManager).run {
+    scrollToPositionWithOffset(position, 0)
+    post { block(findFirstVisibleItemPosition()) }
+  }
 }

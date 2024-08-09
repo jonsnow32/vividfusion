@@ -42,8 +42,6 @@
         android:layout_margin="10dp"
         android:background="?selectableItemBackgroundBorderless"
         android:contentDescription="@string/settings"
-        android:nextFocusLeft="@id/main_search"
-        android:nextFocusRight="@id/main_search"
         android:tag = "@string/tv_no_focus_tag"
         android:src="@drawable/ic_settings_outline"
         app:tint="?iconColor" />

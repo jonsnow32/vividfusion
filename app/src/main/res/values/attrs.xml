@@ -1,7 +1,13 @@
 <resources>
-    <attr name="colorCustomColor" format="color" />
-    <attr name="colorOnCustomColor" format="color" />
-    <attr name="colorCustomColorContainer" format="color" />
-    <attr name="colorOnCustomColorContainer" format="color" />
-    <attr name="iconColor" format="color" />
+  <attr name="colorCustomColor" format="color" />
+  <attr name="colorOnCustomColor" format="color" />
+  <attr name="colorCustomColorContainer" format="color" />
+  <attr name="colorOnCustomColorContainer" format="color" />
+  <attr name="iconColor" format="color" />
+
+  <declare-styleable name="FlowLayout_Layout">
+    <attr name="itemSpacing" format="dimension" />
+  </declare-styleable>
+  <declare-styleable name="FlowLayout_Layout_layout_space" />
+
 </resources>

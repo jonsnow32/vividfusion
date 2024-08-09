@@ -16,6 +16,7 @@ import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
+import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 

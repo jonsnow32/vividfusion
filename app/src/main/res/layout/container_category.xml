@@ -8,8 +8,12 @@
 
   <androidx.cardview.widget.CardView
     android:id="@+id/titleCard"
-    app:cardBackgroundColor="@android:color/transparent"
+    android:backgroundTint="@android:color/transparent"
     android:layout_width="match_parent"
+    android:foreground="@drawable/outline_drawable"
+    android:nextFocusLeft="@id/navView"
+    android:elevation="0dp"
+    app:cardElevation="0dp"
     android:layout_height="wrap_content">
 
     <LinearLayout
@@ -49,12 +53,13 @@
 
       </LinearLayout>
 
-      <com.google.android.material.button.MaterialButton
+      <ImageButton
         style="@style/IconButton"
         android:id="@+id/more"
         android:contentDescription="@string/more"
         android:scaleX="-1"
-        app:icon="@drawable/ic_back" />
+        android:clickable="false"
+        android:src="@drawable/ic_back" />
     </LinearLayout>
 
   </androidx.cardview.widget.CardView>
@@ -71,5 +76,5 @@
     android:nextFocusLeft="@id/navView"
     android:padding="5dp"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-    tools:listitem="@layout/item_movie" />
+    tools:listitem="@layout/item_media" />
 </LinearLayout>
