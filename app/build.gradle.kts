@@ -101,4 +101,5 @@ dependencies {
   implementation ("androidx.browser:browser:1.5.0")
   implementation("jp.wasabeef:glide-transformations:4.3.0")
   implementation("me.zhanghai.android.fastscroll:library:1.3.0")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
 }

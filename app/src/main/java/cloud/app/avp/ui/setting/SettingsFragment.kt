@@ -9,6 +9,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import cloud.app.avp.ExceptionActivity
 import cloud.app.avp.R
+import cloud.app.avp.utils.navigate
 
 
 class SettingsFragment : BaseSettingsFragment() {
@@ -36,6 +37,14 @@ class SettingsFragment : BaseSettingsFragment() {
                 summary = getString(R.string.about_summary)
                 icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
             }
+
+          TransitionPreference(context).add {
+            title = getString(R.string.extensions)
+            key = "extension"
+            summary = getString(R.string.extension_summary)
+            icon = AppCompatResources.getDrawable(context, R.drawable.ic_extension_24dp)
+          }
+
         }
 
         class TransitionPreference(
@@ -50,13 +59,12 @@ class SettingsFragment : BaseSettingsFragment() {
 
         override fun onPreferenceTreeClick(preference: Preference): Boolean {
             val fragment = when (preference.key) {
-                "about" -> AboutFragment()
+                "about" -> R.id.aboutFragment
+                "extension" -> R.id.manageExtensionsFragment
                 else -> return false
             }
-
             val view = listView.findViewById<View>(preference.key.hashCode())
-            //parentFragment?.openFragment(fragment, view)
-            ExceptionActivity.start(requireContext(), Throwable("testing"))
+            navigate(fragment, view)
             return true
         }
     }

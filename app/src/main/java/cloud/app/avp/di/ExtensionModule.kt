@@ -33,7 +33,7 @@ class ExtensionModule {
       InstalledApkConfig("cloud.app.avp"),
     )
     val localRepo = LocalRepos(tmdb)
-    return RepoComposer(localRepo)
+    return RepoComposer(installedApkRepo,localRepo)
   }
 
   @Provides
@@ -43,5 +43,9 @@ class ExtensionModule {
   @Provides
   @Singleton
   fun provideExtensionFlow() = MutableStateFlow<BaseExtension?>(null)
+
+  @Provides
+  @Singleton
+  fun provideExtensionFlowList() = MutableStateFlow<List<BaseExtension>>(emptyList())
 
 }

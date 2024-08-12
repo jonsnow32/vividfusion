@@ -4,7 +4,6 @@ import cloud.app.common.helpers.PagedData
 import kotlinx.coroutines.flow.Flow
 
 sealed class MediaItemsContainer {
-
     data class Category(
       val title: String,
       val subtitle: String? = null,

@@ -4,7 +4,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import cloud.app.avp.ui.main.media.MediaContainerAdapter
+import cloud.app.avp.ui.media.MediaContainerAdapter
 import cloud.app.avp.utils.applyAdapter
 import cloud.app.avp.utils.collect
 import cloud.app.avp.utils.configure

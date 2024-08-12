@@ -10,13 +10,10 @@ import cloud.app.avp.R
 import com.google.android.material.appbar.MaterialToolbar
 
 fun Fragment.navigate(@IdRes dest: Int, view: View? = null, bundle: Bundle? = null) {
+  val args = bundle ?: Bundle()
   val extras = view?.let {
+    args.putString("transitionName", it.transitionName)
     FragmentNavigatorExtras(it to it.transitionName)
-  }
-  val args = bundle ?: Bundle().apply {
-    view?.let {
-      putString("transitionName", it.transitionName)
-    }
   }
 
   findNavController().navigate(dest, args, null, extras)

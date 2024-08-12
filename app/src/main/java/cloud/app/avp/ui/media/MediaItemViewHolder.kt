@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.main.media
+package cloud.app.avp.ui.media
 
 import android.view.LayoutInflater
 import android.view.View
@@ -35,7 +35,7 @@ sealed class MediaItemViewHolder(itemView: View) :
   class Movie(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
     private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
     override val transitionView: View
-      get() = binding.cover.root
+      get() = binding.cover.movieImageView
 
     override fun bind(item: AVPMediaItem) {
       titleBinding.bind(item)

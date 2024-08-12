@@ -2,28 +2,37 @@ package cloud.app.avp.plugin.tmdb
 
 import cloud.app.avp.network.api.tmdb.AppTmdb
 import cloud.app.common.clients.BaseExtension
+import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.infos.FeedClient
 import cloud.app.common.clients.infos.SearchClient
 import cloud.app.common.helpers.Page
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.AVPMediaItem.Companion.toMediaItemsContainer
+import cloud.app.common.models.ExtensionType
 import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.QuickSearchItem
+import cloud.app.common.models.SortBy
 import cloud.app.common.models.Tab
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingList
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.Settings
-import com.uwetrottmann.tmdb2.entities.CastMember
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
-import com.uwetrottmann.tmdb2.entities.Movie
-import com.uwetrottmann.tmdb2.entities.TvShow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient {
-  override val settingItems: List<Setting> = listOf(
+  override val metadata: ExtensionMetadata
+    get() = ExtensionMetadata(
+      name = "TmdbExtension",
+      ExtensionType.DATABASE,
+      description = "A sample extension that does nothing",
+      author = "avp",
+      version = "v001",
+      icon = "https://www.freepnglogos.com/uploads/netflix-logo-0.png"
+    )
+  override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(
       "Include Adult",
       "tmdb_include_adult",
@@ -39,9 +48,14 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
     )
   )
 
+  private lateinit var settings: Settings
   override fun setSettings(settings: Settings) {
-    TODO("Not yet implemented")
+    this.settings = settings
   }
+
+  private val includeAdult get() = settings.getBoolean("tmdb_include_adult")
+  private val region get() = settings.getString("tmdb_region")
+  private val language get() = settings.getString("tmdb_language")
 
   override suspend fun onExtensionSelected() {
     TODO("TMDB EXTENSION Not yet implemented")
@@ -51,33 +65,41 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
   override suspend fun getHomeTabs(): List<Tab> =
     listOf("Movies", "TV Shows", "Actors").map { Tab(it, it) }
 
-  override  fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer> {
+  override fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer> {
     return when (tab?.id) {
-      "Movies" -> loadMoviesFeed()
-      "TV Shows" -> loadTvShowsFeed()
-      "Actors" -> loadActorsFeed()
-      else -> loadMoviesFeed()
+      "Movies" -> loadMoviesFeed(tab.extras)
+      "TV Shows" -> loadTvShowsFeed(tab.extras)
+      "Actors" -> loadActorsFeed(tab.extras)
+      else -> loadMoviesFeed(tab?.extras)
     }
   }
 
-  private fun loadActorsFeed(): PagedData<MediaItemsContainer> {
+  private fun loadActorsFeed(extras: Map<String, String>?): PagedData<MediaItemsContainer> {
     TODO("Not yet implemented")
   }
 
-  private fun loadTvShowsFeed() = PagedData.Continuous<MediaItemsContainer> {
+  private fun loadTvShowsFeed(extras: Map<String, String>?) =
+    PagedData.Continuous<MediaItemsContainer> {
       val page = it?.toInt() ?: 1
-      val items = getShowList(showGenres, page, pageSize)
+      val sortBy = extras?.get("sort_by")?.let { value ->
+        sortMapper[value]
+      }
+      val items = getShowList(showGenres, page, pageSize, sortBy)
       val continuation = if (items.size < pageSize) null else (page + 1).toString()
       Page(items, continuation)
 
-  }
+    }
 
-  private fun loadMoviesFeed() = PagedData.Continuous<MediaItemsContainer> {
+  private fun loadMoviesFeed(extras: Map<String, String>?) =
+    PagedData.Continuous<MediaItemsContainer> {
       val page = it?.toInt() ?: 1
-      val items = getMoviesList(movieGenres, page, pageSize)
+      val sortBy = extras?.get("sort_by")?.let { value ->
+        sortMapper[value]
+      }
+      val items = getMoviesList(movieGenres, page, pageSize, sortBy)
       val continuation = if (items.size < pageSize) null else (page + 1).toString()
       Page(items, continuation)
-  }
+    }
 
   private fun Map<Int, String>.toPage(page: Int, pageSize: Int): Map<Int, String> {
     val startIndex = (page - 1) * pageSize
@@ -85,16 +107,28 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
     return entries.toList().subList(startIndex, endIndex).associate { it.key to it.value }
   }
 
-  private suspend fun getMoviesList(genres: Map<Int, String>, page: Int, pageSize: Int) =
+  private suspend fun getMoviesList(
+    genres: Map<Int, String>,
+    page: Int,
+    pageSize: Int,
+    sortBy: com.uwetrottmann.tmdb2.enumerations.SortBy? = null
+  ) =
     genres.toPage(page, pageSize).map { genre ->
       val data = PagedData.Continuous<AVPMediaItem> {
         withContext(Dispatchers.IO) {
           val continuation = it?.toInt() ?: 1
-          val more = tmdb.discoverMovie()
-            //.sort_by(SortBy.entries.first { value -> value.toString() == tab?.extras?.get("sort_by") })
+          val builder = tmdb.discoverMovie()
+            .sort_by(sortBy)
             .with_genres(DiscoverFilter(genre.key))
             .page(continuation)
-            .build().execute().body()!!
+            .language(language)
+            .region(region)
+            .includeAdult()
+
+          if (includeAdult == true)
+            builder.includeAdult()
+
+          val more = builder.build().execute().body()!!
           Page(
             more.toMediaItemsList(),
             if (more.results.isNullOrEmpty()) null else (continuation + 1).toString()
@@ -110,15 +144,22 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
     }.toList()
 
 
-  private suspend fun getShowList(genres: Map<Int, String>, page: Int, pageSize: Int) =
+  private suspend fun getShowList(
+    genres: Map<Int, String>,
+    page: Int,
+    pageSize: Int,
+    sortBy: com.uwetrottmann.tmdb2.enumerations.SortBy?
+  ) =
     genres.toPage(page, pageSize).map { genre ->
       val data = PagedData.Continuous<AVPMediaItem> {
         withContext(Dispatchers.IO) {
           val continuation = it?.toInt() ?: 1
           val more = tmdb.discoverTv()
-            //.sort_by(SortBy.entries.first { value -> value.toString() == tab?.extras?.get("sort_by") })
+            .sort_by(sortBy)
             .with_genres(DiscoverFilter(genre.key))
             .page(continuation)
+            .language(language)
+            .watch_region(region)
             .build().execute().body()!!
           Page(
             more.toMediaItemsList(),
@@ -138,7 +179,8 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
   override suspend fun quickSearch(query: String?): List<QuickSearchItem> {
     val results = mutableListOf<QuickSearchItem>()
     return withContext(Dispatchers.IO) {
-      val mediaResultsPage = tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
+      val mediaResultsPage =
+        tmdb.searchService().multi(query, 1, language, region, includeAdult).execute().body()
       mediaResultsPage?.results?.forEach {
         it.movie?.let { movie ->
           results.add(QuickSearchItem.SearchMediaItem(movie.toMediaItem()))
@@ -159,32 +201,55 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
 
   override fun searchFeed(query: String?, tab: Tab?): PagedData<MediaItemsContainer> {
     return when (tab?.id) {
-      "Movies" -> searchMoviesFeed(query)
-      "TV Shows" -> searchTvShowsFeed(query)
-      "Actors" -> searchActorsFeed(query)
-      else -> searchAll(query)
+      "Movies" -> searchMoviesFeed(query, tab.extras)
+      "TV Shows" -> searchTvShowsFeed(query, tab.extras)
+      "Actors" -> searchActorsFeed(query, tab.extras)
+      else -> searchAll(query, tab?.extras)
     }
   }
 
-  private fun searchActorsFeed(query: String?): PagedData<MediaItemsContainer> {
+  private fun searchActorsFeed(
+    query: String?,
+    extras: Map<String, String>?
+  ): PagedData<MediaItemsContainer> {
     TODO("Not yet implemented")
   }
 
-  private fun searchTvShowsFeed(query: String?): PagedData<MediaItemsContainer> {
+  private fun searchTvShowsFeed(
+    query: String?,
+    extras: Map<String, String>?
+  ): PagedData<MediaItemsContainer> {
     TODO("Not yet implemented")
   }
 
-  private fun searchMoviesFeed(query: String?): PagedData<MediaItemsContainer> {
-    TODO("Not yet implemented")
+  private fun searchMoviesFeed(
+    query: String?,
+    extras: Map<String, String>?
+  ): PagedData<MediaItemsContainer> {
+    val more = PagedData.Continuous<AVPMediaItem> {
+      val continuation = it?.toInt() ?: 1
+      val year = extras?.get("year")?.toInt()
+      val pageResult = withContext(Dispatchers.IO) {
+        tmdb.searchService().movie(query, continuation, language, region, includeAdult, year, year)
+          .execute().body()
+      }
+      Page(
+        pageResult?.toMediaItemsList() ?: emptyList(),
+        if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
+      )
+    }
+    val category = toMediaItemsContainer(query ?: "Movie search", query ?: "Movie search", more)
+    return PagedData.Single { (listOf(category)) }
   }
 
   private fun List<AVPMediaItem>.toPaged() = PagedData.Single { this }
-  private  fun searchAll(query: String?) = PagedData.Single {
+  private fun searchAll(query: String?, extras: Map<String, String>?) = PagedData.Single {
     withContext(Dispatchers.IO) {
       val movies = mutableListOf<AVPMediaItem.MovieItem>()
       val shows = mutableListOf<AVPMediaItem.ShowItem>()
       val casts = mutableListOf<AVPMediaItem.ActorItem>()
-      val mediaResultsPage = tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
+      val mediaResultsPage =
+        tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
       mediaResultsPage?.results?.forEach {
         it.movie?.let { movie ->
           movies.add(movie.toMediaItem())
@@ -254,6 +319,13 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
       37 to "Western"
     )
 
+    val sortMapper: Map<String, com.uwetrottmann.tmdb2.enumerations.SortBy> = mapOf(
+      SortBy.POPULARITY.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.POPULARITY_DESC,
+      SortBy.RELEASED.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.RELEASE_DATE_DESC,
+      SortBy.RATING.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.VOTE_AVERAGE_DESC,
+      SortBy.TITLE.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.ORIGINAL_TITLE_DESC,
+      // Add other mappings as necessary
+    )
     const val pageSize = 3;
   }
 }

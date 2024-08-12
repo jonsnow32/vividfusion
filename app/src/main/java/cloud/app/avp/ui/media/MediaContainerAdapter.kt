@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.main.media
+package cloud.app.avp.ui.media
 
 import android.os.Parcelable
 import android.view.View
@@ -108,8 +108,8 @@ class MediaContainerAdapter(
   }
 
   private fun saveScrollState(
-    holder: MediaContainerViewHolder.Category,
-    block: ((MediaContainerViewHolder.Category) -> Unit)? = null
+      holder: MediaContainerViewHolder.Category,
+      block: ((MediaContainerViewHolder.Category) -> Unit)? = null
   ) {
     val layoutManagerStates = stateViewModel.layoutManagerStates
     layoutManagerStates[holder.bindingAdapterPosition] =
@@ -148,11 +148,11 @@ class MediaContainerAdapter(
   private val sharedPool = RecycledViewPool()
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
     0 -> MediaContainerViewHolder.Category.create(
-      parent,
-      stateViewModel,
-      sharedPool,
-      clientId,
-      listener
+        parent,
+        stateViewModel,
+        sharedPool,
+        clientId,
+        listener
     )
 
     else -> MediaContainerViewHolder.Media.create(parent, clientId, listener)

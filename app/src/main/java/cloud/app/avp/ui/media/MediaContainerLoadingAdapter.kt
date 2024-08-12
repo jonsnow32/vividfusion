@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.main.media
+package cloud.app.avp.ui.media
 
 import android.view.LayoutInflater
 import android.view.View

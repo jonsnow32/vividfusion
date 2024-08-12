@@ -3,8 +3,9 @@ package cloud.app.avp
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import cloud.app.avp.plugin.tmdb.TmdbExtension
-import cloud.app.avp.utils.catchWith
+import cloud.app.avp.utils.toSettings
 import cloud.app.avp.utils.tryWith
 import cloud.app.avp.viewmodels.SnackBarViewModel
 import cloud.app.common.clients.BaseExtension
@@ -14,7 +15,6 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
@@ -29,7 +29,13 @@ class AVPApplication : Application() {
   lateinit var extensionFlow: MutableStateFlow<BaseExtension?>
 
   @Inject
+  lateinit var extensionFlowList: MutableStateFlow<List<BaseExtension>>
+
+  @Inject
   lateinit var extensionRepo: RepoComposer<BaseExtension>
+
+  @Inject
+  lateinit var preferences: SharedPreferences
 
   private val scope = MainScope() + CoroutineName("Application")
 
@@ -49,18 +55,17 @@ class AVPApplication : Application() {
     }
 
     scope.launch {
-      extensionRepo.load().catchWith(throwableFlow).map { clients ->
-        //clients.forEach { it.setSettings() }
-        clients
-      }.collect {
+      extensionRepo.load().collect {
         it.forEach { client ->
           tryWith(throwableFlow) {
+            client.setSettings(toSettings(preferences))
             if(client is TmdbExtension) {
               extensionFlow.emit(client)
             }
             //client.onExtensionSelected()
           }
         }
+        extensionFlowList.emit(it)
       }
     }
   }

@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.main.media
+package cloud.app.avp.ui.media
 
 import android.view.View
 import android.view.ViewGroup
@@ -9,13 +9,14 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import cloud.app.avp.utils.tryWith
 import cloud.app.common.models.AVPMediaItem
 import kotlinx.coroutines.flow.Flow
 
 class MediaItemAdapter(
-  private val listener: Listener,
-  private val transition: String,
-  private val clientId: String?,
+    private val listener: Listener,
+    private val transition: String,
+    private val clientId: String?,
 ) : PagingDataAdapter<AVPMediaItem, MediaItemViewHolder>(DiffCallback) {
 
   interface Listener {

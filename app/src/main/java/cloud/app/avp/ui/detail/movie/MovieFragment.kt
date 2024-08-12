@@ -9,10 +9,11 @@ import androidx.fragment.app.activityViewModels
 import cloud.app.avp.databinding.FragmentHomeBinding
 import cloud.app.avp.databinding.FragmentMovieBinding
 import cloud.app.avp.ui.main.home.HomeViewModel
-import cloud.app.avp.ui.main.media.MediaItemAdapter
+import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
 import cloud.app.avp.utils.loadInto
+import cloud.app.avp.utils.setupTransition
 import cloud.app.common.models.AVPMediaItem
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,14 +22,6 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener{
   private var binding by autoCleared<FragmentMovieBinding>()
   private val viewModel by activityViewModels<MovieViewModel>()
 
-  companion object {
-    fun newInstance(clientId: String, movieItem: AVPMediaItem.MovieItem) = MovieFragment().apply {
-      arguments = Bundle().apply {
-        putString("clientId", clientId)
-        putParcelable("movieItem", movieItem)
-      }
-    }
-  }
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
   private val movieItem by lazy { args.getParcel<AVPMediaItem.MovieItem>("movieItem")!! }
@@ -42,6 +35,9 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener{
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+
+//    setupTransition(view)
+
     movieItem.backdrop.loadInto(binding.headerBackground)
     binding.title.text = movieItem.title
     binding.mediaOverview.text = movieItem.movie.generalInfo.overview

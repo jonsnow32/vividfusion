@@ -39,5 +39,21 @@
       android:name="movieItem"
       app:argType="cloud.app.common.models.AVPMediaItem$MovieItem" />
   </fragment>
+  <fragment
+    android:id="@id/exceptionFragment"
+    android:name="cloud.app.avp.ui.exception.ExceptionFragment"
+    android:label="ExceptionFragment" />
+  <fragment
+    android:id="@id/extensionFragment"
+    android:name="cloud.app.avp.ui.setting.ExtensionFragment"
+    android:label="ExtensionFragment" />
+  <fragment
+    android:id="@id/extensionInfoFragment"
+    android:name="cloud.app.avp.ui.extension.ExtensionInfoFragment"
+    android:label="ExtensionInfoFragment" />
+  <fragment
+    android:id="@id/manageExtensionsFragment"
+    android:name="cloud.app.avp.ui.extension.ManageExtensionsFragment"
+    android:label="ManageExtensionsFragment" />
 
 </navigation>

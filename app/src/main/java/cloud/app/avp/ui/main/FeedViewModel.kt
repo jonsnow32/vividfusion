@@ -44,7 +44,7 @@ abstract class FeedViewModel(
     tabs.value = list
   }
 
-  private suspend fun loadFeed(client: BaseExtension) = getFeed(client)?.collectTo(feed)
+  private suspend fun loadFeed(client: BaseExtension) = tryWith {  getFeed(client)?.collectTo(feed) }
 
   private var job: Job? = null
   fun refresh(resetTab: Boolean = false) {

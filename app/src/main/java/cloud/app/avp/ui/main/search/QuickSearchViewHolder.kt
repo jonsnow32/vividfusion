@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.avp.databinding.ItemQuickSearchMediaBinding
 import cloud.app.avp.databinding.ItemQuickSearchQueryBinding
-import cloud.app.avp.ui.main.media.MediaItemViewHolder.Companion.placeHolder
+import cloud.app.avp.ui.media.MediaItemViewHolder.Companion.placeHolder
 import cloud.app.avp.utils.loadInto
 import cloud.app.common.models.QuickSearchItem
 

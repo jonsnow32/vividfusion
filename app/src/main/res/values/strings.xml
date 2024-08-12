@@ -52,4 +52,20 @@
   <string name="filler">Filter</string>
   <string name="backdropDescription">Backdrop</string>
   <string name="clear_history">Clear history</string>
+    <string name="subtitle">Subtitles</string>
+  <string name="streams">Streams</string>
+  <string name="mv_source">MVDatabase</string>
+  <string name="extensions">Extensions</string>
+  <string name="refresh">Refresh</string>
+    <string name="add_extension">Add Extension</string>
+  <string name="manage_extensions">Manage extensions</string>
+  <string name="name_settings">%1$s Settings</string>
+  <string name="cancel">Cancel</string>
+  <string name="logout">Log out</string>
+  <string name="switch_account">Switch Account</string>
+  <string name="not_logged_in">Not logged in</string>
+  <string name="extension_settings">Extension Settings</string>
+  <string name="close">Close</string>
+  <string name="extension_summary">Manage your installed/downloaded Extensions</string>
+  <string name="all">All</string>
 </resources>

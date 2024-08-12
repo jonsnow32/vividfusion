@@ -5,6 +5,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import cloud.app.avp.ui.main.FeedViewModel
 import cloud.app.avp.ui.paging.toFlow
+import cloud.app.avp.utils.catchWith
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.infos.FeedClient
 import cloud.app.common.models.MediaItemsContainer

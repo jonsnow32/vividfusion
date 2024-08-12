@@ -12,7 +12,7 @@ import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentBrowseBinding
-import cloud.app.avp.ui.main.media.MediaItemAdapter
+import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.utils.FastScrollerHelper
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.configure

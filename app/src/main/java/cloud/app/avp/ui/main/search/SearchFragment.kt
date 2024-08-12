@@ -10,8 +10,8 @@ import androidx.fragment.app.viewModels
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.databinding.FragmentSearchBinding
-import cloud.app.avp.ui.main.media.MediaContainerAdapter
-import cloud.app.avp.ui.main.media.MediaItemAdapter
+import cloud.app.avp.ui.media.MediaContainerAdapter
+import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.utils.applyAdapter
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.collect

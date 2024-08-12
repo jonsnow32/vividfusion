@@ -1,12 +1,25 @@
 package cloud.app.avp.extension
 
 import cloud.app.common.clients.BaseExtension
+import cloud.app.common.clients.ExtensionMetadata
+import cloud.app.common.clients.streams.StreamClient
+import cloud.app.common.models.ExtensionType
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.Settings
 
-class SampleClient : BaseExtension {
-  override val settingItems: List<Setting> = listOf(
+class SampleClient : BaseExtension, StreamClient {
+
+  override val metadata: ExtensionMetadata
+    get() = ExtensionMetadata(
+      name = "SampleClient",
+      ExtensionType.DATABASE,
+      description = "A sample extension that does nothing",
+      author = "avp",
+      version = "v001",
+      icon = "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"
+    )
+  override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(
       "High Thumbnail Quality",
       "high_quality",
@@ -20,10 +33,14 @@ class SampleClient : BaseExtension {
     )
   )
   override fun setSettings(settings: Settings) {
-    TODO("Not yet implemented")
+
   }
 
   override suspend fun onExtensionSelected() {
-    TODO("Not yet implemented")
+
+  }
+
+  override suspend fun searchStreams() {
+
   }
 }

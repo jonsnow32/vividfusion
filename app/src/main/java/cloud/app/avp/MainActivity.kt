@@ -21,6 +21,7 @@ import cloud.app.avp.databinding.ActivityMainBinding
 import cloud.app.avp.utils.Utils.isAndroidTV
 import cloud.app.avp.utils.tv.screenHeight
 import cloud.app.avp.utils.tv.screenWidth
+import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -38,6 +39,8 @@ class MainActivity : AppCompatActivity() {
       if (isNightMode()) SystemBarStyle.dark(Color.TRANSPARENT)
       else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
     )
+
+    configureSnackBar(binding.root)
 
     ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
       mainActivityViewModel.setSystemInsets(this, insets)

@@ -33,7 +33,7 @@ class HomeFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    setupTransition(view)
+//    setupTransition(view)
     applyInsetsMain(binding.appBarLayoutCustom, binding.recyclerView)
     val tabLayout = binding.tabLayout
 

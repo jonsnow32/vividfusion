@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.main.media
+package cloud.app.avp.ui.media
 
 import android.os.Bundle
 import android.view.View
@@ -9,6 +9,7 @@ import cloud.app.avp.AVPApplication.Companion.noClient
 import cloud.app.avp.R
 import cloud.app.avp.ui.browse.BrowseViewModel
 import cloud.app.avp.utils.navigate
+import cloud.app.avp.utils.tryWith
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
@@ -46,7 +47,7 @@ class MediaClickListener(
 
   override fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View) {
     when (container) {
-      is MediaItemsContainer.Item -> onClick(clientId, container.media, transitionView)
+      is MediaItemsContainer.Item -> tryWith {  onClick(clientId, container.media, transitionView) }
       is MediaItemsContainer.Category -> openContainer(
         clientId,
         container.title,

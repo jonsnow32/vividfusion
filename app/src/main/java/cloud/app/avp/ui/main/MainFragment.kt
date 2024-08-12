@@ -14,6 +14,7 @@ import cloud.app.avp.databinding.FragmentMainBinding
 import cloud.app.avp.ui.main.home.HomeFragment
 import cloud.app.avp.ui.main.library.LibraryFragment
 import cloud.app.avp.ui.main.search.SearchFragment
+import cloud.app.avp.ui.setting.SettingsFragment
 import cloud.app.avp.utils.SlideInPageTransformer
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.configureSnackBar
@@ -48,18 +49,18 @@ class MainFragment : Fragment() {
           0 -> navView.selectedItemId = R.id.homeFragment
           1 -> navView.selectedItemId = R.id.searchFragment
           2 -> navView.selectedItemId = R.id.libraryFragment
+          3 -> navView.selectedItemId = R.id.settingsFragment
         }
       }
     })
 
     binding.vpContainer.setCurrentItem(0, false)
-    configureSnackBar(binding.navView)
-
     navView.setOnItemSelectedListener {
       when (it.itemId) {
         R.id.homeFragment -> binding.vpContainer.setCurrentItem(0, false)
         R.id.searchFragment -> binding.vpContainer.setCurrentItem(1, false)
         R.id.libraryFragment -> binding.vpContainer.setCurrentItem(2, false)
+        R.id.settingsFragment -> binding.vpContainer.setCurrentItem(3, false)
 
       }
       true
@@ -79,13 +80,14 @@ class MainFragment : Fragment() {
   }
 
   class MainAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
-    override fun getItemCount(): Int = 3
+    override fun getItemCount(): Int = 4
     override fun createFragment(position: Int): Fragment {
       return when (position) {
 
         0 -> HomeFragment()
         1 -> SearchFragment()
         2 -> LibraryFragment()
+        3 -> SettingsFragment()
         else -> {
           throw IllegalArgumentException("Invalid position")
         }

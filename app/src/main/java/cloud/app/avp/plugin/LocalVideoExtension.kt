@@ -1,8 +1,10 @@
 package cloud.app.avp.plugin
 
 import cloud.app.common.clients.BaseExtension
+import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.infos.FeedClient
 import cloud.app.common.helpers.PagedData
+import cloud.app.common.models.ExtensionType
 import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.Tab
 import cloud.app.common.settings.Setting
@@ -10,7 +12,18 @@ import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.Settings
 
 class LocalVideoExtension : BaseExtension, FeedClient {
-  override val settingItems: List<Setting> = listOf(
+
+  override val metadata: ExtensionMetadata
+    get() = ExtensionMetadata(
+      name = "LocalVideoExtension",
+      ExtensionType.DATABASE,
+      description = "A sample extension that does nothing",
+      author = "avp",
+      version = "v001",
+      icon = "https://www.freepnglogos.com/uploads/netflix-logo-0.png"
+    )
+
+  override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(
       "High Thumbnail Quality",
       "high_quality",
@@ -25,11 +38,9 @@ class LocalVideoExtension : BaseExtension, FeedClient {
   )
 
   override fun setSettings(settings: Settings) {
-    TODO("Not yet implemented")
   }
 
   override suspend fun onExtensionSelected() {
-    TODO("LOCAL EXTENSION Not yet implemented")
   }
 
   override suspend fun getHomeTabs(): List<Tab> = listOf("Alls, Download, Camera").map { Tab(it,it) }

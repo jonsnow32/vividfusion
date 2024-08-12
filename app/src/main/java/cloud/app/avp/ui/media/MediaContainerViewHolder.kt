@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.main.media
+package cloud.app.avp.ui.media
 
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import cloud.app.avp.R
 import cloud.app.avp.databinding.ContainerCategoryBinding
 import cloud.app.avp.databinding.ContainerItemBinding
-import cloud.app.avp.ui.main.media.MediaItemViewHolder.Companion.placeHolder
+import cloud.app.avp.ui.media.MediaItemViewHolder.Companion.placeHolder
 import cloud.app.avp.ui.paging.toFlow
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.tv.FOCUS_SELF
@@ -31,11 +31,11 @@ sealed class MediaContainerViewHolder(
   abstract val transitionView: View
 
   class Category(
-    val binding: ContainerCategoryBinding,
-    val viewModel: MediaContainerAdapter.StateViewModel,
-    private val sharedPool: RecyclerView.RecycledViewPool,
-    private val clientId: String?,
-    val listener: MediaItemAdapter.Listener,
+      val binding: ContainerCategoryBinding,
+      val viewModel: MediaContainerAdapter.StateViewModel,
+      private val sharedPool: RecyclerView.RecycledViewPool,
+      private val clientId: String?,
+      val listener: MediaItemAdapter.Listener,
   ) :
     MediaContainerViewHolder(binding.root) {
     override fun bind(container: MediaItemsContainer) {
@@ -78,11 +78,11 @@ sealed class MediaContainerViewHolder(
 
     companion object {
       fun create(
-        parent: ViewGroup,
-        viewModel: MediaContainerAdapter.StateViewModel,
-        sharedPool: RecyclerView.RecycledViewPool,
-        clientId: String?,
-        listener: MediaItemAdapter.Listener,
+          parent: ViewGroup,
+          viewModel: MediaContainerAdapter.StateViewModel,
+          sharedPool: RecyclerView.RecycledViewPool,
+          clientId: String?,
+          listener: MediaItemAdapter.Listener,
       ): MediaContainerViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return Category(
@@ -97,9 +97,9 @@ sealed class MediaContainerViewHolder(
   }
 
   class Media(
-    val binding: ContainerItemBinding,
-    private val clientId: String?,
-    val listener: MediaItemAdapter.Listener,
+      val binding: ContainerItemBinding,
+      private val clientId: String?,
+      val listener: MediaItemAdapter.Listener,
   ) : MediaContainerViewHolder(binding.root) {
     override fun bind(container: MediaItemsContainer) {
       val item = (container as? MediaItemsContainer.Item)?.media ?: return
