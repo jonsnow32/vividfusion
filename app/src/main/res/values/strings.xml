@@ -33,7 +33,7 @@
   <string name="runtime_minutes">%s min</string>
   <string name="format_date_and_day">%1$s (%2$s)</string>
   <string name="released_today">Released today</string>
-    <string name="episode_poster_img_des">Episode description</string>
+  <string name="episode_poster_img_des">Episode description</string>
   <string name="more">More</string>
   <string name="currently_playing">Playing</string>
   <string name="crying_af">(TT)</string>
@@ -45,19 +45,19 @@
   <string name="not_loading">Not Loading</string>
   <string name="loading">Loading...</string>
   <string name="not_supported">%1$s is not supported in %2$s Extension!</string>
-    <string name="media_type">Media Type</string>
+  <string name="media_type">Media Type</string>
   <string name="rating_7_8">7.39454588</string>
-    <string name="error_no_client">Error, no extension was selected</string>
-    <string name="trailer">Trailer</string>
+  <string name="error_no_client">Error, no extension was selected</string>
+  <string name="trailer">Trailer</string>
   <string name="filler">Filter</string>
   <string name="backdropDescription">Backdrop</string>
   <string name="clear_history">Clear history</string>
-    <string name="subtitle">Subtitles</string>
+  <string name="subtitle">Subtitles</string>
   <string name="streams">Streams</string>
   <string name="mv_source">MVDatabase</string>
   <string name="extensions">Extensions</string>
   <string name="refresh">Refresh</string>
-    <string name="add_extension">Add Extension</string>
+  <string name="add_extension">Add Extension</string>
   <string name="manage_extensions">Manage extensions</string>
   <string name="name_settings">%1$s Settings</string>
   <string name="cancel">Cancel</string>
@@ -73,6 +73,13 @@
   <string name="input_api_key">Enter your api key</string>
   <string name="subbmit">Subbmit</string>
   <string name="open_browser">Open browser</string>
-    <string name="ui_summary">"Visualize the user interface "</string>
+  <string name="ui_summary">"Visualize the user interface "</string>
   <string name="ui">UI</string>
+  <string name="play_now">Play now</string>
+  <string name="players_cannot_play">This stream is not compatible with any player.\\nGo to Settings and install a supported player like MX or VLC.</string>
+  <string name="exo_description">ExoPlayer is a media player library developed by Google for Android apps. It\'s customizable, supports a wide range of media formats and advanced features like playback speed control.</string>
+  <string name="kodi_description">Kodi Player is a free and open-source media player software application developed by XBMC Foundation. It allows users to play and view most videos, music, podcasts, and other digital media files from local and network storage media and the internet. It also supports add-ons and plugins, making it highly customizable and versatile. Kodi Player has a user-friendly interface and can run on various operating systems, including Windows, macOS, Linux, Android, and iOS.</string>
+  <string name="mx_description">MX Player is a popular media player for Android devices that supports a wide range of video and audio formats, including popular ones like MP4, AVI, MKV, and MP3. It has advanced features such as hardware acceleration, subtitle support, gesture controls, and playback speed control, making it a powerful and user-friendly media player. MX Player also has a free and paid version, with the paid version providing additional features like ad-free viewing and online streaming.</string>
+  <string name="vlc_desciption">VLC Player is a free and open-source cross-platform media player software application developed by VideoLAN. It supports a wide range of media formats, including DVDs, VCDs, and various streaming protocols. VLC Player has a simple and user-friendly interface, with advanced features like customizable skins, subtitle support, playback speed control, and audio and video effects. It also has plugins and extensions, making it highly customizable and versatile for various media playback needs.</string>
+
 </resources>

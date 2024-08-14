@@ -36,6 +36,7 @@ class MediaClickListener(
       is AVPMediaItem.ActorItem -> TODO()
       is AVPMediaItem.EpisodeItem -> TODO()
       is AVPMediaItem.ShowItem -> TODO()
+      is AVPMediaItem.StreamItem -> TODO()
     }
   }
 

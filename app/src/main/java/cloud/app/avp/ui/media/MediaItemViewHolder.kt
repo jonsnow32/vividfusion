@@ -10,6 +10,7 @@ import cloud.app.avp.databinding.ItemActorBinding
 import cloud.app.avp.databinding.ItemMediaTitleBinding
 import cloud.app.avp.databinding.ItemMediaBinding
 import cloud.app.avp.databinding.ItemMovieCoverBinding
+import cloud.app.avp.databinding.ItemStreamBinding
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.roundTo
 import cloud.app.common.models.AVPMediaItem
@@ -124,6 +125,30 @@ sealed class MediaItemViewHolder(itemView: View) :
     }
   }
 
+  class Stream(val binding: ItemStreamBinding) : MediaItemViewHolder(binding.root) {
+    override val transitionView: View
+      get() = binding.root
+
+    override fun bind(item: AVPMediaItem) {
+      item as AVPMediaItem.StreamItem
+      binding.name.text = item.title
+//      binding.voiceActorName.text = item.actorData.voiceActor?.name
+//      binding.actorExtra.text = item.actorData.roleString
+//      item.poster.loadInto(binding.actorImage, item.placeHolder())
+    }
+
+
+    companion object {
+      fun create(
+        parent: ViewGroup
+      ): MediaItemViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+        return Actor(
+          ItemActorBinding.inflate(layoutInflater, parent, false)
+        )
+      }
+    }
+  }
 
   companion object {
     fun AVPMediaItem.placeHolder() = when (this) {
@@ -131,6 +156,7 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.ShowItem -> R.drawable.rounded_rectangle
       is AVPMediaItem.EpisodeItem -> R.drawable.art_user
       is AVPMediaItem.ActorItem -> R.drawable.art_user
+      is AVPMediaItem.StreamItem -> R.drawable.ic_video
     }
 
     fun AVPMediaItem.icon() = when (this) {
@@ -138,6 +164,7 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.ShowItem -> R.drawable.ic_album
       is AVPMediaItem.EpisodeItem -> R.drawable.ic_video
       is AVPMediaItem.ActorItem -> R.drawable.ic_person
+      is AVPMediaItem.StreamItem -> R.drawable.ic_video
     }
 
   }

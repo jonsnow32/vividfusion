@@ -6,20 +6,23 @@ import cloud.app.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.common.models.movie.Episode
 import cloud.app.common.models.movie.Movie
 import cloud.app.common.models.movie.Show
+import cloud.app.common.models.stream.StreamData
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 sealed class AVPMediaItem : Parcelable {
   data class MovieItem(val movie: Movie) : AVPMediaItem()
   data class ShowItem(val show: Show) : AVPMediaItem()
-  data class EpisodeItem(val episode: Episode) : AVPMediaItem()
+  data class EpisodeItem(val episode: Episode, val show: Show? = null) : AVPMediaItem()
   data class ActorItem(val actorData: ActorData) : AVPMediaItem()
+  data class StreamItem(val streamData: StreamData) : AVPMediaItem()
 
   companion object {
     fun ActorData.toMediaItem() = ActorItem(this)
     fun Movie.toMediaItem() = MovieItem(this)
     fun Show.toMediaItem() = ShowItem(this)
     fun Episode.toMediaItem() = EpisodeItem(this)
+    fun StreamData.toMediaItem() = StreamItem(this)
 
     fun toMediaItemsContainer(
       title: String, subtitle: String? = null, more: PagedData<AVPMediaItem>? = null
@@ -33,6 +36,7 @@ sealed class AVPMediaItem : Parcelable {
       is ActorItem -> actorData.toMediaItem()
       is ShowItem -> show.toMediaItem()
       is EpisodeItem -> episode.toMediaItem()
+      is StreamItem -> streamData.toMediaItem()
     }
   )
 
@@ -41,6 +45,7 @@ sealed class AVPMediaItem : Parcelable {
     is MovieItem -> other is MovieItem && movie == other.movie
     is ShowItem -> other is ShowItem && show == other.show
     is EpisodeItem -> other is EpisodeItem && episode == other.episode
+    is StreamItem -> other is StreamItem && streamData.hashCode() == other.streamData.hashCode()
   }
 
   val id
@@ -49,6 +54,7 @@ sealed class AVPMediaItem : Parcelable {
       is MovieItem -> movie.ids.toString()
       is ShowItem -> show.ids.toString()
       is EpisodeItem -> episode.ids.toString()
+      is StreamItem -> streamData.fileName
     }
 
   val title
@@ -57,6 +63,7 @@ sealed class AVPMediaItem : Parcelable {
       is MovieItem -> movie.generalInfo.title
       is ShowItem -> show.generalInfo.title
       is EpisodeItem -> episode.generalInfo.title
+      is StreamItem -> streamData.fileName
     }
 
   val poster
@@ -65,6 +72,7 @@ sealed class AVPMediaItem : Parcelable {
       is MovieItem -> movie.generalInfo.poster?.toImageHolder()
       is ShowItem -> show.generalInfo.poster?.toImageHolder()
       is EpisodeItem -> episode.generalInfo.poster?.toImageHolder()
+      is StreamItem -> streamData.streamQuality?.toImageHolder()
     }
 
   val backdrop
@@ -73,6 +81,7 @@ sealed class AVPMediaItem : Parcelable {
       is MovieItem -> movie.generalInfo.backdrop?.toImageHolder()
       is ShowItem -> show.generalInfo.backdrop?.toImageHolder()
       is EpisodeItem -> episode.generalInfo.backdrop?.toImageHolder()
+      is StreamItem -> null
     }
   val subtitle
     get() = when(this) {
@@ -80,12 +89,15 @@ sealed class AVPMediaItem : Parcelable {
       is MovieItem -> movie.generalInfo.genres.toString()
       is ShowItem -> show.generalInfo.genres.toString()
       is EpisodeItem -> episode.generalInfo.genres.toString()
+      is StreamItem -> streamData.providerName
     }
+
   val rating
     get() = when(this) {
       is ActorItem -> null
       is MovieItem -> movie.generalInfo.rating
       is ShowItem -> show.generalInfo.rating
       is EpisodeItem -> episode.generalInfo.rating
+      is StreamItem -> 0.0
     }
 }

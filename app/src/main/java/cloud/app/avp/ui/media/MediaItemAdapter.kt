@@ -31,6 +31,7 @@ class MediaItemAdapter(
       1 -> MediaItemViewHolder.Show.create(parent)
       2 -> MediaItemViewHolder.Episode.create(parent)
       3 -> MediaItemViewHolder.Actor.create(parent)
+      4 -> MediaItemViewHolder.Stream.create(parent)
       else -> throw IllegalArgumentException("Invalid view type")
     }
   }
@@ -42,6 +43,7 @@ class MediaItemAdapter(
       is AVPMediaItem.ShowItem -> 1
       is AVPMediaItem.EpisodeItem -> 2
       is AVPMediaItem.ActorItem -> 3
+      is AVPMediaItem.StreamItem -> 4
     }
   }
 

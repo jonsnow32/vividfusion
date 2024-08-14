@@ -1,6 +1,7 @@
 package cloud.app.avp
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.Rect
 import android.hardware.input.InputManager
@@ -18,19 +19,30 @@ import androidx.navigation.NavDestination
 import androidx.navigation.fragment.NavHostFragment
 import cloud.app.avp.MainActivityViewModel.Companion.isNightMode
 import cloud.app.avp.databinding.ActivityMainBinding
+import cloud.app.avp.features.player.PlayerManager
 import cloud.app.avp.utils.Utils.isAndroidTV
 import cloud.app.avp.utils.tv.screenHeight
 import cloud.app.avp.utils.tv.screenWidth
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
   private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
+  @Inject lateinit var sharedPreferences: SharedPreferences
   override fun onCreate(savedInstanceState: Bundle?) {
+
+    PlayerManager.getInstance().setActivityResultRegistry(activityResultRegistry)
+    lifecycle.addObserver(PlayerManager.getInstance())
     super.onCreate(savedInstanceState)
+    PlayerManager.getInstance()
+      .inject(
+        sharedPreferences,
+        this
+      ) // call after activity injected
 
     setContentView(binding.root)
 

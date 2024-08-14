@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+  <item name="navView" type="id"/>
   <item name="aboutFragment" type="id"/>
   <item name="settingsFragment" type="id"/>
   <item name="mainFragment" type="id"/>
@@ -12,5 +14,5 @@
   <item name="extensionFragment" type="id"/>
   <item name="extensionInfoFragment" type="id"/>
   <item name="manageExtensionsFragment" type="id"/>
-  <item name="navView" type="id"/>
+  <item name="streamFragment" type="id"/>
 </resources>

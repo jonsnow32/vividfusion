@@ -55,5 +55,9 @@
     android:id="@id/manageExtensionsFragment"
     android:name="cloud.app.avp.ui.extension.ManageExtensionsFragment"
     android:label="ManageExtensionsFragment" />
+  <fragment
+    android:id="@id/streamFragment"
+    android:name="cloud.app.avp.ui.stream.StreamFragment"
+    android:label="StreamFragment" />
 
 </navigation>

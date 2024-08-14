@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentHomeBinding
 import cloud.app.avp.databinding.FragmentMovieBinding
 import cloud.app.avp.ui.main.home.HomeViewModel
@@ -13,12 +15,13 @@ import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
 import cloud.app.avp.utils.loadInto
+import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.models.AVPMediaItem
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class MovieFragment : Fragment(), MediaItemAdapter.Listener{
+class MovieFragment : Fragment(), MediaItemAdapter.Listener {
   private var binding by autoCleared<FragmentMovieBinding>()
   private val viewModel by activityViewModels<MovieViewModel>()
 
@@ -45,6 +48,14 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener{
     val actorAdapter = MediaItemAdapter(this, "", "clientID")
     binding.rvActors.adapter = actorAdapter;
 
+    binding.watchNow.setOnClickListener {
+      it.transitionName = "watchNow" + movieItem.id
+      navigate(
+        R.id.streamFragment,
+        it,
+        bundleOf("mediaItem" to movieItem, "clientId" to "clientID")
+      )
+    }
   }
 
   override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {

@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 abstract class CatchingViewModel(
-    val throwableFlow: MutableSharedFlow<Throwable>
+  val throwableFlow: MutableSharedFlow<Throwable>
 ) : ViewModel() {
 
   private var initialized = false
@@ -26,7 +26,7 @@ abstract class CatchingViewModel(
 
 
   suspend fun <T> tryWith(block: suspend () -> T) = tryWith(throwableFlow, block)
-    suspend fun <T : Any> Flow<PagingData<T>>.collectTo(
-        collector: FlowCollector<PagingData<T>>
-    ) = cachedIn(viewModelScope).catchWith(throwableFlow).collect(collector)
+  suspend fun <T : Any> Flow<PagingData<T>>.collectTo(
+    collector: FlowCollector<PagingData<T>>
+  ) = cachedIn(viewModelScope).catchWith(throwableFlow).collect(collector)
 }
