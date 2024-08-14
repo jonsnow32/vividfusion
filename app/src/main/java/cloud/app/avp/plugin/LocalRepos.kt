@@ -8,5 +8,5 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class LocalRepos(val tmdb: AppTmdb): PluginRepo<BaseExtension> {
-  override fun load(): StateFlow<List<BaseExtension>> = MutableStateFlow(listOf(LocalVideoExtension(), TmdbExtension(tmdb)))
+  override fun load(): StateFlow<List<BaseExtension>> = MutableStateFlow(listOf(TraktExtension(), TmdbExtension(tmdb)))
 }

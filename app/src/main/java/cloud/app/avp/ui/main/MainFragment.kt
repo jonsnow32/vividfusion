@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import cloud.app.avp.MainActivityViewModel
@@ -17,6 +19,8 @@ import cloud.app.avp.ui.main.search.SearchFragment
 import cloud.app.avp.ui.setting.SettingsFragment
 import cloud.app.avp.utils.SlideInPageTransformer
 import cloud.app.avp.utils.autoCleared
+import cloud.app.avp.utils.tv.FOCUS_SELF
+import cloud.app.avp.utils.tv.setLinearListLayout
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
@@ -36,33 +40,11 @@ class MainFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
-    val adapter = MainAdapter(this)
-    binding.vpContainer.adapter = adapter
-    binding.vpContainer.setPageTransformer(SlideInPageTransformer())
-    binding.vpContainer.isUserInputEnabled = false
-
     val navView = binding.navView as NavigationBarView
-    binding.vpContainer.registerOnPageChangeCallback(object : OnPageChangeCallback() {
-      override fun onPageSelected(position: Int) {
-        super.onPageSelected(position)
-        when (position) {
-          0 -> navView.selectedItemId = R.id.homeFragment
-          1 -> navView.selectedItemId = R.id.searchFragment
-          2 -> navView.selectedItemId = R.id.libraryFragment
-          3 -> navView.selectedItemId = R.id.settingsFragment
-        }
-      }
-    })
-
-    binding.vpContainer.setCurrentItem(0, false)
     navView.setOnItemSelectedListener {
-      when (it.itemId) {
-        R.id.homeFragment -> binding.vpContainer.setCurrentItem(0, false)
-        R.id.searchFragment -> binding.vpContainer.setCurrentItem(1, false)
-        R.id.libraryFragment -> binding.vpContainer.setCurrentItem(2, false)
-        R.id.settingsFragment -> binding.vpContainer.setCurrentItem(3, false)
-
-      }
+      childFragmentManager.beginTransaction()
+        .replace(R.id.vpContainer, createFragment(it.itemId))
+        .commit()
       true
     }
 
@@ -76,23 +58,23 @@ class MainFragment : Fragment() {
       }
       mainActivityViewModel.setNavInsets(insets)
     }
+    navView.selectedItemId = R.id.homeFragment
     navView.requestFocus()
   }
 
-  class MainAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) {
-    override fun getItemCount(): Int = 4
-    override fun createFragment(position: Int): Fragment {
-      return when (position) {
-
-        0 -> HomeFragment()
-        1 -> SearchFragment()
-        2 -> LibraryFragment()
-        3 -> SettingsFragment()
+  companion object {
+    fun createFragment(@IdRes id: Int): Fragment {
+      return when (id) {
+        R.id.homeFragment -> HomeFragment()
+        R.id.searchFragment -> SearchFragment()
+        R.id.libraryFragment -> LibraryFragment()
+        R.id.settingsFragment -> SettingsFragment()
         else -> {
           throw IllegalArgumentException("Invalid position")
         }
       }
     }
   }
+
 
 }

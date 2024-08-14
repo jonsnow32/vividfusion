@@ -2,14 +2,12 @@ package cloud.app.avp.ui.main.search
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import cloud.app.avp.base.CatchingViewModel
 import cloud.app.avp.ui.main.FeedViewModel
 import cloud.app.avp.ui.paging.toFlow
 import cloud.app.common.clients.BaseExtension
-import cloud.app.common.clients.infos.SearchClient
+import cloud.app.common.clients.mvdatabase.SearchClient
 import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.QuickSearchItem
-import cloud.app.common.models.Tab
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

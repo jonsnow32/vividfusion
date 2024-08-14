@@ -4,14 +4,13 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-  <androidx.viewpager2.widget.ViewPager2
+  <androidx.fragment.app.FragmentContainerView
     android:id="@+id/vpContainer"
-    android:focusable="false"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
 
   <com.google.android.material.navigationrail.NavigationRailView
-    android:id="@+id/navView"
+    android:id="@id/navView"
     style="@style/NavRailView"
     android:layout_width="wrap_content"
     android:layout_height="0dp"

@@ -3,13 +3,14 @@ package cloud.app.avp.plugin.tmdb
 import cloud.app.avp.network.api.tmdb.AppTmdb
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
-import cloud.app.common.clients.infos.FeedClient
-import cloud.app.common.clients.infos.SearchClient
+import cloud.app.common.clients.mvdatabase.FeedClient
+import cloud.app.common.clients.mvdatabase.SearchClient
 import cloud.app.common.helpers.Page
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.AVPMediaItem.Companion.toMediaItemsContainer
 import cloud.app.common.models.ExtensionType
+import cloud.app.common.models.LoginType
 import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.QuickSearchItem
 import cloud.app.common.models.SortBy
@@ -25,13 +26,15 @@ import kotlinx.coroutines.withContext
 class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient {
   override val metadata: ExtensionMetadata
     get() = ExtensionMetadata(
-      name = "TmdbExtension",
+      name = "The extension of TMDB",
       ExtensionType.DATABASE,
       description = "A sample extension that does nothing",
       author = "avp",
       version = "v001",
-      icon = "https://www.freepnglogos.com/uploads/netflix-logo-0.png"
+      icon = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
+      loginType = LoginType.API_KEY
     )
+
   override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(
       "Include Adult",
@@ -43,6 +46,13 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
       "Language",
       "tmdb_language",
       "Language",
+      entryTitles = listOf("English", "Spanish"),
+      entryValues = listOf("en", "es")
+    ),
+    SettingList(
+      "Region",
+      "tmdb_Region",
+      "Region",
       entryTitles = listOf("English", "Spanish"),
       entryValues = listOf("en", "es")
     )

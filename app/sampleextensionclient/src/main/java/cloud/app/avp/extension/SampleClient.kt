@@ -4,6 +4,7 @@ import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.streams.StreamClient
 import cloud.app.common.models.ExtensionType
+import cloud.app.common.models.LoginType
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.Settings
@@ -17,7 +18,9 @@ class SampleClient : BaseExtension, StreamClient {
       description = "A sample extension that does nothing",
       author = "avp",
       version = "v001",
-      icon = "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png"
+      icon = "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
+      loginType = LoginType.NONE
+
     )
   override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(

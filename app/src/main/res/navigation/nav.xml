@@ -49,7 +49,7 @@
     android:label="ExtensionFragment" />
   <fragment
     android:id="@id/extensionInfoFragment"
-    android:name="cloud.app.avp.ui.extension.ExtensionInfoFragment"
+    android:name="cloud.app.avp.ui.setting.ExtensionFragment"
     android:label="ExtensionInfoFragment" />
   <fragment
     android:id="@id/manageExtensionsFragment"

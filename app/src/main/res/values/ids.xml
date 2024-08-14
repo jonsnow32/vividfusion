@@ -12,4 +12,5 @@
   <item name="extensionFragment" type="id"/>
   <item name="extensionInfoFragment" type="id"/>
   <item name="manageExtensionsFragment" type="id"/>
+  <item name="navView" type="id"/>
 </resources>

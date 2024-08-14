@@ -96,7 +96,7 @@
 
   <style name="Selectable">
     <item name="android:focusable">true</item>
-    <item name="android:foreground">@drawable/ripple_item_container</item>
+    <item name="android:foreground">@drawable/outline_drawable_forced</item>
   </style>
 
   <style name="IconButton" parent="Widget.Material3.Button.IconButton">

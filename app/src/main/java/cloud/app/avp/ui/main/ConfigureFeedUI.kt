@@ -9,7 +9,7 @@ import cloud.app.avp.utils.applyAdapter
 import cloud.app.avp.utils.collect
 import cloud.app.avp.utils.configure
 import cloud.app.avp.utils.observe
-import cloud.app.common.clients.infos.FeedClient
+import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.models.Tab
 import com.google.android.material.tabs.TabLayout
 

@@ -2,25 +2,27 @@ package cloud.app.avp.plugin
 
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
-import cloud.app.common.clients.infos.FeedClient
+import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.ExtensionType
+import cloud.app.common.models.LoginType
 import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.Tab
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.Settings
+import kotlin.math.log
 
-class LocalVideoExtension : BaseExtension, FeedClient {
-
+class TraktExtension : BaseExtension, FeedClient {
   override val metadata: ExtensionMetadata
     get() = ExtensionMetadata(
-      name = "LocalVideoExtension",
+      name = "Trakt Extension",
       ExtensionType.DATABASE,
-      description = "A sample extension that does nothing",
+      description = "This extension integrates the popular Trakt.tv service into your application, providing users with a seamless way to track, discover, and manage their favorite movies, TV shows, and anime.",
       author = "avp",
       version = "v001",
-      icon = "https://www.freepnglogos.com/uploads/netflix-logo-0.png"
+      icon = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
+      loginType = LoginType.WEBAUTH
     )
 
   override val defaultSettings: List<Setting> = listOf(

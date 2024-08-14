@@ -13,6 +13,7 @@
     <item name="colorControlActivated">?attr/colorPrimary</item>
     <item name="android:listViewStyle">@style/ListViewStyle</item>
     <item name="iconColor">?android:textColor</item>
+    <item name="android:selectableItemBackground">@drawable/outline_drawable_forced</item>
   </style>
 
   <style name="AppTheme" parent="@style/BaseTheme">

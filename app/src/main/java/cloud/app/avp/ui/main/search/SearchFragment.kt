@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.databinding.FragmentSearchBinding
 import cloud.app.avp.ui.media.MediaContainerAdapter
@@ -18,8 +17,7 @@ import cloud.app.avp.utils.collect
 import cloud.app.avp.utils.first
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
-import cloud.app.common.clients.infos.FeedClient
-import cloud.app.common.clients.infos.SearchClient
+import cloud.app.common.clients.mvdatabase.SearchClient
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.Tab
 import com.google.android.material.tabs.TabLayout
@@ -41,7 +39,6 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
     applyInsetsMain(binding.searchBar, binding.recyclerView)
-
 
     val tabListener = object : TabLayout.OnTabSelectedListener {
       var enabled = true

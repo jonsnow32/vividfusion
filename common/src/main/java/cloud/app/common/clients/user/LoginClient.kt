@@ -1,4 +1,4 @@
-package cloud.app.common.clients
+package cloud.app.common.clients.user
 
 import cloud.app.common.models.Request
 import cloud.app.common.models.User

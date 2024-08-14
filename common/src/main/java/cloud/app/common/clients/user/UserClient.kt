@@ -1,4 +1,4 @@
-package cloud.app.common.clients
+package cloud.app.common.clients.user
 
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.MediaItemsContainer
