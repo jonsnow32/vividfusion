@@ -22,7 +22,7 @@ class SearchViewModel @Inject constructor(
   override val extensionFlow: MutableStateFlow<BaseExtension?>,
 ) : FeedViewModel(throwableFlow, extensionFlow){
 
-  var query: String? = "thor"
+  var query: String? = ""
   override suspend fun getTabs(client: BaseExtension) =
     (client as? SearchClient)?.searchTabs(query)
 
@@ -38,6 +38,14 @@ class SearchViewModel @Inject constructor(
       val list = tryWith { client.quickSearch(query) } ?: emptyList()
       quickFeed.value = list
     }
+  }
+
+  fun clearSearch() {
+    quickFeed.value = emptyList()
+  }
+
+  fun updateQuickFeed()  {
+    quickFeed.value = listOf(QuickSearchItem.SearchQueryItem("Thor", false))
   }
 
 

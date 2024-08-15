@@ -19,7 +19,6 @@ import cloud.app.avp.features.player.playerContracts.MxProContract
 import cloud.app.avp.features.player.playerContracts.VLCContract
 import cloud.app.avp.utils.Utils
 import okhttp3.OkHttpClient
-import javax.inject.Inject
 
 class PlayerManager : DefaultLifecycleObserver, PlayerContract.PlayBackListener {
   var activePlayer = PlayerType.EXO.name

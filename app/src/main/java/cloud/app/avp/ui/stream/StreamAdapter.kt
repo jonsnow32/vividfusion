@@ -58,7 +58,8 @@ class StreamAdapter(val listener: ItemClickListener) :
     RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("ResourceType")
     fun bind(streamData: StreamData) {
-      binding.name.text = streamData.originalUrl
+      binding.name.text = streamData.fileName
+      binding.url.text = streamData.originalUrl
     }
   }
 

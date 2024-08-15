@@ -84,6 +84,6 @@ class SampleClient : BaseExtension, StreamClient {
   }
 
   private fun fakeList(i: Int): List<StreamData> {
-    return listOf(StreamData("fakeUrl1$i"), StreamData("fakeUrl2$i"), StreamData("fakeUrl3${i}"))
+    return listOf(StreamData("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample${i}/BigBuckBunny.mp4", fileName = "BigBuckBunny.mp4"))
   }
 }

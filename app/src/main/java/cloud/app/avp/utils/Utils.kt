@@ -18,6 +18,7 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.browser.customtabs.CustomTabColorSchemeParams
@@ -562,4 +563,18 @@ object Utils {
         return 0
     }
 
+  fun hideKeyboard(view: View?) {
+    if (view == null) return
+
+    val inputMethodManager =
+      view.context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
+    inputMethodManager?.hideSoftInputFromWindow(view.windowToken, 0)
+  }
+
+  fun showInputMethod(view: View?) {
+    if (view == null) return
+    val inputMethodManager =
+      view.context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
+    inputMethodManager?.showSoftInput(view, 0)
+  }
 }

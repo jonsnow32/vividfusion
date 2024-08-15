@@ -12,6 +12,4 @@
         android:name="class"
         android:value="@string/class_path" />
     </application>
-
-
 </manifest>

@@ -186,21 +186,12 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
     }.toList()
 
   //Searching
-  override suspend fun quickSearch(query: String?): List<QuickSearchItem> {
+  override suspend fun quickSearch(query: String): List<QuickSearchItem> {
     val results = mutableListOf<QuickSearchItem>()
     return withContext(Dispatchers.IO) {
-      val mediaResultsPage =
-        tmdb.searchService().multi(query, 1, language, region, includeAdult).execute().body()
-      mediaResultsPage?.results?.forEach {
-        it.movie?.let { movie ->
-          results.add(QuickSearchItem.SearchMediaItem(movie.toMediaItem()))
-        }
-        it.tvShow?.let { tvShow ->
-          results.add(QuickSearchItem.SearchMediaItem(tvShow.toMediaItem()))
-        }
-        it.person?.let { person ->
-          results.add(QuickSearchItem.SearchMediaItem(person.toMediaItem()))
-        }
+      val searchResult = SearchSuggestion.search(query)
+      searchResult?.d?.forEach {
+        results.add(QuickSearchItem.SearchQueryItem(it.l, false))
       }
       results
     }

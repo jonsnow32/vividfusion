@@ -2,6 +2,7 @@ plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.jetbrains.kotlin.android)
   alias(libs.plugins.kotlin.parcelize)
+  id("maven-publish")
 }
 
 android {
@@ -10,7 +11,6 @@ android {
 
   defaultConfig {
     minSdk = 24
-
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     consumerProguardFiles("consumer-rules.pro")
   }
@@ -31,10 +31,17 @@ android {
   kotlinOptions {
     jvmTarget = "1.8"
   }
+  android {
+    publishing {
+      singleVariant("release") {
+        withSourcesJar()
+        withJavadocJar()
+      }
+    }
+  }
 }
 
 dependencies {
-
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.appcompat)
   implementation(libs.material)
@@ -42,3 +49,14 @@ dependencies {
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
 }
+
+afterEvaluate {
+  publishing {
+    publications {
+      register<MavenPublication>("release") {
+        from(components["release"])
+      }
+    }
+  }
+}
+
