@@ -98,6 +98,9 @@ dependencies {
   implementation(libs.squareup.okhttp.dns)
   implementation(libs.cookiejar)
 
+  // parse html
+  implementation(libs.jsoup);
+
   implementation ("androidx.browser:browser:1.5.0")
   implementation("jp.wasabeef:glide-transformations:4.3.0")
   implementation("me.zhanghai.android.fastscroll:library:1.3.0")
