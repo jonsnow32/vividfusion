@@ -11,7 +11,7 @@ import cloud.app.common.models.Tab
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.Settings
-import kotlin.math.log
+import okhttp3.OkHttpClient
 
 class TraktExtension : BaseExtension, FeedClient {
   override val metadata: ExtensionMetadata
@@ -39,7 +39,7 @@ class TraktExtension : BaseExtension, FeedClient {
     )
   )
 
-  override fun setSettings(settings: Settings) {
+  override fun init(settings: Settings, okhttpClient: OkHttpClient) {
   }
 
   override suspend fun onExtensionSelected() {

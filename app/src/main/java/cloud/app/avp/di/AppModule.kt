@@ -18,7 +18,6 @@ class AppModule {
   @Provides
   fun provideAppContext(app: Application): Context = app.applicationContext
 
-
   @Provides
   @Singleton
   fun provideThrowableFlow() = MutableSharedFlow<Throwable>()

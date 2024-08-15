@@ -2,8 +2,8 @@ package cloud.app.avp.network.di;
 
 import android.content.SharedPreferences;
 
-import cloud.app.avp.network.api.tmdb.AppTmdb;
-import cloud.app.avp.network.api.tmdb.ExtendService;
+import cloud.app.avp.plugin.tmdb.AppTmdb;
+import cloud.app.avp.plugin.tmdb.ExtendService;
 import com.uwetrottmann.tmdb2.services.ConfigurationService;
 
 import dagger.Module;

@@ -1,6 +1,5 @@
 package cloud.app.avp.plugin.tmdb
 
-import cloud.app.avp.network.api.tmdb.AppTmdb
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.mvdatabase.FeedClient
@@ -22,8 +21,10 @@ import cloud.app.common.settings.Settings
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 
-class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient {
+class TmdbExtension : FeedClient, BaseExtension, SearchClient {
+  private lateinit var tmdb: AppTmdb
   override val metadata: ExtensionMetadata
     get() = ExtensionMetadata(
       name = "The extension of TMDB",
@@ -59,8 +60,9 @@ class TmdbExtension(val tmdb: AppTmdb) : FeedClient, BaseExtension, SearchClient
   )
 
   private lateinit var settings: Settings
-  override fun setSettings(settings: Settings) {
+  override fun init(settings: Settings, okhttpClient: OkHttpClient) {
     this.settings = settings
+    tmdb = AppTmdb(okHttpClient = okhttpClient, settings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57")
   }
 
   private val includeAdult get() = settings.getBoolean("tmdb_include_adult")

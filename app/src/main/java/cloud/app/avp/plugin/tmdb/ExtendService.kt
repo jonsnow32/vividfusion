@@ -1,6 +1,6 @@
-package cloud.app.avp.network.api.tmdb
+package cloud.app.avp.plugin.tmdb
 
-import cloud.app.avp.network.api.tmdb.model.ImageResult
+import cloud.app.avp.plugin.tmdb.model.ImageResult
 import com.uwetrottmann.tmdb2.entities.ReviewResultsPage
 import retrofit2.Call
 import retrofit2.http.GET

@@ -1,9 +1,9 @@
-package cloud.app.avp.network.api.tmdb.model
+package cloud.app.avp.plugin.tmdb.model
 
 
 import com.google.gson.annotations.SerializedName
 
-data class Poster(
+data class Logo(
     @SerializedName("aspect_ratio")
     val aspectRatio: Double,
     @SerializedName("file_path")

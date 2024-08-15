@@ -2,9 +2,8 @@ package cloud.app.avp.di
 
 import android.app.Application
 import android.content.Context
-import cloud.app.avp.network.api.tmdb.AppTmdb
+import cloud.app.avp.plugin.tmdb.AppTmdb
 import cloud.app.avp.plugin.LocalRepos
-import cloud.app.avp.plugin.tmdb.TmdbExtension
 import cloud.app.common.clients.BaseExtension
 import cloud.app.plugger.RepoComposer
 import cloud.app.plugger.repos.installedApk.InstalledApkConfig
@@ -22,23 +21,18 @@ class ExtensionModule {
 
   @Provides
   @Singleton
-  fun provideExtensionRepo(context: Application, tmdb: AppTmdb) = getComposer(context,tmdb)
+  fun provideExtensionRepo(context: Application, tmdb: AppTmdb) = getComposer(context)
 
   private fun getComposer(
     context: Context,
-    tmdb : AppTmdb
   ): RepoComposer<BaseExtension> {
     val installedApkRepo = InstalledApkRepos<BaseExtension>(
       context,
       InstalledApkConfig("cloud.app.avp"),
     )
-    val localRepo = LocalRepos(tmdb)
+    val localRepo = LocalRepos()
     return RepoComposer(installedApkRepo,localRepo)
   }
-
-  @Provides
-  @Singleton
-  fun provideTmdbExtension(tmdb: AppTmdb) = TmdbExtension(tmdb)
 
   @Provides
   @Singleton

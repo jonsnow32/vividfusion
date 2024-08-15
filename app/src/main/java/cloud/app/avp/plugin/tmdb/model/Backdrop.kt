@@ -1,4 +1,4 @@
-package cloud.app.avp.network.api.tmdb.model
+package cloud.app.avp.plugin.tmdb.model
 
 
 import com.google.gson.annotations.SerializedName

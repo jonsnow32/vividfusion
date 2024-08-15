@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 
@@ -36,6 +37,9 @@ class AVPApplication : Application() {
 
   @Inject
   lateinit var preferences: SharedPreferences
+
+  @Inject
+  lateinit var okHttpClient: OkHttpClient
 
   private val scope = MainScope() + CoroutineName("Application")
 
@@ -58,7 +62,7 @@ class AVPApplication : Application() {
       extensionRepo.load().collect {
         it.forEach { client ->
           tryWith(throwableFlow) {
-            client.setSettings(toSettings(preferences))
+            client.init(toSettings(preferences), okHttpClient)
             if(client is TmdbExtension) {
               extensionFlow.emit(client)
             }

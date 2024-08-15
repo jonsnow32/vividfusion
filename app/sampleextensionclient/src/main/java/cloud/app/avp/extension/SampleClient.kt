@@ -17,21 +17,26 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 
 class SampleClient : BaseExtension, StreamClient {
+  private lateinit var okhttpClient: OkHttpClient
 
   override val metadata: ExtensionMetadata
     get() = ExtensionMetadata(
       name = "SampleClient",
-      ExtensionType.DATABASE,
+      ExtensionType.STREAM,
       description = "A sample extension that does nothing",
       author = "avp",
       version = "v001",
       icon = "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
       loginType = LoginType.NONE
-
     )
+
+  override fun init(settings: Settings, okhttpClient: OkHttpClient) {
+    this.okhttpClient = okhttpClient;
+  }
+
   override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(
       "High Thumbnail Quality",
@@ -46,9 +51,6 @@ class SampleClient : BaseExtension, StreamClient {
     )
   )
 
-  override fun setSettings(settings: Settings) {
-
-  }
 
   override suspend fun onExtensionSelected() {
 
@@ -84,6 +86,11 @@ class SampleClient : BaseExtension, StreamClient {
   }
 
   private fun fakeList(i: Int): List<StreamData> {
-    return listOf(StreamData("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample${i}/BigBuckBunny.mp4", fileName = "BigBuckBunny.mp4"))
+    return listOf(
+      StreamData(
+        "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample${i}/BigBuckBunny.mp4",
+        fileName = "BigBuckBunny.mp4"
+      )
+    )
   }
 }

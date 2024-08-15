@@ -1,8 +1,7 @@
-package cloud.app.avp.network.api.tmdb
+package cloud.app.avp.plugin.tmdb
 
 import com.uwetrottmann.tmdb2.Tmdb
 import com.uwetrottmann.tmdb2.TmdbAuthenticator
-import com.uwetrottmann.tmdb2.TmdbInterceptor
 import okhttp3.OkHttpClient
 
 /**
@@ -13,7 +12,7 @@ class AppTmdb(
     apiKey: String,
 ) : Tmdb(apiKey) {
     override fun okHttpClient(): OkHttpClient {
-        var builder = okHttpClient.newBuilder().addInterceptor(TmdbInterceptor(this))
+        var builder = okHttpClient.newBuilder().addInterceptor(SgTmdbInterceptor(this))
             .authenticator(TmdbAuthenticator(this))
         return builder.build()
     }

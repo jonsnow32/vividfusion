@@ -36,12 +36,6 @@ android {
 dependencies {
 
   implementation(libs.androidx.core.ktx)
-  implementation(libs.androidx.appcompat)
-  implementation(libs.material)
   implementation(libs.kotlinx.serialize.json)
-
-  testImplementation(libs.junit)
-  androidTestImplementation(libs.androidx.junit)
-  androidTestImplementation(libs.androidx.espresso.core)
   implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
 }
