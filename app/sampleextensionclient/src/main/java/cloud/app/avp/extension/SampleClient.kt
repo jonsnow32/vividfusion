@@ -90,6 +90,7 @@ class SampleClient : BaseExtension, StreamClient {
     return listOf(
       StreamData(
         "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample${i}/BigBuckBunny.mp4",
+        resolvedUrl = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         fileName = "BigBuckBunny.mp4"
       )
     )

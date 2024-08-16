@@ -12,15 +12,6 @@ import cloud.app.avp.features.player.data.PlayerType
 import timber.log.Timber
 
 
-const val EXTRA_POSITION = "position" // long
-const val EXTRA_TITLE = "title" // string
-
-const val EXTRA_VIDEO_URLS_NAME_HEADERS = "video_url_headers" // string["url1", "base64(headers1)", "url2", "base64(headers2)" ...]
-const val EXTRA_VIDEO_START_INDEX = "video_start_index" //int
-
-const val EXTRA_SUBTITLE_LIST = "subtitles" // string[]
-const val EXTRA_SUBTITLE_START_INDEX = "subtitle_start_index" //int
-const val EXTRA_HAS_AD = "has_ad" // boolean
 
 class ExoPLayerContract(listener: PlayBackListener) : PlayerContract(listener) {
     override val packageName: String
@@ -107,4 +98,15 @@ class ExoPLayerContract(listener: PlayBackListener) : PlayerContract(listener) {
 
         return intent
     }
+
+  companion object {
+    const val EXTRA_TITLE: String = "title"
+    const val EXTRA_POSITION: String = "position"
+    const val EXTRA_VIDEO_URLS_NAME_HEADERS: String = "video_url_headers"
+    const val EXTRA_VIDEO_START_INDEX: String = "video_start_index"
+    const val EXTRA_IS_SAME_EPISODE = "is_same_episode" // boolean
+    const val EXTRA_SUBTITLE_LIST: String = "subtitles" // string[]
+    const val EXTRA_SUBTITLE_START_INDEX: String = "subtitle_start_index" //int
+    const val EXTRA_HAS_AD: String = "has_ad" // boolean
+  }
 }
