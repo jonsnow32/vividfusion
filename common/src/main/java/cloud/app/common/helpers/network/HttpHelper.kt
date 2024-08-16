@@ -1,4 +1,4 @@
-package cloud.app.avp.network
+package cloud.app.common.helpers.network
 
 
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -7,8 +7,6 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlin.reflect.KClass
 
 interface ResponseParser {
@@ -38,8 +36,7 @@ object RequestBodyTypes {
 }
 
 
-class HttpHelper @Inject constructor(val okHttpClient: OkHttpClient) {
-
+class HttpHelper (val okHttpClient: OkHttpClient) {
   suspend inline fun Call.await(): Response {
     return suspendCancellableCoroutine { continuation ->
       val callback = ContinuationCallback(this, continuation)

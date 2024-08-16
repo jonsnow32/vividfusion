@@ -1,7 +1,7 @@
 package cloud.app.avp.network.di
 
 import android.content.SharedPreferences
-import cloud.app.avp.network.USER_AGENT
+import cloud.app.common.helpers.network.USER_AGENT
 import cloud.app.avp.network.api.realdebrid.RealDebirdOAuthSettings
 import cloud.app.avp.network.api.realdebrid.RealDebridApi
 import cloud.app.avp.network.api.realdebrid.RealDebridOauthApi

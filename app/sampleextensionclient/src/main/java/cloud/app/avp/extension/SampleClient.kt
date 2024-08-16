@@ -3,6 +3,7 @@ package cloud.app.avp.extension
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.streams.StreamClient
+import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.ExtensionType
 import cloud.app.common.models.LoginType
@@ -20,7 +21,7 @@ import kotlinx.coroutines.flow.flowOn
 import okhttp3.OkHttpClient
 
 class SampleClient : BaseExtension, StreamClient {
-  private lateinit var okhttpClient: OkHttpClient
+  private lateinit var httpHelper: HttpHelper
 
   override val metadata: ExtensionMetadata
     get() = ExtensionMetadata(
@@ -33,8 +34,8 @@ class SampleClient : BaseExtension, StreamClient {
       loginType = LoginType.NONE
     )
 
-  override fun init(settings: Settings, okhttpClient: OkHttpClient) {
-    this.okhttpClient = okhttpClient;
+  override fun init(settings: Settings, httpHelper: HttpHelper) {
+    this.httpHelper = httpHelper;
   }
 
   override val defaultSettings: List<Setting> = listOf(

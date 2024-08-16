@@ -1,7 +1,7 @@
-package cloud.app.avp.network
+package cloud.app.common.helpers.network
 
 import androidx.annotation.RawRes
-import cloud.app.avp.R
+import cloud.app.common.R
 
 class HttpReason(@RawRes val code: Int) : Throwable()
 

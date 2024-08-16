@@ -1,9 +1,8 @@
-package cloud.app.avp.network
+package cloud.app.common.helpers.network
 
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.internal.closeQuietly
-import kotlin.reflect.KClass
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 

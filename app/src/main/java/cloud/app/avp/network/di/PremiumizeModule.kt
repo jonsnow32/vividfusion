@@ -1,7 +1,7 @@
 package cloud.app.avp.network.di
 
 import android.content.SharedPreferences
-import cloud.app.avp.network.USER_AGENT
+import cloud.app.common.helpers.network.USER_AGENT
 import cloud.app.avp.network.api.premiumize.PremiumizeApi
 import com.google.gson.GsonBuilder
 import dagger.Module

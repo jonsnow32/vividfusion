@@ -11,7 +11,8 @@ import cloud.app.avp.network.Interceptors.addCloudFlareDns
 import cloud.app.avp.network.Interceptors.addDNSWatchDns
 import cloud.app.avp.network.Interceptors.addGoogleDns
 import cloud.app.avp.network.Interceptors.addQuad9Dns
-import cloud.app.avp.network.ignoreAllSSLErrors
+import cloud.app.common.helpers.network.HttpHelper
+import cloud.app.common.helpers.network.ignoreAllSSLErrors
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
@@ -27,7 +28,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 
-
 @Module
 @InstallIn(SingletonComponent::class)
 class NetworkModule {
@@ -40,57 +40,61 @@ class NetworkModule {
     return Cache(app.cacheDir, cacheSize)
   }
 
-    @Provides
-    @Singleton
-    fun provideOkHttpClient(
-        loggingInterceptor: HttpLoggingInterceptor,
-        cache: Cache,
-        cookiePersistor: PersistentCookieJar,
-        sharedPreferences: SharedPreferences,
-        context: Context,
-    ): OkHttpClient {
-        val dns = sharedPreferences.getInt(context.getString(R.string.dns_pref), 0)
-        return OkHttpClient.Builder()
-            .followRedirects(true)
-            .followSslRedirects(true)
-            .cookieJar(cookiePersistor)
-            .ignoreAllSSLErrors()
-            .cache(cache).apply {
-                when (dns) {
-                    1 -> addGoogleDns()
-                    2 -> addCloudFlareDns()
+  @Provides
+  @Singleton
+  fun provideOkHttpClient(
+    loggingInterceptor: HttpLoggingInterceptor,
+    cache: Cache,
+    cookiePersistor: PersistentCookieJar,
+    sharedPreferences: SharedPreferences,
+    context: Context,
+  ): OkHttpClient {
+    val dns = sharedPreferences.getInt(context.getString(R.string.dns_pref), 0)
+    return OkHttpClient.Builder()
+      .followRedirects(true)
+      .followSslRedirects(true)
+      .cookieJar(cookiePersistor)
+      .ignoreAllSSLErrors()
+      .cache(cache).apply {
+        when (dns) {
+          1 -> addGoogleDns()
+          2 -> addCloudFlareDns()
 //                3 -> addOpenDns()
-                    4 -> addAdGuardDns()
-                    5 -> addDNSWatchDns()
-                    6 -> addQuad9Dns()
-                }
-            }
-            .addInterceptor(loggingInterceptor)
-            .addNetworkInterceptor(CacheInterceptor())
-            //.addInterceptor(OfflineCacheInterceptor())
+          4 -> addAdGuardDns()
+          5 -> addDNSWatchDns()
+          6 -> addQuad9Dns()
+        }
+      }
+      .addInterceptor(loggingInterceptor)
+      .addNetworkInterceptor(CacheInterceptor())
+      //.addInterceptor(OfflineCacheInterceptor())
 
-            .build()
+      .build()
+  }
+
+  @Provides
+  @Singleton
+  fun provideHttpHelper(okHttpClient: OkHttpClient) = HttpHelper(okHttpClient)
+
+  @Provides
+  fun provideLoggingInterceptor(): HttpLoggingInterceptor =
+    HttpLoggingInterceptor().apply {
+      level = if (BuildConfig.DEBUG) {
+        HttpLoggingInterceptor.Level.BODY
+      } else {
+        HttpLoggingInterceptor.Level.NONE
+      }
     }
 
-    @Provides
-    fun provideLoggingInterceptor(): HttpLoggingInterceptor =
-        HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.NONE
-            }
-        }
+  @Provides
+  fun provideGson(): Gson = Gson()
 
-    @Provides
-    fun provideGson(): Gson = Gson()
+  @Provides
+  fun provideGsonConverterFactory(gson: Gson): GsonConverterFactory =
+    GsonConverterFactory.create(gson)
 
-    @Provides
-    fun provideGsonConverterFactory(gson: Gson): GsonConverterFactory =
-        GsonConverterFactory.create(gson)
-
-    @Provides
-    fun provideCookieJar(context: Context): PersistentCookieJar =
-        PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context));
+  @Provides
+  fun provideCookieJar(context: Context): PersistentCookieJar =
+    PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context));
 
 }

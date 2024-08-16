@@ -1,4 +1,4 @@
-package cloud.app.avp.network
+package cloud.app.common.helpers.network
 
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CompletionHandler

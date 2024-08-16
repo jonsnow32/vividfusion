@@ -9,6 +9,7 @@ import cloud.app.avp.utils.toSettings
 import cloud.app.avp.utils.tryWith
 import cloud.app.avp.viewmodels.SnackBarViewModel
 import cloud.app.common.clients.BaseExtension
+import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.plugger.RepoComposer
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineName
@@ -39,7 +40,7 @@ class AVPApplication : Application() {
   lateinit var preferences: SharedPreferences
 
   @Inject
-  lateinit var okHttpClient: OkHttpClient
+  lateinit var httpHelper: HttpHelper
 
   private val scope = MainScope() + CoroutineName("Application")
 
@@ -62,7 +63,7 @@ class AVPApplication : Application() {
       extensionRepo.load().collect {
         it.forEach { client ->
           tryWith(throwableFlow) {
-            client.init(toSettings(preferences), okHttpClient)
+            client.init(toSettings(preferences), httpHelper)
             if(client is TmdbExtension) {
               extensionFlow.emit(client)
             }

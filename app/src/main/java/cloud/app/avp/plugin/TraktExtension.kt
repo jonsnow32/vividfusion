@@ -4,6 +4,7 @@ import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.helpers.PagedData
+import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.models.ExtensionType
 import cloud.app.common.models.LoginType
 import cloud.app.common.models.MediaItemsContainer
@@ -39,7 +40,7 @@ class TraktExtension : BaseExtension, FeedClient {
     )
   )
 
-  override fun init(settings: Settings, okhttpClient: OkHttpClient) {
+  override fun init(settings: Settings, httpHelper: HttpHelper) {
   }
 
   override suspend fun onExtensionSelected() {

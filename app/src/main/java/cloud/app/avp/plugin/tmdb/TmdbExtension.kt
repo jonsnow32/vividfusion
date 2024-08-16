@@ -6,6 +6,7 @@ import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.clients.mvdatabase.SearchClient
 import cloud.app.common.helpers.Page
 import cloud.app.common.helpers.PagedData
+import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.AVPMediaItem.Companion.toMediaItemsContainer
 import cloud.app.common.models.ExtensionType
@@ -60,9 +61,9 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
   )
 
   private lateinit var settings: Settings
-  override fun init(settings: Settings, okhttpClient: OkHttpClient) {
+  override fun init(settings: Settings, httpHelper: HttpHelper) {
     this.settings = settings
-    tmdb = AppTmdb(okHttpClient = okhttpClient, settings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57")
+    tmdb = AppTmdb(okHttpClient = httpHelper.okHttpClient, settings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57")
   }
 
   private val includeAdult get() = settings.getBoolean("tmdb_include_adult")
