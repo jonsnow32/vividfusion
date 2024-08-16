@@ -48,11 +48,15 @@ dependencies {
   implementation(libs.jsoup);
 }
 
+// run command in terminal to publish to maven local "./gradlew publishToMavenLocal"
 afterEvaluate {
   publishing {
     publications {
       register<MavenPublication>("release") {
         from(components["release"])
+        groupId = "cloud.app"
+        artifactId = "common"
+        version = "1.0"
       }
     }
   }
