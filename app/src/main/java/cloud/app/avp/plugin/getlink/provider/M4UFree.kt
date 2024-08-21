@@ -1,18 +1,39 @@
 package cloud.app.avp.extension.provider
 
 import android.util.Log
-import cloud.app.avp.network.getlink.Constants
+import cloud.app.avp.extension.Constants
+import cloud.app.avp.plugin.getlink.BaseScaper
+import cloud.app.avp.utils.TimeUtils
+
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.helpers.network.Utils
-import cloud.app.common.helpers.network.getHeaders
 import cloud.app.common.helpers.network.utils.AES256Cryptor
 import cloud.app.common.helpers.network.utils.GoogleReCaptchar
 import cloud.app.common.helpers.network.utils.MD5Utils
+import cloud.app.common.models.movie.Episode
+import cloud.app.common.models.movie.Movie
+import cloud.app.common.models.stream.StreamData
 import com.domain.usecases.stream.Utils.RegexUtils
+import kotlinx.coroutines.channels.ProducerScope
 import org.jsoup.nodes.Element
 
-class M4UFree(private val httpHelper: HttpHelper) {
+class M4UFree ( val httpHelper: HttpHelper) : BaseScaper() {
     val BASE_URL: String get() = "https://m4ufree.se"
+
+    override val name: String
+        get() = "M4UFree"
+
+    override suspend fun getMovieStream(movie: Movie, producerScope: ProducerScope<List<StreamData>>) {
+        val url = search(movie.generalInfo.title, TimeUtils.getYear(movie.generalInfo.releaseDateMsUTC!!).toString(), -1, -1)
+        if(url != null) {
+            getLink(url, -1, -1, movie.generalInfo.title,producerScope)
+        }
+
+    }
+
+    override suspend fun getEpisodeStream(episode: Episode, producerScope: ProducerScope<List<StreamData>>) {
+
+    }
     suspend fun search(
         name: String,
         year: String,
@@ -76,6 +97,7 @@ class M4UFree(private val httpHelper: HttpHelper) {
         season: Int,
         episode: Int,
         filename: String,
+        producerScope: ProducerScope<List<StreamData>>
     ) {
         //url = dataurl;
         val isMovies: Boolean = season < 0 || episode < 0;
@@ -215,18 +237,36 @@ class M4UFree(private val httpHelper: HttpHelper) {
                                 if (html.isNullOrEmpty()) {
                                 }
                             }
-                            iframe =
+                            var streamLink =
                                 RegexUtils.getGroup(
                                     html!!,
                                     "data['\"]\\s*:\\s*['\"]([^'\"]+[^'\"])['\"]",
                                     1
                                 )
-                            if (!iframe.isNullOrEmpty()) {
-                                Log.d("M4UFree", "getLink to resolver: $iframe")
+                            if (!streamLink.isNullOrEmpty()) {
+                                producerScope.send(
+                                    listOf(
+                                        StreamData(
+                                            iframe,
+                                            resolvedUrl = streamLink,
+                                            fileName = filename
+                                        )
+                                    )
+
+                                )
 
                             }
                         } else {
                             Log.d("M4UFree", "getLink to resolver: $iframe")
+                            producerScope.send(
+                                listOf(
+                                    StreamData(
+                                        iframe,
+                                        fileName = filename
+                                    )
+                                )
+
+                            )
 
                         }
                     }
@@ -294,4 +334,6 @@ class M4UFree(private val httpHelper: HttpHelper) {
 
         return b;
     }
+
+
 }
