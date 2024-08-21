@@ -39,11 +39,12 @@ object GoogleReCaptchar {
         val recapToken =
             getGroup(html, "<input[^>]*recaptcha-token.*value\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>", 1)
         if (recapToken != null) {
-            val data =
-                String.format("v=%s&k=%s&c=%s&co=%s&reason=q", vtoken, key, recapToken, domain)
+//            val data =
+//                String.format("v=%s&k=%s&c=%s&co=%s&reason=q", vtoken, key, recapToken, domain)
+            val data = mapOf("v" to vtoken, "k" to key, "c" to recapToken, "co" to domain, "reason" to "q")
             html = httpHelper.post(
                 "https://www.google.com/recaptcha/api2/reload?k=$key",
-                json =  data,
+                data =  data,
                 headers = hashMap
             ).text
             if (!html.isEmpty()) {

@@ -1,6 +1,7 @@
 package cloud.app.common.helpers.network
 
 
+import android.util.Log
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.*
 import okhttp3.Headers.Companion.toHeaders
@@ -39,6 +40,7 @@ object RequestBodyTypes {
 
 
 class HttpHelper (val okHttpClient: OkHttpClient) {
+  var USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"
   suspend inline fun Call.await(): Response {
     return suspendCancellableCoroutine { continuation ->
       val callback = ContinuationCallback(this, continuation)
@@ -48,21 +50,37 @@ class HttpHelper (val okHttpClient: OkHttpClient) {
   }
 
 
-  suspend fun get(url: String, headers: Map<String, String>? = mapOf(), responseParser: ResponseParser? = null): HttpResponse {
+  suspend fun get(url: String, headers: Map<String, String>? = mapOf(),referer: String? = null ,responseParser: ResponseParser? = null): HttpResponse {
     val requestBuilder = Request.Builder().url(url)
     if (headers != null) {
       requestBuilder.headers(headers.toHeaders())
+      if (headers.get("User-Agent").isNullOrEmpty() && headers.get("user-agent")
+          .isNullOrEmpty()
+      ) {
+        requestBuilder.addHeader("User-Agent" , USER_AGENT);
+      }
     }
-    val request = requestBuilder.build()
-    val response = okHttpClient.newCall(request).await()
+    referer?.let {
+      requestBuilder.addHeader("referer", it)
+    }
+    val request = requestBuilder.get().build()
+    val response = okHttpClient .newCall(request).await()
     return HttpResponse(response, responseParser)
   }
 
 
-  suspend fun post(url: String, data: Map<String, String>? = emptyMap(),json: Any? = null, headers: Map<String, String>? = mapOf(), responseParser: ResponseParser? = null): HttpResponse {
+  suspend fun post(url: String, data: Map<String, String>? = emptyMap(),json: Any? = null, headers: Map<String, String>? = mapOf(),referer: String? = null , responseParser: ResponseParser? = null): HttpResponse {
     val requestBuilder = Request.Builder().url(url)
     if (headers != null) {
       requestBuilder.headers(headers.toHeaders())
+      if (headers.get("User-Agent").isNullOrEmpty() && headers.get("user-agent")
+          .isNullOrEmpty()
+      ) {
+        requestBuilder.addHeader("User-Agent" , USER_AGENT);
+      }
+    }
+    referer?.let {
+      requestBuilder.addHeader("Referer", it)
     }
     val body = if (!data.isNullOrEmpty() ) {
 
