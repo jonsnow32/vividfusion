@@ -9,6 +9,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.net.URI
+import java.net.URL
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
@@ -153,4 +154,60 @@ internal fun getCache(cacheTime: Int, cacheUnit: TimeUnit): CacheControl {
   return CacheControl.Builder()
     .maxAge(cacheTime, cacheUnit)
     .build()
+}
+object Utils {
+
+  fun getBaseUrl(urlStr: String): String {
+    try {
+      val url = URL(urlStr)
+      return url.protocol + "://" + url.host
+    } catch (e: Exception) {
+      return urlStr
+    }
+  }
+
+  fun getHost(urlStr: String): String {
+    try {
+      val url = URL(urlStr)
+      return url.host
+    } catch (e: Exception) {
+      return ""
+    }
+  }
+
+  fun fixEpisode(number: String): String {
+    if (number.length == 1) {
+      return "0$number"
+    }
+    return number;
+  }
+  fun replaceAllkeywithTarget(str: String, target: String?): String {
+    var str = str
+    str = str.replace("([ .-](?:and|AND|And|&)[ .-])".toRegex(), " ")
+    return str.replace("'", "")
+      .replace("(\\\\|\\/| -|:|\\(|\\)|;|-|\\.|\\*|\\?|\"|\\'|<|>|,)".toRegex(), " ")
+      .replace("  ", " ").replace(
+        " ",
+        target!!
+      )
+  }
+  fun URLEncoder(str: String): String {
+    return try {
+      java.net.URLEncoder.encode(str, "UTF-8")
+    } catch (e2: Throwable) {
+      str.replace(":", "%3A")
+        .replace("/", "%2F").replace("#", "%23")
+        .replace("?", "%3F").replace("&", "%24").replace("@", "%40").replace("%", "%25")
+        .replace("+", "%2B").replace(" ", "+").replace(";", "%3B")
+        .replace("=", "%3D").replace("$", "%26").replace(",", "%2C").replace("<", "%3C")
+        .replace(">", "%3E").replace("~", "%25").replace("^", "%5E").replace("`", "%60")
+        .replace("\\", "%5C").replace("[", "%5B").replace("]", "%5D").replace("{", "%7B")
+        .replace("|", "%7C").replace("\"", "%22")
+    }
+  }
+  fun getHashXMLHttpRequest(): HashMap<String, String> {
+    val hashMap: HashMap<String, String> = HashMap<String, String>()
+    hashMap["X-Requested-With"] = "XMLHttpRequest"
+    return hashMap
+  }
 }

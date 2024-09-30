@@ -39,4 +39,6 @@ dependencies {
   implementation(project(":common"))
   implementation(libs.androidx.core.ktx)
   implementation(libs.squareup.okhttp)
+  // parse html
+  implementation(libs.jsoup);
 }
