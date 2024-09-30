@@ -13,6 +13,7 @@ import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentBrowseBinding
 import cloud.app.avp.ui.media.MediaItemAdapter
+import cloud.app.avp.ui.setting.SettingsFragment
 import cloud.app.avp.utils.FastScrollerHelper
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.configure
@@ -46,7 +47,7 @@ class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
 
 
     binding.btnSettings.setOnClickListener {
-      navigate(R.id.settingsFragment)
+      navigate(SettingsFragment())
     }
     FastScrollerHelper.applyTo(binding.recyclerView)
     if (viewModel.moreFlow == null) {

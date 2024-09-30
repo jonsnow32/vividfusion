@@ -1,27 +1,25 @@
 package cloud.app.avp.ui.media
 
-import android.os.Parcelable
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
 import androidx.paging.LoadState
 import androidx.paging.PagingData
-import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
-import cloud.app.common.models.AVPMediaItem
+import cloud.app.avp.base.BasePagingAdapter
+import cloud.app.avp.base.ViewHolderState
+import cloud.app.avp.databinding.ContainerCategoryBinding
+import cloud.app.avp.databinding.ContainerItemBinding
 import cloud.app.common.models.MediaItemsContainer
-import kotlinx.coroutines.flow.Flow
-import java.lang.ref.WeakReference
 
 class MediaContainerAdapter(
   val fragment: Fragment,
+  id: Int,
   val transition: String,
   val listener: Listener = getListener(fragment)
-) : PagingDataAdapter<MediaItemsContainer, MediaContainerViewHolder>(DiffCallback) {
+) : BasePagingAdapter<MediaItemsContainer, MediaContainerViewHolder>(fragment, id, DiffCallback) {
 
   interface Listener : MediaItemAdapter.Listener {
     fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View)
@@ -76,55 +74,14 @@ class MediaContainerAdapter(
 
   init {
     addLoadStateListener {
-      if (it.refresh == LoadState.Loading) clearState()
+      if (it.refresh == LoadState.Loading) clear()
     }
   }
 
-  private val stateViewModel: StateViewModel by fragment.viewModels()
 
-  class StateViewModel : ViewModel() {
-    val layoutManagerStates = hashMapOf<Int, Parcelable?>()
-    val visibleScrollableViews = hashMapOf<Int, WeakReference<MediaContainerViewHolder.Category>>()
-    val pagers = hashMapOf<Int, WeakReference<Flow<PagingData<AVPMediaItem>>>?>()
-  }
-
-  private fun clearState() {
-    stateViewModel.layoutManagerStates.clear()
-    stateViewModel.visibleScrollableViews.clear()
-  }
-
-  private fun saveState() {
-    stateViewModel.visibleScrollableViews.values.forEach { item ->
-      item.get()?.let { saveScrollState(it) }
-    }
-    stateViewModel.visibleScrollableViews.clear()
-  }
-
-  override fun onViewRecycled(holder: MediaContainerViewHolder) {
-    super.onViewRecycled(holder)
-    if (holder is MediaContainerViewHolder.Category) saveScrollState(holder) {
-      stateViewModel.visibleScrollableViews.remove(holder.bindingAdapterPosition)
-    }
-  }
-
-  private fun saveScrollState(
-      holder: MediaContainerViewHolder.Category,
-      block: ((MediaContainerViewHolder.Category) -> Unit)? = null
-  ) {
-    val layoutManagerStates = stateViewModel.layoutManagerStates
-    layoutManagerStates[holder.bindingAdapterPosition] =
-      holder.layoutManager?.onSaveInstanceState()
-    block?.invoke(holder)
-  }
-
-  suspend fun submit(pagingData: PagingData<MediaItemsContainer>?) {
-    saveState()
-    submitData(pagingData ?: PagingData.empty())
-  }
-
-  // Binding
-  override fun onBindViewHolder(holder: MediaContainerViewHolder, position: Int) {
+  override fun bindContent(h: ViewHolderState<MediaContainerViewHolder>, position: Int) {
     val items = getItem(position) ?: return
+    val holder = h as MediaContainerViewHolder
     holder.transitionView.transitionName = (transition + items.id).hashCode().toString()
     holder.bind(items)
     val clickView = holder.clickView
@@ -135,6 +92,12 @@ class MediaContainerAdapter(
       listener.onLongClick(clientId, items, holder.transitionView)
       true
     }
+  }
+
+
+
+  suspend fun submit(pagingData: PagingData<MediaItemsContainer>?) {
+    submitData(pagingData ?: PagingData.empty())
   }
 
   override fun getItemViewType(position: Int): Int {
@@ -153,9 +116,9 @@ class MediaContainerAdapter(
         sharedPool,
         clientId,
         listener
-    )
+    ) as ViewHolderState<MediaContainerViewHolder>
 
-    else -> MediaContainerViewHolder.Media.create(parent, clientId, listener)
+    else -> MediaContainerViewHolder.Media.create(parent, clientId, listener) as ViewHolderState<MediaContainerViewHolder>
   }
 }
 

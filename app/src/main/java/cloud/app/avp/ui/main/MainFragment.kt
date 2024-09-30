@@ -7,9 +7,6 @@ import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.recyclerview.widget.RecyclerView
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import cloud.app.avp.MainActivityViewModel
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentMainBinding
@@ -17,11 +14,8 @@ import cloud.app.avp.ui.main.home.HomeFragment
 import cloud.app.avp.ui.main.library.LibraryFragment
 import cloud.app.avp.ui.main.search.SearchFragment
 import cloud.app.avp.ui.setting.SettingsFragment
-import cloud.app.avp.utils.SlideInPageTransformer
 import cloud.app.avp.utils.autoCleared
-import cloud.app.avp.utils.tv.FOCUS_SELF
-import cloud.app.avp.utils.tv.setLinearListLayout
-import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.configureSnackBar
+import cloud.app.avp.utils.setupTransition
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +24,9 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainFragment : Fragment() {
   private var binding by autoCleared<FragmentMainBinding>()
   private val mainActivityViewModel by activityViewModels<MainActivityViewModel>()
+
+  private var selectedItemId: Int = R.id.homeFragment
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -39,12 +36,26 @@ class MainFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-
+    setupTransition(view)
     val navView = binding.navView as NavigationBarView
-    navView.setOnItemSelectedListener {
-      childFragmentManager.beginTransaction()
-        .replace(R.id.vpContainer, createFragment(it.itemId))
-        .commit()
+
+    if (savedInstanceState != null) {
+      selectedItemId = savedInstanceState.getInt("selectedItemId", R.id.homeFragment)
+      val currentFragment = childFragmentManager.findFragmentById(R.id.vpContainer)
+      if (currentFragment == null) {
+        showFragment(selectedItemId)
+      }
+    } else {
+      showFragment(selectedItemId) // Show initial fragment
+    }
+
+    navView.setOnItemSelectedListener { menuItem ->
+      if (menuItem.itemId != selectedItemId) {
+        selectedItemId = menuItem.itemId
+        showFragment(selectedItemId)
+      }
+
+//      navView.selectedItemId = R.id.homeFragment
       true
     }
 
@@ -58,22 +69,35 @@ class MainFragment : Fragment() {
       }
       mainActivityViewModel.setNavInsets(insets)
     }
-    navView.selectedItemId = R.id.homeFragment
     navView.requestFocus()
   }
 
-  companion object {
-    fun createFragment(@IdRes id: Int): Fragment {
-      return when (id) {
-        R.id.homeFragment -> HomeFragment()
-        R.id.searchFragment -> SearchFragment()
-        R.id.libraryFragment -> LibraryFragment()
-        R.id.settingsFragment -> SettingsFragment()
-        else -> {
-          throw IllegalArgumentException("Invalid position")
-        }
+  private fun showFragment(@IdRes id: Int) {
+    childFragmentManager.beginTransaction()
+      .replace(R.id.vpContainer, createFragment(id))
+      .commit()
+  }
+
+  override fun onSaveInstanceState(outState: Bundle) {
+    super.onSaveInstanceState(outState)
+    outState.putInt("selectedItemId", selectedItemId)
+  }
+
+  val fragments = mutableMapOf<Int, Fragment>()
+  private fun createFragment(@IdRes id: Int): Fragment {
+    if (fragments.containsKey(id)) return fragments[id]!!
+
+    val fragment = when (id) {
+      R.id.homeFragment -> HomeFragment()
+      R.id.searchFragment -> SearchFragment()
+      R.id.libraryFragment -> LibraryFragment()
+      R.id.settingsFragment -> SettingsFragment()
+      else -> {
+        throw IllegalArgumentException("Invalid position")
       }
     }
+    fragments[id] = fragment
+    return fragment
   }
 
 

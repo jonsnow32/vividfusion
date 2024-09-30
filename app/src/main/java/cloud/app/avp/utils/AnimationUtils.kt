@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import com.google.android.material.R
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.motion.MotionUtils
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.MaterialArcMotion
@@ -96,9 +97,8 @@ private val View.sharedElementTransitions
   }
 
 fun Fragment.setupTransition(view: View) {
-  val color = resources.getColor(cloud.app.avp.R.color.md_theme_background, requireContext().theme)
+  val color = MaterialColors.getColor(view, cloud.app.avp.R.attr.appBackground, 0)
   view.setBackgroundColor(color)
-
   if (view.animations) {
     val transitionName = arguments?.getString("transitionName")
     if (transitionName != null && view.sharedElementTransitions) {
@@ -111,13 +111,13 @@ fun Fragment.setupTransition(view: View) {
       }
       sharedElementEnterTransition = transition
     }
-
     exitTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
     reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
     enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
     returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
-
     postponeEnterTransition()
-    view.doOnPreDraw { startPostponedEnterTransition() }
+    view.doOnPreDraw {
+      startPostponedEnterTransition()
+    }
   }
 }

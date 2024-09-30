@@ -6,18 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentHomeBinding
 import cloud.app.avp.ui.main.configureFeedUI
+import cloud.app.avp.ui.setting.SettingsFragment
 import cloud.app.avp.utils.autoCleared
+import cloud.app.avp.utils.firstVisible
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
+import cloud.app.avp.utils.scrollTo
 import cloud.app.avp.utils.setupTransition
-import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.configureSnackBar
-import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -33,7 +32,7 @@ class HomeFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-//    setupTransition(view)
+    setupTransition(view)
     applyInsetsMain(binding.appBarLayoutCustom, binding.recyclerView)
     val tabLayout = binding.tabLayout
 
@@ -45,8 +44,12 @@ class HomeFragment : Fragment() {
       binding.tabLayout
     )
 
+    binding.recyclerView.scrollTo(viewModel.recyclerPosition, viewModel.recyclerOffset) {
+
+    }
+
     binding.btnSettings.setOnClickListener {
-      navigate(R.id.settingsFragment)
+      navigate(SettingsFragment())
     }
 
     binding.searchHome.setOnClickListener {
@@ -61,5 +64,11 @@ class HomeFragment : Fragment() {
         tabLayout.addTab(tab, viewModel.tab == genre)
       }
     }
+  }
+  override fun onStop() {
+    val position = binding.recyclerView.firstVisible();
+    viewModel.recyclerPosition = position
+    viewModel.recyclerOffset = binding.recyclerView.findViewHolderForAdapterPosition(position)?.itemView?.top ?: 0
+    super.onStop()
   }
 }

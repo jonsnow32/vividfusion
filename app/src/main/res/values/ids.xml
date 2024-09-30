@@ -5,9 +5,11 @@
   <item name="aboutFragment" type="id"/>
   <item name="settingsFragment" type="id"/>
   <item name="mainFragment" type="id"/>
+  <item name="mainActivity" type="id"/>
+  <item name="movieFragment" type="id"/>
+  <item name="showFragment" type="id"/>
   <item name="homeFragment" type="id"/>
   <item name="browseFragment" type="id"/>
-  <item name="showsFragment" type="id"/>
   <item name="searchFragment" type="id"/>
   <item name="libraryFragment" type="id"/>
   <item name="exceptionFragment" type="id"/>

@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.detail.movie
+package cloud.app.avp.ui.detail.show
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentMovieBinding
+import cloud.app.avp.ui.detail.movie.MovieFragment
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.paging.SingleSource
 import cloud.app.avp.ui.paging.toFlow
@@ -28,13 +28,13 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
-class MovieFragment : Fragment(), MediaItemAdapter.Listener {
+class ShowFragment : Fragment(), MediaItemAdapter.Listener {
   private var binding by autoCleared<FragmentMovieBinding>()
-  private val viewModel by viewModels<MovieViewModel>()
+  private val viewModel by activityViewModels<ShowViewModel>()
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
-  private val shortMovieItem by lazy { args.getParcel<AVPMediaItem.MovieItem>("mediaItem")!! }
+  private val shortShowItem by lazy { args.getParcel<AVPMediaItem.ShowItem>("mediaItem")!! }
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -43,23 +43,19 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
     return binding.root
   }
 
-  override fun onDestroyView() {
-    super.onDestroyView()
-  }
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
 
     setupTransition(binding.headerBackground)
-    bind(shortMovieItem)
-    viewModel.getFullMovieItem(shortMovieItem)
+    bind(shortShowItem)
 
+    viewModel.getFullShowItem(shortShowItem)
     observe(viewModel.fullMediaItem) {
-
-      it?.let { bind(it as AVPMediaItem.MovieItem) }
+      it?.let { bind(it as AVPMediaItem.ShowItem) }
       val actorAdapter = MediaItemAdapter(this, "", "clientID")
       binding.rvActors.adapter = actorAdapter;
       val actorList =
-        (it as? AVPMediaItem.MovieItem)?.movie?.generalInfo?.actors?.map { actorData ->
+        (it as? AVPMediaItem.ShowItem)?.show?.generalInfo?.actors?.map { actorData ->
           AVPMediaItem.ActorItem(actorData)
         }
 
@@ -73,8 +69,8 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
       val recommendationAdapter = MediaItemAdapter(this, "", "clientID")
       binding.rvRecommendedMedia.adapter = recommendationAdapter
       val movieList =
-        (it as? AVPMediaItem.MovieItem)?.movie?.recommendations?.map { recommendationData ->
-          AVPMediaItem.MovieItem(recommendationData)
+        (it as? AVPMediaItem.ShowItem)?.show?.recommendations?.map { recommendationData ->
+          AVPMediaItem.ShowItem(recommendationData)
         }
       movieList?.apply {
         val flow = toPagedList().toFlow();
@@ -86,23 +82,23 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
   }
 
   fun List<AVPMediaItem>.toPagedList() = PagedData.Single { this }
-  fun bind(item: AVPMediaItem.MovieItem) {
+  fun bind(item: AVPMediaItem.ShowItem) {
     item.backdrop.loadWith(binding.headerBackground, item.poster)
     binding.title.text = item.title
-    binding.mediaOverview.text = item.movie.generalInfo.overview
+    binding.mediaOverview.text = item.show.generalInfo.overview
 
-    binding.genre1.text = item.movie.generalInfo.genres?.firstOrNull()
-    binding.genre2.text = item.movie.generalInfo.genres?.getOrNull(1)
-    binding.genre3.text = item.movie.generalInfo.genres?.getOrNull(2)
-    binding.contentRating.text = item.movie.generalInfo.contentRating
+    binding.genre1.text = item.show.generalInfo.genres?.firstOrNull()
+    binding.genre2.text = item.show.generalInfo.genres?.getOrNull(1)
+    binding.genre3.text = item.show.generalInfo.genres?.getOrNull(2)
+    binding.contentRating.text = item.show.generalInfo.contentRating
     binding.mediaReleaseYear.text =
-      item.movie.generalInfo.releaseDateMsUTC?.toLocalYear().toString()
-    binding.mediaRating.text = item.movie.generalInfo.rating.toString()
-    binding.mediaRuntime.text = item.movie.generalInfo.runtime.toString()
+      item.show.generalInfo.releaseDateMsUTC?.toLocalYear().toString()
+    binding.mediaRating.text = item.show.generalInfo.rating.toString()
+    binding.mediaRuntime.text = item.show.generalInfo.runtime.toString()
 
     binding.watchNow.setOnClickListener {
       it.transitionName = "watchNow" + item.id
-      val streamFragment = StreamFragment();
+      val streamFragment = StreamFragment()
       streamFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
       navigate(
         streamFragment,
@@ -112,7 +108,7 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
   }
 
   override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
-    val movieFragment = MovieFragment();
+    val movieFragment = MovieFragment()
     movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
     navigate(
       movieFragment,
@@ -122,9 +118,5 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
 
   override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
     TODO("Not yet implemented")
-  }
-
-  override fun onPause() {
-    super.onPause()
   }
 }

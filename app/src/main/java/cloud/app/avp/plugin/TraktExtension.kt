@@ -5,6 +5,7 @@ import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.helpers.network.HttpHelper
+import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.ExtensionType
 import cloud.app.common.models.LoginType
 import cloud.app.common.models.MediaItemsContainer
@@ -44,11 +45,16 @@ class TraktExtension : BaseExtension, FeedClient {
   }
 
   override suspend fun onExtensionSelected() {
+
   }
 
   override suspend fun getHomeTabs(): List<Tab> = listOf("Alls, Download, Camera").map { Tab(it,it) }
 
   override fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer> {
+    TODO("Not yet implemented")
+  }
+
+  override suspend fun getMediaDetail(avpMediaItem: AVPMediaItem): AVPMediaItem? {
     TODO("Not yet implemented")
   }
 }

@@ -40,10 +40,11 @@ class ExceptionActivity : AppCompatActivity() {
 
   companion object {
     const val EXTRA_STACKTRACE = "stackTrace"
-    fun start(context: Context, exception: Throwable) {
+    fun start(context: Context, exception: Throwable, isCached: Boolean = true) {
       val intent = Intent(context, ExceptionActivity::class.java).apply {
         putExtra(EXTRA_STACKTRACE, exception.stackTraceToString())
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        if(!isCached)
+          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
       }
       context.startActivity(intent)
     }

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import cloud.app.avp.plugin.tmdb.TmdbExtension
+import cloud.app.avp.utils.catchWith
 import cloud.app.avp.utils.toSettings
 import cloud.app.avp.utils.tryWith
 import cloud.app.avp.viewmodels.SnackBarViewModel
@@ -49,7 +50,7 @@ class AVPApplication : Application() {
 
     Thread.setDefaultUncaughtExceptionHandler { _, exception ->
       exception.printStackTrace()
-      ExceptionActivity.start(this, exception)
+      ExceptionActivity.start(this, exception, false)
       Runtime.getRuntime().exit(0)
     }
 
@@ -64,27 +65,28 @@ class AVPApplication : Application() {
         it.forEach { client ->
           tryWith(throwableFlow) {
             client.init(toSettings(preferences), httpHelper)
-            if(client is TmdbExtension) {
+            if (client is TmdbExtension) {
               extensionFlow.emit(client)
+              //client.onExtensionSelected()
             }
-            //client.onExtensionSelected()
           }
+          extensionFlowList.emit(it)
         }
-        extensionFlowList.emit(it)
       }
     }
   }
 
-  companion object {
-    fun Context.restartApp() {
-      val mainIntent = Intent.makeRestartActivityTask(
-        packageManager.getLaunchIntentForPackage(packageName)!!.component
-      )
-      startActivity(mainIntent)
-      Runtime.getRuntime().exit(0)
-    }
-    fun Context.noClient() = SnackBarViewModel.Message(
-      getString(R.string.error_no_client)
+companion object {
+  fun Context.restartApp() {
+    val mainIntent = Intent.makeRestartActivityTask(
+      packageManager.getLaunchIntentForPackage(packageName)!!.component
     )
+    startActivity(mainIntent)
+    Runtime.getRuntime().exit(0)
   }
+
+  fun Context.noClient() = SnackBarViewModel.Message(
+    getString(R.string.error_no_client)
+  )
+}
 }

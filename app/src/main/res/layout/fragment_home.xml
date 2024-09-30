@@ -105,6 +105,7 @@
       android:contentDescription="@string/home"
       android:orientation="vertical"
       tools:listitem="@layout/container_category"
+      android:layoutAnimation="@anim/layout_item_enter"
       app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
   </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

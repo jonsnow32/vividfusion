@@ -22,6 +22,6 @@ sealed class MediaItemsContainer {
     val id
         get() = when (this) {
             is Item -> media.id
-            else -> this.hashCode().toString()
+            is Category -> title
         }
 }

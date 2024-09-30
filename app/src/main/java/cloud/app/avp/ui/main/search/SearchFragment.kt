@@ -15,21 +15,19 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.databinding.FragmentSearchBinding
-import cloud.app.avp.plugin.tmdb.SearchSuggestion.search
 import cloud.app.avp.ui.media.MediaContainerAdapter
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.utils.Utils
 import cloud.app.avp.utils.applyAdapter
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.collect
-import cloud.app.avp.utils.first
+import cloud.app.avp.utils.firstVisible
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.clients.mvdatabase.SearchClient
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.QuickSearchItem
 import cloud.app.common.models.Tab
-import com.google.android.material.internal.ViewUtils.hideKeyboard
 import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -40,7 +38,7 @@ import kotlinx.coroutines.launch
 class SearchFragment : Fragment(), MediaItemAdapter.Listener {
   private val parent get() = parentFragment as Fragment
   private var binding by autoCleared<FragmentSearchBinding>()
-  val viewModel by viewModels<SearchViewModel>()
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -52,6 +50,8 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
     applyInsetsMain(binding.searchBar, binding.recyclerView)
+    val viewModel by parent.viewModels<SearchViewModel>()
+
 
     val tabListener = object : TabLayout.OnTabSelectedListener {
       var enabled = true
@@ -68,8 +68,6 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
       override fun onTabReselected(tab: TabLayout.Tab) = Unit
     }
     binding.tabLayout.addOnTabSelectedListener(tabListener)
-
-
     viewModel.initialize()
 
     observe(viewModel.loading) {
@@ -88,12 +86,12 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
       }
     }
 
-    val mediaContainerAdapter = MediaContainerAdapter(parentFragment as Fragment, "search")
+    val mediaContainerAdapter = MediaContainerAdapter(parentFragment as Fragment, 1, "search")
     val concatAdapter = mediaContainerAdapter.withLoaders()
     binding.recyclerView.adapter = concatAdapter
     collect(viewModel.extensionFlow) {
       binding.recyclerView.itemAnimator = null
-      mediaContainerAdapter.clientId = it?.hashCode().toString()
+      mediaContainerAdapter.clientId = it?.javaClass.toString()
       binding.recyclerView.applyAdapter<SearchClient>(it, id, concatAdapter)
     }
 
@@ -102,6 +100,7 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
       binding.searchLoading.visibility = View.GONE
       mediaContainerAdapter.submit(it)
     }
+
 
 
     val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
@@ -186,11 +185,17 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
         }
       })
     }
+
+
+    viewModel.query?.isNotBlank().let {
+      binding.mainSearch.setQuery(viewModel.query, true)
+    }
+
   }
 
   override fun onStop() {
     val viewModel by parent.viewModels<SearchViewModel>()
-    viewModel.recyclerPosition = binding.recyclerView.first()
+    viewModel.recyclerPosition = binding.recyclerView.firstVisible()
     super.onStop()
   }
 
@@ -201,5 +206,6 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
   override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
     TODO("Not yet implemented")
   }
+
 }
 

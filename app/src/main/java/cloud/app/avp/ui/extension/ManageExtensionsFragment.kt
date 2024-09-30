@@ -5,25 +5,21 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
-import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.databinding.FragmentManageExtensionsBinding
-import cloud.app.avp.utils.autoCleared
-import com.google.android.material.tabs.TabLayout
-import cloud.app.avp.R
+import cloud.app.avp.ui.setting.ExtensionFragment
 import cloud.app.avp.utils.FastScrollerHelper
+import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.configure
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
-import cloud.app.avp.utils.onAppBarChangeListener
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.clients.streams.StreamClient
 import cloud.app.common.clients.subtitles.SubtitleClient
+import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class ManageExtensionsFragment : Fragment() {
@@ -40,7 +36,7 @@ class ManageExtensionsFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     setupTransition(view)
     applyInsets {
-      binding.appBarLayout.setPadding(0,it.top, 0,0)
+      binding.appBarLayout.setPadding(0, it.top, 0, 0)
       binding.recyclerView.setPadding(0, 0, 0, it.bottom)
     }
 
@@ -49,7 +45,7 @@ class ManageExtensionsFragment : Fragment() {
     binding.swipeRefresh.configure { viewModel.refresh() }
 
     binding.backButton.setOnClickListener {
-      findNavController().popBackStack()
+      childFragmentManager.popBackStack()
     }
     val flow = MutableStateFlow(
       viewModel.extensionFlowList.value
@@ -65,7 +61,12 @@ class ManageExtensionsFragment : Fragment() {
     }
 
     val extensionAdapter = ExtensionAdapter { extension, view ->
-      navigate(R.id.extensionInfoFragment, view, bundleOf("extensionMetadata" to extension.metadata, "extensionClassName" to extension.javaClass.toString()))
+      val extensionFragment = ExtensionFragment()
+      extensionFragment.arguments = bundleOf(
+        "extensionMetadata" to extension.metadata,
+        "extensionClassName" to extension.javaClass.toString()
+      )
+      navigate(extensionFragment, view)
     }
     binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
 

@@ -29,8 +29,8 @@ fun Fragment.configureFeedUI(
   }
 
   val mediaContainerAdapter = if (listener == null)
-    MediaContainerAdapter(parent, id.toString())
-  else MediaContainerAdapter(parent, id.toString(), listener)
+    MediaContainerAdapter(parent, id,  id.toString())
+  else MediaContainerAdapter(parent, id,  id.toString(), listener)
 
   if (listener == null) {
     val concatAdapter = mediaContainerAdapter.withLoaders()

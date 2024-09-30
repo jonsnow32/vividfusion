@@ -1,14 +1,19 @@
 package cloud.app.avp.ui.media
 
+import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import cloud.app.avp.R
+import cloud.app.avp.base.StateViewModel
+import cloud.app.avp.base.ViewHolderState
 import cloud.app.avp.databinding.ContainerCategoryBinding
 import cloud.app.avp.databinding.ContainerItemBinding
 import cloud.app.avp.ui.media.MediaItemViewHolder.Companion.placeHolder
@@ -16,28 +21,41 @@ import cloud.app.avp.ui.paging.toFlow
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.tv.FOCUS_SELF
 import cloud.app.avp.utils.tv.setLinearListLayout
-import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.MediaItemsContainer
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
 sealed class MediaContainerViewHolder(
-  itemView: View,
-) : RecyclerView.ViewHolder(itemView) {
+  binding: ViewBinding,
+) : ViewHolderState<MediaContainerViewHolder.SaveStateData>(binding) {
+
+  data class SaveStateData(
+    var layoutManagerState: Parcelable? = null,
+  )
+
   abstract fun bind(container: MediaItemsContainer)
-  open val clickView = itemView
+  open val clickView = binding.root
   abstract val transitionView: View
 
   class Category(
-      val binding: ContainerCategoryBinding,
-      val viewModel: MediaContainerAdapter.StateViewModel,
-      private val sharedPool: RecyclerView.RecycledViewPool,
-      private val clientId: String?,
-      val listener: MediaItemAdapter.Listener,
-  ) :
-    MediaContainerViewHolder(binding.root) {
+    val binding: ContainerCategoryBinding,
+    val viewModel: StateViewModel,
+    private val sharedPool: RecyclerView.RecycledViewPool,
+    private val clientId: String?,
+    val listener: MediaItemAdapter.Listener,
+  ) : MediaContainerViewHolder(binding) {
+
+    override fun save(): SaveStateData = SaveStateData(
+      layoutManagerState = binding.recyclerView.layoutManager?.onSaveInstanceState(),
+    )
+
+    override fun restore(state: SaveStateData) {
+      binding.recyclerView.layoutManager?.onRestoreInstanceState(state.layoutManagerState)
+    }
+
     override fun bind(container: MediaItemsContainer) {
       val category = container as MediaItemsContainer.Category
       binding.title.text = category.title
@@ -54,22 +72,13 @@ sealed class MediaContainerViewHolder(
         nextRight = FOCUS_SELF,
       )
       binding.recyclerView.setRecycledViewPool(sharedPool)
-      val position = bindingAdapterPosition
-      val layoutManager = binding.recyclerView.layoutManager as LinearLayoutManager
-      layoutManager.apply {
-        initialPrefetchItemCount = 0;
-        val state: Parcelable? = viewModel.layoutManagerStates[position]
-        if (state != null) onRestoreInstanceState(state)
-        else scrollToPosition(0)
-      }
-      viewModel.visibleScrollableViews[position] = WeakReference(this)
-      viewModel.pagers[position] = WeakReference(category.more?.toFlow())
+      binding.more.isVisible = category.more != null
+
       viewModel.viewModelScope.launch {
-        viewModel.pagers[position]?.get()?.collectLatest {
+        category.more?.toFlow()?.collectLatest {
           adapter.submitData(it)
         }
       }
-      binding.more.isVisible = category.more != null
     }
 
     val layoutManager get() = binding.recyclerView.layoutManager
@@ -78,11 +87,11 @@ sealed class MediaContainerViewHolder(
 
     companion object {
       fun create(
-          parent: ViewGroup,
-          viewModel: MediaContainerAdapter.StateViewModel,
-          sharedPool: RecyclerView.RecycledViewPool,
-          clientId: String?,
-          listener: MediaItemAdapter.Listener,
+        parent: ViewGroup,
+        viewModel: StateViewModel,
+        sharedPool: RecyclerView.RecycledViewPool,
+        clientId: String?,
+        listener: MediaItemAdapter.Listener,
       ): MediaContainerViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return Category(
@@ -97,10 +106,10 @@ sealed class MediaContainerViewHolder(
   }
 
   class Media(
-      val binding: ContainerItemBinding,
-      private val clientId: String?,
-      val listener: MediaItemAdapter.Listener,
-  ) : MediaContainerViewHolder(binding.root) {
+    val binding: ContainerItemBinding,
+    private val clientId: String?,
+    val listener: MediaItemAdapter.Listener,
+  ) : MediaContainerViewHolder(binding) {
     override fun bind(container: MediaItemsContainer) {
       val item = (container as? MediaItemsContainer.Item)?.media ?: return
       binding.bind(item)

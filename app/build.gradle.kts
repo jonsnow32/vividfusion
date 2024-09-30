@@ -55,7 +55,7 @@ dependencies {
   implementation(libs.androidx.navigation.ui.ktx)
   implementation(libs.androidx.lifecycle.livedata.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.ktx)
-  implementation(libs.androidx.navigation.fragment.ktx)
+  implementation(libs.androidx.fragment.ktx)
   implementation(libs.androidx.preference)
   implementation(libs.androidx.paging.common)
   implementation(libs.androidx.paging.runtime)

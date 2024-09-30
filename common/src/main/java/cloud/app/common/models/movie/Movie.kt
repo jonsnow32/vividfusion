@@ -1,13 +1,13 @@
 package cloud.app.common.models.movie
 
-import android.media.Rating
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Movie(
   val ids: Ids,
-  val generalInfo: GeneralInfo
+  val generalInfo: GeneralInfo,
+  var recommendations: List<Movie>? = null
 ) : Parcelable {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

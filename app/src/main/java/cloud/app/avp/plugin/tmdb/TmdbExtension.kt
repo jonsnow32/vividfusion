@@ -19,7 +19,9 @@ import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingList
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.Settings
+import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
+import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -63,7 +65,10 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
   private lateinit var settings: Settings
   override fun init(settings: Settings, httpHelper: HttpHelper) {
     this.settings = settings
-    tmdb = AppTmdb(okHttpClient = httpHelper.okHttpClient, settings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57")
+    tmdb = AppTmdb(
+      okHttpClient = httpHelper.okHttpClient,
+      settings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57"
+    )
   }
 
   private val includeAdult get() = settings.getBoolean("tmdb_include_adult")
@@ -85,6 +90,58 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
       "Actors" -> loadActorsFeed(tab.extras)
       else -> loadMoviesFeed(tab?.extras)
     }
+  }
+
+  override suspend fun getMediaDetail(avpMediaItem: AVPMediaItem): AVPMediaItem? {
+    return when (avpMediaItem) {
+      is AVPMediaItem.MovieItem -> getMovieDetail(avpMediaItem.movie.ids.tmdbId)
+      is AVPMediaItem.ShowItem -> getShowDetail(avpMediaItem.show.ids.tmdbId)
+      is AVPMediaItem.EpisodeItem -> getEpisodeDetail(avpMediaItem.episode.ids.tmdbId)
+      else -> null
+    }
+  }
+
+  private fun getEpisodeDetail(tmdbId: Int?): AVPMediaItem.EpisodeItem? {
+    TODO("Not yet implemented")
+  }
+
+  private fun getShowDetail(tmdbId: Int?): AVPMediaItem.ShowItem? {
+    tmdbId ?: return null
+    val response = tmdb.tvService().tv(
+      tmdbId,
+      language,
+      AppendToResponse(
+        AppendToResponseItem.MOVIES,
+        AppendToResponseItem.EXTERNAL_IDS,
+        AppendToResponseItem.MOVIE_CREDITS,
+        AppendToResponseItem.COMBINED_CREDITS,
+        AppendToResponseItem.IMAGES,
+        AppendToResponseItem.RECOMMENDATIONS,
+        AppendToResponseItem.VIDEOS,
+        AppendToResponseItem.REVIEWS
+      )
+    )
+    return response.execute().body()?.toMediaItem()
+  }
+
+  private fun getMovieDetail(tmdbId: Int?): AVPMediaItem.MovieItem? {
+
+    tmdbId ?: return null
+    val response = tmdb.moviesService().summary(
+      tmdbId,
+      language,
+      AppendToResponse(
+        AppendToResponseItem.MOVIES,
+        AppendToResponseItem.EXTERNAL_IDS,
+        AppendToResponseItem.MOVIE_CREDITS,
+        AppendToResponseItem.COMBINED_CREDITS,
+        AppendToResponseItem.IMAGES,
+        AppendToResponseItem.RECOMMENDATIONS,
+        AppendToResponseItem.VIDEOS,
+        AppendToResponseItem.REVIEWS
+      )
+    )
+    return response.execute().body()?.toMediaItem()
   }
 
   private fun loadActorsFeed(extras: Map<String, String>?): PagedData<MediaItemsContainer> {
@@ -204,6 +261,7 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
     listOf("All", "Movies", "TV Shows", "Actors").map { Tab(it, it) }
 
   override fun searchFeed(query: String?, tab: Tab?): PagedData<MediaItemsContainer> {
+    query ?: return emptyList<MediaItemsContainer>().toPaged()
     return when (tab?.id) {
       "Movies" -> searchMoviesFeed(query, tab.extras)
       "TV Shows" -> searchTvShowsFeed(query, tab.extras)
@@ -281,48 +339,7 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
 
 
   companion object {
-
-    val showGenres: Map<Int, String> = mapOf(
-      10759 to "Action & Adventure",
-      16 to "Animation",
-      35 to "Comedy",
-      80 to "Crime",
-      99 to "Documentary",
-      18 to "Drama",
-      10751 to "Family",
-      10762 to "Kids",
-      9648 to "Mystery",
-      10763 to "News",
-      10764 to "Reality",
-      10765 to "Sci-Fi & Fantasy",
-      10766 to "Soap",
-      10767 to "Talk",
-      10768 to "War & Politics",
-      37 to "Western"
-    )
-
-    val movieGenres: Map<Int, String> = mapOf(
-      28 to "Action",
-      12 to "Adventure",
-      16 to "Animation",
-      35 to "Comedy",
-      80 to "Crime",
-      99 to "Documentary",
-      18 to "Drama",
-      10751 to "Family",
-      14 to "Fantasy",
-      36 to "History",
-      27 to "Horror",
-      10402 to "Music",
-      9648 to "Mystery",
-      10749 to "Romance",
-      878 to "Science Fiction",
-      10770 to "TV Movie",
-      53 to "Thriller",
-      10752 to "War",
-      37 to "Western"
-    )
-
+    private fun List<MediaItemsContainer>.toPaged() = PagedData.Single { this }
     val sortMapper: Map<String, com.uwetrottmann.tmdb2.enumerations.SortBy> = mapOf(
       SortBy.POPULARITY.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.POPULARITY_DESC,
       SortBy.RELEASED.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.RELEASE_DATE_DESC,

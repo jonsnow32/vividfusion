@@ -72,7 +72,7 @@ sealed class AVPMediaItem : Parcelable {
       is MovieItem -> movie.generalInfo.poster?.toImageHolder()
       is ShowItem -> show.generalInfo.poster?.toImageHolder()
       is EpisodeItem -> episode.generalInfo.poster?.toImageHolder()
-      is StreamItem -> streamData.streamQuality?.toImageHolder()
+      is StreamItem -> streamData.streamQuality.toImageHolder()
     }
 
   val backdrop
@@ -86,9 +86,9 @@ sealed class AVPMediaItem : Parcelable {
   val subtitle
     get() = when(this) {
       is ActorItem -> actorData.roleString
-      is MovieItem -> movie.generalInfo.genres.toString()
-      is ShowItem -> show.generalInfo.genres.toString()
-      is EpisodeItem -> episode.generalInfo.genres.toString()
+      is MovieItem -> movie.generalInfo.genres?.firstOrNull() ?: ""
+      is ShowItem -> show.generalInfo.genres?.firstOrNull() ?: ""
+      is EpisodeItem -> episode.generalInfo.genres?.firstOrNull() ?: ""
       is StreamItem -> streamData.providerName
     }
 

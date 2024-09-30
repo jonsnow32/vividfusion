@@ -20,7 +20,9 @@ abstract class FeedViewModel(
 
   override fun onInitialize() {
     viewModelScope.launch {
-      extensionFlow.collect { refresh(true) }
+      extensionFlow.collect {
+        refresh(true)
+      }
     }
   }
 
@@ -28,6 +30,7 @@ abstract class FeedViewModel(
   abstract fun getFeed(client: BaseExtension): Flow<PagingData<MediaItemsContainer>>?
 
   var recyclerPosition = 0
+  var recyclerOffset = 0
 
   val loading = MutableSharedFlow<Boolean>()
   val feed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)

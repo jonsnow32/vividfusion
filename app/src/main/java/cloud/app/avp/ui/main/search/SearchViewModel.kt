@@ -20,14 +20,16 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   override val extensionFlow: MutableStateFlow<BaseExtension?>,
-) : FeedViewModel(throwableFlow, extensionFlow){
+) : FeedViewModel(throwableFlow, extensionFlow) {
 
   var query: String? = ""
   override suspend fun getTabs(client: BaseExtension) =
     (client as? SearchClient)?.searchTabs(query)
 
-  override fun getFeed(client: BaseExtension): Flow<PagingData<MediaItemsContainer>>? =
-    (client as? SearchClient)?.searchFeed(query, tab)?.toFlow()
+  override fun getFeed(client: BaseExtension): Flow<PagingData<MediaItemsContainer>>? {
+    if (query.isNullOrBlank()) return null
+    return (client as? SearchClient)?.searchFeed(query, tab)?.toFlow()
+  }
 
   val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
 
@@ -44,9 +46,12 @@ class SearchViewModel @Inject constructor(
     quickFeed.value = emptyList()
   }
 
-  fun updateQuickFeed()  {
+  fun updateQuickFeed() {
     quickFeed.value = listOf(QuickSearchItem.SearchQueryItem("Thor", false))
   }
 
 
+  override fun onCleared() {
+    super.onCleared()
+  }
 }

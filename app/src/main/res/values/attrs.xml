@@ -5,6 +5,10 @@
   <attr name="colorOnCustomColorContainer" format="color" />
   <attr name="iconColor" format="color" />
 
+
+  <attr name="navBackground" format="reference|color" />
+  <attr name="appBackground" format="reference|color" />
+
   <declare-styleable name="FlowLayout_Layout">
     <attr name="itemSpacing" format="dimension" />
   </declare-styleable>

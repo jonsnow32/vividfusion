@@ -39,4 +39,10 @@ object TimeUtils {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
     return localDateTime.format(formatter)
   }
+
+  fun Long.toLocalYear() : Int{
+    val instant = Instant.ofEpochMilli(this)
+    val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+    return localDateTime.year
+  }
 }

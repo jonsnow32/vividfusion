@@ -1,6 +1,8 @@
 package cloud.app.common.models.movie
 
 import android.os.Parcelable
+import cloud.app.common.models.Actor
+import cloud.app.common.models.ActorData
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -15,5 +17,6 @@ data class GeneralInfo(
   var runtime: Int? = null,
   var genres: List<String>? = null,
   var contentRating: String? = null,
-  var rating: Double? = null
+  var rating: Double? = null,
+  var actors: List<ActorData>? = null
 ) : Parcelable

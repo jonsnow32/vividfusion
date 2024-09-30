@@ -23,13 +23,13 @@ inline fun <reified T> RecyclerView.applyAdapter(
   )
 }
 
-fun RecyclerView.first() =
+fun RecyclerView.firstVisible() =
   (layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
 
-fun RecyclerView.scrollTo(position: Int, block: (Int) -> Unit) = doOnLayout {
-  if (position < 1) return@doOnLayout
+fun RecyclerView.scrollTo(position: Int, offset: Int = 0, block: (Int) -> Unit) = doOnLayout {
+  if (position < 0) return@doOnLayout
   (layoutManager as LinearLayoutManager).run {
-    scrollToPositionWithOffset(position, 0)
+    scrollToPositionWithOffset(position, offset)
     post { block(findFirstVisibleItemPosition()) }
   }
 }

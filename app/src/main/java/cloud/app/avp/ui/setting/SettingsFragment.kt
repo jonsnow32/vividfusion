@@ -9,6 +9,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import cloud.app.avp.ExceptionActivity
 import cloud.app.avp.R
+import cloud.app.avp.ui.extension.ManageExtensionsFragment
 import cloud.app.avp.utils.navigate
 
 
@@ -64,11 +65,13 @@ class SettingsFragment : BaseSettingsFragment() {
 
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
       val fragment = when (preference.key) {
-        "about" -> R.id.aboutFragment
-        "extension" -> R.id.manageExtensionsFragment
-        "ui" -> R.id.manageExtensionsFragment
-        else -> return false
+        "about" -> AboutFragment()
+        "extension" -> ExtensionFragment()
+        "ui" -> ManageExtensionsFragment()
+        else -> null
       }
+      fragment ?: return false
+
       val view = listView.findViewById<View>(preference.key.hashCode())
       navigate(fragment, view)
       return true
