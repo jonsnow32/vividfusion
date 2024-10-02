@@ -113,7 +113,7 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
       AppendToResponse(
         AppendToResponseItem.MOVIES,
         AppendToResponseItem.EXTERNAL_IDS,
-        AppendToResponseItem.MOVIE_CREDITS,
+        AppendToResponseItem.CREDITS,
         AppendToResponseItem.COMBINED_CREDITS,
         AppendToResponseItem.IMAGES,
         AppendToResponseItem.RECOMMENDATIONS,
@@ -134,6 +134,7 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
         AppendToResponseItem.MOVIES,
         AppendToResponseItem.EXTERNAL_IDS,
         AppendToResponseItem.MOVIE_CREDITS,
+        AppendToResponseItem.CREDITS,
         AppendToResponseItem.COMBINED_CREDITS,
         AppendToResponseItem.IMAGES,
         AppendToResponseItem.RECOMMENDATIONS,

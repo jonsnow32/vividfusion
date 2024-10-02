@@ -25,11 +25,11 @@ fun TvShowResultsPage.toMediaItemsList() = results?.map { it.toMediaItem() } ?: 
 
 fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
 
-  fun getGenre(baseMovie: BaseMovie) : List<String>?{
-    if(baseMovie.genres.isNullOrEmpty()) {
-     return baseMovie.genre_ids?.map { movieGenres[it] ?: "" }
+  fun getGenre(baseMovie: BaseMovie): List<String>? {
+    if (baseMovie.genres.isNullOrEmpty()) {
+      return baseMovie.genre_ids?.map { movieGenres[it] ?: "" }
     }
-    return baseMovie.genres.map {it.name }
+    return baseMovie.genres.map { it.name }
   }
 
   fun toMovie(baseMovie: BaseMovie) = Movie(
@@ -46,19 +46,23 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
       //to be continued
     )
   )
+
   val movie = toMovie(this);
 
   if (this is com.uwetrottmann.tmdb2.entities.Movie) {
     movie.recommendations = this.recommendations?.results?.map { toMovie(it) }
     movie.generalInfo.runtime = this.runtime
-    movie.generalInfo.actors = this.credits?.cast?.map { ActorData(
-      actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder()),
-    ) }
+    movie.generalInfo.actors = this.credits?.cast?.map {
+      ActorData(
+        actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder()),
+      )
+    }
   }
 
   return AVPMediaItem.MovieItem(movie)
 }
-fun BaseTvShow.toMediaItem() : AVPMediaItem.ShowItem {
+
+fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
 
 
   fun toShow(baseShow: BaseTvShow) = Show(
@@ -74,13 +78,19 @@ fun BaseTvShow.toMediaItem() : AVPMediaItem.ShowItem {
       genres = baseShow.genre_ids?.map { showGenres[it] ?: "" },
       //to be continued
     ),
+    )
 
-  )
   val show = toShow(this)
   if (this is com.uwetrottmann.tmdb2.entities.TvShow) {
     show.recommendations = this.recommendations?.results?.map { toShow(it) }
     show.generalInfo.contentRating = this.content_ratings?.results.orEmpty().firstOrNull()?.rating
     show.generalInfo.genres = this.genres?.map { it.name ?: "unknown" }
+    show.generalInfo.actors = this.credits?.cast?.map {
+      ActorData(
+        actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder()),
+      )
+    }
+
     show.tagLine = this.tagline
   }
   return AVPMediaItem.ShowItem(show)

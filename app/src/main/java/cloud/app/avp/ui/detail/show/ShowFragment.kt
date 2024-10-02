@@ -4,13 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.NavUtils
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
-import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentShowBinding
@@ -18,7 +17,6 @@ import cloud.app.avp.ui.detail.movie.MovieFragment
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.paging.toFlow
 import cloud.app.avp.utils.TimeUtils.toLocalMonthYear
-import cloud.app.avp.utils.TimeUtils.toLocalYear
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
 import cloud.app.avp.utils.loadWith
@@ -32,6 +30,7 @@ import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ShowFragment : Fragment(), MediaItemAdapter.Listener {
@@ -54,7 +53,7 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
 
     setupTransition(binding.headerBackground)
     applyInsets {
-      binding.appBarLayout.setPadding(0,it.top, 0,0)
+      binding.appBarLayout.setPadding(0, it.top, 0, 0)
     }
     bind(shortShowItem)
     binding.appBarLayout.onAppBarChangeListener { offset ->
@@ -80,31 +79,41 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
 
     viewModel.getFullShowItem(shortShowItem)
     observe(viewModel.fullMediaItem) {
-      it?.let { bind(it as AVPMediaItem.ShowItem) }
+      if (it == null || it !is AVPMediaItem.ShowItem) return@observe
+      val showItem = it as AVPMediaItem.ShowItem
+      bind(showItem)
+
+
       val actorAdapter = MediaItemAdapter(this, "", "clientID")
       binding.rvActors.adapter = actorAdapter;
       val actorList =
-        (it as? AVPMediaItem.ShowItem)?.show?.generalInfo?.actors?.map { actorData ->
+        showItem.show.generalInfo.actors?.map { actorData ->
           AVPMediaItem.ActorItem(actorData)
         }
 
-      actorList?.let {
-        val flow = it.toPagedList().toFlow();
-        flow.collectLatest { pagingData ->
-          actorAdapter.submit(pagingData)
+      actorList?.apply {
+        lifecycleScope.launch {
+          val flow = toPagedList().toFlow();
+          flow.collectLatest { pagingData ->
+            actorAdapter.submit(pagingData)
+          }
         }
       }
 
       val recommendationAdapter = MediaItemAdapter(this, "", "clientID")
       binding.rvRecommendedMedia.adapter = recommendationAdapter
-      val movieList =
-        (it as? AVPMediaItem.ShowItem)?.show?.recommendations?.map { recommendationData ->
+
+      val recommendations =
+        showItem.show.recommendations?.map { recommendationData ->
           AVPMediaItem.ShowItem(recommendationData)
         }
-      movieList?.apply {
-        val flow = toPagedList().toFlow();
-        flow.collectLatest { pagingData ->
-          recommendationAdapter.submit(pagingData)
+
+      recommendations?.apply {
+        lifecycleScope.launch {
+          val flow = toPagedList().toFlow();
+          flow.collectLatest { pagingData ->
+            recommendationAdapter.submit(pagingData)
+          }
         }
       }
     }

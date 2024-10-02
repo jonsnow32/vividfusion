@@ -36,7 +36,6 @@
             android:id="@+id/headerBackground"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:src="@drawable/sample_video_poster"
             android:scaleType="centerCrop" />
           <View
             android:layout_width="match_parent"
