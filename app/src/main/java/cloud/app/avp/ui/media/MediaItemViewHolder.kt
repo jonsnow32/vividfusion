@@ -22,7 +22,7 @@ sealed class MediaItemViewHolder(itemView: View) :
 
 
   fun ItemMediaTitleBinding.bind(item: AVPMediaItem) {
-    title.text = item.title
+    title.text = (item.releaseYear ?: item.title).toString()
     subtitle.isVisible = item.subtitle.isNullOrEmpty().not()
     subtitle.text = item.subtitle
   }

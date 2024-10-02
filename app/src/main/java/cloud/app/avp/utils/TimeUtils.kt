@@ -45,4 +45,12 @@ object TimeUtils {
     val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
     return localDateTime.year
   }
+
+  fun Long.toLocalMonthYear() : String{
+    val instant = Instant.ofEpochMilli(this)
+    val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+    val month = localDateTime.month.name.lowercase().capitalize()
+    val year = localDateTime.year
+    return "$month $year"
+  }
 }

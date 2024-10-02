@@ -66,6 +66,14 @@ sealed class AVPMediaItem : Parcelable {
       is StreamItem -> streamData.fileName
     }
 
+  val releaseYear
+    get() = when (this) {
+      is ActorItem -> actorData.actor.name
+      is MovieItem -> movie.generalInfo.getReleaseYear()
+      is ShowItem -> show.generalInfo.getReleaseYear()
+      is EpisodeItem -> episode.generalInfo.getReleaseYear()
+      is StreamItem -> null
+    }
   val poster
     get() = when (this) {
       is ActorItem -> actorData.actor.image
@@ -84,7 +92,7 @@ sealed class AVPMediaItem : Parcelable {
       is StreamItem -> null
     }
   val subtitle
-    get() = when(this) {
+    get() = when (this) {
       is ActorItem -> actorData.roleString
       is MovieItem -> movie.generalInfo.genres?.firstOrNull() ?: ""
       is ShowItem -> show.generalInfo.genres?.firstOrNull() ?: ""
@@ -93,7 +101,7 @@ sealed class AVPMediaItem : Parcelable {
     }
 
   val rating
-    get() = when(this) {
+    get() = when (this) {
       is ActorItem -> null
       is MovieItem -> movie.generalInfo.rating
       is ShowItem -> show.generalInfo.rating

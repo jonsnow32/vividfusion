@@ -18,6 +18,7 @@
     <item name="android:layout_width">match_parent</item>
     <item name="android:layout_height">?actionBarSize</item>
     <!--    <item name="android:background">@android:color/transparent</item>-->
+    <item name="navigationIcon">@drawable/ic_back</item>
     <item name="layout_collapseMode">pin</item>
   </style>
 
@@ -140,6 +141,25 @@
     <item name="android:paddingTop">0dp</item>
     <item name="android:paddingBottom">0dp</item>
     <item name="android:minWidth">0dp</item>
+  </style>
+
+
+  <style name="FlowLayoutItem" parent="NiceButton">
+    <item name="android:layout_height">24dp</item>
+    <item name="android:layout_width">wrap_content</item>
+    <item name="android:textSize">12sp</item>
+    <item name="android:layout_marginStart">0dp</item>
+    <item name="android:layout_marginEnd">0dp</item>
+    <item name="android:stateListAnimator">@null</item>
+    <item name="iconPadding">0dp</item>
+    <item name="android:paddingTop">0dp</item>
+    <item name="android:paddingBottom">0dp</item>
+    <item name="android:textColor">?colorOnSurface</item>
+    <item name="android:minWidth">0dp</item>
+    <item name="backgroundTint">@android:color/transparent</item>
+    <item name="strokeColor">?iconColor</item>
+    <item name="strokeWidth">1dp</item>
+    <item name="cornerRadius">@dimen/rounded_button_radius</item>
   </style>
 
   <style name="ResultInfoText">

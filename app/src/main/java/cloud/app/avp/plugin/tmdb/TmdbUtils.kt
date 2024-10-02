@@ -24,6 +24,14 @@ fun MovieResultsPage.toMediaItemsList() = results?.map { it.toMediaItem() } ?: e
 fun TvShowResultsPage.toMediaItemsList() = results?.map { it.toMediaItem() } ?: emptyList()
 
 fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
+
+  fun getGenre(baseMovie: BaseMovie) : List<String>?{
+    if(baseMovie.genres.isNullOrEmpty()) {
+     return baseMovie.genre_ids?.map { movieGenres[it] ?: "" }
+    }
+    return baseMovie.genres.map {it.name }
+  }
+
   fun toMovie(baseMovie: BaseMovie) = Movie(
     ids = Ids(tmdbId = baseMovie.id),
     generalInfo = GeneralInfo(
@@ -34,7 +42,7 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
       poster = baseMovie.poster_path,
       backdrop = baseMovie.backdrop_path,
       rating = baseMovie.vote_average,
-      genres = baseMovie.genre_ids?.map { movieGenres[it] ?: "" },
+      genres = getGenre(this)
       //to be continued
     )
   )
@@ -51,6 +59,8 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
   return AVPMediaItem.MovieItem(movie)
 }
 fun BaseTvShow.toMediaItem() : AVPMediaItem.ShowItem {
+
+
   fun toShow(baseShow: BaseTvShow) = Show(
     ids = Ids(tmdbId = baseShow.id),
     generalInfo = GeneralInfo(
@@ -63,12 +73,15 @@ fun BaseTvShow.toMediaItem() : AVPMediaItem.ShowItem {
       rating = baseShow.vote_average,
       genres = baseShow.genre_ids?.map { showGenres[it] ?: "" },
       //to be continued
-    )
+    ),
+
   )
   val show = toShow(this)
   if (this is com.uwetrottmann.tmdb2.entities.TvShow) {
     show.recommendations = this.recommendations?.results?.map { toShow(it) }
     show.generalInfo.contentRating = this.content_ratings?.results.orEmpty().firstOrNull()?.rating
+    show.generalInfo.genres = this.genres?.map { it.name ?: "unknown" }
+    show.tagLine = this.tagline
   }
   return AVPMediaItem.ShowItem(show)
 }

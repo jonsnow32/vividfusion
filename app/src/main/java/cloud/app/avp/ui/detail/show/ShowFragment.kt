@@ -4,23 +4,29 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.NavUtils
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
+import androidx.core.view.setPadding
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.viewModels
+import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
-import cloud.app.avp.databinding.FragmentMovieBinding
+import cloud.app.avp.databinding.FragmentShowBinding
 import cloud.app.avp.ui.detail.movie.MovieFragment
 import cloud.app.avp.ui.media.MediaItemAdapter
-import cloud.app.avp.ui.paging.SingleSource
 import cloud.app.avp.ui.paging.toFlow
-import cloud.app.avp.ui.stream.StreamFragment
+import cloud.app.avp.utils.TimeUtils.toLocalMonthYear
 import cloud.app.avp.utils.TimeUtils.toLocalYear
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
-import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.loadWith
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
+import cloud.app.avp.utils.onAppBarChangeListener
+import cloud.app.avp.utils.roundTo
+import cloud.app.avp.utils.setTextWithVisibility
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
@@ -29,8 +35,8 @@ import kotlinx.coroutines.flow.collectLatest
 
 @AndroidEntryPoint
 class ShowFragment : Fragment(), MediaItemAdapter.Listener {
-  private var binding by autoCleared<FragmentMovieBinding>()
-  private val viewModel by activityViewModels<ShowViewModel>()
+  private var binding by autoCleared<FragmentShowBinding>()
+  private val viewModel by viewModels<ShowViewModel>()
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
@@ -39,7 +45,7 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
-    binding = FragmentMovieBinding.inflate(inflater, container, false)
+    binding = FragmentShowBinding.inflate(inflater, container, false)
     return binding.root
   }
 
@@ -47,7 +53,30 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
     super.onViewCreated(view, savedInstanceState)
 
     setupTransition(binding.headerBackground)
+    applyInsets {
+      binding.appBarLayout.setPadding(0,it.top, 0,0)
+    }
     bind(shortShowItem)
+    binding.appBarLayout.onAppBarChangeListener { offset ->
+      binding.appbarOutline.alpha = offset
+      binding.appbarOutline.isVisible = offset > 0
+      //binding.toolBar.alpha = offset
+    }
+
+    binding.toolBar.setNavigationOnClickListener {
+      parentFragmentManager.popBackStack()
+    }
+
+    binding.toolBar.setOnMenuItemClickListener {
+      when (it.itemId) {
+        R.id.menu_home -> {
+          parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+          true
+        }
+
+        else -> false
+      }
+    }
 
     viewModel.getFullShowItem(shortShowItem)
     observe(viewModel.fullMediaItem) {
@@ -84,36 +113,56 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
   fun List<AVPMediaItem>.toPagedList() = PagedData.Single { this }
   fun bind(item: AVPMediaItem.ShowItem) {
     item.backdrop.loadWith(binding.headerBackground, item.poster)
-    binding.title.text = item.title
+    binding.toolBar.title = item.title
     binding.mediaOverview.text = item.show.generalInfo.overview
 
-    binding.genre1.text = item.show.generalInfo.genres?.firstOrNull()
-    binding.genre2.text = item.show.generalInfo.genres?.getOrNull(1)
-    binding.genre3.text = item.show.generalInfo.genres?.getOrNull(2)
-    binding.contentRating.text = item.show.generalInfo.contentRating
-    binding.mediaReleaseYear.text =
-      item.show.generalInfo.releaseDateMsUTC?.toLocalYear().toString()
-    binding.mediaRating.text = item.show.generalInfo.rating.toString()
-    binding.mediaRuntime.text = item.show.generalInfo.runtime.toString()
+    binding.genre1.setTextWithVisibility(item.show.generalInfo.genres?.firstOrNull())
+    binding.genre2.setTextWithVisibility(item.show.generalInfo.genres?.getOrNull(1))
+    binding.genre3.setTextWithVisibility(item.show.generalInfo.genres?.getOrNull(2))
+    binding.contentRating.setTextWithVisibility(item.show.generalInfo.contentRating)
+    binding.tagLine.setTextWithVisibility(item.show.tagLine)
+    binding.mediaStatus.setTextWithVisibility(item.show.status.capitalize())
 
-    binding.watchNow.setOnClickListener {
-      it.transitionName = "watchNow" + item.id
-      val streamFragment = StreamFragment()
-      streamFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
-      navigate(
-        streamFragment,
-        it
-      )
-    }
+    binding.mediaReleaseYear.setTextWithVisibility(
+      item.show.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
+    )
+    binding.mediaRating.setTextWithVisibility(item.rating?.roundTo(1).toString())
+    binding.toolBar.subtitle = item.show.status
+
+//    binding.watchNow.setOnClickListener {
+//      it.transitionName = "watchNow" + item.id
+//      val streamFragment = StreamFragment()
+//      streamFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
+//      navigate(
+//        streamFragment,
+//        it
+//      )
+//    }
   }
 
   override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
-    val movieFragment = MovieFragment()
-    movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
-    navigate(
-      movieFragment,
-      transitionView
-    )
+    when (item) {
+      is AVPMediaItem.MovieItem -> {
+        val movieFragment = MovieFragment()
+        movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
+        navigate(
+          movieFragment,
+          transitionView
+        )
+      }
+
+      is AVPMediaItem.ShowItem -> {
+        val showFragment = ShowFragment()
+        showFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
+        navigate(
+          showFragment,
+          transitionView
+        )
+      }
+
+      else -> throw Exception("Invalid media type")
+    }
+
   }
 
   override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {

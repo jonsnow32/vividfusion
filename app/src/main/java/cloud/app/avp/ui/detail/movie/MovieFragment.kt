@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -46,9 +47,9 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
   override fun onDestroyView() {
     super.onDestroyView()
   }
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-
     setupTransition(binding.headerBackground)
     bind(shortMovieItem)
     viewModel.getFullMovieItem(shortMovieItem)
@@ -91,10 +92,23 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
     binding.title.text = item.title
     binding.mediaOverview.text = item.movie.generalInfo.overview
 
-    binding.genre1.text = item.movie.generalInfo.genres?.firstOrNull()
-    binding.genre2.text = item.movie.generalInfo.genres?.getOrNull(1)
-    binding.genre3.text = item.movie.generalInfo.genres?.getOrNull(2)
-    binding.contentRating.text = item.movie.generalInfo.contentRating
+    val genre1 = item.movie.generalInfo.genres?.firstOrNull();
+    binding.genre1.text = genre1
+    binding.genre1.isGone = genre1.isNullOrEmpty()
+
+    val genre2 = item.movie.generalInfo.genres?.getOrNull(1);
+    binding.genre2.text =genre2
+    binding.genre2.isGone = genre2.isNullOrEmpty()
+
+
+    val genre3 = item.movie.generalInfo.genres?.getOrNull(2);
+    binding.genre3.text =genre3
+    binding.genre3.isGone = genre3.isNullOrEmpty()
+
+    val contentRating = item.movie.generalInfo.contentRating
+    binding.contentRating.text = contentRating
+    binding.contentRating.isGone = contentRating.isNullOrEmpty()
+
     binding.mediaReleaseYear.text =
       item.movie.generalInfo.releaseDateMsUTC?.toLocalYear().toString()
     binding.mediaRating.text = item.movie.generalInfo.rating.toString()
