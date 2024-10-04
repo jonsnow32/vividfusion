@@ -4,17 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
-import androidx.fragment.app.activityViewModels
-import cloud.app.avp.ui.extension.ManageExtensionsFragment
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.button.MaterialButtonToggleGroup
-import com.google.android.material.button.MaterialButtonToggleGroup.OnButtonCheckedListener
-import cloud.app.avp.R
 import cloud.app.avp.databinding.DialogExtensionsListBinding
 import cloud.app.avp.utils.autoCleared
-import cloud.app.avp.utils.collect
-import cloud.app.avp.utils.loadWith
 import cloud.app.common.models.ExtensionType
 
 class ExtensionsListBottomSheet : BottomSheetDialogFragment() {

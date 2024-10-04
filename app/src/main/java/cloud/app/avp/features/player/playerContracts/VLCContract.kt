@@ -19,7 +19,7 @@ class VLCContract(listener: PlayBackListener) : PlayerContract(listener) {
         get() = R.drawable.vlc_player
 
     override fun getDescription(): String {
-        return context.resources.getString(R.string.vlc_desciption)
+        return context.resources.getString(R.string.vlc_description)
     }
 
     override val canSavingPlayback: Boolean

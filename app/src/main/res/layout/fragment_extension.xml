@@ -1,55 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  xmlns:tools="http://schemas.android.com/tools"
   android:orientation="vertical">
 
-  <LinearLayout
+  <com.google.android.material.appbar.AppBarLayout
     android:id="@+id/appBarLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/colorSurfaceContainer"
-    android:layout_gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingBottom="8dp">
+    android:background="?attr/colorSurfaceContainer">
 
-    <ImageButton
-      android:id="@+id/backButton"
-      style="@style/NiceButton"
-      android:layout_gravity="center"
-      android:foreground="?attr/selectableItemBackgroundBorderless"
-      android:background="@null"
-      android:contentDescription="@string/back"
-      android:src="@drawable/ic_back" />
+    <com.google.android.material.appbar.MaterialToolbar
+      android:id="@+id/toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="?actionBarSize"
+      android:touchscreenBlocksFocus="false"
+      app:layout_scrollFlags="scroll|enterAlways"
+      app:menu="@menu/extension_menu"
+      app:title="@string/settings" />
 
-    <com.google.android.material.textview.MaterialTextView
-      android:id="@+id/title"
-      style="@style/TextAppearance.Material3.ActionBar.Title"
-      android:layout_width="0dp"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:gravity="center_vertical"
-      android:text="@string/extensions" />
+    <View
+      android:id="@+id/toolbarOutline"
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_marginTop="-1dp"
+      android:background="?attr/colorOutline"
+      android:translationZ="1dp"
+      app:layout_anchor="@id/appBarLayout" />
+  </com.google.android.material.appbar.AppBarLayout>
 
-    <ImageButton
-      android:id="@+id/refreshButton"
-      style="@style/NiceButton"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:background="@android:color/transparent"
-      android:contentDescription="@string/refresh"
-      android:src="@drawable/ic_refresh" />
-
-  </LinearLayout>
-
-  <View
-    android:id="@+id/toolbarOutline"
-    style="@style/AppBarOutline"
-    android:alpha="0"
-    app:layout_anchor="@id/appBarLayout"
-    app:layout_anchorGravity="bottom" />
 
   <androidx.core.widget.NestedScrollView
     android:id="@+id/nestedScrollView"
@@ -90,49 +71,49 @@
 
         <TextView
           android:id="@+id/extensionDetails"
+          tools:text="Tracker Extension [APK]\nid • version • author"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-          tools:text="Tracker Extension [APK]\nid • version • author" />
+          android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
 
         <TextView
           android:id="@+id/extensionDescription"
+          tools:text="@tools:sample/lorem"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginBottom="16dp"
           android:alpha="0.66"
-          android:ellipsize="end"
-          tools:text="@tools:sample/lorem" />
+          android:ellipsize="end" />
 
         <include
           android:id="@+id/extensionLoginUser"
           layout="@layout/item_login_user"
+          tools:visibility="visible"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="-24dp"
           android:layout_marginEnd="-24dp"
-          android:visibility="gone"
-          tools:visibility="visible" />
+          android:visibility="gone" />
 
         <include
           android:id="@+id/extensionApiKey"
           layout="@layout/item_api_key_auth"
+          tools:visibility="visible"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="-24dp"
           android:layout_marginEnd="-24dp"
-          android:visibility="gone"
-          tools:visibility="visible" />
+          android:visibility="gone" />
 
         <include
           android:id="@+id/extensionWebLogin"
           layout="@layout/item_web_auth"
+          tools:visibility="visible"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="-24dp"
           android:layout_marginEnd="-24dp"
-          android:visibility="gone"
-          tools:visibility="visible" />
+          android:visibility="gone" />
 
         <LinearLayout
           android:id="@+id/enabledCont"
@@ -149,12 +130,12 @@
 
           <TextView
             android:id="@+id/enabledText"
+            tools:text="Title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="?attr/colorOnSurface"
-            android:textSize="18sp"
-            tools:text="Title" />
+            android:textSize="18sp" />
 
           <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/enabledSwitch"
@@ -168,12 +149,12 @@
 
       <LinearLayout
         android:id="@+id/extensionSettings"
+        tools:ignore="UseCompoundDrawables"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables">
+        android:orientation="horizontal">
 
         <ImageView
           android:layout_width="32dp"
@@ -208,4 +189,6 @@
     android:visibility="gone"
     app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
 
-</LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+

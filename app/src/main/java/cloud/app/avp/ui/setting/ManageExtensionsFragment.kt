@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.extension
+package cloud.app.avp.ui.setting
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,12 +7,12 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentManageExtensionsBinding
-import cloud.app.avp.ui.setting.ExtensionFragment
+import cloud.app.avp.ui.extension.ExtensionAdapter
+import cloud.app.avp.ui.extension.ExtensionViewModel
 import cloud.app.avp.utils.EMULATOR
 import cloud.app.avp.utils.FastScrollerHelper
 import cloud.app.avp.utils.PHONE

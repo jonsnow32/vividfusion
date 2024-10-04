@@ -8,7 +8,6 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import cloud.app.avp.R
-import cloud.app.avp.ui.extension.ManageExtensionsFragment
 import cloud.app.avp.utils.navigate
 
 

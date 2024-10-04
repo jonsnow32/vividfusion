@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.preference.Preference
@@ -18,11 +19,15 @@ import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentExtensionBinding
 import cloud.app.avp.ui.extension.ExtensionViewModel
+import cloud.app.avp.utils.EMULATOR
 import cloud.app.avp.utils.MaterialListPreference
 import cloud.app.avp.utils.MaterialMultipleChoicePreference
 import cloud.app.avp.utils.MaterialTextInputPreference
+import cloud.app.avp.utils.PHONE
+import cloud.app.avp.utils.TV
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
+import cloud.app.avp.utils.isLayout
 import cloud.app.avp.utils.loadWith
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.clients.ExtensionMetadata
@@ -36,6 +41,7 @@ import cloud.app.common.settings.SettingList
 import cloud.app.common.settings.SettingMultipleChoice
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.SettingTextInput
+import com.google.android.material.appbar.AppBarLayout
 
 class ExtensionFragment : Fragment() {
 
@@ -61,7 +67,32 @@ class ExtensionFragment : Fragment() {
       binding.appBarLayout.setPadding(0,it.top, 0,0)
     }
 
-    binding.title.text = extensionMetadata.name
+    if (context?.isLayout(TV or EMULATOR) == true) {
+      binding.toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
+        scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL
+      }
+    }
+
+    binding.toolbar.apply {
+      title = extensionMetadata.name
+      if (context.isLayout(PHONE or EMULATOR)) {
+        setNavigationIcon(R.drawable.ic_back)
+        setNavigationOnClickListener {
+          activity?.onBackPressedDispatcher?.onBackPressed()
+        }
+      }
+
+      setOnMenuItemClickListener {
+        when (it.itemId) {
+          R.id.menu_refresh -> {
+            viewModel.refresh()
+            true
+          }
+          else -> false
+        }
+      }
+    }
+
     extensionMetadata.icon.toImageHolder()
       .loadWith(binding.extensionIcon, R.drawable.ic_extension_24dp) {
         binding.extensionIcon.setImageDrawable(it)

@@ -2,6 +2,7 @@ package cloud.app.avp.ui.extension
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.avp.R
 import cloud.app.avp.base.CatchingViewModel
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import javax.inject.Inject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
@@ -25,7 +27,11 @@ class ExtensionViewModel @Inject constructor(
 ) : CatchingViewModel(throwableFlow) {
 
   fun refresh() {
-    TODO("Not yet implemented")
+    viewModelScope.launch {
+      tryWith{
+        TODO("Not yet implemented")
+      }
+    }
   }
 
 
