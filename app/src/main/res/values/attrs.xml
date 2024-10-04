@@ -4,6 +4,7 @@
   <attr name="colorCustomColorContainer" format="color" />
   <attr name="colorOnCustomColorContainer" format="color" />
   <attr name="iconColor" format="color" />
+  <attr name="textColor" format="color" />
 
 
   <attr name="navBackground" format="reference|color" />

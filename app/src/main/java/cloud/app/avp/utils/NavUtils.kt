@@ -22,7 +22,8 @@ fun Fragment.navigate(dest: Fragment, transitionView: View? = null) {
     setCustomAnimations(0,0)
     setReorderingAllowed(true)
     val oldFragment = this@navigate
-    replace(oldFragment.id, dest)
+    add(oldFragment.id, dest)
+    hide(oldFragment)
     addToBackStack(null)
   }
 }

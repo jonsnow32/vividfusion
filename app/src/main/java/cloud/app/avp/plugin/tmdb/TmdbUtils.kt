@@ -85,6 +85,7 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
     show.recommendations = this.recommendations?.results?.map { toShow(it) }
     show.generalInfo.contentRating = this.content_ratings?.results.orEmpty().firstOrNull()?.rating
     show.generalInfo.genres = this.genres?.map { it.name ?: "unknown" }
+    show.status = this.status?.toString() ?: "";
     show.generalInfo.actors = this.credits?.cast?.map {
       ActorData(
         actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder()),

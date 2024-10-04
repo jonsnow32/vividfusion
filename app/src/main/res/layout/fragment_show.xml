@@ -10,14 +10,17 @@
 
   <com.google.android.material.appbar.AppBarLayout
     android:id="@+id/appBarLayout"
+    android:touchscreenBlocksFocus="false"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <com.google.android.material.appbar.CollapsingToolbarLayout
       android:id="@+id/collapsingToolbar"
       style="@style/TopCollapsingBar"
+      android:touchscreenBlocksFocus="false"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+
       app:expandedTitleMarginEnd="80dp"
       app:maxLines="3">
       <androidx.constraintlayout.widget.ConstraintLayout
@@ -58,8 +61,9 @@
 
       <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolBar"
-        style="@style/Toolbar"
+        style="@style/ToolbarWithBack"
         app:menu="@menu/show_menu"
+        android:descendantFocusability="afterDescendants"
         tools:title="The Perfect Run" />
     </com.google.android.material.appbar.CollapsingToolbarLayout>
 

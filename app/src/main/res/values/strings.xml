@@ -83,5 +83,17 @@
   <string name="vlc_desciption">VLC Player is a free and open-source cross-platform media player software application developed by VideoLAN. It supports a wide range of media formats, including DVDs, VCDs, and various streaming protocols. VLC Player has a simple and user-friendly interface, with advanced features like customizable skins, subtitle support, playback speed control, and audio and video effects. It also has plugins and extensions, making it highly customizable and versatile for various media playback needs.</string>
   <string name="dns_pref">DNS over HTTPS</string>
   <string name="dns_pref_summary">Useful for bypassing ISP blocks</string>
-    <string name="dot">•</string>
+  <string name="dot">•</string>
+  <string name="theme">Theme</string>
+  <string name="theme_summary">Dark, Light</string>
+  <string name="animations">Animations</string>
+  <string name="animations_summary">Enjoy a more visually engaging experience</string>
+  <string name="shared_element_transitions_summary">This effect makes the app feel more polished and modern by providing a smooth visual flow between screens.</string>
+  <string name="shared_element_transitions">Cover Art Transitions</string>
+  <string-array name="themes">
+    <item>Light</item>
+    <item>Dark</item>
+    <item>System</item>
+  </string-array>
+
 </resources>

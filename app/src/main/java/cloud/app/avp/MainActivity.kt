@@ -19,6 +19,7 @@ import cloud.app.avp.databinding.ActivityMainBinding
 import cloud.app.avp.features.player.PlayerManager
 import cloud.app.avp.utils.Utils.isAndroidTV
 import cloud.app.avp.utils.tv.screenHeight
+import cloud.app.avp.utils.updateTv
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
 
     configureSnackBar(binding.root)
 
+    updateTv()
     ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
       mainActivityViewModel.setSystemInsets(this, insets)
       insets

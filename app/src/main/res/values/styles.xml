@@ -18,7 +18,6 @@
     <item name="android:layout_width">match_parent</item>
     <item name="android:layout_height">?actionBarSize</item>
     <!--    <item name="android:background">@android:color/transparent</item>-->
-    <item name="navigationIcon">@drawable/ic_back</item>
     <item name="layout_collapseMode">pin</item>
   </style>
 

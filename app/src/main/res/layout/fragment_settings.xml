@@ -1,39 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:orientation="vertical"
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-  <LinearLayout
+  <com.google.android.material.appbar.AppBarLayout
     android:id="@+id/appBarLayout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:background="?attr/colorSurfaceContainer">
-    <com.google.android.material.textview.MaterialTextView
-      android:id="@+id/title"
-      style="@style/TextAppearance.Material3.ActionBar.Title"
-      android:layout_width="0dp"
-      android:layout_height="match_parent"
-      android:layout_margin="16dp"
-      android:text="@string/settings"
-      android:layout_weight="1"/>
-  </LinearLayout>
+    android:background="?attr/colorSurfaceContainer"
+    android:layout_height="wrap_content">
 
-  <View
-    android:id="@+id/toolbarOutline"
-    android:layout_width="match_parent"
-    android:layout_height="1dp"
-    android:layout_marginTop="-1dp"
-    android:background="?attr/colorOutline"
-    android:translationZ="1dp" />
+    <com.google.android.material.appbar.MaterialToolbar
+      android:id="@+id/toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="?actionBarSize"
+      android:touchscreenBlocksFocus="false"
+      app:layout_scrollFlags="scroll|enterAlways"
+      app:title="@string/settings" />
+    <View
+      android:id="@+id/toolbarOutline"
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_marginTop="-1dp"
+      app:layout_anchor="@id/appBarLayout"
+      android:background="?attr/colorOutline"
+      android:translationZ="1dp" />
+  </com.google.android.material.appbar.AppBarLayout>
+
+
 
   <androidx.fragment.app.FragmentContainerView
     android:id="@+id/fragmentContainer"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:nextFocusLeft="@id/navView"
+    android:layout_height="match_parent"
+    android:nextFocusUp="@id/toolbar"
+    android:nextFocusLeft="@id/toolbar"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:layout_marginTop="4dp"/>
 
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

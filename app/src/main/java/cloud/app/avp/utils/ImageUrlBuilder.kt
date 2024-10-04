@@ -5,7 +5,7 @@ import timber.log.Timber
 object ImageUrlBuilder {
     val baseUrl = "https://image.tmdb.org/t/p"
     fun getUrl(path: String, width: Int): String {
-        return ""
+      return ""
         if (path.contains("http://") || path.contains("https://")) return path
         var widthPath = ""
         if (width <= 92) widthPath = "/w92"

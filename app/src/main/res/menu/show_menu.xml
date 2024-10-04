@@ -5,5 +5,7 @@
     android:id="@+id/menu_home"
     android:icon="@drawable/anim_home"
     android:title="@string/home"
+    android:focusable="true"
+    android:clickable="true"
     app:showAsAction="always" />
 </menu>

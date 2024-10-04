@@ -5,20 +5,28 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
+import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentManageExtensionsBinding
 import cloud.app.avp.ui.setting.ExtensionFragment
+import cloud.app.avp.utils.EMULATOR
 import cloud.app.avp.utils.FastScrollerHelper
+import cloud.app.avp.utils.PHONE
+import cloud.app.avp.utils.TV
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.configure
+import cloud.app.avp.utils.isLayout
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.clients.streams.StreamClient
 import cloud.app.common.clients.subtitles.SubtitleClient
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -33,6 +41,7 @@ class ManageExtensionsFragment : Fragment() {
     return binding.root
   }
 
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     setupTransition(view)
     applyInsets {
@@ -41,11 +50,32 @@ class ManageExtensionsFragment : Fragment() {
     }
 
     FastScrollerHelper.applyTo(binding.recyclerView)
-    binding.refreshButton.setOnClickListener { viewModel.refresh() }
     binding.swipeRefresh.configure { viewModel.refresh() }
 
-    binding.backButton.setOnClickListener {
-      childFragmentManager.popBackStack()
+
+    if (context?.isLayout(TV or EMULATOR) == true) {
+      binding.toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
+        scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL
+      }
+    }
+
+    binding.toolbar.apply {
+      if (context.isLayout(PHONE or EMULATOR)) {
+        setNavigationIcon(R.drawable.ic_back)
+        setNavigationOnClickListener {
+          activity?.onBackPressedDispatcher?.onBackPressed()
+        }
+      }
+
+      setOnMenuItemClickListener {
+        when (it.itemId) {
+          R.id.menu_refresh -> {
+            viewModel.refresh()
+            true
+          }
+          else -> false
+        }
+      }
     }
     val flow = MutableStateFlow(
       viewModel.extensionFlowList.value

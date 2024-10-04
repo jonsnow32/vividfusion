@@ -1,5 +1,6 @@
 package cloud.app.avp.utils
 
+import android.content.Context.MODE_PRIVATE
 import android.view.View
 import android.view.ViewPropertyAnimator
 import androidx.core.view.doOnPreDraw
@@ -86,14 +87,12 @@ private val View.animationDuration: Long
   }
 private val View.animations
   get() = context.applicationContext.run {
-    true
-    //getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(ANIMATIONS_KEY, true)
+    getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(getString(cloud.app.avp.R.string.pref_animations_key), true)
   }
 
 private val View.sharedElementTransitions
   get() = context.applicationContext.run {
-    true
-    //getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(SHARED_ELEMENT_KEY, true)
+    getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(getString(cloud.app.avp.R.string.pref_shared_element_animations_key), true)
   }
 
 fun Fragment.setupTransition(view: View) {
