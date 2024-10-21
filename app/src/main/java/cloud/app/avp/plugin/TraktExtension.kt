@@ -12,8 +12,7 @@ import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.Tab
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingSwitch
-import cloud.app.common.settings.Settings
-import okhttp3.OkHttpClient
+import cloud.app.common.settings.PrefSettings
 
 class TraktExtension : BaseExtension, FeedClient {
   override val metadata: ExtensionMetadata
@@ -41,7 +40,7 @@ class TraktExtension : BaseExtension, FeedClient {
     )
   )
 
-  override fun init(settings: Settings, httpHelper: HttpHelper) {
+  override fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
   }
 
   override suspend fun onExtensionSelected() {

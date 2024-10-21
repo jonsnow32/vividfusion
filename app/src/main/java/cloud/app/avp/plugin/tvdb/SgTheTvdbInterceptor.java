@@ -1,4 +1,4 @@
-package cloud.app.avp.network.api.thetvdb;
+package cloud.app.avp.plugin.tvdb;
 
 import com.uwetrottmann.thetvdb.TheTvdb;
 import com.uwetrottmann.thetvdb.TheTvdbInterceptor;

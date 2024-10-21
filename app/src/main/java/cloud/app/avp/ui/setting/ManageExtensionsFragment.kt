@@ -60,11 +60,9 @@ class ManageExtensionsFragment : Fragment() {
     }
 
     binding.toolbar.apply {
-      if (context.isLayout(PHONE or EMULATOR)) {
-        setNavigationIcon(R.drawable.ic_back)
-        setNavigationOnClickListener {
-          activity?.onBackPressedDispatcher?.onBackPressed()
-        }
+      setNavigationIcon(R.drawable.ic_back)
+      setNavigationOnClickListener {
+        activity?.onBackPressedDispatcher?.onBackPressed()
       }
 
       setOnMenuItemClickListener {

@@ -8,4 +8,28 @@
     android:focusable="true"
     android:clickable="true"
     app:showAsAction="always" />
+
+  <item
+    android:id="@+id/menu_share"
+    android:icon="@drawable/share_24dp"
+    android:title="@string/share"
+    android:focusable="true"
+    android:clickable="true"
+    app:showAsAction="always" />
+
+  <item
+    android:id="@+id/menu_open_with"
+    android:icon="@drawable/open_in_new_24dp"
+    android:title="@string/open_with"
+    android:focusable="true"
+    android:clickable="true"
+    app:showAsAction="always" />
+
+  <item
+    android:id="@+id/menu_notify"
+    android:icon="@drawable/notify_24dp"
+    android:title="@string/subcribe"
+    android:focusable="true"
+    android:clickable="true"
+    app:showAsAction="ifRoom" />
 </menu>

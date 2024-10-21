@@ -11,7 +11,7 @@ import cloud.app.common.models.LoginType
 import cloud.app.common.models.stream.StreamData
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingSwitch
-import cloud.app.common.settings.Settings
+import cloud.app.common.settings.PrefSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
@@ -43,11 +43,11 @@ class ProviderExtension:  BaseExtension , StreamClient {
             false
         )
     )
-    private lateinit var settings: Settings
+    private lateinit var prefSettings: PrefSettings
     private lateinit var httpHelper: HttpHelper
     private lateinit var providers: Providers
-    override fun init(settings: Settings, httpHelper: HttpHelper) {
-        this.settings = settings
+    override fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
+        this.prefSettings = prefSettings
         this.httpHelper = httpHelper
         this.providers = Providers(
             M4UFree(httpHelper)

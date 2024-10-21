@@ -17,6 +17,7 @@ class BrowseViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
   var moreFlow: PagedData<AVPMediaItem>? = null
+  var title: String? = null
   val flow = MutableStateFlow<PagingData<AVPMediaItem>?>(null)
   val loading = MutableSharedFlow<Boolean>()
   override fun onInitialize() {
@@ -24,7 +25,6 @@ class BrowseViewModel @Inject constructor(
       moreFlow?.toFlow()?.collectTo(flow)
     }
   }
-
   fun refresh() {
     viewModelScope.launch {
       loading.emit(true)

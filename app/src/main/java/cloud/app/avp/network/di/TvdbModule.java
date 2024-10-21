@@ -1,18 +1,14 @@
 package cloud.app.avp.network.di;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-
-import cloud.app.avp.network.api.thetvdb.AppTheTvdb;
 import com.uwetrottmann.thetvdb.services.TheTvdbEpisodes;
 import com.uwetrottmann.thetvdb.services.TheTvdbSearch;
 import com.uwetrottmann.thetvdb.services.TheTvdbSeries;
 
+import cloud.app.avp.plugin.tvdb.AppTheTvdb;
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;
 import dagger.hilt.components.SingletonComponent;
-import okhttp3.OkHttpClient;
 
 @InstallIn(SingletonComponent.class)
 @Module
@@ -32,8 +28,8 @@ public class TvdbModule {
         return theTvdb.series();
     }
 
-    @Provides
-    AppTheTvdb provideTheTvdb(Context context, OkHttpClient okHttpClient, SharedPreferences sharedPreferences) {
-        return new AppTheTvdb(context, okHttpClient, sharedPreferences.getString("pref_tvdb_api_key", "6UMSCJSYNU96S28F"));
-    }
+//    @Provides
+//    AppTheTvdb provideTheTvdb(Context context, OkHttpClient okHttpClient, SharedPreferences sharedPreferences) {
+//        return new AppTheTvdb(context, okHttpClient, sharedPreferences.getString("pref_tvdb_api_key", "6UMSCJSYNU96S28F"));
+//    }
 }

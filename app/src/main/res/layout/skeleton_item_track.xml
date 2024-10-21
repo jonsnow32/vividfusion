@@ -9,8 +9,8 @@
 
 
     <View
-        android:layout_width="@dimen/item_poster_width"
-        android:layout_height="@dimen/item_poster_height"
+        android:layout_width="@dimen/media_cover_width"
+        android:layout_height="@dimen/media_cover_height"
         android:background="@drawable/rounded_rectangle" />
 
     <LinearLayout

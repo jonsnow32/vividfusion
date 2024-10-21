@@ -1,6 +1,6 @@
 package cloud.app.common.settings
 
-interface Settings {
+interface PrefSettings {
     fun getString(key: String): String?
     fun putString(key: String, value: String?)
     fun getInt(key: String): Int?

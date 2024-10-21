@@ -152,4 +152,5 @@
     <color name="colorOnCustomColor_highContrast">#FFFFFF</color>
     <color name="colorCustomColorContainer_highContrast">#1B4472</color>
     <color name="colorOnCustomColorContainer_highContrast">#FFFFFF</color>
+    <color name="transparent">#00000000</color>"
 </resources>

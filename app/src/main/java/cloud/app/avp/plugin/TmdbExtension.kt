@@ -1,9 +1,16 @@
-package cloud.app.avp.plugin.tmdb
+package cloud.app.avp.plugin
 
+import cloud.app.avp.plugin.tmdb.AppTmdb
+import cloud.app.avp.plugin.tmdb.SearchSuggestion
+import cloud.app.avp.plugin.tmdb.movieGenres
+import cloud.app.avp.plugin.tmdb.showGenres
+import cloud.app.avp.plugin.tmdb.toMediaItem
+import cloud.app.avp.plugin.tmdb.toMediaItemsList
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.clients.mvdatabase.SearchClient
+import cloud.app.common.clients.mvdatabase.ShowClient
 import cloud.app.common.helpers.Page
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.helpers.network.HttpHelper
@@ -15,18 +22,20 @@ import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.QuickSearchItem
 import cloud.app.common.models.SortBy
 import cloud.app.common.models.Tab
+import cloud.app.common.models.movie.Episode
+import cloud.app.common.models.movie.Ids
+import cloud.app.common.models.movie.Season
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingList
 import cloud.app.common.settings.SettingSwitch
-import cloud.app.common.settings.Settings
+import cloud.app.common.settings.PrefSettings
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
 
-class TmdbExtension : FeedClient, BaseExtension, SearchClient {
+class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
   private lateinit var tmdb: AppTmdb
   override val metadata: ExtensionMetadata
     get() = ExtensionMetadata(
@@ -62,18 +71,18 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
     )
   )
 
-  private lateinit var settings: Settings
-  override fun init(settings: Settings, httpHelper: HttpHelper) {
-    this.settings = settings
+  private lateinit var prefSettings: PrefSettings
+  override fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
+    this.prefSettings = prefSettings
     tmdb = AppTmdb(
       okHttpClient = httpHelper.okHttpClient,
-      settings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57"
+      prefSettings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57"
     )
   }
 
-  private val includeAdult get() = settings.getBoolean("tmdb_include_adult")
-  private val region get() = settings.getString("tmdb_region")
-  private val language get() = settings.getString("tmdb_language")
+  private val includeAdult get() = prefSettings.getBoolean("tmdb_include_adult")
+  private val region get() = prefSettings.getString("tmdb_region")
+  private val language get() = prefSettings.getString("tmdb_language")
 
   override suspend fun onExtensionSelected() {
     TODO("TMDB EXTENSION Not yet implemented")
@@ -349,5 +358,13 @@ class TmdbExtension : FeedClient, BaseExtension, SearchClient {
       // Add other mappings as necessary
     )
     const val pageSize = 3;
+  }
+
+  override suspend fun getSeasons(showIds: Ids): List<Season> {
+    TODO("Not yet implemented")
+  }
+
+  override suspend fun getEpisodes(showIds: Ids, seasonNumber: Int?): List<Episode> {
+    TODO("Not yet implemented")
   }
 }

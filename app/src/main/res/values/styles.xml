@@ -142,13 +142,34 @@
     <item name="android:minWidth">0dp</item>
   </style>
 
+  <style name="MultiSelectButton" parent="NiceButton">
+    <item name="android:layout_height">40dp</item>
+    <item name="android:layout_width">wrap_content</item>
+
+    <item name="strokeColor">?attr/textColor</item>
+    <item name="backgroundTint">?attr/iconColor</item>
+    <item name="iconTint">?attr/textColor</item>
+    <item name="android:textColor">?attr/textColor</item>
+    <item name="rippleColor">?attr/textColor</item>
+  </style>
+
+<!--  <style name="SelectableButton" parent="NiceButton">-->
+<!--    <item name="android:layout_height">40dp</item>-->
+<!--    <item name="android:layout_width">wrap_content</item>-->
+
+<!--    <item name="strokeColor">@color/selectable_black</item>-->
+<!--    <item name="backgroundTint">@color/selectable_white</item>-->
+<!--    <item name="iconTint">@color/selectable_black</item>-->
+<!--    <item name="android:textColor">@color/selectable_black</item>-->
+<!--    <item name="rippleColor">@color/selectable_black</item>-->
+<!--  </style>-->
 
   <style name="FlowLayoutItem" parent="NiceButton">
-    <item name="android:layout_height">24dp</item>
+    <item name="android:layout_height">30dp</item>
     <item name="android:layout_width">wrap_content</item>
     <item name="android:textSize">12sp</item>
-    <item name="android:layout_marginStart">0dp</item>
-    <item name="android:layout_marginEnd">0dp</item>
+    <item name="android:layout_marginStart">5dp</item>
+    <item name="android:layout_marginEnd">5dp</item>
     <item name="android:stateListAnimator">@null</item>
     <item name="iconPadding">0dp</item>
     <item name="android:paddingTop">0dp</item>

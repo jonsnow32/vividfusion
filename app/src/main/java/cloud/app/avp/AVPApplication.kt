@@ -4,8 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import cloud.app.avp.plugin.tmdb.TmdbExtension
-import cloud.app.avp.utils.catchWith
+import cloud.app.avp.plugin.TmdbExtension
 import cloud.app.avp.utils.toSettings
 import cloud.app.avp.utils.tryWith
 import cloud.app.avp.viewmodels.SnackBarViewModel
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import okhttp3.OkHttpClient
 import javax.inject.Inject
 
 

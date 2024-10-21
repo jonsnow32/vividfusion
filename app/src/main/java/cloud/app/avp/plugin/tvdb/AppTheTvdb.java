@@ -1,10 +1,8 @@
-package cloud.app.avp.network.api.thetvdb;
-
-import android.content.Context;
-import android.content.SharedPreferences;
+package cloud.app.avp.plugin.tvdb;
 
 import com.uwetrottmann.thetvdb.TheTvdb;
 
+import cloud.app.common.settings.PrefSettings;
 import okhttp3.OkHttpClient;
 
 /**
@@ -18,24 +16,22 @@ public class AppTheTvdb extends TheTvdb {
     private static final String KEY_JSON_WEB_TOKEN = "token";
 
     private final OkHttpClient okHttpClient;
-    private final SharedPreferences preferences;
+    private final PrefSettings prefSettings;
 
-    public AppTheTvdb(Context context, OkHttpClient okHttpClient, String api_key) {
+    public AppTheTvdb(OkHttpClient okHttpClient, String api_key, PrefSettings prefSettings) {
         super(api_key);
         this.okHttpClient = okHttpClient;
-        this.preferences = context.getSharedPreferences(PREFERENCE_FILE, Context.MODE_PRIVATE);
+        this.prefSettings = prefSettings;
     }
 
     @Override
     public String jsonWebToken() {
-        return preferences.getString(KEY_JSON_WEB_TOKEN, null);
+        return prefSettings.getString(KEY_JSON_WEB_TOKEN);
     }
 
     @Override
     public void jsonWebToken(String value) {
-        preferences.edit()
-                .putString(KEY_JSON_WEB_TOKEN, value)
-                .apply();
+      prefSettings.putString(KEY_JSON_WEB_TOKEN, value);
     }
 
     @Override

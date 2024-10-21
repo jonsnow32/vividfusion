@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <dimen name="collapsed_cover_size">64dp</dimen>
   <dimen name="max_cover_size">384dp</dimen>
   <dimen name="nav_height">@dimen/collapsed_cover_size</dimen>
-  <dimen name="item_poster_width">120dp</dimen>
-  <dimen name="item_poster_height">170dp</dimen>
-  <dimen name="item_title_height">75dp</dimen>
-  <dimen name="item_poster_margin">4dp</dimen>
+  <dimen name="media_width">110dp</dimen>
+  <dimen name="media_height">205dp</dimen>
+  <dimen name="media_cover_width">110dp</dimen>
+  <dimen name="media_cover_height">165dp</dimen>
+  <dimen name="media_title_height">40dp</dimen>
+  <dimen name="media_margin">4dp</dimen>
   <dimen name="rounded_radius">10dp</dimen>
   <dimen name="rounded_image_radius">10dp</dimen>
   <dimen name="rounded_button_radius">4dp</dimen>
   <dimen name="layout_detail_padding">10dp</dimen>
+  <dimen name="content_header_text_size">18sp</dimen>
+  <dimen name="design_navigation_separator_vertical_padding" tools:ignore="PrivateResource">0dp
+  </dimen>
 </resources>

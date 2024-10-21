@@ -9,6 +9,7 @@ import cloud.app.avp.AVPApplication.Companion.noClient
 import cloud.app.avp.R
 import cloud.app.avp.ui.browse.BrowseFragment
 import cloud.app.avp.ui.browse.BrowseViewModel
+import cloud.app.avp.ui.detail.actor.ActorFragment
 import cloud.app.avp.ui.detail.movie.MovieFragment
 import cloud.app.avp.ui.detail.show.ShowFragment
 import cloud.app.avp.utils.navigate
@@ -46,7 +47,14 @@ class MediaClickListener(
         showFragment.arguments = bundle;
         fragment.navigate(showFragment, transitionView)
       }
-      is AVPMediaItem.ActorItem -> TODO()
+      is AVPMediaItem.ActorItem -> {
+        val bundle = Bundle()
+        bundle.putString("clientId", clientId)
+        bundle.putParcelable("mediaItem", item)
+        val actorFragment = ActorFragment()
+        actorFragment.arguments = bundle;
+        fragment.navigate(actorFragment, transitionView)
+      }
       is AVPMediaItem.EpisodeItem -> TODO()
       is AVPMediaItem.StreamItem -> TODO()
     }
@@ -79,6 +87,7 @@ class MediaClickListener(
     clientId ?: return noClient()
     val viewModel by fragment.activityViewModels<BrowseViewModel>()
     viewModel.moreFlow = pagedData
+    viewModel.title = title
     fragment.navigate(BrowseFragment(), transitionView)
     afterOpening?.invoke()
   }

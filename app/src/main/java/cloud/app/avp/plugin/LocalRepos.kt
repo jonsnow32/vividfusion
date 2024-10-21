@@ -1,7 +1,6 @@
 package cloud.app.avp.plugin
 
 import cloud.app.avp.plugin.getlink.ProviderExtension
-import cloud.app.avp.plugin.tmdb.TmdbExtension
 import cloud.app.common.clients.BaseExtension
 import cloud.app.plugger.PluginRepo
 import kotlinx.coroutines.flow.MutableStateFlow

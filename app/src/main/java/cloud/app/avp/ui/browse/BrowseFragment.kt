@@ -9,9 +9,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
-import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentBrowseBinding
+import cloud.app.avp.ui.media.MediaClickListener
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.setting.SettingsFragment
 import cloud.app.avp.utils.FastScrollerHelper
@@ -23,6 +23,7 @@ import cloud.app.avp.utils.setupTransition
 import cloud.app.common.models.AVPMediaItem
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.roundToInt
+
 
 @AndroidEntryPoint
 class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
@@ -41,7 +42,7 @@ class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
     setupTransition(view)
 
     applyInsets {
-      binding.appBarLayoutCustom.setPadding(0,it.top, 0,0)
+      binding.appBarLayoutCustom.setPadding(0, it.top, 0, 0)
       binding.recyclerView.setPadding(0, 0, 0, it.bottom)
     }
 
@@ -54,35 +55,46 @@ class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
       val category = activityViewModel.moreFlow ?: return
       activityViewModel.moreFlow = null
       viewModel.moreFlow = category
+      viewModel.title = activityViewModel.title;
       viewModel.initialize()
     }
 
-    val adapter = MediaItemAdapter(this, view.transitionName, "")
-    val concatAdapter = adapter.withLoaders()
-    binding.recyclerView.adapter = adapter
+    binding.title.text = viewModel.title
 
-    binding.swipeRefresh.configure {
-      //adapter.refresh()
-      viewModel.refresh()
-    }
 
-    observe(viewModel.loading) {
-      binding.swipeRefresh.isRefreshing = it
-    }
     context?.let { ctx ->
       var viewWidth = view.width
       if (viewWidth <= 0) {
         val displayMetrics = ctx.resources.displayMetrics
         viewWidth = displayMetrics.widthPixels
       }
-      val itemWidth =
-        ctx.resources.getDimension(R.dimen.item_poster_width) + ctx.resources.getDimension(R.dimen.item_poster_margin) * 2
-      val span = (viewWidth / itemWidth).roundToInt()
+      val span = viewWidth / ctx.resources.getDimension(R.dimen.media_width).roundToInt()
       (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = span
-    }
 
-    observe(viewModel.flow) { data ->
-      adapter.submit(data)
+
+
+      val itemWidth = (viewWidth / span) - ctx.resources.getDimension(R.dimen.media_margin) * 4
+
+      val itemHeight = itemWidth * 3 / 2 + ctx.resources.getDimension(R.dimen.media_title_height)
+
+      val adapter = MediaItemAdapter(MediaClickListener(this.parentFragmentManager), view.transitionName, "", itemWidth.roundToInt(), itemHeight.roundToInt())
+      //val concatAdapter = adapter.withLoaders()
+      binding.recyclerView.adapter = adapter
+
+      binding.swipeRefresh.configure {
+        //adapter.refresh()
+        viewModel.refresh()
+      }
+
+      observe(viewModel.loading) {
+        binding.swipeRefresh.isRefreshing = it
+      }
+
+
+      observe(viewModel.flow) { data ->
+        adapter.submit(data)
+      }
+
     }
   }
 

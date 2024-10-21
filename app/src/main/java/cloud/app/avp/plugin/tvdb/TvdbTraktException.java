@@ -1,4 +1,4 @@
-package cloud.app.avp.network.api.thetvdb;
+package cloud.app.avp.plugin.tvdb;
 
 /**
  * Thrown when a {@link } trakt operation fails.

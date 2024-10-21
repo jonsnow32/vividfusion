@@ -75,13 +75,10 @@ class ExtensionFragment : Fragment() {
 
     binding.toolbar.apply {
       title = extensionMetadata.name
-      if (context.isLayout(PHONE or EMULATOR)) {
-        setNavigationIcon(R.drawable.ic_back)
-        setNavigationOnClickListener {
-          activity?.onBackPressedDispatcher?.onBackPressed()
-        }
+      setNavigationIcon(R.drawable.ic_back)
+      setNavigationOnClickListener {
+        activity?.onBackPressedDispatcher?.onBackPressed()
       }
-
       setOnMenuItemClickListener {
         when (it.itemId) {
           R.id.menu_refresh -> {
@@ -211,10 +208,12 @@ class ExtensionFragment : Fragment() {
           MaterialMultipleChoicePreference(preferenceGroup.context).also {
             it.title = this.title
             it.key = this.key
+            it.summary = this.summary
             defaultEntryIndices?.let { indices ->
-              it.setDefaultValue(indices.mapNotNull { index ->
+              val defaultValue = indices.mapNotNull { index ->
                 entryValues.getOrNull(index)
-              }.toSet())
+              }.toSet()
+              it.setDefaultValue(defaultValue)
             }
             it.entries = this.entryTitles.toTypedArray()
             it.entryValues = this.entryValues.toTypedArray()

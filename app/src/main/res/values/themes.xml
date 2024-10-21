@@ -16,7 +16,9 @@
     <item name="colorControlActivated">?attr/colorPrimary</item>
     <item name="android:listViewStyle">@style/ListViewStyle</item>
     <item name="iconColor">?android:textColor</item>
+    <item name="secondIconColor">?android:textColorSecondary</item>
     <item name="textColor">?android:textColor</item>
+    <item name="secondTextColor">?android:textColorSecondary</item>
     <item name="android:selectableItemBackground">@drawable/outline_drawable_forced</item>
 
     <item name="appBackground">?colorSurface</item>

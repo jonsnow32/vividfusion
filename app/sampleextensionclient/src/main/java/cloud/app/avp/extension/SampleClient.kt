@@ -12,13 +12,12 @@ import cloud.app.common.models.movie.Movie
 import cloud.app.common.models.stream.StreamData
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingSwitch
-import cloud.app.common.settings.Settings
+import cloud.app.common.settings.PrefSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import okhttp3.OkHttpClient
 
 class SampleClient : BaseExtension, StreamClient {
   private lateinit var httpHelper: HttpHelper
@@ -34,7 +33,7 @@ class SampleClient : BaseExtension, StreamClient {
       loginType = LoginType.NONE
     )
 
-  override fun init(settings: Settings, httpHelper: HttpHelper) {
+  override fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
     this.httpHelper = httpHelper;
   }
 

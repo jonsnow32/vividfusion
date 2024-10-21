@@ -54,7 +54,7 @@ abstract class BaseSettingsFragment : Fragment() {
   protected fun setUpToolbar(title: String) {
     binding.toolbar.apply {
       setTitle(title)
-      if (context.isLayout(PHONE or EMULATOR)) {
+      if (this@BaseSettingsFragment !is SettingsFragment) {
         setNavigationIcon(R.drawable.ic_back)
         setNavigationOnClickListener {
           activity?.onBackPressedDispatcher?.onBackPressed()

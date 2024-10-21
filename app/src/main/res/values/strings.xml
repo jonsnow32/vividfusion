@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">Audio Video Player</string>
   <string name="home">Home</string>
   <string name="search">Search</string>
@@ -90,6 +90,18 @@
   <string name="animations_summary">Enjoy a more visually engaging experience</string>
   <string name="shared_element_transitions_summary">This effect makes the app feel more polished and modern by providing a smooth visual flow between screens.</string>
   <string name="shared_element_transitions">Cover Art Transitions</string>
+  <string name="value">Value</string>
+  <string name="str_not_set" tools:ignore="PrivateResource">Not Set</string>
+  <string name="ok">OK</string>
+    <string name="recommended">Recommended</string>
+    <string name="play_episode">Play episode\n</string>
+  <string name="menu_icon_desc">Menu icon</string>
+  <string name="open_with">Open With</string>
+  <string name="subcribe">Subcibe</string>
+  <string name="share">Share</string>
+  <string name="open_in_browser">Open in browser</string>
+  <string name="rating_format">%.1f</string>
+  <string name="full_rating">/10.0</string>
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>

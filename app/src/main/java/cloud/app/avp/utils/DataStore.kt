@@ -5,13 +5,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import cloud.app.common.settings.Settings
+import cloud.app.common.settings.PrefSettings
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.module.kotlin.kotlinModule
 import timber.log.Timber
-import kotlin.reflect.KClass
-import kotlin.reflect.KProperty
 
 
 const val PREFERENCES_NAME = "rebuild_preference"
@@ -50,7 +48,7 @@ data class Editor(
 }
 
 
-fun toSettings(prefs: SharedPreferences) = object : Settings {
+fun toSettings(prefs: SharedPreferences) = object : PrefSettings {
   override fun getString(key: String) = prefs.getString(key, null)
   override fun putString(key: String, value: String?) {
     prefs.edit { putString(key, value) }

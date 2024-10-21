@@ -20,12 +20,8 @@
       app:title="@string/settings" />
     <View
       android:id="@+id/toolbarOutline"
-      android:layout_width="match_parent"
-      android:layout_height="1dp"
-      android:layout_marginTop="-1dp"
-      app:layout_anchor="@id/appBarLayout"
-      android:background="?attr/colorOutline"
-      android:translationZ="1dp" />
+      style="@style/AppBarOutline"
+      app:layout_anchor="@id/appBarLayout"/>
   </com.google.android.material.appbar.AppBarLayout>
 
 

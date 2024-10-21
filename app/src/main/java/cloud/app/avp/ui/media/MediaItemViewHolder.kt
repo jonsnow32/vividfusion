@@ -13,6 +13,7 @@ import cloud.app.avp.databinding.ItemMovieCoverBinding
 import cloud.app.avp.databinding.ItemStreamBinding
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.roundTo
+import cloud.app.avp.utils.setTextWithVisibility
 import cloud.app.common.models.AVPMediaItem
 
 sealed class MediaItemViewHolder(itemView: View) :
@@ -22,7 +23,7 @@ sealed class MediaItemViewHolder(itemView: View) :
 
 
   fun ItemMediaTitleBinding.bind(item: AVPMediaItem) {
-    title.text = (item.releaseYear ?: item.title).toString()
+    title.text = item.title
     subtitle.isVisible = item.subtitle.isNullOrEmpty().not()
     subtitle.text = item.subtitle
   }
@@ -106,9 +107,9 @@ sealed class MediaItemViewHolder(itemView: View) :
 
     override fun bind(item: AVPMediaItem) {
       item as AVPMediaItem.ActorItem
-      binding.actorName.text = item.actorData.actor.name
-      binding.voiceActorName.text = item.actorData.voiceActor?.name
-      binding.actorExtra.text = item.actorData.roleString
+      binding.actorName.setTextWithVisibility(item.actorData.actor.name)
+      binding.voiceActorName.setTextWithVisibility(item.actorData.voiceActor?.name)
+      binding.actorExtra.setTextWithVisibility(item.actorData.roleString)
       item.poster.loadInto(binding.actorImage, item.placeHolder())
     }
 

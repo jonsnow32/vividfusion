@@ -2,6 +2,7 @@ package cloud.app.avp.ui.media
 
 import android.view.View
 import android.view.ViewGroup
+import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -9,14 +10,17 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import cloud.app.avp.R
 import cloud.app.avp.utils.tryWith
 import cloud.app.common.models.AVPMediaItem
 import kotlinx.coroutines.flow.Flow
 
 class MediaItemAdapter(
-    private val listener: Listener,
-    private val transition: String,
-    private val clientId: String?,
+  private val listener: Listener,
+  private val transition: String,
+  private val clientId: String?,
+  private val itemWidth: Int? = null,
+  private val itemHeight: Int? = null
 ) : PagingDataAdapter<AVPMediaItem, MediaItemViewHolder>(DiffCallback) {
 
   interface Listener {
@@ -26,7 +30,7 @@ class MediaItemAdapter(
 
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
-    return when (viewType) {
+    val holder =  when (viewType) {
       0 -> MediaItemViewHolder.Movie.create(parent)
       1 -> MediaItemViewHolder.Show.create(parent)
       2 -> MediaItemViewHolder.Episode.create(parent)
@@ -34,6 +38,10 @@ class MediaItemAdapter(
       4 -> MediaItemViewHolder.Stream.create(parent)
       else -> throw IllegalArgumentException("Invalid view type")
     }
+
+
+
+    return holder
   }
 
   override fun getItemViewType(position: Int): Int {
@@ -50,6 +58,23 @@ class MediaItemAdapter(
 
   override fun onBindViewHolder(holder: MediaItemViewHolder, position: Int) {
     val item = getItem(position) ?: return
+
+
+    if(itemWidth != null && itemHeight != null) {
+      val layoutParams = holder.itemView.layoutParams
+      // Change width and height dynamically, for example:
+      layoutParams.width = itemWidth
+      layoutParams.height = itemHeight
+      // Apply new layout parameters
+      holder.itemView.layoutParams = layoutParams
+
+      var cover = holder.itemView.findViewById<CardView>(R.id.cover)
+      cover.layoutParams.width = itemWidth
+      cover.layoutParams.height = itemWidth * 3 /2
+      cover.layoutParams = cover.layoutParams
+    }
+
+
     holder.transitionView.transitionName = (transition + item.id).hashCode().toString()
     holder.bind(item)
     holder.itemView.setOnClickListener {

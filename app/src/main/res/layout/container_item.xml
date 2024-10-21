@@ -19,8 +19,8 @@
 
     <androidx.cardview.widget.CardView
       android:id="@+id/background"
-      android:layout_width="@dimen/item_poster_width"
-      android:layout_height="@dimen/item_poster_width"
+      android:layout_width="@dimen/media_cover_width"
+      android:layout_height="@dimen/media_cover_width"
       android:elevation="10dp">
       <ImageView
         android:id="@+id/imageView"
