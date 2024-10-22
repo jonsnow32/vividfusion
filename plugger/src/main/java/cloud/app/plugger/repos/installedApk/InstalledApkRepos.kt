@@ -8,6 +8,7 @@ import cloud.app.plugger.PluginLoader
 import cloud.app.plugger.PluginRepo
 import cloud.app.plugger.loader.AndroidPluginLoader
 import cloud.app.plugger.repos.ManifestParser
+import cloud.app.plugger.utils.mapState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -15,7 +16,9 @@ class InstalledApkRepos<TPlugin>(
   private val context: Context,
   private val configuration: InstalledApkConfig,
   private val loader: PluginLoader = AndroidPluginLoader(context),
-  private val manifestParser: ManifestParser<ApplicationInfo> = InstalledApkManifestParser(configuration),
+  private val manifestParser: ManifestParser<ApplicationInfo> = InstalledApkManifestParser(
+    configuration
+  ),
 ) : PluginRepo<TPlugin> {
 
   companion object {
@@ -28,7 +31,7 @@ class InstalledApkRepos<TPlugin>(
 
   }
 
-  private fun getStaticPlugins(): List<TPlugin> {
+  private fun getStaticPlugins(): List<Result<TPlugin>> {
     return context.packageManager
       .getInstalledPackages(PACKAGE_FLAGS)
       .filter {
@@ -36,12 +39,22 @@ class InstalledApkRepos<TPlugin>(
           featureInfo.name == configuration.featureName
         }
       }
-      .map { manifestParser.parse(it.applicationInfo)  }
-      .map { loader<TPlugin>(it) }
+      .map {
+        runCatching { manifestParser.parse(it.applicationInfo) }
+      }
+      .map {
+        runCatching { loader<TPlugin>(it.getOrThrow()) }
+      }
       .toList()
   }
 
   // TODO: Listen for app installation broadcasts and update flow on change
-  override fun load(): StateFlow<List<TPlugin>> =
-    MutableStateFlow(getStaticPlugins())
+  override fun load(): StateFlow<List<Lazy<Result<TPlugin>>>> =
+    MutableStateFlow(getStaticPlugins()).mapState { result: List<Result<TPlugin>> ->
+      result.map {
+        lazy {
+          it
+        }
+      }
+    }
 }

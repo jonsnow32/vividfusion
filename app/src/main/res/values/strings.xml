@@ -102,6 +102,7 @@
   <string name="open_in_browser">Open in browser</string>
   <string name="rating_format">%.1f</string>
   <string name="full_rating">/10.0</string>
+  <string name="up_coming">UpComing</string>
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>

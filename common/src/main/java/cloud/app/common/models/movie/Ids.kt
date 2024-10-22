@@ -5,10 +5,10 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Ids(
-  val tmdbId: Int? = null,
-  val imdbId: String? = null,
-  val traktId: Int? = null,
-  val tvdbId: Int? = null
+  var tmdbId: Int? = null,
+  var imdbId: String? = null,
+  var traktId: Int? = null,
+  var tvdbId: Int? = null
 ) : Parcelable {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

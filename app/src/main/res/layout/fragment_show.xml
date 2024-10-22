@@ -366,55 +366,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:gravity="center_vertical"
+            android:visibility="gone"
             android:orientation="horizontal">
-
-            <com.google.android.material.button.MaterialButton
-              android:id="@+id/result_season_button"
-              style="@style/MultiSelectButton"
-              android:layout_gravity="center_vertical"
-              android:layout_marginStart="0dp"
-              android:layout_marginEnd="10dp"
-              android:drawableEnd="@drawable/quantum_ic_play_arrow_white_24"
-              android:nextFocusLeft="@id/result_episode_select"
-              android:nextFocusRight="@id/result_episode_select"
-              android:nextFocusDown="@id/result_episodes"
-              android:paddingStart="10dp"
-              android:paddingEnd="5dp"
-              android:visibility="gone"
-              tools:text="Season 1"
-              tools:visibility="visible" />
-
-            <com.google.android.material.button.MaterialButton
-              android:id="@+id/result_episode_select"
-              style="@style/MultiSelectButton"
-              android:layout_gravity="center_vertical"
-              android:layout_marginStart="0dp"
-              android:layout_marginEnd="10dp"
-              android:drawableEnd="@drawable/quantum_ic_play_arrow_white_24"
-              android:nextFocusLeft="@id/result_season_button"
-              android:nextFocusRight="@id/result_season_button"
-              android:nextFocusDown="@id/result_episodes"
-              android:paddingStart="10dp"
-              android:paddingEnd="5dp"
-              android:visibility="gone"
-              tools:text="50-100"
-              tools:visibility="visible" />
-
-            <com.google.android.material.button.MaterialButton
-              android:id="@+id/result_dub_select"
-              style="@style/MultiSelectButton"
-              android:layout_gravity="center_vertical"
-              android:layout_marginStart="0dp"
-              android:layout_marginEnd="10dp"
-              android:drawableEnd="@drawable/quantum_ic_play_arrow_white_24"
-              android:nextFocusLeft="@id/result_season_button"
-              android:nextFocusRight="@id/result_season_button"
-              android:nextFocusDown="@id/result_episodes"
-              android:paddingStart="10dp"
-              android:paddingEnd="5dp"
-              android:visibility="gone"
-              tools:text="Dubbed"
-              tools:visibility="visible" />
 
             <TextView
               android:id="@+id/result_episodes_text"
@@ -436,11 +389,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
+            android:visibility="gone"
             android:orientation="horizontal">
 
             <TextView
-              android:id="@+id/result_next_airing"
-
+              android:id="@+id/nextEpisodeAiring"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:gravity="center"
@@ -463,7 +416,7 @@
           </LinearLayout>
 
           <cloud.app.avp.utils.ShimmerLayoutSelf
-            android:id="@+id/result_episode_loading"
+            android:id="@+id/episode_loading"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
@@ -475,22 +428,13 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical">
-
               <include layout="@layout/skeleton_item_episode" />
             </LinearLayout>
           </cloud.app.avp.utils.ShimmerLayoutSelf>
 
-          <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/result_episodes"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="0dp"
-            android:clipToPadding="false"
-            android:descendantFocusability="afterDescendants"
-            android:nestedScrollingEnabled="false"
-            android:paddingBottom="100dp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/episode_item_large" />
+          <include layout="@layout/episode_list"
+            android:id="@+id/episodeList"/>
+
         </LinearLayout>
       </LinearLayout>
     </LinearLayout>

@@ -44,7 +44,7 @@ class TraktExtension : BaseExtension, FeedClient {
   }
 
   override suspend fun onExtensionSelected() {
-
+    TODO("trakt Not yet implemented")
   }
 
   override suspend fun getHomeTabs(): List<Tab> = listOf("Alls, Download, Camera").map { Tab(it,it) }

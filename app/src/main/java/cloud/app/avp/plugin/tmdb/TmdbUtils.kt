@@ -1,5 +1,6 @@
 package cloud.app.avp.plugin.tmdb
 
+import android.annotation.SuppressLint
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.Actor
@@ -16,6 +17,10 @@ import com.uwetrottmann.tmdb2.entities.BaseTvShow
 import com.uwetrottmann.tmdb2.entities.CastMember
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage
 import com.uwetrottmann.tmdb2.entities.TvShowResultsPage
+import org.threeten.bp.LocalDate
+import org.threeten.bp.ZoneOffset
+import org.threeten.bp.format.DateTimeFormatter
+import kotlin.text.*
 
 const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
 
@@ -50,6 +55,8 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
   val movie = toMovie(this);
 
   if (this is com.uwetrottmann.tmdb2.entities.Movie) {
+    movie.ids.imdbId = this.external_ids?.imdb_id
+
     movie.recommendations = this.recommendations?.results?.map { toMovie(it) }
     movie.generalInfo.runtime = this.runtime
     movie.generalInfo.actors = this.credits?.cast?.map {
@@ -78,10 +85,13 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
       genres = baseShow.genre_ids?.map { showGenres[it] ?: "" },
       //to be continued
     ),
-    )
+  )
 
   val show = toShow(this)
   if (this is com.uwetrottmann.tmdb2.entities.TvShow) {
+    show.ids.tvdbId = this.external_ids?.tvdb_id
+    show.ids.imdbId = this.external_ids?.imdb_id
+
     show.recommendations = this.recommendations?.results?.map { toShow(it) }
     show.generalInfo.contentRating = this.content_ratings?.results.orEmpty().firstOrNull()?.rating
     show.generalInfo.genres = this.genres?.map { it.name ?: "unknown" }
@@ -102,6 +112,21 @@ fun BasePerson.toMediaItem() = AVPMediaItem.ActorItem(
     actor = Actor(name = name, image = profile_path?.toImageHolder()),
   )
 )
+
+@SuppressLint("DefaultLocale")
+fun formatSeasonEpisode(season: Int, episode: Int): String {
+  return String.format("S%02dE%02d", season, episode)
+}
+
+fun String.iso8601ToMillis(): Long {
+  if (this.isBlank()) return 0L
+  // Parse the date string using LocalDate
+  val localDate = LocalDate.parse(this, DateTimeFormatter.ISO_DATE)
+
+  // Convert the LocalDate to milliseconds since epoch (UTC)
+  return localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+}
+
 
 val showGenres: Map<Int, String> = mapOf(
   10759 to "Action & Adventure",

@@ -60,16 +60,20 @@ class AVPApplication : Application() {
 
     scope.launch {
       extensionRepo.load().collect {
-        it.forEach { client ->
+        val extensionList = mutableListOf<BaseExtension>()
+        it.forEach {
           tryWith(throwableFlow) {
-            client.init(toSettings(preferences), httpHelper)
-            if (client is TmdbExtension) {
-              extensionFlow.emit(client)
-              //client.onExtensionSelected()
+            val client = it.value.getOrNull();
+            client?.apply {
+              init(toSettings(preferences), httpHelper)
+              if (client is TmdbExtension) {
+                extensionFlow.emit(client)
+              }
+              extensionList.add(client)
             }
           }
-          extensionFlowList.emit(it)
         }
+        extensionFlowList.value = extensionList
       }
     }
   }

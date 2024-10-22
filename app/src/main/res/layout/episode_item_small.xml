@@ -6,13 +6,14 @@
 
   android:layout_width="match_parent"
   android:layout_height="50dp"
-  android:layout_marginBottom="5dp"
-
-  android:nextFocusRight="@id/download_button"
-  app:cardBackgroundColor="@color/transparent"
-  app:cardCornerRadius="@dimen/rounded_image_radius"
+  android:layout_marginBottom="10dp"
+  android:clickable="true"
+  android:focusable="true"
   app:cardElevation="0dp"
   android:foreground="@drawable/outline_drawable"
+  android:nextFocusRight="@id/download_button"
+  app:cardBackgroundColor="?attr/colorSurfaceContainer"
+  app:cardCornerRadius="@dimen/rounded_image_radius"
   >
   <!--
       android:nextFocusLeft="@id/result_episode_download"
@@ -71,7 +72,8 @@
       android:id="@+id/episode_filler"
       style="@style/SmallButton"
       android:layout_gravity="center"
-      android:text="@string/filler" />
+      android:text="@string/filler"
+      android:visibility="gone" />
 
     <TextView
       android:id="@+id/episode_text"

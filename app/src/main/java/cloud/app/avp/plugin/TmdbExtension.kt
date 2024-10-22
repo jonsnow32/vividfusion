@@ -2,10 +2,13 @@ package cloud.app.avp.plugin
 
 import cloud.app.avp.plugin.tmdb.AppTmdb
 import cloud.app.avp.plugin.tmdb.SearchSuggestion
+import cloud.app.avp.plugin.tmdb.formatSeasonEpisode
+import cloud.app.avp.plugin.tmdb.iso8601ToMillis
 import cloud.app.avp.plugin.tmdb.movieGenres
 import cloud.app.avp.plugin.tmdb.showGenres
 import cloud.app.avp.plugin.tmdb.toMediaItem
 import cloud.app.avp.plugin.tmdb.toMediaItemsList
+import cloud.app.avp.plugin.tvdb.AppTheTvdb
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.mvdatabase.FeedClient
@@ -23,12 +26,14 @@ import cloud.app.common.models.QuickSearchItem
 import cloud.app.common.models.SortBy
 import cloud.app.common.models.Tab
 import cloud.app.common.models.movie.Episode
+import cloud.app.common.models.movie.GeneralInfo
 import cloud.app.common.models.movie.Ids
 import cloud.app.common.models.movie.Season
+import cloud.app.common.models.movie.Show
+import cloud.app.common.settings.PrefSettings
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingList
 import cloud.app.common.settings.SettingSwitch
-import cloud.app.common.settings.PrefSettings
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
@@ -37,6 +42,7 @@ import kotlinx.coroutines.withContext
 
 class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
   private lateinit var tmdb: AppTmdb
+  private lateinit var tvdb: AppTheTvdb
   override val metadata: ExtensionMetadata
     get() = ExtensionMetadata(
       name = "The extension of TMDB",
@@ -75,8 +81,13 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
   override fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
     this.prefSettings = prefSettings
     tmdb = AppTmdb(
-      okHttpClient = httpHelper.okHttpClient,
+      httpHelper.okHttpClient,
       prefSettings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57"
+    )
+    tvdb = AppTheTvdb(
+      httpHelper.okHttpClient,
+      prefSettings.getString("pref_tvdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57",
+      prefSettings,
     )
   }
 
@@ -360,11 +371,54 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
     const val pageSize = 3;
   }
 
-  override suspend fun getSeasons(showIds: Ids): List<Season> {
-    TODO("Not yet implemented")
-  }
+//  override suspend fun getEpisodes(showIds: Ids): List<Episode> {
+//    return withContext(Dispatchers.IO) {
+//      val list = mutableListOf<Episode>()
+//      showIds.tmdbId?.let {
+//        tmdb.tvService().tv(it, language).execute().body()?.seasons?.map { season ->
+//          list.add(Season(season.name, season.season_number ?: 0, season.overview))
+//        }
+//      }
+//      list
+//    }
+//  }
 
-  override suspend fun getEpisodes(showIds: Ids, seasonNumber: Int?): List<Episode> {
-    TODO("Not yet implemented")
+  override suspend fun getEpisodes(show: Show): List<Season> {
+    return withContext(Dispatchers.IO) {
+      val list = mutableListOf<Episode>()
+      val response =
+        tvdb.series().episodes(show.ids.tvdbId!!, null, language).execute()
+      if (response.isSuccessful)
+        response.body()?.let {
+          it.data?.forEach { episode ->
+            val episodeTitle = episode.episodeName ?: formatSeasonEpisode(
+              episode.airedSeason,
+              episode.airedEpisodeNumber
+            )
+            list.add(
+              Episode(
+                Ids(
+                  tvdbId = episode.id,
+                ),
+                GeneralInfo(
+                  title = episodeTitle,
+                  backdrop = if (episode.filename.isNullOrEmpty()) null else "https://thetvdb.com/banners/" + episode.filename,
+                  poster = null,
+                  overview = episode.overview,
+                  releaseDateMsUTC = episode.firstAired?.iso8601ToMillis(),
+                  originalTitle = episodeTitle
+                ),
+                seasonNumber = episode.airedSeason,
+                episodeNumber = episode.airedEpisodeNumber,
+                showIds = show.ids,
+                showOriginTitle = show.generalInfo.title ?: ""
+              )
+            )
+          }
+        }
+      list.groupBy { it.seasonNumber }.map { (seasonNumber, episodes) ->
+        Season("Season $seasonNumber",seasonNumber, null, episodes)
+      }
+    }
   }
 }

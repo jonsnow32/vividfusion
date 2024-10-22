@@ -100,6 +100,15 @@ sealed class AVPMediaItem : Parcelable {
       is StreamItem -> streamData.providerName
     }
 
+  val overview
+    get() = when (this) {
+      is MovieItem -> movie.generalInfo.overview?.firstOrNull() ?: ""
+      is ShowItem -> show.generalInfo.overview?.firstOrNull() ?: ""
+      is EpisodeItem -> episode.generalInfo.overview?.firstOrNull() ?: ""
+      else -> null
+    }
+
+
   val rating
     get() = when (this) {
       is ActorItem -> null

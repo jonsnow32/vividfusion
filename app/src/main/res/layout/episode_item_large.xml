@@ -2,16 +2,15 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
-
   android:id="@+id/episode_holder_large"
-  android:layout_width="wrap_content"
-
+  android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:layout_marginBottom="10dp"
+  android:clickable="true"
+  android:focusable="true"
   android:foreground="@drawable/outline_drawable"
   android:nextFocusRight="@id/download_button"
   app:cardBackgroundColor="?attr/colorSurfaceContainer"
-
   app:cardCornerRadius="@dimen/rounded_image_radius">
 
   <LinearLayout
@@ -94,6 +93,7 @@
             style="@style/SmallButton"
             android:layout_gravity="start"
             android:layout_marginEnd="10dp"
+            android:visibility="gone"
             android:text="@string/filler" />
 
           <TextView
@@ -138,7 +138,6 @@
           tools:text="15 Apr 2024" />
 
 
-
       </LinearLayout>
 
       <ImageButton
@@ -148,8 +147,9 @@
         android:layout_gravity="center_vertical|end"
         android:layout_marginStart="-50dp"
         android:background="?selectableItemBackgroundBorderless"
-        android:src="@drawable/quantum_ic_keyboard_arrow_down_white_36"
-        android:padding="10dp" />
+        android:padding="10dp"
+        android:visibility="gone"
+        android:src="@drawable/quantum_ic_keyboard_arrow_down_white_36" />
     </LinearLayout>
 
     <TextView

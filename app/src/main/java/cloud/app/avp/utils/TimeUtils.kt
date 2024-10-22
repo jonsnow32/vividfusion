@@ -2,8 +2,10 @@ package cloud.app.avp.utils
 
 import cloud.app.avp.utils.Utils.getDefaultDatePattern
 import org.threeten.bp.Instant
+import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.ZoneId
+import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
 import java.text.SimpleDateFormat
 import java.util.*
@@ -53,4 +55,16 @@ object TimeUtils {
     val year = localDateTime.year
     return "$month $year"
   }
+
+  fun Long.toLocalDayMonthYear(): String {
+    val instant = Instant.ofEpochMilli(this)
+    val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+
+    // Create a DateTimeFormatter for the desired format
+    val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+
+    // Format the LocalDateTime using the formatter
+    return localDateTime.format(formatter)
+  }
+
 }

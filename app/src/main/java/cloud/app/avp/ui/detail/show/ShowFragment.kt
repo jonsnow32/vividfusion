@@ -20,8 +20,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
+import cloud.app.avp.databinding.EpisodeListBinding
 import cloud.app.avp.databinding.FragmentShowBinding
 import cloud.app.avp.ui.detail.movie.MovieFragment
+import cloud.app.avp.ui.detail.show.episode.EpisodeAdapter
 import cloud.app.avp.ui.media.MediaClickListener
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.paging.toFlow
@@ -37,7 +39,9 @@ import cloud.app.avp.utils.setTextWithVisibility
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
+import cloud.app.common.models.Tab
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -45,6 +49,7 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class ShowFragment : Fragment() {
   private var binding by autoCleared<FragmentShowBinding>()
+  private var episodeListBinding by autoCleared<EpisodeListBinding>()
   private val viewModel by viewModels<ShowViewModel>()
 
   private val args by lazy { requireArguments() }
@@ -71,29 +76,14 @@ class ShowFragment : Fragment() {
     binding.backBtn.setOnClickListener {
       parentFragmentManager.popBackStack()
     }
-//
-//    binding.toolBar.setNavigationOnClickListener {
-//      parentFragmentManager.popBackStack()
-//    }
-//
-//    binding.toolBar.setOnMenuItemClickListener {
-//      when (it.itemId) {
-//        R.id.menu_home -> {
-//          parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-//          true
-//        }
-//        R.id.menu_share -> {
-//          true
-//        }
-//        else -> false
-//      }
-//    }
+
+    episodeListBinding = binding.episodeList;
+
     viewModel.getFullShowItem(shortShowItem)
     observe(viewModel.fullMediaItem) {
       if (it == null || it !is AVPMediaItem.ShowItem) return@observe
       val showItem = it as AVPMediaItem.ShowItem
       bind(showItem)
-
 
       val actorAdapter =
         MediaItemAdapter(MediaClickListener(this.parentFragmentManager), "", "clientID")
@@ -130,6 +120,31 @@ class ShowFragment : Fragment() {
         }
       }
     }
+    observe(viewModel.seasons) { seasons ->
+      episodeListBinding.tabLayout.removeAllTabs()
+      seasons?.forEach {
+        val tab = episodeListBinding.tabLayout.newTab()
+        tab.text = it.title
+        episodeListBinding.tabLayout.addTab(tab, tab.position == 0)
+      }
+
+      val adapter = EpisodeAdapter()
+      episodeListBinding.episodes.adapter = adapter;
+      val tabListener = object : TabLayout.OnTabSelectedListener {
+        var enabled = true
+        override fun onTabSelected(tab: TabLayout.Tab) {
+          if (!enabled || seasons == null) return
+          val season = seasons[tab.position]
+          adapter.submitList(season.episodes?.map { AVPMediaItem.EpisodeItem(it, shortShowItem.show) })
+        }
+
+        override fun onTabUnselected(tab: TabLayout.Tab) = Unit
+        override fun onTabReselected(tab: TabLayout.Tab) = Unit
+      }
+      episodeListBinding.tabLayout.addOnTabSelectedListener(tabListener)
+      episodeListBinding.tabLayout.getTabAt(0)?.select()
+      binding.episodeLoading.visibility = View.GONE
+    }
   }
 
   fun List<AVPMediaItem>.toPagedList() = PagedData.Single { this }
@@ -142,7 +157,6 @@ class ShowFragment : Fragment() {
     binding.genre2.setTextWithVisibility(item.show.generalInfo.genres?.getOrNull(1))
     binding.genre3.setTextWithVisibility(item.show.generalInfo.genres?.getOrNull(2))
     binding.tagLine.setTextWithVisibility(item.show.tagLine)
-
 
     binding.mediaReleaseYear.setTextWithVisibility(
       item.show.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
