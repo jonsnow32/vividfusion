@@ -20,7 +20,8 @@ import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.MediaItemsContainer
 
 class MediaClickListener(
-  private val fragmentManager: FragmentManager, private val afterOpening: (() -> Unit)? = null
+  private val fragmentManager: FragmentManager,
+  private val afterOpening: (() -> Unit)? = null
 ) : MediaContainerAdapter.Listener {
 
   val fragment get() = fragmentManager.findFragmentById(R.id.navHostFragment)!!
@@ -36,7 +37,6 @@ class MediaClickListener(
         bundle.putParcelable("mediaItem", item)
         val movieFragment = MovieFragment()
         movieFragment.arguments = bundle;
-
         fragment.navigate(movieFragment, transitionView)
       }
       is AVPMediaItem.ShowItem -> {

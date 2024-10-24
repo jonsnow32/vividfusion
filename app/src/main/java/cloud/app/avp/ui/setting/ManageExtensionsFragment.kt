@@ -23,6 +23,7 @@ import cloud.app.avp.utils.isLayout
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
+import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.clients.streams.StreamClient
 import cloud.app.common.clients.subtitles.SubtitleClient
@@ -75,18 +76,6 @@ class ManageExtensionsFragment : Fragment() {
         }
       }
     }
-    val flow = MutableStateFlow(
-      viewModel.extensionFlowList.value
-    )
-
-    fun change(pos: Int) {
-      when (pos) {
-        0 -> flow.value = viewModel.extensionFlowList.value
-        1 -> flow.value = viewModel.extensionFlowList.value.filter { it is FeedClient }
-        2 -> flow.value = viewModel.extensionFlowList.value.filter { it is StreamClient }
-        3 -> flow.value = viewModel.extensionFlowList.value.filter { it is SubtitleClient }
-      }
-    }
 
     val extensionAdapter = ExtensionAdapter { extension, view ->
       val extensionFragment = ExtensionFragment()
@@ -98,16 +87,33 @@ class ManageExtensionsFragment : Fragment() {
     }
     binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
 
+    val flow = MutableStateFlow(
+      viewModel.extensionFlowList.value
+    )
+    fun change(pos: Int, extentions: List<BaseExtension>) {
+      when (pos) {
+        0 -> flow.value = extentions
+        1 -> flow.value = extentions.filter { it is FeedClient }
+        2 -> flow.value = extentions.filter { it is StreamClient }
+        3 -> flow.value = extentions.filter { it is SubtitleClient }
+      }
+    }
+
     observe(flow) { extensionAdapter.submit(it ?: emptyList()) }
+
 
     binding.extTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
       override fun onTabSelected(tab: TabLayout.Tab) {
-        change(tab.position)
+        change(tab.position, viewModel.extensionFlowList.value)
       }
 
       override fun onTabUnselected(tab: TabLayout.Tab) {}
       override fun onTabReselected(tab: TabLayout.Tab) {}
     })
 
+    observe(viewModel.extensionFlowList) { extensions ->
+      change(binding.extTabLayout.selectedTabPosition, extensions)
+    }
   }
+
 }

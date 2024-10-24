@@ -7,10 +7,12 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
+import cloud.app.avp.AVPApplication.Companion.applyUiChanges
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.utils.MaterialListPreference
 import cloud.app.avp.utils.setupTransition
+import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
 
 class UiFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.ui)
@@ -40,9 +42,9 @@ class UiFragment : BaseSettingsFragment() {
       val preferences = preferenceManager.sharedPreferences ?: return
       preferenceScreen = screen
       fun uiListener(block: (Any) -> Unit = {}) =
-        Preference.OnPreferenceChangeListener { _, new ->
-          val activity = requireActivity()
-          //applyUiChanges(activity.application, preferences)
+        Preference.OnPreferenceChangeListener { pref, new ->
+          if(pref.key.equals(getString(R.string.pref_theme_key)))
+            applyUiChanges(new as String)
           //createSnack(message)
           block(new)
           true

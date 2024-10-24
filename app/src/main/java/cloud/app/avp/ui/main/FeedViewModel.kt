@@ -41,7 +41,8 @@ abstract class FeedViewModel(
     loading.emit(true)
     val list = tryWith { getTabs(client) } ?: emptyList()
     loading.emit(false)
-    if (!list.any { it.id == tab?.id }) tab = list.firstOrNull()
+    if (!list.any { it.id == tab?.id })
+      tab = list.firstOrNull()
     tabs.value = list
   }
 
@@ -56,7 +57,6 @@ abstract class FeedViewModel(
       feed.value = null;
       loadFeed(client)
     }
-
   }
 
 

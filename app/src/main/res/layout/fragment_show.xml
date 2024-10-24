@@ -361,7 +361,7 @@
         android:clickable="true"
         android:contentDescription="@string/back"
         android:focusable="true"
-        android:nextFocusRight="@id/showShare"
+        android:nextFocusRight="@id/toolbarHolder"
         android:src="@drawable/ic_back"
         app:tint="?attr/secondIconColor" />
 
@@ -374,6 +374,7 @@
       android:layout_gravity="center_vertical|end"
       android:animateLayoutChanges="true"
       android:background="@color/transparent"
+      android:descendantFocusability="beforeDescendants"
       android:gravity="end"
       android:paddingHorizontal="10dp">
 
@@ -394,6 +395,8 @@
         android:layout_margin="5dp"
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:elevation="10dp"
+        android:focusable="true"
+        android:clickable="true"
         android:src="@drawable/notify_24dp"
         android:visibility="gone"
         app:tint="?attr/textColor"
@@ -403,6 +406,8 @@
         android:id="@+id/showFavorite"
         android:layout_width="25dp"
         android:layout_height="25dp"
+        android:focusable="true"
+        android:clickable="true"
         android:layout_gravity="end|center_vertical"
 
         android:layout_margin="5dp"
@@ -419,7 +424,8 @@
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_gravity="end|center_vertical"
-
+        android:focusable="true"
+        android:clickable="true"
         android:layout_margin="5dp"
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/share"
@@ -432,7 +438,8 @@
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_gravity="end|center_vertical"
-
+        android:focusable="true"
+        android:clickable="true"
         android:layout_margin="5dp"
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/open_in_browser"

@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import cloud.app.avp.ui.media.MediaContainerAdapter
+import cloud.app.avp.utils.FastScrollerHelper
 import cloud.app.avp.utils.applyAdapter
 import cloud.app.avp.utils.collect
 import cloud.app.avp.utils.configure
@@ -24,6 +25,7 @@ fun Fragment.configureFeedUI(
 
   val parent = parentFragment as Fragment
 
+  FastScrollerHelper.applyTo(recyclerView)
   swipeRefresh.configure {
     viewModel.refresh(true)
   }

@@ -21,7 +21,6 @@ sealed class MediaItemViewHolder(itemView: View) :
   abstract fun bind(item: AVPMediaItem)
   abstract val transitionView: View
 
-
   fun ItemMediaTitleBinding.bind(item: AVPMediaItem) {
     title.text = item.title
     subtitle.isVisible = item.subtitle.isNullOrEmpty().not()
@@ -55,7 +54,6 @@ sealed class MediaItemViewHolder(itemView: View) :
       }
     }
   }
-
 
   class Episode(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
     private val titleBinding = ItemMediaTitleBinding.bind(binding.root)

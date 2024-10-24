@@ -1,10 +1,12 @@
 package cloud.app.avp
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import cloud.app.avp.plugin.TmdbExtension
 import cloud.app.avp.utils.toSettings
 import cloud.app.avp.utils.tryWith
@@ -12,6 +14,9 @@ import cloud.app.avp.viewmodels.SnackBarViewModel
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.plugger.RepoComposer
+import com.google.android.material.color.DynamicColors
+import com.google.android.material.color.DynamicColorsOptions
+import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
@@ -52,8 +57,7 @@ class AVPApplication : Application() {
       ExceptionActivity.start(this, exception, false)
       Runtime.getRuntime().exit(0)
     }
-    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-
+    applyUiChanges(preferences.getString(getString(R.string.pref_theme_key), "system"))
     scope.launch {
       throwableFlow.collect {
         it.printStackTrace()
@@ -81,6 +85,45 @@ class AVPApplication : Application() {
   }
 
 companion object {
+
+  @SuppressLint("RestrictedApi")
+  fun applyUiChanges(mode: String?) {
+
+
+//    val customColor = if (!preferences.getBoolean(app.getString(R.string.theme_custom_key), false)) null
+//    else preferences.getInt(app.getString(R.string.them_color), -1).takeIf { it != -1 }
+//
+//    val builder = if (customColor != null) DynamicColorsOptions.Builder()
+//      .setContentBasedSource(customColor)
+//    else DynamicColorsOptions.Builder()
+
+//    theme?.let {
+//      builder.setOnAppliedCallback {
+//        ThemeUtils.applyThemeOverlay(it, theme)
+//      }
+//    }
+
+//    DynamicColors.applyToActivitiesIfAvailable(app, builder.build())
+
+    when (mode) {
+      "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+      "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+      else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    }
+  }
+
+
+  fun applyLocale(sharedPref: SharedPreferences) {
+    val value = sharedPref.getString("language", "system") ?: "system"
+    val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()
+    else LocaleListCompat.forLanguageTags(value)
+    AppCompatDelegate.setApplicationLocales(locale)
+  }
+
+  fun Context.appVersion(): String = packageManager
+    .getPackageInfo(packageName, 0)
+    .versionName!!
+
   fun Context.restartApp() {
     val mainIntent = Intent.makeRestartActivityTask(
       packageManager.getLaunchIntentForPackage(packageName)!!.component
