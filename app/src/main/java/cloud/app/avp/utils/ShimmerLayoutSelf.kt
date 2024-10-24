@@ -2,6 +2,7 @@ package cloud.app.avp.utils
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.FrameLayout
@@ -9,28 +10,37 @@ import com.google.android.material.R
 import com.google.android.material.motion.MotionUtils
 
 class ShimmerLayoutSelf @JvmOverloads constructor(
-    context: Context, attrs: AttributeSet? = null
+  context: Context, attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
-    private val timeDuration = MotionUtils.resolveThemeDuration(
-        context,
-        R.attr.motionDurationMedium1,
-        350
-    ).toLong()
+  private val timeDuration = MotionUtils.resolveThemeDuration(
+    context,
+    R.attr.motionDurationMedium1,
+    350
+  ).toLong()
 
-    val animation = AlphaAnimation(1.0f, 0.25f).apply {
-        duration = timeDuration * 2
-        fillAfter = true
-        repeatMode = AlphaAnimation.REVERSE
-        repeatCount = Animation.INFINITE
-    }
+  val animation = AlphaAnimation(1.0f, 0.25f).apply {
+    duration = timeDuration * 2
+    fillAfter = true
+    repeatMode = AlphaAnimation.REVERSE
+    repeatCount = Animation.INFINITE
+  }
 
-    init {
-        startAnimation(animation)
-    }
+  init {
+    startAnimation(animation)
+  }
 
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-        startAnimation(animation)
+  override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+    super.onLayout(changed, left, top, right, bottom)
+    startAnimation(animation)
+  }
+
+  override fun onVisibilityChanged(changedView: View, visibility: Int) {
+    super.onVisibilityChanged(changedView, visibility)
+    if (visibility == View.VISIBLE) {
+      startAnimation(animation)
+    } else {
+      clearAnimation() // Stop animation when the view is not visible
     }
+  }
 }

@@ -12,6 +12,7 @@ import android.widget.ImageView
 import androidx.core.os.bundleOf
 import androidx.core.view.MenuProvider
 import androidx.core.view.children
+import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
@@ -70,6 +71,7 @@ class ShowFragment : Fragment() {
     setupTransition(binding.headerBackground)
     applyInsets {
       binding.topBar.setPadding(0, it.top, 0, 0)
+      binding.scrollView.setPadding(0, it.top, 0, 0)
     }
     bind(shortShowItem)
 
@@ -121,6 +123,10 @@ class ShowFragment : Fragment() {
       }
     }
     observe(viewModel.seasons) { seasons ->
+
+
+      binding.episodeLoading.isGone = seasons != null
+
       episodeListBinding.tabLayout.removeAllTabs()
       seasons?.forEach {
         val tab = episodeListBinding.tabLayout.newTab()
@@ -130,12 +136,19 @@ class ShowFragment : Fragment() {
 
       val adapter = EpisodeAdapter()
       episodeListBinding.episodes.adapter = adapter;
+      episodeListBinding.episodes.setHasFixedSize(true)
+
       val tabListener = object : TabLayout.OnTabSelectedListener {
         var enabled = true
         override fun onTabSelected(tab: TabLayout.Tab) {
           if (!enabled || seasons == null) return
           val season = seasons[tab.position]
-          adapter.submitList(season.episodes?.map { AVPMediaItem.EpisodeItem(it, shortShowItem.show) })
+          adapter.submitList(season.episodes?.map {
+            AVPMediaItem.EpisodeItem(
+              it,
+              shortShowItem.show
+            )
+          })
         }
 
         override fun onTabUnselected(tab: TabLayout.Tab) = Unit
@@ -143,7 +156,7 @@ class ShowFragment : Fragment() {
       }
       episodeListBinding.tabLayout.addOnTabSelectedListener(tabListener)
       episodeListBinding.tabLayout.getTabAt(0)?.select()
-      binding.episodeLoading.visibility = View.GONE
+
     }
   }
 
@@ -161,7 +174,12 @@ class ShowFragment : Fragment() {
     binding.mediaReleaseYear.setTextWithVisibility(
       item.show.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
     )
-    binding.mediaRating.setTextWithVisibility(String.format(getString(R.string.rating_format) ,item.rating?.roundTo(1)))
+    binding.mediaRating.setTextWithVisibility(
+      String.format(
+        getString(R.string.rating_format),
+        item.rating?.roundTo(1)
+      )
+    )
     binding.mediaStatus.setTextWithVisibility(item.show.status)
     binding.contentRating.setTextWithVisibility(item.show.generalInfo.contentRating)
   }

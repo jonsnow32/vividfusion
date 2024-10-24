@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isGone
+import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -18,9 +19,14 @@ import cloud.app.common.models.AVPMediaItem
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
+import java.util.concurrent.Executors
+
+val config = AsyncDifferConfig.Builder(EpisodeAdapter.EpisodeDiffCallback())
+  .setBackgroundThreadExecutor(Executors.newSingleThreadExecutor())
+  .build()
 
 class EpisodeAdapter :
-  ListAdapter<AVPMediaItem.EpisodeItem, RecyclerView.ViewHolder>(EpisodeDiffCallback()) {
+  ListAdapter<AVPMediaItem.EpisodeItem, RecyclerView.ViewHolder>(config) {
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
     val inflater = LayoutInflater.from(parent.context)
     return when (viewType) {
@@ -87,19 +93,23 @@ class EpisodeAdapter :
     @SuppressLint("SetTextI18n")
     fun bind(item: AVPMediaItem.EpisodeItem) {
       val unixTimeMS = System.currentTimeMillis()
-
       val isUpcoming = unixTimeMS < (item.episode.generalInfo.releaseDateMsUTC ?: 0L)
 
       binding.episodeText.text = "${item.episode.episodeNumber}. ${item.title}"
-      item.backdrop.loadInto(binding.episodePoster)
-      binding.episodeDescript.setTextWithVisibility(item.episode.generalInfo.overview)
-      if(isUpcoming)
-        binding.episodeRating.text = this.itemView.context.getString(R.string.up_coming)
-      else
-        binding.episodeRating.setTextWithVisibility(item.episode.generalInfo.rating?.toString())
 
+      // Only load the image if it's different to avoid unnecessary loading
+      item.backdrop?.let {
+        it.loadInto(binding.episodePoster)
+      }
+
+      binding.episodeDescript.setTextWithVisibility(item.episode.generalInfo.overview)
+      binding.episodeRating.setTextWithVisibility(
+        if (isUpcoming) this.itemView.context.getString(R.string.up_coming)
+        else item.episode.generalInfo.rating?.toString()
+      )
       binding.episodeRuntime.setTextWithVisibility(item.episode.generalInfo.runtime?.toString())
       binding.episodeDate.setTextWithVisibility(item.episode.generalInfo.releaseDateMsUTC?.toLocalDayMonthYear())
+      binding.episodeProgress.isGone = true
     }
   }
 

@@ -59,7 +59,10 @@
         android:layout_height="20dp"
         android:contentDescription="@string/more"
         android:scaleX="-1"
-        android:clickable="false"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:foreground="@drawable/outline_drawable"
         android:src="@drawable/ic_back" />
     </LinearLayout>
 

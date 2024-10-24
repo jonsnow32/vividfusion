@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import androidx.appcompat.app.AppCompatDelegate
 import cloud.app.avp.plugin.TmdbExtension
 import cloud.app.avp.utils.toSettings
 import cloud.app.avp.utils.tryWith
@@ -51,6 +52,7 @@ class AVPApplication : Application() {
       ExceptionActivity.start(this, exception, false)
       Runtime.getRuntime().exit(0)
     }
+    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
 
     scope.launch {
       throwableFlow.collect {

@@ -44,7 +44,7 @@ sealed class AVPMediaItem : Parcelable {
     is ActorItem -> other is ActorItem && actorData.actor.name == other.actorData.actor.name
     is MovieItem -> other is MovieItem && movie == other.movie
     is ShowItem -> other is ShowItem && show == other.show
-    is EpisodeItem -> other is EpisodeItem && episode == other.episode
+    is EpisodeItem -> other is EpisodeItem && episode.ids.equals(other.episode.ids)
     is StreamItem -> other is StreamItem && streamData.hashCode() == other.streamData.hashCode()
   }
 

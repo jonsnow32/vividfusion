@@ -1,129 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/coordinatorLayout"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="?appBackground"
-  android:orientation="vertical"
   android:transitionName="exception">
 
-  <FrameLayout
-    android:id="@+id/topBar"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/navBackground">
-
-    <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center_vertical"
-      android:gravity="center_vertical"
-      android:orientation="horizontal"
-      android:paddingHorizontal="16dp">
-
-      <ImageView
-        android:id="@+id/backBtn"
-        android:layout_width="30dp"
-
-        android:layout_height="30dp"
-        android:layout_gravity="center_vertical|start"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-
-        android:clickable="true"
-        android:contentDescription="@string/back"
-        android:focusable="true"
-        android:nextFocusRight="@id/showShare"
-        android:src="@drawable/ic_back"
-        app:tint="?attr/secondIconColor" />
-
-    </LinearLayout>
-
-    <LinearLayout
-      android:id="@+id/toolbarHolder"
-      android:layout_width="match_parent"
-      android:layout_height="50dp"
-      android:layout_gravity="center_vertical|end"
-      android:animateLayoutChanges="true"
-      android:gravity="end"
-      android:background="@color/transparent"
-      android:paddingHorizontal="10dp">
-
-      <androidx.mediarouter.app.MediaRouteButton
-        android:id="@+id/mediaRouteButton"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_gravity="end|center_vertical"
-        android:mediaRouteTypes="user"
-        android:visibility="gone"
-        app:mediaRouteButtonTint="?attr/textColor" />
-
-      <ImageView
-        android:id="@+id/showNotify"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="end|center_vertical"
-        android:layout_margin="5dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:elevation="10dp"
-        android:src="@drawable/notify_24dp"
-        android:visibility="gone"
-        app:tint="?attr/textColor"
-        tools:visibility="visible" />
-
-      <ImageView
-        android:id="@+id/showFavorite"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="end|center_vertical"
-
-        android:layout_margin="5dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:elevation="10dp"
-        android:nextFocusLeft="@id/showNotify"
-        android:nextFocusRight="@id/showShare"
-        android:nextFocusUp="@id/backBtn"
-        android:src="@drawable/favorite_24dp"
-        app:tint="?attr/textColor" />
-
-      <ImageView
-        android:id="@+id/showShare"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="end|center_vertical"
-
-        android:layout_margin="5dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/share"
-        android:elevation="10dp"
-        android:src="@drawable/share_24dp"
-        app:tint="?attr/textColor" />
-
-      <ImageView
-        android:id="@+id/showOpenInBrowser"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="end|center_vertical"
-
-        android:layout_margin="5dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/open_in_browser"
-        android:elevation="10dp"
-        android:src="@drawable/ic_baseline_public_24"
-        app:tint="?attr/textColor" />
-    </LinearLayout>
-  </FrameLayout>
-
-  <View
-    android:id="@+id/appBarOutline"
-    style="@style/AppBarOutline" />
 
   <androidx.core.widget.NestedScrollView
     android:id="@+id/scrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipToPadding="false"
+    android:layout_marginTop="@dimen/toolbar_size"
     android:paddingBottom="100dp">
 
     <LinearLayout
@@ -152,7 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@drawable/sample_video_poster" />
+            tools:src="@drawable/sample_video_poster" />
 
 
           <View
@@ -167,29 +58,29 @@
             android:layout_gravity="bottom"
             android:layout_marginHorizontal="10dp"
             android:orientation="vertical">
+
             <TextView
               android:id="@+id/title"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
 
-              android:textSize="24sp"
               android:ellipsize="end"
               android:maxLines="1"
               android:singleLine="true"
+              android:textSize="24sp"
               tools:text="Deadpool and Beyond and the end the end" />
 
             <TextView
               android:id="@+id/mediaStatus"
-              android:layout_height="wrap_content"
               android:layout_width="wrap_content"
-              android:gravity="top"
+              android:layout_height="wrap_content"
               android:layout_gravity="end"
+              android:gravity="top"
               tools:text="onGoing" />
           </LinearLayout>
 
 
         </FrameLayout>
-
 
 
       </androidx.constraintlayout.widget.ConstraintLayout>
@@ -233,20 +124,23 @@
           <LinearLayout
             style="@style/FlowLayoutItem"
             android:layout_height="wrap_content">
+
             <LinearLayout
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:orientation="horizontal">
+
               <TextView
                 android:id="@+id/mediaRating"
                 style="@style/ResultInfoText"
-                android:textSize="20sp"
                 android:text="@string/rating_format"
+                android:textSize="20sp"
                 tools:text="8.5" />
+
               <TextView
                 style="@style/ResultInfoText"
                 android:gravity="bottom"
-                android:text="@string/full_rating"/>
+                android:text="@string/full_rating" />
             </LinearLayout>
 
             <com.google.android.material.textview.MaterialTextView
@@ -366,8 +260,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
             android:gravity="center_vertical"
-            android:visibility="gone"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
               android:id="@+id/result_episodes_text"
@@ -389,8 +283,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="start"
-            android:visibility="gone"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <TextView
               android:id="@+id/nextEpisodeAiring"
@@ -422,24 +316,135 @@
             android:layout_gravity="center"
             android:layout_marginTop="15dp"
             android:orientation="vertical"
-            tools:visibility="visible">
+            tools:visibility="gone">
 
             <LinearLayout
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical">
+
               <include layout="@layout/skeleton_item_episode" />
             </LinearLayout>
           </cloud.app.avp.utils.ShimmerLayoutSelf>
 
-          <include layout="@layout/episode_list"
-            android:id="@+id/episodeList"/>
+          <include
+            android:id="@+id/episodeList"
+            layout="@layout/episode_list" />
 
         </LinearLayout>
       </LinearLayout>
     </LinearLayout>
   </androidx.core.widget.NestedScrollView>
 
+  <FrameLayout
+    android:id="@+id/topBar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/navBackground">
 
-</LinearLayout>
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical"
+      android:gravity="center_vertical"
+      android:orientation="horizontal"
+      android:paddingHorizontal="16dp">
+
+      <ImageView
+        android:id="@+id/backBtn"
+        android:layout_width="30dp"
+
+        android:layout_height="30dp"
+        android:layout_gravity="center_vertical|start"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+
+        android:clickable="true"
+        android:contentDescription="@string/back"
+        android:focusable="true"
+        android:nextFocusRight="@id/showShare"
+        android:src="@drawable/ic_back"
+        app:tint="?attr/secondIconColor" />
+
+    </LinearLayout>
+
+    <LinearLayout
+      android:id="@+id/toolbarHolder"
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/toolbar_size"
+      android:layout_gravity="center_vertical|end"
+      android:animateLayoutChanges="true"
+      android:background="@color/transparent"
+      android:gravity="end"
+      android:paddingHorizontal="10dp">
+
+      <androidx.mediarouter.app.MediaRouteButton
+        android:id="@+id/mediaRouteButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="end|center_vertical"
+        android:mediaRouteTypes="user"
+        android:visibility="gone"
+        app:mediaRouteButtonTint="?attr/textColor" />
+
+      <ImageView
+        android:id="@+id/showNotify"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="end|center_vertical"
+        android:layout_margin="5dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:elevation="10dp"
+        android:src="@drawable/notify_24dp"
+        android:visibility="gone"
+        app:tint="?attr/textColor"
+        tools:visibility="visible" />
+
+      <ImageView
+        android:id="@+id/showFavorite"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="end|center_vertical"
+
+        android:layout_margin="5dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:elevation="10dp"
+        android:nextFocusLeft="@id/showNotify"
+        android:nextFocusRight="@id/showShare"
+        android:nextFocusUp="@id/backBtn"
+        android:src="@drawable/favorite_24dp"
+        app:tint="?attr/textColor" />
+
+      <ImageView
+        android:id="@+id/showShare"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="end|center_vertical"
+
+        android:layout_margin="5dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/share"
+        android:elevation="10dp"
+        android:src="@drawable/share_24dp"
+        app:tint="?attr/textColor" />
+
+      <ImageView
+        android:id="@+id/showOpenInBrowser"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="end|center_vertical"
+
+        android:layout_margin="5dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/open_in_browser"
+        android:elevation="10dp"
+        android:src="@drawable/ic_baseline_public_24"
+        app:tint="?attr/textColor" />
+    </LinearLayout>
+  </FrameLayout>
+
+  <View
+    android:id="@+id/appBarOutline"
+    style="@style/AppBarOutline" />
+
+</FrameLayout>
 

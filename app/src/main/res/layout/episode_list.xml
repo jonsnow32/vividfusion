@@ -32,6 +32,7 @@
     android:nestedScrollingEnabled="false"
     android:paddingBottom="100dp"
     android:layout_marginTop="4dp"
+    android:animateLayoutChanges="false"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     tools:listitem="@layout/episode_item_large" />
 </LinearLayout>

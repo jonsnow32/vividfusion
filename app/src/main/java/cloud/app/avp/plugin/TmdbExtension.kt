@@ -385,40 +385,45 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
 
   override suspend fun getEpisodes(show: Show): List<Season> {
     return withContext(Dispatchers.IO) {
-      val list = mutableListOf<Episode>()
-      val response =
-        tvdb.series().episodes(show.ids.tvdbId!!, null, language).execute()
-      if (response.isSuccessful)
-        response.body()?.let {
-          it.data?.forEach { episode ->
-            val episodeTitle = episode.episodeName ?: formatSeasonEpisode(
-              episode.airedSeason,
-              episode.airedEpisodeNumber
-            )
-            list.add(
-              Episode(
-                Ids(
-                  tvdbId = episode.id,
-                ),
-                GeneralInfo(
-                  title = episodeTitle,
-                  backdrop = if (episode.filename.isNullOrEmpty()) null else "https://thetvdb.com/banners/" + episode.filename,
-                  poster = null,
-                  overview = episode.overview,
-                  releaseDateMsUTC = episode.firstAired?.iso8601ToMillis(),
-                  originalTitle = episodeTitle
-                ),
-                seasonNumber = episode.airedSeason,
-                episodeNumber = episode.airedEpisodeNumber,
-                showIds = show.ids,
-                showOriginTitle = show.generalInfo.title ?: ""
+      if (show.ids.tvdbId != null) {
+        val list = mutableListOf<Episode>()
+        val response =
+          tvdb.series().episodes(show.ids.tvdbId!!, null, language).execute()
+        if (response.isSuccessful)
+          response.body()?.let {
+            it.data?.forEach { episode ->
+              val episodeTitle = episode.episodeName ?: formatSeasonEpisode(
+                episode.airedSeason,
+                episode.airedEpisodeNumber
               )
-            )
+              list.add(
+                Episode(
+                  Ids(
+                    tvdbId = episode.id,
+                  ),
+                  GeneralInfo(
+                    title = episodeTitle,
+                    backdrop = if (episode.filename.isNullOrEmpty()) null else "https://thetvdb.com/banners/" + episode.filename,
+                    poster = null,
+                    overview = episode.overview,
+                    releaseDateMsUTC = episode.firstAired?.iso8601ToMillis(),
+                    originalTitle = episodeTitle
+                  ),
+                  seasonNumber = episode.airedSeason,
+                  episodeNumber = episode.airedEpisodeNumber,
+                  showIds = show.ids,
+                  showOriginTitle = show.generalInfo.title ?: ""
+                )
+              )
+            }
           }
+        list.groupBy { it.seasonNumber }.map { (seasonNumber, episodes) ->
+          Season("Season $seasonNumber", seasonNumber, null, episodes)
         }
-      list.groupBy { it.seasonNumber }.map { (seasonNumber, episodes) ->
-        Season("Season $seasonNumber",seasonNumber, null, episodes)
+      } else {
+        TODO("tvbdId is null")
       }
     }
+
   }
 }

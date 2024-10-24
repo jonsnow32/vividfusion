@@ -103,6 +103,11 @@
   <string name="rating_format">%.1f</string>
   <string name="full_rating">/10.0</string>
   <string name="up_coming">UpComing</string>
+
+  <string name="title_discover">Discover</string>
+  <string name="title_watch_providers">Watch Providers</string>
+  <string name="title_search">Search</string>
+  <string name="title_social_media">Social media</string>
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>
