@@ -16,10 +16,12 @@ import com.uwetrottmann.tmdb2.entities.BasePerson
 import com.uwetrottmann.tmdb2.entities.BaseTvShow
 import com.uwetrottmann.tmdb2.entities.CastMember
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage
+import com.uwetrottmann.tmdb2.entities.PersonResultsPage
 import com.uwetrottmann.tmdb2.entities.TvShowResultsPage
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
+import kotlin.collections.mapNotNull
 import kotlin.text.*
 
 const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
@@ -27,6 +29,7 @@ const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
 
 fun MovieResultsPage.toMediaItemsList() = results?.map { it.toMediaItem() } ?: emptyList()
 fun TvShowResultsPage.toMediaItemsList() = results?.map { it.toMediaItem() } ?: emptyList()
+fun PersonResultsPage.toMediaItemsList() = results?.mapNotNull { it.toMediaItem() } ?: emptyList()
 
 fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
 
@@ -126,6 +129,8 @@ fun String.iso8601ToMillis(): Long {
   // Convert the LocalDate to milliseconds since epoch (UTC)
   return localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
 }
+
+
 
 val networks: Map<Int, String> = linkedMapOf( // Use LinkedHashMap to preserve order
   213 to "Netflix", // Most popular first

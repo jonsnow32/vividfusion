@@ -275,14 +275,43 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
     query: String?,
     extras: Map<String, String>?
   ): PagedData<MediaItemsContainer> {
-    TODO("Not yet implemented")
+    val more = PagedData.Continuous<AVPMediaItem> {
+      withContext(Dispatchers.IO) {
+        val continuation = it?.toInt() ?: 1
+        val pageResult = tmdb.searchService()
+          .person(query, continuation, language, region, includeAdult)
+          .execute()
+          .body()
+        Page(
+          pageResult?.toMediaItemsList() ?: emptyList(),
+          if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
+        )
+      }
+    }
+    val category = toMediaItemsContainer(query ?: "Actor search", query ?: "Actor search", more)
+    return PagedData.Single { listOf(category) }
   }
 
   private fun searchTvShowsFeed(
     query: String?,
     extras: Map<String, String>?
   ): PagedData<MediaItemsContainer> {
-    TODO("Not yet implemented")
+    val more = PagedData.Continuous<AVPMediaItem> {
+      withContext(Dispatchers.IO) {
+        val continuation = it?.toInt() ?: 1
+        val firstAirDateYear = extras?.get("first_air_date_year")?.toInt()
+        val pageResult = tmdb.searchService()
+          .tv(query, continuation, language, firstAirDateYear, includeAdult)
+          .execute()
+          .body()
+        Page(
+          pageResult?.toMediaItemsList() ?: emptyList(),
+          if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
+        )
+      }
+    }
+    val category = toMediaItemsContainer(query ?: "TV Show search", query ?: "TV Show search", more)
+    return PagedData.Single { listOf(category) }
   }
 
   private fun searchMoviesFeed(
