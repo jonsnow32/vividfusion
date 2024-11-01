@@ -26,9 +26,4 @@ class AppModule {
   @Singleton
   fun provideMessageFlow() = MutableSharedFlow<SnackBarViewModel.Message>()
 
-  @Provides
-  @Singleton
-  fun provideSettingsPreferences(application: Application): SharedPreferences =
-    application.getSharedPreferences(application.packageName, Context.MODE_PRIVATE)
-
 }

@@ -9,6 +9,7 @@ import androidx.core.view.forEachIndexed
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.preference.PreferenceManager.getDefaultSharedPreferences
 import com.google.android.material.R
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.motion.MotionUtils
@@ -87,12 +88,12 @@ private val View.animationDuration: Long
   }
 private val View.animations
   get() = context.applicationContext.run {
-    getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(getString(cloud.app.avp.R.string.pref_animations_key), true)
+    getDefaultSharedPreferences(context).getBoolean(getString(cloud.app.avp.R.string.pref_animations_key), true)
   }
 
 private val View.sharedElementTransitions
   get() = context.applicationContext.run {
-    getSharedPreferences(packageName, MODE_PRIVATE).getBoolean(getString(cloud.app.avp.R.string.pref_shared_element_animations_key), true)
+    getDefaultSharedPreferences(context).getBoolean(getString(cloud.app.avp.R.string.pref_shared_element_animations_key), true)
   }
 
 fun Fragment.setupTransition(view: View) {

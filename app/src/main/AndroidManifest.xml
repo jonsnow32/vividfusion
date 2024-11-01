@@ -56,6 +56,17 @@
           android:pathPrefix="/"
           android:scheme="https" />
       </intent-filter>
+
+      <!--
+           Allow opening from continue watching with intents: avpwatchnext://ids.hashCode
+           Used on Android TV Watch Next
+            -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="avpwatchnext" />
+      </intent-filter>
     </activity>
     <activity
       android:name=".ExceptionActivity"

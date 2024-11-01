@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 abstract class FeedViewModel(
@@ -20,8 +21,8 @@ abstract class FeedViewModel(
 
   override fun onInitialize() {
     viewModelScope.launch {
-      extensionFlow.collect {
-        refresh(true)
+      extensionFlow.collectLatest {
+        refresh(resetTab = true)
       }
     }
   }
@@ -32,7 +33,7 @@ abstract class FeedViewModel(
   var recyclerPosition = 0
   var recyclerOffset = 0
 
-  val loading = MutableSharedFlow<Boolean>()
+  val loading = MutableStateFlow(false)
   val feed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
   val tabs = MutableStateFlow<List<Tab>>(emptyList())
   var tab: Tab? = null
@@ -41,23 +42,24 @@ abstract class FeedViewModel(
     loading.emit(true)
     val list = tryWith { getTabs(client) } ?: emptyList()
     loading.emit(false)
-    if (!list.any { it.id == tab?.id })
-      tab = list.firstOrNull()
+    tab = list.find { it.id == tab?.id } ?: list.firstOrNull()
     tabs.value = list
   }
 
-  private suspend fun loadFeed(client: BaseExtension) = tryWith {  getFeed(client)?.collectTo(feed) }
+  private suspend fun loadFeed(client: BaseExtension) = tryWith {
+    getFeed(client)?.collectTo(feed)
+  }
 
   private var job: Job? = null
+
   fun refresh(resetTab: Boolean = false) {
     val client = extensionFlow.value ?: return
     job?.cancel()
     job = viewModelScope.launch(Dispatchers.IO) {
       if (resetTab) loadTabs(client)
-      feed.value = null;
+      feed.value = null
       loadFeed(client)
     }
   }
-
-
 }
+

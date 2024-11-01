@@ -2,6 +2,8 @@ package cloud.app.avp.utils
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineScope
@@ -17,6 +19,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+fun <T> Fragment.observe(data: LiveData<T>, block: (T) -> Unit) {
+  data.observe(viewLifecycleOwner, Observer(block))
+}
 
 fun <T> Fragment.observe(flow: Flow<T>, callback: suspend (T) -> Unit) {
     viewLifecycleOwner.observe(flow, callback)

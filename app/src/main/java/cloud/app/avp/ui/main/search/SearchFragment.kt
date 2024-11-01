@@ -207,5 +207,9 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     TODO("Not yet implemented")
   }
 
+  override fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean) {
+
+  }
+
 }
 

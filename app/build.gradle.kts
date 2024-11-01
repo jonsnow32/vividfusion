@@ -23,6 +23,7 @@ android {
   buildTypes {
     release {
       isMinifyEnabled = false
+      isShrinkResources = false
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
@@ -101,8 +102,9 @@ dependencies {
   // parse html
   implementation(libs.jsoup);
 
-  implementation("androidx.browser:browser:1.5.0")
-  implementation("jp.wasabeef:glide-transformations:4.3.0")
-  implementation("me.zhanghai.android.fastscroll:library:1.3.0")
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")
+  implementation(libs.androidx.tvprovider)
+  implementation(libs.androidx.browser)
+  implementation(libs.glide.transformations)
+  implementation(libs.fastscroll.library)
+  implementation(libs.jackson.module.kotlin)
 }

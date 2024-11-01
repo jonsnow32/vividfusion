@@ -10,10 +10,12 @@ import androidx.preference.SwitchPreferenceCompat
 import cloud.app.avp.AVPApplication.Companion.applyUiChanges
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
+import cloud.app.avp.datastore.PREFERENCES_NAME
 import cloud.app.avp.utils.MaterialListPreference
 import cloud.app.avp.utils.setupTransition
-import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class UiFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.ui)
   override val transitionName = "about"
@@ -36,8 +38,6 @@ class UiFragment : BaseSettingsFragment() {
   class UiPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
-      preferenceManager.sharedPreferencesName = context.packageName
-      preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val screen = preferenceManager.createPreferenceScreen(context)
       val preferences = preferenceManager.sharedPreferences ?: return
       preferenceScreen = screen

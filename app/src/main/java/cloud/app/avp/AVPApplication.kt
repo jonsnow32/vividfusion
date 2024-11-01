@@ -6,17 +6,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
 import androidx.core.os.LocaleListCompat
+import cloud.app.avp.datastore.DataStore
+import cloud.app.avp.datastore.FOLDER_APP_SETTINGS
 import cloud.app.avp.plugin.TmdbExtension
-import cloud.app.avp.utils.toSettings
 import cloud.app.avp.utils.tryWith
 import cloud.app.avp.viewmodels.SnackBarViewModel
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.helpers.network.HttpHelper
+import cloud.app.common.settings.PrefSettings
 import cloud.app.plugger.RepoComposer
-import com.google.android.material.color.DynamicColors
-import com.google.android.material.color.DynamicColorsOptions
-import com.google.android.material.color.ThemeUtils
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
@@ -42,7 +42,7 @@ class AVPApplication : Application() {
   lateinit var extensionRepo: RepoComposer<BaseExtension>
 
   @Inject
-  lateinit var preferences: SharedPreferences
+  lateinit var sharedPreferences: SharedPreferences
 
   @Inject
   lateinit var httpHelper: HttpHelper
@@ -57,7 +57,7 @@ class AVPApplication : Application() {
       ExceptionActivity.start(this, exception, false)
       Runtime.getRuntime().exit(0)
     }
-    applyUiChanges(preferences.getString(getString(R.string.pref_theme_key), "system"))
+    applyUiChanges(sharedPreferences.getString(getString(R.string.pref_theme_key), "system"))
     scope.launch {
       throwableFlow.collect {
         it.printStackTrace()
@@ -71,7 +71,7 @@ class AVPApplication : Application() {
           tryWith(throwableFlow) {
             val client = it.value.getOrNull();
             client?.apply {
-              init(toSettings(preferences), httpHelper)
+              init(toSettings(client::javaClass.toString()), httpHelper)
               if (client is TmdbExtension) {
                 extensionFlow.emit(client)
               }
@@ -84,56 +84,70 @@ class AVPApplication : Application() {
     }
   }
 
-companion object {
+  companion object {
 
-  @SuppressLint("RestrictedApi")
-  fun applyUiChanges(mode: String?) {
+    @SuppressLint("RestrictedApi")
+    fun applyUiChanges(mode: String?) {
+      when (mode) {
+        "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+      }
+    }
 
 
-//    val customColor = if (!preferences.getBoolean(app.getString(R.string.theme_custom_key), false)) null
-//    else preferences.getInt(app.getString(R.string.them_color), -1).takeIf { it != -1 }
-//
-//    val builder = if (customColor != null) DynamicColorsOptions.Builder()
-//      .setContentBasedSource(customColor)
-//    else DynamicColorsOptions.Builder()
+    fun applyLocale(sharedPref: SharedPreferences) {
+      val value = sharedPref.getString("language", "system") ?: "system"
+      val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()
+      else LocaleListCompat.forLanguageTags(value)
+      AppCompatDelegate.setApplicationLocales(locale)
+    }
 
-//    theme?.let {
-//      builder.setOnAppliedCallback {
-//        ThemeUtils.applyThemeOverlay(it, theme)
-//      }
-//    }
+    fun Context.appVersion(): String = packageManager
+      .getPackageInfo(packageName, 0)
+      .versionName!!
 
-//    DynamicColors.applyToActivitiesIfAvailable(app, builder.build())
+    fun Context.restartApp() {
+      val mainIntent = Intent.makeRestartActivityTask(
+        packageManager.getLaunchIntentForPackage(packageName)!!.component
+      )
+      startActivity(mainIntent)
+      Runtime.getRuntime().exit(0)
+    }
 
-    when (mode) {
-      "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-      "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-      else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    fun Context.noClient() = SnackBarViewModel.Message(
+      getString(R.string.error_no_client)
+    )
+  }
+
+  fun toSettings(clientID: String) = object : PrefSettings {
+    override fun getString(key: String) =
+      sharedPreferences.getString("$FOLDER_APP_SETTINGS/$clientID/$key", null)
+
+    override fun putString(key: String, value: String?) {
+      sharedPreferences.edit { putString("$FOLDER_APP_SETTINGS/$clientID/$key", value) }
+    }
+
+    override fun getInt(key: String) =
+      if (sharedPreferences.contains(key)) sharedPreferences.getInt(
+        "$FOLDER_APP_SETTINGS/$clientID/$key",
+        0
+      )
+      else null
+
+    override fun putInt(key: String, value: Int?) {
+      sharedPreferences.edit { putInt(key, value) }
+    }
+
+    override fun getBoolean(key: String) =
+      if (sharedPreferences.contains(key)) sharedPreferences.getBoolean(
+        "$FOLDER_APP_SETTINGS/$clientID/$key",
+        false
+      )
+      else null
+
+    override fun putBoolean(key: String, value: Boolean?) {
+      sharedPreferences.edit { putBoolean("$FOLDER_APP_SETTINGS/$clientID/$key", value) }
     }
   }
-
-
-  fun applyLocale(sharedPref: SharedPreferences) {
-    val value = sharedPref.getString("language", "system") ?: "system"
-    val locale = if (value == "system") LocaleListCompat.getEmptyLocaleList()
-    else LocaleListCompat.forLanguageTags(value)
-    AppCompatDelegate.setApplicationLocales(locale)
-  }
-
-  fun Context.appVersion(): String = packageManager
-    .getPackageInfo(packageName, 0)
-    .versionName!!
-
-  fun Context.restartApp() {
-    val mainIntent = Intent.makeRestartActivityTask(
-      packageManager.getLaunchIntentForPackage(packageName)!!.component
-    )
-    startActivity(mainIntent)
-    Runtime.getRuntime().exit(0)
-  }
-
-  fun Context.noClient() = SnackBarViewModel.Message(
-    getString(R.string.error_no_client)
-  )
-}
 }

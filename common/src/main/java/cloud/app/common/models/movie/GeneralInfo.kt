@@ -23,7 +23,8 @@ data class GeneralInfo(
   var genres: List<String>? = null,
   var contentRating: String? = null,
   var rating: Double? = null,
-  var actors: List<ActorData>? = null
+  var actors: List<ActorData>? = null,
+  private var slug: String? = null
 ) : Parcelable {
 
   fun getReleaseYear(): Int? {
@@ -33,6 +34,19 @@ data class GeneralInfo(
       calendar.get(Calendar.YEAR)
     }
   }
+
+  fun getSlug(): String? {
+    if(slug == null) {
+      val formattedName = originalTitle
+        .trim()
+        .lowercase()
+        .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
+        .replace("\\s+".toRegex(), "-")        // Replace spaces with hyphens
+      slug = "$formattedName-${getReleaseYear()}"
+    }
+    return slug;
+  }
+
 }
 
 

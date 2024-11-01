@@ -23,9 +23,11 @@ import cloud.app.avp.utils.tv.FOCUS_SELF
 import cloud.app.avp.utils.tv.setLinearListLayout
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.MediaItemsContainer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 
 sealed class MediaContainerViewHolder(
@@ -75,14 +77,14 @@ sealed class MediaContainerViewHolder(
       binding.more.isVisible = category.more != null
 
       viewModel.viewModelScope.launch {
-        category.more?.toFlow()?.collectLatest {
-          adapter.submitData(it)
+        category.more?.toFlow()?.collect { pagingData ->
+          adapter.submitData(pagingData)
         }
       }
     }
 
     val layoutManager get() = binding.recyclerView.layoutManager
-    override val clickView: View = binding.more
+    override val clickView: View = binding.titleCard
     override val transitionView: View = binding.titleCard
 
     companion object {

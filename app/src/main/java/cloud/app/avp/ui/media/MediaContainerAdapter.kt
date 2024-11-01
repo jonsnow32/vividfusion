@@ -3,6 +3,7 @@ package cloud.app.avp.ui.media
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ConcatAdapter
@@ -13,6 +14,7 @@ import cloud.app.avp.base.ViewHolderState
 import cloud.app.avp.databinding.ContainerCategoryBinding
 import cloud.app.avp.databinding.ContainerItemBinding
 import cloud.app.common.models.MediaItemsContainer
+import kotlinx.coroutines.Job
 
 class MediaContainerAdapter(
   val fragment: Fragment,
@@ -39,6 +41,7 @@ class MediaContainerAdapter(
   }
 
   var clientId: String? = null
+
   fun withLoaders(): ConcatAdapter {
     val footer = MediaContainerLoadingAdapter(fragment) { retry() }
     val header = MediaContainerLoadingAdapter(fragment) { retry() }

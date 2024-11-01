@@ -33,15 +33,3 @@ fun FragmentActivity.navigate(newFragment: Fragment, view: View? = null) {
   oldFragment.navigate(newFragment, view)
 }
 
-fun MaterialToolbar.setUpMenu(fragment: Fragment) {
-  return setOnMenuItemClickListener {
-    when (it.itemId) {
-      R.id.menu_settings -> {
-        fragment.navigate(SettingsFragment())
-        true
-      }
-
-      else -> false
-    }
-  }
-}

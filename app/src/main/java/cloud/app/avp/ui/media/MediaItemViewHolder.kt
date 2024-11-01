@@ -77,6 +77,27 @@ sealed class MediaItemViewHolder(itemView: View) :
     }
   }
 
+  class Season(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
+    private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
+    override val transitionView: View
+      get() = binding.cover.root
+
+    override fun bind(item: AVPMediaItem) {
+      titleBinding.bind(item)
+      binding.cover.bind(item)
+    }
+    companion object {
+      fun create(
+        parent: ViewGroup
+      ): MediaItemViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+        return Season(
+          ItemMediaBinding.inflate(layoutInflater, parent, false)
+        )
+      }
+    }
+  }
+
   class Show(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
     private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
     override val transitionView: View
@@ -156,6 +177,7 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.EpisodeItem -> R.drawable.art_user
       is AVPMediaItem.ActorItem -> R.drawable.art_user
       is AVPMediaItem.StreamItem -> R.drawable.ic_video
+      is AVPMediaItem.SeasonItem -> R.drawable.ic_video
     }
 
     fun AVPMediaItem.icon() = when (this) {
@@ -164,6 +186,7 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.EpisodeItem -> R.drawable.ic_video
       is AVPMediaItem.ActorItem -> R.drawable.ic_person
       is AVPMediaItem.StreamItem -> R.drawable.ic_video
+      is AVPMediaItem.SeasonItem -> R.drawable.ic_video
     }
 
   }

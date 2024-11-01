@@ -9,8 +9,8 @@ import cloud.app.avp.AVPApplication.Companion.noClient
 import cloud.app.avp.R
 import cloud.app.avp.ui.browse.BrowseFragment
 import cloud.app.avp.ui.browse.BrowseViewModel
+import cloud.app.avp.ui.detail.ItemFragment
 import cloud.app.avp.ui.detail.actor.ActorFragment
-import cloud.app.avp.ui.detail.movie.MovieFragment
 import cloud.app.avp.ui.detail.show.ShowFragment
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.tryWith
@@ -21,7 +21,8 @@ import cloud.app.common.models.MediaItemsContainer
 
 class MediaClickListener(
   private val fragmentManager: FragmentManager,
-  private val afterOpening: (() -> Unit)? = null
+  private val afterOpening: (() -> Unit)? = null,
+  private val afterFocusChange: ((AVPMediaItem, Boolean) -> Unit)? = null,
 ) : MediaContainerAdapter.Listener {
 
   val fragment get() = fragmentManager.findFragmentById(R.id.navHostFragment)!!
@@ -30,40 +31,22 @@ class MediaClickListener(
   override fun onClick(
     clientId: String?, item: AVPMediaItem, transitionView: View?
   ) {
-    when(item) {
-      is AVPMediaItem.MovieItem -> {
-        val bundle = Bundle()
-        bundle.putString("clientId", clientId)
-        bundle.putParcelable("mediaItem", item)
-        val movieFragment = MovieFragment()
-        movieFragment.arguments = bundle;
-        fragment.navigate(movieFragment, transitionView)
-      }
-      is AVPMediaItem.ShowItem -> {
-        val bundle = Bundle()
-        bundle.putString("clientId", clientId)
-        bundle.putParcelable("mediaItem", item)
-        val showFragment = ShowFragment()
-        showFragment.arguments = bundle;
-        fragment.navigate(showFragment, transitionView)
-      }
-      is AVPMediaItem.ActorItem -> {
-        val bundle = Bundle()
-        bundle.putString("clientId", clientId)
-        bundle.putParcelable("mediaItem", item)
-        val actorFragment = ActorFragment()
-        actorFragment.arguments = bundle;
-        fragment.navigate(actorFragment, transitionView)
-      }
-      is AVPMediaItem.EpisodeItem -> TODO()
-      is AVPMediaItem.StreamItem -> TODO()
-    }
+    val bundle = Bundle()
+    bundle.putString("clientId", clientId)
+    bundle.putParcelable("mediaItem", item)
+    val movieFragment = ItemFragment()
+    movieFragment.arguments = bundle;
+    fragment.navigate(movieFragment, transitionView)
   }
 
   override fun onLongClick(
     clientId: String?, item: AVPMediaItem, transitionView: View?
   ): Boolean {
-    TODO("Not yet implemented")
+    return false
+  }
+
+  override fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean) {
+    afterFocusChange?.invoke(item, hasFocus)
   }
 
   override fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View) {

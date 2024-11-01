@@ -5,6 +5,7 @@
   android:layout_width="match_parent"
   android:layout_height="@dimen/media_cover_height"
   app:cardBackgroundColor="?attr/colorSurfaceContainer"
+  android:layout_margin="1dp"
   app:cardCornerRadius="@dimen/rounded_radius">
 
   <ImageView

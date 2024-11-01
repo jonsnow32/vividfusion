@@ -19,6 +19,5 @@ abstract class ErrorPagingSource<Key : Any, Value : Any> : PagingSource<Key, Val
             LoadResult.Error(e)
         }
     }
-
     abstract suspend fun loadData(params: LoadParams<Key>): LoadResult.Page<Key, Value>
 }

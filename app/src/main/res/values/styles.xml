@@ -110,9 +110,8 @@
   <style name="NiceButton">
     <!--removes shadow-->
     <item name="android:stateListAnimator">@null</item>
-    <item name="android:padding">5dp</item>
-    <item name="android:layout_marginStart">5dp</item>
-    <item name="android:layout_marginEnd">5dp</item>
+    <item name="android:padding">10dp</item>
+    <item name="android:layout_margin">4dp</item>
     <item name="android:layout_height">40dp</item>
     <item name="android:layout_width">wrap_content</item>
     <item name="android:textStyle">bold</item>
@@ -121,12 +120,12 @@
     <item name="iconSize">20dp</item>
     <item name="cornerRadius">@dimen/rounded_button_radius</item>
     <item name="android:textSize">15sp</item>
-    <item name="android:insetTop">0dp</item>
-    <item name="android:insetBottom">0dp</item>
-    <item name="android:foreground">@drawable/outline_drawable_less</item>
+    <item name="android:insetTop">2dp</item>
+    <item name="android:insetBottom">2dp</item>
+    <item name="android:foreground">@drawable/outline_drawable</item>
     <item name="android:tag">@string/tv_no_focus_tag</item>
-    <item name="rippleColor">?android:textColor</item>
-    <item name="backgroundTint">?attr/colorPrimary</item>
+    <item name="rippleColor">?textColor</item>
+    <item name="backgroundTint">?textColor</item>
   </style>
 
   <style name="SmallButton" parent="NiceButton">

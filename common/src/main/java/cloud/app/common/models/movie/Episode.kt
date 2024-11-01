@@ -11,4 +11,6 @@ data class  Episode(
   var episodeNumber: Int,
   var showIds: Ids,
   var showOriginTitle: String,
+  var position : Long = 0,
+  var updateTime : Long = System.currentTimeMillis()
 ) : Parcelable

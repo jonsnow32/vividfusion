@@ -34,8 +34,6 @@ class HomeFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
     applyInsetsMain(binding.appBarLayoutCustom, binding.recyclerView)
-    val tabLayout = binding.tabLayout
-
     configureFeedUI(
       R.string.home,
       viewModel,
@@ -54,15 +52,6 @@ class HomeFragment : Fragment() {
 
     binding.searchHome.setOnClickListener {
       //findNavController().navigate(R.id.action_mainFragment_to_searchFragment)
-    }
-
-    observe(viewModel.tabs) { genres ->
-      tabLayout.removeAllTabs()
-      genres.forEach { genre ->
-        val tab = tabLayout.newTab()
-        tab.text = genre.name
-        tabLayout.addTab(tab, viewModel.tab == genre)
-      }
     }
   }
   override fun onStop() {

@@ -3,9 +3,11 @@ package cloud.app.avp.utils
 import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Build
 import androidx.preference.PreferenceManager
 import cloud.app.avp.R
+import com.google.android.mediahome.video.WatchNextProgram
 
 const val PHONE: Int = 0b001
 const val TV: Int = 0b010
@@ -51,3 +53,5 @@ fun Context.updateTv() {
 fun Context.isLayout(flags: Int): Boolean {
   return (layoutId and flags) != 0
 }
+
+

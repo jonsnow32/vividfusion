@@ -4,91 +4,60 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isGone
-import androidx.recyclerview.widget.AsyncDifferConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.avp.R
 import cloud.app.avp.databinding.EpisodeItemLargeBinding
 import cloud.app.avp.databinding.EpisodeItemSmallBinding
 import cloud.app.avp.utils.TimeUtils.toLocalDayMonthYear
-import cloud.app.avp.utils.TimeUtils.toLocalMonthYear
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.setTextWithVisibility
 import cloud.app.common.models.AVPMediaItem
-import java.text.DateFormat
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.concurrent.Executors
-
-val config = AsyncDifferConfig.Builder(EpisodeAdapter.EpisodeDiffCallback())
-  .setBackgroundThreadExecutor(Executors.newSingleThreadExecutor())
-  .build()
 
 class EpisodeAdapter :
-  ListAdapter<AVPMediaItem.EpisodeItem, RecyclerView.ViewHolder>(config) {
+  PagingDataAdapter<AVPMediaItem.EpisodeItem, RecyclerView.ViewHolder>(EpisodeDiffCallback) {
+
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
     val inflater = LayoutInflater.from(parent.context)
     return when (viewType) {
-      1 -> {
-        val binding = EpisodeItemLargeBinding.inflate(
-          inflater,
-          parent,
-          false
-        ) // Assuming you have EpisodeItemBinding
-        ViewHolderLarge(binding)
-      }
-
-      else -> {
-        val binding = EpisodeItemSmallBinding.inflate(
-          inflater,
-          parent,
-          false
-        ) // Assuming you have EpisodeItemBinding
-        ViewHolderSmall(binding)
-      }
+      1 -> ViewHolderLarge(EpisodeItemLargeBinding.inflate(inflater, parent, false))
+      else -> ViewHolderSmall(EpisodeItemSmallBinding.inflate(inflater, parent, false))
     }
-
   }
 
   override fun getItemViewType(position: Int): Int {
     val item = getItem(position)
-    return if (item.backdrop == null) 0 else 1
+    return if (item?.backdrop == null) 0 else 1
   }
 
   override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-
+    val item = getItem(position) ?: return
     when (holder) {
-      is ViewHolderLarge -> {
-        holder.bind(getItem(position))
-      }
-
-      is ViewHolderSmall -> {
-        holder.bind(getItem(position))
-      }
+      is ViewHolderLarge -> holder.bind(item)
+      is ViewHolderSmall -> holder.bind(item)
     }
-
-
   }
 
-  class EpisodeDiffCallback : DiffUtil.ItemCallback<AVPMediaItem.EpisodeItem>() {
+  suspend fun submit(pagingData: PagingData<AVPMediaItem.EpisodeItem>?) {
+    submitData(pagingData ?: PagingData.empty())
+  }
+
+
+  companion object EpisodeDiffCallback : DiffUtil.ItemCallback<AVPMediaItem.EpisodeItem>() {
     override fun areItemsTheSame(
       oldItem: AVPMediaItem.EpisodeItem,
       newItem: AVPMediaItem.EpisodeItem
-    ): Boolean {
-      return oldItem.sameAs(newItem) // Assuming 'id' is a unique identifier
-    }
+    ): Boolean = oldItem.sameAs(newItem)
 
     override fun areContentsTheSame(
       oldItem: AVPMediaItem.EpisodeItem,
       newItem: AVPMediaItem.EpisodeItem
-    ): Boolean {
-      return oldItem == newItem // Compare all relevant fields for content changes
-    }
+    ): Boolean = oldItem == newItem
   }
 
-
-  class ViewHolderLarge(val binding: EpisodeItemLargeBinding) :
+  class ViewHolderLarge(private val binding: EpisodeItemLargeBinding) :
     RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
     fun bind(item: AVPMediaItem.EpisodeItem) {
@@ -96,15 +65,11 @@ class EpisodeAdapter :
       val isUpcoming = unixTimeMS < (item.episode.generalInfo.releaseDateMsUTC ?: 0L)
 
       binding.episodeText.text = "${item.episode.episodeNumber}. ${item.title}"
-
-      // Only load the image if it's different to avoid unnecessary loading
-      item.backdrop?.let {
-        it.loadInto(binding.episodePoster)
-      }
+      item.backdrop?.let { it.loadInto(binding.episodePoster) }
 
       binding.episodeDescript.setTextWithVisibility(item.episode.generalInfo.overview)
       binding.episodeRating.setTextWithVisibility(
-        if (isUpcoming) this.itemView.context.getString(R.string.up_coming)
+        if (isUpcoming) itemView.context.getString(R.string.up_coming)
         else item.episode.generalInfo.rating?.toString()
       )
       binding.episodeRuntime.setTextWithVisibility(item.episode.generalInfo.runtime?.toString())
@@ -113,15 +78,21 @@ class EpisodeAdapter :
     }
   }
 
-  class ViewHolderSmall(val binding: EpisodeItemSmallBinding) :
+  class ViewHolderSmall(private val binding: EpisodeItemSmallBinding) :
     RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
     fun bind(item: AVPMediaItem.EpisodeItem) {
       val unixTimeMS = System.currentTimeMillis()
       val isUpcoming = unixTimeMS < (item.episode.generalInfo.releaseDateMsUTC ?: 0L)
-      val upComingText = this.itemView.context.getString(R.string.up_coming);
+
+      binding.episodeText.text = "${item.episode.episodeNumber}. ${item.title}"
+      binding.episodeRating.setTextWithVisibility(
+        if (isUpcoming) itemView.context.getString(R.string.up_coming)
+        else item.episode.generalInfo.rating?.toString()
+      )
+      binding.episodeRuntime.setTextWithVisibility(item.episode.generalInfo.runtime?.toString())
+      binding.episodeDate.setTextWithVisibility(item.episode.generalInfo.releaseDateMsUTC?.toLocalDayMonthYear())
       binding.episodeProgress.isGone = true
-      binding.episodeText.text = "${item.episode.episodeNumber}. ${item.title} ${if(isUpcoming) upComingText else "" }"
     }
   }
 }

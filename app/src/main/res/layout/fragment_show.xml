@@ -23,7 +23,6 @@
       android:background="?android:colorBackground"
       android:orientation="vertical">
 
-
       <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -43,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            tools:src="@drawable/sample_video_poster" />
+            tools:src="@drawable/ic_artist" />
 
 
           <View
@@ -68,13 +67,16 @@
               android:maxLines="1"
               android:singleLine="true"
               android:textSize="24sp"
-              tools:text="Deadpool and Beyond and the end the end" />
+              tools:text="The end of the end" />
 
             <TextView
               android:id="@+id/mediaStatus"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:layout_gravity="end"
+              android:ellipsize="end"
+              android:maxLines="1"
+              android:singleLine="true"
               android:gravity="top"
               tools:text="onGoing" />
           </LinearLayout>
@@ -85,121 +87,148 @@
 
       </androidx.constraintlayout.widget.ConstraintLayout>
 
-      <LinearLayout
+      <cloud.app.avp.ui.widget.FlowLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="10dp"
-        android:layout_marginVertical="5dp"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        app:itemSpacing="10dp">
 
-        <cloud.app.avp.ui.widget.FlowLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          app:itemSpacing="10dp">
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/genre1"
+          style="@style/FlowLayoutItem"
+          android:layout_gravity="center_vertical"
+          tools:text="Action" />
 
-          <com.google.android.material.button.MaterialButton
-            android:id="@+id/genre1"
-            style="@style/FlowLayoutItem"
-            android:layout_gravity="center_vertical"
-            tools:text="Action" />
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/genre2"
+          style="@style/FlowLayoutItem"
+          android:layout_gravity="center_vertical"
+          tools:text="Drama" />
 
-          <com.google.android.material.button.MaterialButton
-            android:id="@+id/genre2"
-            style="@style/FlowLayoutItem"
-            android:layout_gravity="center_vertical"
-            tools:text="Drama" />
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/genre3"
+          style="@style/FlowLayoutItem"
+          android:layout_gravity="center_vertical"
+          tools:text="Animation" />
 
-          <com.google.android.material.button.MaterialButton
-            android:id="@+id/genre3"
-            style="@style/FlowLayoutItem"
-            android:layout_gravity="center_vertical"
-            tools:text="Animation" />
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/contentRating"
+          style="@style/FlowLayoutItem"
+          android:layout_gravity="center_vertical"
+          tools:text="PG-13" />
 
-          <com.google.android.material.button.MaterialButton
-            android:id="@+id/contentRating"
-            style="@style/FlowLayoutItem"
-            android:layout_gravity="center_vertical"
-            tools:text="PG-13" />
+        <LinearLayout
+          style="@style/FlowLayoutItem"
+          android:layout_height="wrap_content">
 
           <LinearLayout
-            style="@style/FlowLayoutItem"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:orientation="horizontal">
-
-              <TextView
-                android:id="@+id/mediaRating"
-                style="@style/ResultInfoText"
-                android:text="@string/rating_format"
-                android:textSize="20sp"
-                tools:text="8.5" />
-
-              <TextView
-                style="@style/ResultInfoText"
-                android:gravity="bottom"
-                android:text="@string/full_rating" />
-            </LinearLayout>
-
-            <com.google.android.material.textview.MaterialTextView
-              android:layout_width="wrap_content"
-              android:layout_height="match_parent"
-              android:layout_marginHorizontal="5dp"
-              android:gravity="center"
-              android:text="@string/dot" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-              android:id="@+id/mediaReleaseYear"
+              android:id="@+id/mediaRating"
               style="@style/ResultInfoText"
-              tools:text="2022" />
+              android:text="@string/rating_format"
+              android:textSize="20sp"
+              tools:text="8.5" />
+
+            <TextView
+              style="@style/ResultInfoText"
+              android:gravity="bottom"
+              android:text="@string/full_rating" />
           </LinearLayout>
-        </cloud.app.avp.ui.widget.FlowLayout>
+
+          <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginHorizontal="5dp"
+            android:gravity="center"
+            android:text="@string/dot" />
+
+          <TextView
+            android:id="@+id/mediaReleaseYear"
+            style="@style/ResultInfoText"
+            tools:text="2022" />
+        </LinearLayout>
+      </cloud.app.avp.ui.widget.FlowLayout>
+
+      <TextView
+        android:id="@+id/tagLine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="5dp"
+        android:alpha="0.66"
+        android:ellipsize="end"
+        android:foreground="@drawable/outline_drawable"
+        android:maxLines="10"
+        android:textColor="?android:textColor"
+        android:textSize="15sp"
+        tools:text="to be continue...." />
+
+
+      <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="5dp">
+
 
         <TextView
-          android:id="@+id/tagLine"
+          android:id="@+id/mediaOverview"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginVertical="5dp"
-          android:alpha="0.66"
           android:ellipsize="end"
           android:foreground="@drawable/outline_drawable"
           android:maxLines="10"
           android:textColor="?android:textColor"
           android:textSize="15sp"
-          tools:text="to be continue...." />
+          tools:text="Ryan Quicksave Romano is an eccentric adventurer with a strange power: he can create a save-point in time and redo his life whenever he dies. Arriving in New Rome, the glitzy capital of sin of a rebuilding Europe, he finds the city torn between mega-corporations, sponsored heroes, superpowered criminals, and true monsters. It's a time of chaos, where potions can grant the power to rule the world and dangers lurk everywhere. " />
 
-
-        <FrameLayout
+        <ImageView
           android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:layout_marginBottom="5dp">
+          android:layout_height="30dp"
+          android:layout_gravity="bottom"
+          android:src="@drawable/background_shadow"
+          android:visibility="gone"
+          tools:ignore="ContentDescription" />
+      </FrameLayout>
 
 
-          <TextView
-            android:id="@+id/mediaOverview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:foreground="@drawable/outline_drawable"
-            android:maxLines="10"
-            android:textColor="?android:textColor"
-            android:textSize="15sp"
-            tools:text="Ryan Quicksave Romano is an eccentric adventurer with a strange power: he can create a save-point in time and redo his life whenever he dies. Arriving in New Rome, the glitzy capital of sin of a rebuilding Europe, he finds the city torn between mega-corporations, sponsored heroes, superpowered criminals, and true monsters. It's a time of chaos, where potions can grant the power to rule the world and dangers lurk everywhere. " />
+      <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvActors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:descendantFocusability="afterDescendants"
+        android:fadingEdge="horizontal"
+        android:nestedScrollingEnabled="false"
+        android:nextFocusUp="@id/mediaOverview"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        android:requiresFadingEdge="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:itemCount="5"
+        tools:listitem="@layout/item_actor"
+        tools:visibility="visible" />
 
-          <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_gravity="bottom"
-            android:src="@drawable/background_shadow"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
-        </FrameLayout>
+      <LinearLayout
+        android:id="@+id/recommendedHolder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
 
+        <TextView
+          android:id="@+id/recommendedTitle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:ellipsize="end"
+          android:maxLines="1"
+          android:text="@string/recommended"
+          android:textSize="@dimen/content_header_text_size"
+          tools:ignore="TextSizeCheck" />
 
         <androidx.recyclerview.widget.RecyclerView
-          android:id="@+id/rvActors"
+          android:id="@+id/rvRecommendedMedia"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:descendantFocusability="afterDescendants"
@@ -207,131 +236,96 @@
           android:nestedScrollingEnabled="false"
           android:nextFocusUp="@id/mediaOverview"
           android:orientation="horizontal"
-          android:paddingTop="10dp"
+          android:paddingTop="5dp"
           android:requiresFadingEdge="horizontal"
           app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-          tools:itemCount="5"
-          tools:listitem="@layout/item_actor"
+          tools:itemCount="3"
+          tools:listitem="@layout/item_media"
           tools:visibility="visible" />
+      </LinearLayout>
+
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <LinearLayout
-          android:id="@+id/recommendedHolder"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_weight="1"
-          android:orientation="vertical">
+          android:layout_marginBottom="10dp"
+          android:gravity="center_vertical"
+          android:orientation="horizontal"
+          android:visibility="gone">
 
           <TextView
-            android:id="@+id/castTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:text="@string/recommended"
-            android:textSize="@dimen/content_header_text_size"
-            tools:ignore="TextSizeCheck" />
-
-          <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvRecommendedMedia"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:descendantFocusability="afterDescendants"
-            android:fadingEdge="horizontal"
-            android:nestedScrollingEnabled="false"
-            android:nextFocusUp="@id/mediaOverview"
-            android:orientation="horizontal"
-            android:paddingTop="5dp"
-            android:requiresFadingEdge="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:itemCount="3"
-            tools:listitem="@layout/item_media"
-            tools:visibility="visible" />
-        </LinearLayout>
-
-
-        <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="vertical">
-
-          <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <TextView
-              android:id="@+id/result_episodes_text"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_gravity="center_vertical"
-              android:paddingTop="10dp"
-              android:paddingBottom="10dp"
-              android:textColor="?attr/textColor"
-              android:textSize="17sp"
-              android:textStyle="normal"
-              tools:text="8 Episodes" />
-          </LinearLayout>
-
-
-          <!--TODO add next airing-->
-          <LinearLayout
-            android:id="@+id/result_next_airing_holder"
+            android:id="@+id/result_episodes_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:orientation="horizontal"
-            android:visibility="gone">
-
-            <TextView
-              android:id="@+id/nextEpisodeAiring"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:gravity="center"
-              android:textColor="?attr/secondTextColor"
-              android:textSize="17sp"
-              android:textStyle="normal"
-              tools:text="Episode 1022 will be released in" />
-
-            <TextView
-              android:id="@+id/result_next_airing_time"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:gravity="center"
-              android:paddingStart="5dp"
-              android:paddingEnd="5dp"
-              android:textColor="?attr/textColor"
-              android:textSize="17sp"
-              android:textStyle="normal"
-              tools:text="5d 3h 30m" />
-          </LinearLayout>
-
-          <cloud.app.avp.utils.ShimmerLayoutSelf
-            android:id="@+id/episode_loading"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center"
-            android:layout_marginTop="15dp"
-            android:orientation="vertical"
-            tools:visibility="gone">
-
-            <LinearLayout
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="vertical">
-
-              <include layout="@layout/skeleton_item_episode" />
-            </LinearLayout>
-          </cloud.app.avp.utils.ShimmerLayoutSelf>
-
-          <include
-            android:id="@+id/episodeList"
-            layout="@layout/episode_list" />
-
+            android:layout_gravity="center_vertical"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textColor="?attr/textColor"
+            android:textSize="17sp"
+            android:textStyle="normal"
+            tools:text="8 Episodes" />
         </LinearLayout>
+
+
+        <!--TODO add next airing-->
+        <LinearLayout
+          android:id="@+id/result_next_airing_holder"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="start"
+          android:orientation="horizontal"
+          android:visibility="gone">
+
+          <TextView
+            android:id="@+id/nextEpisodeAiring"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="?attr/secondTextColor"
+            android:textSize="17sp"
+            android:textStyle="normal"
+            tools:text="Episode 1022 will be released in" />
+
+          <TextView
+            android:id="@+id/result_next_airing_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:textColor="?attr/textColor"
+            android:textSize="17sp"
+            android:textStyle="normal"
+            tools:text="5d 3h 30m" />
+        </LinearLayout>
+
+        <cloud.app.avp.utils.ShimmerLayoutSelf
+          android:id="@+id/episode_loading"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_gravity="center"
+          android:layout_marginTop="15dp"
+          android:orientation="vertical"
+          tools:visibility="gone">
+
+          <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include layout="@layout/skeleton_item_episode" />
+          </LinearLayout>
+        </cloud.app.avp.utils.ShimmerLayoutSelf>
+
+        <include
+          android:id="@+id/episodeList"
+          layout="@layout/layout_episodes" />
+
       </LinearLayout>
     </LinearLayout>
   </androidx.core.widget.NestedScrollView>

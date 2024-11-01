@@ -10,37 +10,38 @@ import com.google.android.material.R
 import com.google.android.material.motion.MotionUtils
 
 class ShimmerLayoutSelf @JvmOverloads constructor(
-  context: Context, attrs: AttributeSet? = null
+  context: Context,
+  attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
-  private val timeDuration = MotionUtils.resolveThemeDuration(
-    context,
-    R.attr.motionDurationMedium1,
-    350
-  ).toLong()
-
-  val animation = AlphaAnimation(1.0f, 0.25f).apply {
-    duration = timeDuration * 2
-    fillAfter = true
-    repeatMode = AlphaAnimation.REVERSE
-    repeatCount = Animation.INFINITE
+  companion object {
+    private const val DEFAULT_ANIMATION_DURATION = 350L
   }
 
-  init {
-    startAnimation(animation)
+  private val shimmerAnimation: AlphaAnimation by lazy {
+    AlphaAnimation(1.0f, 0.25f).apply {
+      duration = resolvedAnimationDuration * 2
+      fillAfter = true
+      repeatMode = AlphaAnimation.REVERSE
+      repeatCount = Animation.INFINITE
+    }
   }
 
-  override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-    super.onLayout(changed, left, top, right, bottom)
-    startAnimation(animation)
+  // Lazily resolving theme duration to avoid unnecessary calls
+  private val resolvedAnimationDuration: Long by lazy {
+    MotionUtils.resolveThemeDuration(
+      context,
+      R.attr.motionDurationMedium1,
+      DEFAULT_ANIMATION_DURATION.toInt()
+    ).toLong() ?: DEFAULT_ANIMATION_DURATION
   }
 
   override fun onVisibilityChanged(changedView: View, visibility: Int) {
     super.onVisibilityChanged(changedView, visibility)
     if (visibility == View.VISIBLE) {
-      startAnimation(animation)
+      startAnimation(shimmerAnimation)
     } else {
-      clearAnimation() // Stop animation when the view is not visible
+      clearAnimation()
     }
   }
 }

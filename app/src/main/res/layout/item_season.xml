@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/episode_holder"
+
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_marginBottom="10dp"
+  android:clickable="true"
+  android:focusable="true"
+  android:foreground="@drawable/outline_drawable"
+  android:nextFocusRight="@id/download_button"
+  app:cardBackgroundColor="?attr/colorSurfaceContainer"
+  app:cardCornerRadius="@dimen/rounded_image_radius"
+  app:cardElevation="0dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:foreground="?android:attr/selectableItemBackgroundBorderless">
+
+    <ImageView
+      android:id="@+id/seasonPoster"
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:layout_gravity="center_vertical"
+      android:layout_marginStart="10dp"
+      android:layout_marginEnd="10dp"
+      android:contentDescription="@string/play_episode"
+      android:src="@drawable/ic_video"
+      app:tint="?attr/textColor" />
+    <!--marquee_forever-->
+
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:layout_marginVertical="5dp"
+      android:layout_marginStart="15dp"
+      android:layout_marginEnd="50dp"
+      android:orientation="vertical">
+
+      <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/episode_filler"
+          style="@style/SmallButton"
+          android:layout_gravity="start"
+          android:layout_marginEnd="10dp"
+          android:text="@string/filler"
+          android:visibility="gone" />
+
+        <TextView
+          android:id="@+id/seasonTitle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_vertical"
+          android:textColor="?attr/textColor"
+          android:textStyle="bold"
+          tools:text="Season 01" />
+      </LinearLayout>
+
+      <androidx.core.widget.ContentLoadingProgressBar
+        android:id="@+id/seasonProgress"
+        style="@android:style/Widget.Material.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="-1.5dp"
+        android:progressBackgroundTint="?attr/colorPrimary"
+        android:progressTint="?attr/colorPrimary"
+        tools:progress="50" />
+
+      <TextView
+        android:id="@+id/watchProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/secondTextColor"
+        tools:text="10/10 episodes" />
+
+    </LinearLayout>
+  </LinearLayout>
+</androidx.cardview.widget.CardView>

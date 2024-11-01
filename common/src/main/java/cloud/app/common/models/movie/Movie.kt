@@ -7,7 +7,10 @@ import kotlinx.parcelize.Parcelize
 data class Movie(
   val ids: Ids,
   val generalInfo: GeneralInfo,
-  var recommendations: List<Movie>? = null
+  var recommendations: List<Movie>? = null,
+  var position: Long = 0,
+  var updateTime : Long = System.currentTimeMillis(),
+
 ) : Parcelable {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

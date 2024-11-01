@@ -38,7 +38,7 @@
           android:layout_height="match_parent"
           android:contentDescription="@string/episode_poster_img_des"
           android:scaleType="centerCrop"
-          tools:src="@drawable/sample_video_poster" />
+          tools:src="@drawable/ic_album" />
 
       </androidx.cardview.widget.CardView>
 

@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:transitionName="exception"
+  tools:visibility="visible">
+
+  <androidx.core.widget.NestedScrollView
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:paddingBottom="100dp">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="?android:colorBackground"
+      android:orientation="vertical">
+
+      <include
+        android:id="@+id/header"
+        layout="@layout/layout_media_header" />
+
+      <FrameLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+      <LinearLayout
+        android:id="@+id/mediaActionHolder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btnPlay"
+          style="@style/NiceButton"
+          android:layout_width="match_parent"
+          android:layout_gravity="center"
+          android:insetTop="2dp"
+          android:insetBottom="2dp"
+          android:text="@string/play_now"
+
+          app:icon="@drawable/cast_ic_notification_play"
+          app:iconGravity="textStart" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btnDownload"
+          style="@style/NiceButton"
+          android:layout_width="match_parent"
+          android:layout_gravity="center"
+          android:text="@string/download"
+          app:backgroundTint="?textColor"
+          app:icon="@drawable/ic_arrow_down"
+          android:visibility="gone"
+          app:iconGravity="textStart" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btnResume"
+          style="@style/NiceButton"
+          android:layout_width="match_parent"
+          android:layout_gravity="center"
+          android:text="@string/resume"
+          app:backgroundTint="?textColor"
+          app:icon="@drawable/cast_ic_notification_play"
+          android:visibility="gone"
+          app:iconGravity="textStart" />
+
+      </LinearLayout>
+
+      <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvActors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:descendantFocusability="afterDescendants"
+        android:fadingEdge="horizontal"
+        android:nestedScrollingEnabled="false"
+        android:nextFocusUp="@id/mediaOverview"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        android:requiresFadingEdge="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:itemCount="5"
+        tools:listitem="@layout/item_actor"
+        tools:visibility="visible" />
+
+      <LinearLayout
+        android:id="@+id/recommendedHolder"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+          android:id="@+id/recommendedTitle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:ellipsize="end"
+          android:maxLines="1"
+          android:paddingHorizontal="16dp"
+          android:text="@string/recommended"
+          android:textSize="@dimen/content_header_text_size"
+          tools:ignore="TextSizeCheck" />
+
+        <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/rvRecommendedMedia"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:descendantFocusability="afterDescendants"
+          android:fadingEdge="horizontal"
+          android:nestedScrollingEnabled="false"
+          android:nextFocusUp="@id/mediaOverview"
+          android:orientation="horizontal"
+          android:paddingTop="5dp"
+          android:requiresFadingEdge="horizontal"
+          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+          tools:itemCount="3"
+          tools:listitem="@layout/item_media"/>
+
+
+      </LinearLayout>
+
+      <LinearLayout
+        android:id="@+id/seasonHolder"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:gravity="start|center"
+          android:layout_margin="10dp"
+          android:id="@+id/sorting">
+
+          <TextView
+            android:id="@+id/seasonTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingHorizontal="16dp"
+            android:text="@string/seasons"
+            android:textSize="@dimen/content_header_text_size"
+            tools:ignore="TextSizeCheck" />
+
+          <TextView
+            android:id="@+id/seasonSortTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:foreground="@drawable/ripple_item_container"
+            android:text="@string/ascending_sort"
+            android:focusable="true"
+            android:clickable="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingHorizontal="16dp"
+            app:drawableEndCompat="@drawable/ic_arrow_down">
+          </TextView>
+        </LinearLayout>
+
+
+        <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/rvSeason"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:descendantFocusability="afterDescendants"
+          android:fadingEdge="horizontal"
+          android:nestedScrollingEnabled="false"
+          android:nextFocusUp="@id/mediaOverview"
+          android:orientation="vertical"
+          android:paddingTop="5dp"
+          android:requiresFadingEdge="horizontal"
+          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+          tools:itemCount="3"
+          android:padding="10dp"
+          tools:listitem="@layout/item_season"
+          tools:visibility="visible" />
+      </LinearLayout>
+
+    </LinearLayout>
+  </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

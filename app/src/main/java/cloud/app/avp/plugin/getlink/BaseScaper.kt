@@ -16,10 +16,7 @@ abstract class BaseScaper {
         return when (mediaItem) {
             is AVPMediaItem.MovieItem -> getMovieStream(mediaItem.movie, producerScope)
             is AVPMediaItem.EpisodeItem -> getEpisodeStream(mediaItem.episode, producerScope)
-            is AVPMediaItem.ActorItem,
-            is AVPMediaItem.ShowItem -> TODO()
-
-            is AVPMediaItem.StreamItem -> TODO()
+            else -> throw NotImplementedError()
         }
     }
 

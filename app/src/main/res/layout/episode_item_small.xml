@@ -5,7 +5,7 @@
   android:id="@+id/episode_holder"
 
   android:layout_width="match_parent"
-  android:layout_height="50dp"
+  android:layout_height="wrap_content"
   android:layout_marginBottom="10dp"
   android:clickable="true"
   android:focusable="true"
@@ -15,32 +15,6 @@
   app:cardBackgroundColor="?attr/colorSurfaceContainer"
   app:cardCornerRadius="@dimen/rounded_image_radius"
   >
-  <!--
-      android:nextFocusLeft="@id/result_episode_download"
-      -->
-
-  <!-- IDK BUT THIS DOES NOT SEAM LIKE A GOOD WAY OF DOING IT -->
-  <!--<LinearLayout
-          android:layout_width="fill_parent"
-          android:layout_height="fill_parent"
-          android:orientation="horizontal">
-      <View
-              android:layout_weight="0.5"
-              android:id="@+id/episode_view_procentage"
-              android:alpha="0.2"
-              android:background="?attr/colorPrimary"
-              android:layout_width="0dp"
-              android:layout_height="match_parent">
-      </View>
-      <View
-              android:id="@+id/episode_view_procentage_off"
-              android:layout_weight="0.10"
-              android:alpha="0"
-              android:background="@color/transparent"
-              android:layout_width="0dp"
-              android:layout_height="match_parent">
-      </View>
-  </LinearLayout>-->
   <androidx.core.widget.ContentLoadingProgressBar
     android:id="@+id/episode_progress"
     style="@android:style/Widget.Material.ProgressBar.Horizontal"
@@ -65,32 +39,75 @@
       android:layout_marginStart="10dp"
       android:layout_marginEnd="10dp"
       android:contentDescription="@string/play_episode"
-      android:src="@drawable/quantum_ic_play_arrow_grey600_36"
+      android:src="@drawable/ic_video"
       app:tint="?attr/textColor" />
     <!--marquee_forever-->
-    <com.google.android.material.button.MaterialButton
-      android:id="@+id/episode_filler"
-      style="@style/SmallButton"
-      android:layout_gravity="center"
-      android:text="@string/filler"
-      android:visibility="gone" />
 
-    <TextView
-      android:id="@+id/episode_text"
+
+    <LinearLayout
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_gravity="center_vertical"
-      android:layout_marginStart="10dp"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:layout_marginStart="15dp"
       android:layout_marginEnd="50dp"
-      android:ellipsize="marquee"
+      android:layout_marginVertical="5dp"
+      android:orientation="vertical">
 
-      android:gravity="center_vertical"
-      android:marqueeRepeatLimit="0"
+      <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
-      android:scrollHorizontally="true"
-      android:singleLine="true"
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/episode_filler"
+          style="@style/SmallButton"
+          android:layout_gravity="start"
+          android:layout_marginEnd="10dp"
+          android:visibility="gone"
+          android:text="@string/filler" />
 
-      android:textColor="?attr/textColor"
-      tools:text="Episode 1" />
+        <TextView
+          android:id="@+id/episode_text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_vertical"
+          android:textColor="?attr/textColor"
+          android:textStyle="bold"
+          tools:text="1. Jobless" />
+      </LinearLayout>
+
+      <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:orientation="horizontal">
+
+        <TextView
+          android:id="@+id/episode_rating"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="10dp"
+          android:textColor="?attr/secondTextColor"
+          tools:text="Rated: 8.8" />
+
+        <TextView
+          android:id="@+id/episode_runtime"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="10dp"
+          android:textColor="?attr/secondTextColor"
+          tools:text="80min" />
+
+      </LinearLayout>
+
+      <TextView
+        android:id="@+id/episode_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?attr/secondTextColor"
+        tools:text="15 Apr 2024" />
+
+
+    </LinearLayout>
   </LinearLayout>
 </androidx.cardview.widget.CardView>

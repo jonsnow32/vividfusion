@@ -127,6 +127,31 @@ fun String.iso8601ToMillis(): Long {
   return localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
 }
 
+val networks: Map<Int, String> = linkedMapOf( // Use LinkedHashMap to preserve order
+  213 to "Netflix", // Most popular first
+  1024 to "Amazon",
+  4 to "CBS",
+  19 to "FOX",
+  54 to "NBC",
+  2 to "ABC",
+  34 to "HBO",
+  6 to "The CW",
+  30 to "FX",
+  1313 to "Showtime" // Least popular last
+)
+
+val companies: Map<Int, String> = linkedMapOf( // Use LinkedHashMap to preserve order
+  420 to "Marvel Studios", // Most popular first
+  174 to "Warner Bros. Pictures",
+  33 to "Universal Pictures",
+  25 to "20th Century Fox",
+  5 to "Walt Disney Pictures",
+  2 to "Columbia Pictures",
+  4 to "Paramount",
+  12 to "New Line Cinema",
+  34 to "Legendary Pictures",
+  6194 to "Lucasfilm" // Least popular last
+)
 
 val showGenres: Map<Int, String> = mapOf(
   10759 to "Action & Adventure",
