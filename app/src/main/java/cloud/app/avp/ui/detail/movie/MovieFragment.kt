@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.detail
+package cloud.app.avp.ui.detail.movie
 
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -12,8 +12,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
-import cloud.app.avp.databinding.FragmentItemBinding
-import cloud.app.avp.ui.detail.show.season.SeasonAdapter
+import cloud.app.avp.databinding.FragmentMovieBinding
+import cloud.app.avp.ui.detail.bind
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.paging.toFlow
 import cloud.app.avp.utils.autoCleared
@@ -29,15 +29,15 @@ import cloud.app.common.models.movie.Movie
 import cloud.app.common.models.movie.Season
 import cloud.app.common.models.movie.Show
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.coroutines.coroutineContext
 
 @AndroidEntryPoint
-class ItemFragment : Fragment(), MediaItemAdapter.Listener {
-  private var binding by autoCleared<FragmentItemBinding>()
-  private val viewModel by viewModels<ItemViewModel>()
+class MovieFragment : Fragment(), MediaItemAdapter.Listener {
+  private var binding by autoCleared<FragmentMovieBinding>()
+  private val viewModel by viewModels<MovieViewModel>()
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
@@ -49,7 +49,7 @@ class ItemFragment : Fragment(), MediaItemAdapter.Listener {
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
-    binding = FragmentItemBinding.inflate(inflater, container, false)
+    binding = FragmentMovieBinding.inflate(inflater, container, false)
     return binding.root
   }
 
@@ -99,61 +99,10 @@ class ItemFragment : Fragment(), MediaItemAdapter.Listener {
       setupActorAdapter(mediaItem)
       setupRecommendationAdapter(mediaItem)
     }
-
-    observe(viewModel.seasons) { seasons ->
-      setUpSeasons(seasons)
-    }
   }
 
   fun List<AVPMediaItem>.toPagedList() = PagedData.Single { this }
 
-
-  private fun setUpSeasons(seasons: List<Season>?) {
-    binding.seasonHolder.isGone = seasons.isNullOrEmpty()
-    seasons?.let {
-      setupSortOptions(seasons)
-    }
-  }
-
-  private fun setupSortOptions(seasons: List<Season>) {
-    binding.seasonSortTxt.isGone = (seasons.size < 2)
-    val oldSortMode =
-      preferences.getInt(getString(R.string.episode_sort_key), R.string.ascending_sort)
-    binding.seasonSortTxt.text = getString(oldSortMode)
-    binding.seasonSortTxt.setCompoundDrawablesWithIntrinsicBounds(
-      0, 0,
-      if (oldSortMode == R.string.ascending_sort) R.drawable.ic_arrow_down else R.drawable.ic_arrow_up,
-      0
-    )
-    when (oldSortMode) {
-      R.string.descending_sort -> binding.rvSeason.adapter =
-        SeasonAdapter(seasons.sortedByDescending { it.number })
-      else -> binding.rvSeason.adapter = SeasonAdapter(seasons.sortedBy { it.number })
-    }
-
-    binding.seasonSortTxt.setOnClickListener {
-      val sortMode =
-        preferences.getInt(getString(R.string.episode_sort_key), R.string.ascending_sort)
-      val newSortMode =
-        if (sortMode == R.string.descending_sort) R.string.ascending_sort else R.string.descending_sort
-
-      when (newSortMode) {
-        R.string.descending_sort ->
-          (binding.rvSeason.adapter as SeasonAdapter).submitList(seasons.sortedByDescending { it.number })
-
-        else ->
-          (binding.rvSeason.adapter as SeasonAdapter).submitList(seasons.sortedBy { it.number })
-      }
-
-      binding.seasonSortTxt.setCompoundDrawablesWithIntrinsicBounds(
-        0, 0,
-        if (newSortMode == R.string.ascending_sort) R.drawable.ic_arrow_down else R.drawable.ic_arrow_up,
-        0
-      )
-      preferences.edit().putInt(getString(R.string.episode_sort_key), newSortMode).apply()
-      binding.seasonSortTxt.text = getString(newSortMode)
-    }
-  }
 
   private fun loadInitialData() {
     viewModel.getItemDetails(shortItem)
@@ -191,7 +140,6 @@ class ItemFragment : Fragment(), MediaItemAdapter.Listener {
     }
   }
 
-
   private fun setupRecommendationAdapter(item: AVPMediaItem) {
     val recommendations = item.recommendations?.map {
       when (it) {
@@ -222,7 +170,7 @@ class ItemFragment : Fragment(), MediaItemAdapter.Listener {
   }
 
   override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
-    val movieFragment = ItemFragment();
+    val movieFragment = MovieFragment();
     movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
     navigate(
       movieFragment,

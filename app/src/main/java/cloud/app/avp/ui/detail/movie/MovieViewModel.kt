@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.detail.show
+package cloud.app.avp.ui.detail.movie
 
 import androidx.lifecycle.viewModelScope
 import cloud.app.avp.base.CatchingViewModel
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ShowViewModel @Inject constructor(
+class MovieViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionFlow: MutableStateFlow<BaseExtension?>,
   val dataStore: DataStore,
@@ -27,8 +27,6 @@ class ShowViewModel @Inject constructor(
 
   var loading = MutableStateFlow(false);
   var fullMediaItem = MutableStateFlow<AVPMediaItem?>(null)
-
-  //topbar
   val favoriteStatus = MutableStateFlow(false)
 
   fun getItemDetails(shortItem: AVPMediaItem) {
@@ -39,10 +37,8 @@ class ShowViewModel @Inject constructor(
             loading.value = true
             val showDetail = client.getMediaDetail(shortItem) ?: shortItem
             fullMediaItem.value = showDetail
-
             val favoriteDeferred = async { dataStore.getFavoritesData(fullMediaItem.value?.id?.toString()) }
             favoriteStatus.value = favoriteDeferred.await()
-
             loading.value = false
           }
         }

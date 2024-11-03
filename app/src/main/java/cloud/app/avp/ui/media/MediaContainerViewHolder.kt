@@ -1,14 +1,11 @@
 package cloud.app.avp.ui.media
 
-import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.viewModelScope
-import androidx.paging.PagingData
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import cloud.app.avp.R
@@ -23,12 +20,7 @@ import cloud.app.avp.utils.tv.FOCUS_SELF
 import cloud.app.avp.utils.tv.setLinearListLayout
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.MediaItemsContainer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.lang.ref.WeakReference
 
 sealed class MediaContainerViewHolder(
   binding: ViewBinding,

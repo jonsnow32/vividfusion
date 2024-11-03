@@ -4,9 +4,8 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isGone
-import androidx.paging.PagingData
-import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.avp.R
 import cloud.app.avp.databinding.EpisodeItemLargeBinding
@@ -15,9 +14,11 @@ import cloud.app.avp.utils.TimeUtils.toLocalDayMonthYear
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.setTextWithVisibility
 import cloud.app.common.models.AVPMediaItem
+import cloud.app.common.models.ImageHolder.Companion.toImageHolder
+import cloud.app.common.models.movie.Episode
 
 class EpisodeAdapter :
-  PagingDataAdapter<AVPMediaItem.EpisodeItem, RecyclerView.ViewHolder>(EpisodeDiffCallback) {
+  ListAdapter<Episode, RecyclerView.ViewHolder>(EpisodeDiffCallback) {
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
     val inflater = LayoutInflater.from(parent.context)
@@ -29,7 +30,7 @@ class EpisodeAdapter :
 
   override fun getItemViewType(position: Int): Int {
     val item = getItem(position)
-    return if (item?.backdrop == null) 0 else 1
+    return if (item?.generalInfo?.backdrop == null) 0 else 1
   }
 
   override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -40,40 +41,35 @@ class EpisodeAdapter :
     }
   }
 
-  suspend fun submit(pagingData: PagingData<AVPMediaItem.EpisodeItem>?) {
-    submitData(pagingData ?: PagingData.empty())
-  }
-
-
-  companion object EpisodeDiffCallback : DiffUtil.ItemCallback<AVPMediaItem.EpisodeItem>() {
+  companion object EpisodeDiffCallback : DiffUtil.ItemCallback<Episode>() {
     override fun areItemsTheSame(
-      oldItem: AVPMediaItem.EpisodeItem,
-      newItem: AVPMediaItem.EpisodeItem
-    ): Boolean = oldItem.sameAs(newItem)
+      oldItem: Episode,
+      newItem: Episode
+    ): Boolean = oldItem.ids.equals(newItem)
 
     override fun areContentsTheSame(
-      oldItem: AVPMediaItem.EpisodeItem,
-      newItem: AVPMediaItem.EpisodeItem
+      oldItem: Episode,
+      newItem: Episode
     ): Boolean = oldItem == newItem
   }
 
   class ViewHolderLarge(private val binding: EpisodeItemLargeBinding) :
     RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(item: AVPMediaItem.EpisodeItem) {
+    fun bind(item: Episode) {
       val unixTimeMS = System.currentTimeMillis()
-      val isUpcoming = unixTimeMS < (item.episode.generalInfo.releaseDateMsUTC ?: 0L)
+      val isUpcoming = unixTimeMS < (item.generalInfo.releaseDateMsUTC ?: 0L)
 
-      binding.episodeText.text = "${item.episode.episodeNumber}. ${item.title}"
-      item.backdrop?.let { it.loadInto(binding.episodePoster) }
+      binding.episodeText.text = "${item.episodeNumber}. ${item.generalInfo.title}"
+      item.generalInfo.backdrop?.let { it.toImageHolder().loadInto(binding.episodePoster) }
 
-      binding.episodeDescript.setTextWithVisibility(item.episode.generalInfo.overview)
+      binding.episodeDescript.setTextWithVisibility(item.generalInfo.overview)
       binding.episodeRating.setTextWithVisibility(
         if (isUpcoming) itemView.context.getString(R.string.up_coming)
-        else item.episode.generalInfo.rating?.toString()
+        else item.generalInfo.rating?.toString()
       )
-      binding.episodeRuntime.setTextWithVisibility(item.episode.generalInfo.runtime?.toString())
-      binding.episodeDate.setTextWithVisibility(item.episode.generalInfo.releaseDateMsUTC?.toLocalDayMonthYear())
+      binding.episodeRuntime.setTextWithVisibility(item.generalInfo.runtime?.toString())
+      binding.episodeDate.setTextWithVisibility(item.generalInfo.releaseDateMsUTC?.toLocalDayMonthYear())
       binding.episodeProgress.isGone = true
     }
   }
@@ -81,17 +77,17 @@ class EpisodeAdapter :
   class ViewHolderSmall(private val binding: EpisodeItemSmallBinding) :
     RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(item: AVPMediaItem.EpisodeItem) {
+    fun bind(item: Episode) {
       val unixTimeMS = System.currentTimeMillis()
-      val isUpcoming = unixTimeMS < (item.episode.generalInfo.releaseDateMsUTC ?: 0L)
+      val isUpcoming = unixTimeMS < (item.generalInfo.releaseDateMsUTC ?: 0L)
 
-      binding.episodeText.text = "${item.episode.episodeNumber}. ${item.title}"
+      binding.episodeText.text = "${item.episodeNumber}. ${item.generalInfo.title}"
       binding.episodeRating.setTextWithVisibility(
         if (isUpcoming) itemView.context.getString(R.string.up_coming)
-        else item.episode.generalInfo.rating?.toString()
+        else item.generalInfo.rating?.toString()
       )
-      binding.episodeRuntime.setTextWithVisibility(item.episode.generalInfo.runtime?.toString())
-      binding.episodeDate.setTextWithVisibility(item.episode.generalInfo.releaseDateMsUTC?.toLocalDayMonthYear())
+      binding.episodeRuntime.setTextWithVisibility(item.generalInfo.runtime?.toString())
+      binding.episodeDate.setTextWithVisibility(item.generalInfo.releaseDateMsUTC?.toLocalDayMonthYear())
       binding.episodeProgress.isGone = true
     }
   }

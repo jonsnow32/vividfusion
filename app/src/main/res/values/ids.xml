@@ -17,4 +17,5 @@
   <item name="extensionInfoFragment" type="id"/>
   <item name="manageExtensionsFragment" type="id"/>
   <item name="streamFragment" type="id"/>
+
 </resources>

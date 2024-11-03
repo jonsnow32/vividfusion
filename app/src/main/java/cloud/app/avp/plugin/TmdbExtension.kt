@@ -15,7 +15,6 @@ import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.clients.mvdatabase.SearchClient
-import cloud.app.common.clients.mvdatabase.ShowClient
 import cloud.app.common.helpers.Page
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.helpers.network.HttpHelper
@@ -43,7 +42,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.coroutines.coroutineContext
 
-class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
+class TmdbExtension : BaseExtension, FeedClient, SearchClient {
   private lateinit var tmdb: AppTmdb
   private lateinit var tvdb: AppTheTvdb
   override val metadata: ExtensionMetadata
@@ -128,7 +127,49 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
       is AVPMediaItem.MovieItem -> getMovieDetail(avpMediaItem.movie.ids.tmdbId)
       is AVPMediaItem.ShowItem -> getShowDetail(avpMediaItem.show.ids.tmdbId)
       is AVPMediaItem.EpisodeItem -> getEpisodeDetail(avpMediaItem.episode.ids.tmdbId)
+      is AVPMediaItem.SeasonItem -> getSeasonDetail(avpMediaItem.season)
       else -> null
+    }
+  }
+
+  private fun getSeasonDetail(season: Season): AVPMediaItem? {
+    return if (season.show.ids.tmdbId != null) {
+      val response = tmdb.tvSeasonsService().season(
+        season.show.ids.tmdbId!!,
+        season.number,
+        language
+      ).execute().body()
+      response?.let {
+        AVPMediaItem.SeasonItem(
+          season = Season(
+            title = it.name,
+            number = it.season_number ?: -1,
+            overview = it.overview,
+            episodeCount = it.episodes?.size ?: 0,
+            posterPath = it.poster_path,
+            episodes = it.episodes?.map { episode ->
+              Episode(
+                Ids(tmdbId = episode.id),
+                GeneralInfo(
+                  title = episode.name,
+                  backdrop = episode.still_path,
+                  poster = episode.still_path,
+                  overview = episode.overview,
+                  releaseDateMsUTC = episode.air_date?.time,
+                  originalTitle = episode.name
+                ),
+                seasonNumber = episode.season_number,
+                episodeNumber = episode.episode_number,
+                showIds = season.show.ids,
+                showOriginTitle = season.show.generalInfo.title ?: ""
+              )
+            },
+            show = season.show
+          )
+        )
+      }
+    } else {
+      null // Handle case where no show ID is available
     }
   }
 
@@ -152,7 +193,8 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
         AppendToResponseItem.REVIEWS
       )
     )
-    return response.execute().body()?.toMediaItem()
+    val body = response.execute().body()
+    return body?.toMediaItem()
   }
 
   private fun getMovieDetail(tmdbId: Int?): AVPMediaItem.MovieItem? {
@@ -430,7 +472,7 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
     return list
   }
 
-  override suspend fun getSeason(show: Show): List<Season> {
+  suspend fun getSeason(show: Show): List<Season> {
     val list = mutableListOf<Season>()
     if (show.ids.tmdbId != null) {
       println("Coroutine Context getSeason: $coroutineContext")
@@ -446,7 +488,8 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
                 season.overview,
                 season.episode_count,
                 season.poster_path,
-                null
+                null,
+                show
               )
             )
 
@@ -487,13 +530,45 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient, ShowClient {
     } else if (show.ids.tvdbId != null) {
       val episodes = getTvdbEpisodes(show, 1)
       val seasons = episodes.groupBy { it.seasonNumber }
-        .map { Season(null, it.key, null, it.value.size, null, it.value) }
+        .map { Season(null, it.key, null, it.value.size, null, it.value, show) }
       list.addAll(seasons);
     } else
       throw Exception("No ids found")
     return list
   }
 
+  suspend fun getEpisodes(season: Season): List<Episode>? {
+    return if (season.episodes != null) {
+      season.episodes
+    } else if (season.show.ids.tmdbId != null) {
+      withContext(Dispatchers.IO) {
+        val response = tmdb.tvSeasonsService().season(
+          season.show.ids.tmdbId!!,
+          season.number,
+          language
+        ).execute().body()
+        response?.episodes?.map { episode ->
+          Episode(
+            Ids(tmdbId = episode.id),
+            GeneralInfo(
+              title = episode.name,
+              backdrop = episode.still_path,
+              poster = episode.still_path,
+              overview = episode.overview,
+              releaseDateMsUTC = episode.air_date?.time,
+              originalTitle = episode.name
+            ),
+            seasonNumber = episode.season_number,
+            episodeNumber = episode.episode_number,
+            showIds = season.show.ids,
+            showOriginTitle = "" // You might need to fetch this from the show details
+          )
+        }
+      }
+    } else {
+      null // Handle case where no episodes or show ID is available
+    }
+  }
   private suspend fun getNetworks(
     networks: Map<Int, String>,
     page: Int,

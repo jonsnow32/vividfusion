@@ -1,0 +1,211 @@
+package cloud.app.avp.ui.detail.show.season
+
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.os.bundleOf
+import androidx.core.view.isGone
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
+import cloud.app.avp.R
+import cloud.app.avp.databinding.FragmentSeasonBinding
+import cloud.app.avp.ui.detail.bind
+import cloud.app.avp.ui.detail.show.episode.EpisodeAdapter
+import cloud.app.avp.ui.media.MediaItemAdapter
+import cloud.app.avp.utils.autoCleared
+import cloud.app.avp.utils.getParcel
+import cloud.app.avp.utils.navigate
+import cloud.app.avp.utils.observe
+import cloud.app.avp.utils.setupTransition
+import cloud.app.avp.utils.showDialog
+import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
+import cloud.app.common.models.AVPMediaItem
+import cloud.app.common.models.movie.Episode
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class SeasonFragment : Fragment(), MediaItemAdapter.Listener {
+  private var binding by autoCleared<FragmentSeasonBinding>()
+  private val viewModel by viewModels<SeasonViewModel>()
+
+  private val args by lazy { requireArguments() }
+  private val clientId by lazy { args.getString("clientId")!! }
+  private val shortItem by lazy { args.getParcel<AVPMediaItem>("mediaItem")!! }
+
+  @Inject
+  lateinit var preferences: SharedPreferences
+
+  override fun onCreateView(
+    inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+  ): View {
+    binding = FragmentSeasonBinding.inflate(inflater, container, false)
+    return binding.root
+  }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+    setupTransition(binding.header.imagePoster)
+    applyInsets { binding.header.topBar.setPadding(0, it.top, 0, 0) }
+
+    bind(shortItem)
+    setupListeners()
+    setupObservers()
+    loadInitialData()
+  }
+
+  private fun setupListeners() {
+    binding.header.backBtn.setOnClickListener {
+      parentFragmentManager.popBackStack()
+    }
+
+    binding.header.showFavorite.setOnClickListener {
+      viewModel.toggleFavoriteStatus {
+        val messageResId = if (viewModel.favoriteStatus.value) {
+          R.string.favorite_added
+        } else {
+          R.string.favorite_removed
+        }
+        createSnack(getString(messageResId, shortItem.title))
+      }
+    }
+  }
+
+  private fun setupObservers() {
+    observe(viewModel.favoriteStatus) { isFavorite ->
+      val favoriteIconRes = if (isFavorite) {
+        R.drawable.favorite_24dp
+      } else {
+        R.drawable.favorite_border_24dp
+      }
+      binding.header.showFavorite.setImageResource(favoriteIconRes)
+    }
+
+    observe(viewModel.fullMediaItem) { mediaItem ->
+      if (mediaItem == null) return@observe
+      if (mediaItem is AVPMediaItem.SeasonItem)
+        setupEpisodes(mediaItem.season.episodes)
+    }
+  }
+
+  private enum class SortMode { ASCENDING, DESCENDING }
+
+  private var currentSelectedRangeIndex = 0;
+  private fun setupEpisodes(episodes: List<Episode>?) {
+    fun getCurrentSort(): SortMode {
+      val key = preferences.getInt(
+        getString(R.string.episode_sort_key),
+        SortMode.ASCENDING.ordinal
+      )
+
+      return SortMode.entries[key]
+    }
+    if (episodes.isNullOrEmpty()) return
+
+    val rangeSize = 50
+    val episodeRanges = divideEpisodesIntoRanges(episodes, rangeSize)
+    if (episodeRanges.size > 1) {
+      binding.episodeSelectRange.text = episodeRanges[currentSelectedRangeIndex].rangeLabel
+      binding.episodeSelectRange.isGone = false
+      binding.episodeSelectRange.setOnClickListener {
+        val listItems = episodeRanges.map { it.rangeLabel }
+        activity?.showDialog(
+          listItems,
+          currentSelectedRangeIndex,
+          getString(R.string.select_episode_range),
+          false,
+          {}) { itemId ->
+          currentSelectedRangeIndex = itemId
+          binding.episodeSelectRange.text = episodeRanges[currentSelectedRangeIndex].rangeLabel
+          displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, getCurrentSort())
+        }
+      }
+    }
+
+
+    if (binding.rvEpisodes.adapter == null) {
+      binding.rvEpisodes.adapter = EpisodeAdapter()
+      binding.rvEpisodes.setHasFixedSize(true)
+    }
+
+    binding.episodeSortTxt.isGone = (episodes.size < 2)
+    val currentSortMode = getCurrentSort()
+    updateSortUI(currentSortMode)
+    displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, currentSortMode)
+
+    binding.episodeSortTxt.setOnClickListener {
+      val sortMode = getCurrentSort()
+      val newSortMode = when (sortMode) {
+        SortMode.DESCENDING -> SortMode.ASCENDING
+        SortMode.ASCENDING -> SortMode.DESCENDING
+      }
+      updateSortUI(newSortMode)
+      displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, newSortMode)
+      preferences.edit().putInt(getString(R.string.episode_sort_key), newSortMode.ordinal).apply()
+    }
+  }
+
+  private fun updateSortUI(sortMode: SortMode) {
+    binding.episodeSortTxt.text =
+      getString(if (sortMode == SortMode.ASCENDING) R.string.ascending_sort else R.string.descending_sort)
+    binding.episodeSortTxt.setCompoundDrawablesWithIntrinsicBounds(
+      0, 0,
+      if (sortMode == SortMode.ASCENDING) R.drawable.ic_arrow_down else R.drawable.ic_arrow_up,
+      0
+    )
+  }
+
+  private fun displaySortedEpisodes(episodes: List<Episode>, sortMode: SortMode) {
+    val sortedEpisodes = sortEpisodes(episodes, sortMode)
+    val seasonAdapter = binding.rvEpisodes.adapter as EpisodeAdapter
+    seasonAdapter.submitList(sortedEpisodes) // Use flatMap here
+  }
+
+  private fun sortEpisodes(episodes: List<Episode>, sortMode: SortMode): List<Episode> {
+    return when (sortMode) {
+      SortMode.DESCENDING -> episodes.sortedByDescending { it.episodeNumber }
+      SortMode.ASCENDING -> episodes.sortedBy { it.episodeNumber }
+    }
+  }
+
+  private fun loadInitialData() {
+    viewModel.getItemDetails(shortItem)
+  }
+
+  fun bind(item: AVPMediaItem?) {
+    if (item == null) return
+    binding.header.bind(item)
+  }
+
+  override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
+    val movieFragment = SeasonFragment()
+    movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
+    navigate(
+      movieFragment,
+      transitionView
+    )
+  }
+
+  override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
+    return false
+  }
+
+  override fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean) {}
+
+
+  fun divideEpisodesIntoRanges(episodes: List<Episode>, rangeSize: Int): List<EpisodeRange> {
+    return episodes.chunked(rangeSize).mapIndexed { index, chunk ->
+      val start = index * rangeSize + 1
+      val end = start + chunk.size - 1
+      EpisodeRange("$start-$end", chunk)
+    }
+  }
+
+  data class EpisodeRange(
+    val rangeLabel: String,
+    val episodes: List<Episode>
+  )
+}

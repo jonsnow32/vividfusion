@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.browse
+package cloud.app.avp.ui.main.browse
 
 import android.os.Bundle
 import android.view.LayoutInflater

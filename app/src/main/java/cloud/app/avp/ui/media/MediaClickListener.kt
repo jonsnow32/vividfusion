@@ -2,16 +2,16 @@ package cloud.app.avp.ui.media
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.NavArgs
 import cloud.app.avp.AVPApplication.Companion.noClient
 import cloud.app.avp.R
-import cloud.app.avp.ui.browse.BrowseFragment
-import cloud.app.avp.ui.browse.BrowseViewModel
-import cloud.app.avp.ui.detail.ItemFragment
-import cloud.app.avp.ui.detail.actor.ActorFragment
+import cloud.app.avp.ui.main.browse.BrowseFragment
+import cloud.app.avp.ui.main.browse.BrowseViewModel
+import cloud.app.avp.ui.detail.movie.MovieFragment
 import cloud.app.avp.ui.detail.show.ShowFragment
+import cloud.app.avp.ui.detail.show.season.SeasonFragment
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.tryWith
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
@@ -34,9 +34,35 @@ class MediaClickListener(
     val bundle = Bundle()
     bundle.putString("clientId", clientId)
     bundle.putParcelable("mediaItem", item)
-    val movieFragment = ItemFragment()
-    movieFragment.arguments = bundle;
-    fragment.navigate(movieFragment, transitionView)
+
+    when(item) {
+
+      is AVPMediaItem.MovieItem -> {
+        val movieFragment = MovieFragment()
+        movieFragment.arguments = bundle;
+        fragment.navigate(movieFragment, transitionView)
+      }
+      is AVPMediaItem.ShowItem -> {
+        val showFragment = ShowFragment()
+        showFragment.arguments = bundle;
+        fragment.navigate(showFragment, transitionView)
+      }
+
+      is AVPMediaItem.SeasonItem -> {
+        val seasonFragment = SeasonFragment();
+        seasonFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
+        fragment.navigate(
+          seasonFragment,
+          transitionView
+        )
+      }
+      is AVPMediaItem.ActorItem,
+      is AVPMediaItem.EpisodeItem,
+      is AVPMediaItem.StreamItem -> {
+        TODO()
+      }
+    }
+
   }
 
   override fun onLongClick(

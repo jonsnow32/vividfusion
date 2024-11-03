@@ -10,5 +10,6 @@ data class Season(
   val overview: String?,
   val episodeCount: Int =  0,
   val posterPath: String?,
-  val episodes: List<Episode> ? = null
+  val episodes: List<Episode> ? = null,
+  var show: Show,
 ): Parcelable

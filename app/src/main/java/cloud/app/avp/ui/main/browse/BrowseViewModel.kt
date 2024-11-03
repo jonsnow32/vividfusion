@@ -1,4 +1,4 @@
-package cloud.app.avp.ui.browse
+package cloud.app.avp.ui.main.browse
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData

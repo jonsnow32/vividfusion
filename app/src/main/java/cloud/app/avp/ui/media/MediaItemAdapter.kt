@@ -29,7 +29,6 @@ class MediaItemAdapter(
     fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean);
   }
 
-
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
     val holder =  when (viewType) {
       0 -> MediaItemViewHolder.Movie.create(parent)
@@ -58,7 +57,6 @@ class MediaItemAdapter(
 
   override fun onBindViewHolder(holder: MediaItemViewHolder, position: Int) {
     val item = getItem(position) ?: return
-
 
     if(itemWidth != null && itemHeight != null) {
       val layoutParams = holder.itemView.layoutParams

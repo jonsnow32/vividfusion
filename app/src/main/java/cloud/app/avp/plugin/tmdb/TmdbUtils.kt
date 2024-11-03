@@ -10,6 +10,7 @@ import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.movie.GeneralInfo
 import cloud.app.common.models.movie.Ids
 import cloud.app.common.models.movie.Movie
+import cloud.app.common.models.movie.Season
 import cloud.app.common.models.movie.Show
 import com.uwetrottmann.tmdb2.entities.BaseMovie
 import com.uwetrottmann.tmdb2.entities.BasePerson
@@ -94,7 +95,6 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
   if (this is com.uwetrottmann.tmdb2.entities.TvShow) {
     show.ids.tvdbId = this.external_ids?.tvdb_id
     show.ids.imdbId = this.external_ids?.imdb_id
-
     show.recommendations = this.recommendations?.results?.map { toShow(it) }
     show.generalInfo.contentRating = this.content_ratings?.results.orEmpty().firstOrNull()?.rating
     show.generalInfo.genres = this.genres?.map { it.name ?: "unknown" }
@@ -104,7 +104,16 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
         actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder()),
       )
     }
-
+    show.seasons = this.seasons?.map { tvSeason ->
+      Season(
+        title = tvSeason.name,
+        number = tvSeason.season_number,
+        overview = tvSeason.overview,
+        episodeCount = tvSeason.episode_count,
+        posterPath = tvSeason.poster_path,
+        show = show
+      )
+    }
     show.tagLine = this.tagline
   }
   return AVPMediaItem.ShowItem(show)
@@ -129,7 +138,6 @@ fun String.iso8601ToMillis(): Long {
   // Convert the LocalDate to milliseconds since epoch (UTC)
   return localDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
 }
-
 
 
 val networks: Map<Int, String> = linkedMapOf( // Use LinkedHashMap to preserve order

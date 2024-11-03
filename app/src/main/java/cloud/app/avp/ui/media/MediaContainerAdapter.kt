@@ -25,9 +25,7 @@ class MediaContainerAdapter(
 
   interface Listener : MediaItemAdapter.Listener {
     fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View)
-    fun onLongClick(
-      clientId: String?, container: MediaItemsContainer, transitionView: View
-    ): Boolean
+    fun onLongClick( clientId: String?, container: MediaItemsContainer, transitionView: View): Boolean
   }
 
   companion object {

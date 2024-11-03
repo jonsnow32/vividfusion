@@ -3,6 +3,7 @@
   <string name="app_layout_key">app_layout_key</string>
   <string name="pref_theme_key">pref_theme_key</string>
   <string name="episode_sort_key">episode_sort_key</string>
+  <string name="season_sort_key">episode_sort_key</string>
   <string name="pref_animations_key">pref_animations_key</string>
   <string name="pref_shared_element_animations_key">pref_shared_element_animations_key</string>
 </resources>

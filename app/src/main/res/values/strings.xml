@@ -126,8 +126,12 @@
     <string name="download">Download</string>
   <string name="resume">Resume</string>
     <string name="seasons">Seasons</string>
+  <string name="episodes">Episodes</string>
+  <string name="sort_apply">Apply</string>
+  <string name="sort_cancel">Cancel</string>
+  <string name="select_episode_range">Select a range of episodes to display.</string>
 
-    <string-array name="themes">
+  <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>
     <item>System</item>

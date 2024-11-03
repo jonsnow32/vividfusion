@@ -10,11 +10,14 @@ import cloud.app.avp.databinding.ItemActorBinding
 import cloud.app.avp.databinding.ItemMediaTitleBinding
 import cloud.app.avp.databinding.ItemMediaBinding
 import cloud.app.avp.databinding.ItemMovieCoverBinding
+import cloud.app.avp.databinding.ItemSeasonBinding
+import cloud.app.avp.databinding.ItemSeasonLargeBinding
 import cloud.app.avp.databinding.ItemStreamBinding
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.roundTo
 import cloud.app.avp.utils.setTextWithVisibility
 import cloud.app.common.models.AVPMediaItem
+import cloud.app.common.models.ImageHolder.Companion.toImageHolder
 
 sealed class MediaItemViewHolder(itemView: View) :
   RecyclerView.ViewHolder(itemView) {
@@ -77,14 +80,39 @@ sealed class MediaItemViewHolder(itemView: View) :
     }
   }
 
-  class Season(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
-    private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
+  class SeasonLarge(val binding: ItemSeasonLargeBinding) : MediaItemViewHolder(binding.root) {
     override val transitionView: View
-      get() = binding.cover.root
+      get() = binding.root
 
     override fun bind(item: AVPMediaItem) {
-      titleBinding.bind(item)
-      binding.cover.bind(item)
+      val season = (item as AVPMediaItem.SeasonItem).season
+      binding.seasonTitle.text = season.title ?: "Season ${season.number}"
+      binding.watchProgress.text = "${season.episodes?.size ?: 0}/${season.episodeCount} episodes"
+      binding.seasonProgress.progress = ((season.episodes?.size?.toFloat() ?: 0f / season.episodeCount) * 100).toInt()
+      binding.seasonOverview.setTextWithVisibility(season.overview)
+      season.posterPath?.toImageHolder().loadInto(binding.seasonPoster)
+    }
+    companion object {
+      fun create(
+        parent: ViewGroup
+      ): MediaItemViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+        return SeasonLarge(
+          ItemSeasonLargeBinding.inflate(layoutInflater, parent, false)
+        )
+      }
+    }
+  }
+
+  class Season(val binding: ItemSeasonBinding) : MediaItemViewHolder(binding.root) {
+    override val transitionView: View
+      get() = binding.root
+
+    override fun bind(item: AVPMediaItem) {
+      val season = (item as AVPMediaItem.SeasonItem).season
+      binding.seasonTitle.text = season.title ?: "Season ${season.number}"
+      binding.watchProgress.text = "${season.episodes?.size ?: 0}/${season.episodeCount} episodes"
+      binding.seasonProgress.progress = ((season.episodes?.size?.toFloat() ?: 0f / season.episodeCount) * 100).toInt()
     }
     companion object {
       fun create(
@@ -92,7 +120,7 @@ sealed class MediaItemViewHolder(itemView: View) :
       ): MediaItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return Season(
-          ItemMediaBinding.inflate(layoutInflater, parent, false)
+          ItemSeasonBinding.inflate(layoutInflater, parent, false)
         )
       }
     }

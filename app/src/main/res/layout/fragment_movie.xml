@@ -126,65 +126,6 @@
 
       </LinearLayout>
 
-      <LinearLayout
-        android:id="@+id/seasonHolder"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-        <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal"
-          android:gravity="start|center"
-          android:layout_margin="10dp"
-          android:id="@+id/sorting">
-
-          <TextView
-            android:id="@+id/seasonTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:paddingHorizontal="16dp"
-            android:text="@string/seasons"
-            android:textSize="@dimen/content_header_text_size"
-            tools:ignore="TextSizeCheck" />
-
-          <TextView
-            android:id="@+id/seasonSortTxt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:foreground="@drawable/ripple_item_container"
-            android:text="@string/ascending_sort"
-            android:focusable="true"
-            android:clickable="true"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:paddingHorizontal="16dp"
-            app:drawableEndCompat="@drawable/ic_arrow_down">
-          </TextView>
-        </LinearLayout>
-
-
-        <androidx.recyclerview.widget.RecyclerView
-          android:id="@+id/rvSeason"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:descendantFocusability="afterDescendants"
-          android:fadingEdge="horizontal"
-          android:nestedScrollingEnabled="false"
-          android:orientation="vertical"
-          android:paddingTop="5dp"
-          android:requiresFadingEdge="horizontal"
-          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-          tools:itemCount="3"
-          android:padding="10dp"
-          tools:listitem="@layout/item_season"
-          tools:visibility="visible" />
-      </LinearLayout>
-
     </LinearLayout>
   </androidx.core.widget.NestedScrollView>
 

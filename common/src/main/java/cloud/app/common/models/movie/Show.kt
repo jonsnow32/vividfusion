@@ -8,10 +8,10 @@ data class Show(
   val ids: Ids,
   val generalInfo: GeneralInfo,
   var recommendations: List<Show>? = null,
+  var seasons : List<Season>? = null,
   var updateTime : Long = System.currentTimeMillis(),
   var tagLine: String? = null,
-  var status: String = "continue" //continue, end
-
+  var status: String = "continue", //continue, end
 ) : Parcelable {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
