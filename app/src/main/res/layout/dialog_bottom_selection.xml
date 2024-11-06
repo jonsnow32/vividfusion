@@ -13,7 +13,6 @@
             android:layout_marginBottom="10dp"
             android:textStyle="bold"
             android:textSize="20sp"
-            android:textColor="?attr/textColor"
             android:layout_width="match_parent"
             android:layout_rowWeight="1"
             tools:text="Test"
@@ -42,14 +41,14 @@
             android:layout_height="60dp">
 
         <com.google.android.material.button.MaterialButton
-                style="@style/NiceButton"
+               android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
                 android:text="@string/sort_apply"
                 android:id="@+id/apply_btt"
                 android:layout_width="wrap_content" />
 
         <com.google.android.material.button.MaterialButton
-                style="@style/NiceButton"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|end"
                 android:text="@string/sort_cancel"
                 android:id="@+id/cancel_btt"

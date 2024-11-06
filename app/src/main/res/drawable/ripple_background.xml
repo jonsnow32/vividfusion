@@ -6,7 +6,7 @@
       <solid android:color="?attr/colorControlHighlight"/>
       <stroke
         android:width="2dp"
-        android:color="?attr/colorPrimary"/>
+        android:color="?colorControlNormal"/>
       <corners android:radius="4dp"/>
     </shape>
   </item>

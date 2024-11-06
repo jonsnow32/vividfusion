@@ -1,9 +1,9 @@
 package cloud.app.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
 open class Thumbnail(
   open var id: Int?,
   open val name: String,
@@ -13,7 +13,7 @@ open class Thumbnail(
   open var poster: ImageHolder?,
   open val subtitles: List<SubtitleData> = listOf(),
   open var quality: VideoQuality?
-) : Parcelable
+)
 
 
 enum class VideoQuality(value: Int?) {

@@ -9,6 +9,5 @@
     android:id="@+id/textFullContent"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:textSize="18sp"
-    android:textColor="?textColor" />
+    android:textSize="18sp" />
 </LinearLayout>

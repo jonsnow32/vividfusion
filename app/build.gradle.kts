@@ -3,12 +3,12 @@ plugins {
   alias(libs.plugins.jetbrains.kotlin.android)
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.dagger.hilt)
-  alias(libs.plugins.kotlin.parcelize)
+  kotlin("plugin.serialization")
 }
 
 android {
   namespace = "cloud.app.avp"
-  compileSdk = 34
+  compileSdk = 35
 
   defaultConfig {
     applicationId = "cloud.app.avp"
@@ -106,5 +106,6 @@ dependencies {
   implementation(libs.androidx.browser)
   implementation(libs.glide.transformations)
   implementation(libs.fastscroll.library)
-  implementation(libs.jackson.module.kotlin)
+
+  implementation(libs.pikolo)
 }

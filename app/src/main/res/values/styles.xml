@@ -31,7 +31,6 @@
     <item name="android:outlineProvider">none</item>
     <item name="android:layout_width">match_parent</item>
     <item name="android:layout_height">1dp</item>
-    <item name="android:layout_marginTop">-1dp</item>
     <item name="android:translationZ">1dp</item>
     <item name="android:background">?colorOutlineVariant</item>
   </style>
@@ -107,50 +106,6 @@
     <item name="android:padding">8dp</item>
   </style>
 
-  <style name="NiceButton">
-    <!--removes shadow-->
-    <item name="android:stateListAnimator">@null</item>
-    <item name="android:padding">10dp</item>
-    <item name="android:layout_margin">4dp</item>
-    <item name="android:layout_height">40dp</item>
-    <item name="android:layout_width">wrap_content</item>
-    <item name="android:textStyle">bold</item>
-    <item name="android:textAllCaps">false</item>
-    <item name="iconGravity">textStart</item>
-    <item name="iconSize">20dp</item>
-    <item name="cornerRadius">@dimen/rounded_button_radius</item>
-    <item name="android:textSize">15sp</item>
-    <item name="android:insetTop">2dp</item>
-    <item name="android:insetBottom">2dp</item>
-    <item name="android:foreground">@drawable/outline_drawable</item>
-    <item name="android:tag">@string/tv_no_focus_tag</item>
-    <item name="rippleColor">?textColor</item>
-    <item name="backgroundTint">?textColor</item>
-  </style>
-
-  <style name="SmallButton" parent="NiceButton">
-    <item name="android:layout_height">24dp</item>
-    <item name="android:layout_width">wrap_content</item>
-    <item name="android:textSize">12sp</item>
-    <item name="android:layout_marginStart">0dp</item>
-    <item name="android:layout_marginEnd">0dp</item>
-    <item name="android:stateListAnimator">@null</item>
-    <item name="iconPadding">0dp</item>
-    <item name="android:paddingTop">0dp</item>
-    <item name="android:paddingBottom">0dp</item>
-    <item name="android:minWidth">0dp</item>
-  </style>
-
-  <style name="MultiSelectButton" parent="NiceButton">
-    <item name="android:layout_height">40dp</item>
-    <item name="android:layout_width">wrap_content</item>
-
-    <item name="strokeColor">?attr/textColor</item>
-    <item name="backgroundTint">?navBackground</item>
-    <item name="iconTint">?attr/textColor</item>
-    <item name="android:textColor">?attr/textColor</item>
-    <item name="rippleColor">?attr/textColor</item>
-  </style>
 
 <!--  <style name="SelectableButton" parent="NiceButton">-->
 <!--    <item name="android:layout_height">40dp</item>-->
@@ -163,7 +118,7 @@
 <!--    <item name="rippleColor">@color/selectable_black</item>-->
 <!--  </style>-->
 
-  <style name="FlowLayoutItem" parent="NiceButton">
+  <style name="FlowLayoutItem">
     <item name="android:layout_height">30dp</item>
     <item name="android:layout_width">wrap_content</item>
     <item name="android:textSize">12sp</item>
@@ -176,7 +131,7 @@
     <item name="android:textColor">?colorOnSurface</item>
     <item name="android:minWidth">0dp</item>
     <item name="backgroundTint">@android:color/transparent</item>
-    <item name="strokeColor">?iconColor</item>
+    <item name="strokeColor">?colorPrimary</item>
     <item name="strokeWidth">1dp</item>
     <item name="cornerRadius">@dimen/rounded_button_radius</item>
   </style>
@@ -217,7 +172,6 @@
     <item name="android:layout_width">match_parent</item>
     <item name="android:layout_height">wrap_content</item>
     <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
-    <item name="android:textColor">@color/text_selection_color</item>
     <item name="android:textSize">16sp</item>
     <item name="android:textStyle">bold</item>
     <item name="android:gravity">center_vertical</item>
@@ -229,7 +183,6 @@
   </style>
 
   <style name="CheckLabel" parent="@style/NoCheckLabel">
-
     <!--        <item name="drawableTint">@color/check_selection_color</item>-->
     <!--        Set color in the drawable instead of tint to allow multiple drawables-->
     <item name="android:checkMark">?android:attr/listChoiceIndicatorSingle</item>
@@ -238,14 +191,8 @@
 
   <style name="AlertDialogCustom" parent="MaterialAlertDialog.Material3">
     <item name="android:windowFullscreen">true</item>
-    <item name="android:textColor">?attr/textColor</item>
-    <item name="android:textColorPrimary">?attr/textColor</item>
     <!--<item name="android:background">@color/darkBackground</item>-->
     <item name="android:textAllCaps">false</item>
-    <!--<item name="android:colorBackground">@color/darkBackground</item>-->
-    <item name="textColorAlertDialogListItem">?attr/textColor</item>
-    <item name="colorControlNormal">?attr/textColor</item>
-    <!-- colorPrimarySecond used because colorPrimary fails for no reason -->
     <item name="colorControlActivated">?attr/colorPrimary</item>
 
     <item name="android:windowMinWidthMajor">@dimen/abc_dialog_min_width_major</item>
@@ -256,4 +203,6 @@
   <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
     <item name="android:backgroundTint">?backgroundColor</item>
   </style>
+
+
 </resources>

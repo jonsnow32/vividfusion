@@ -17,8 +17,13 @@ import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.common.models.movie.Episode
 
-class EpisodeAdapter :
+class EpisodeAdapter(private val listener: Listener) :
   ListAdapter<Episode, RecyclerView.ViewHolder>(EpisodeDiffCallback) {
+
+
+  interface Listener {
+    fun onClick(episode: Episode)
+  }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
     val inflater = LayoutInflater.from(parent.context)
@@ -39,6 +44,9 @@ class EpisodeAdapter :
       is ViewHolderLarge -> holder.bind(item)
       is ViewHolderSmall -> holder.bind(item)
     }
+    holder.itemView.setOnClickListener {
+      listener.onClick(item)
+    }
   }
 
   companion object EpisodeDiffCallback : DiffUtil.ItemCallback<Episode>() {
@@ -55,6 +63,7 @@ class EpisodeAdapter :
 
   class ViewHolderLarge(private val binding: EpisodeItemLargeBinding) :
     RecyclerView.ViewHolder(binding.root) {
+
     @SuppressLint("SetTextI18n")
     fun bind(item: Episode) {
       val unixTimeMS = System.currentTimeMillis()

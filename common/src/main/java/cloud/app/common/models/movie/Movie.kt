@@ -1,9 +1,9 @@
 package cloud.app.common.models.movie
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Movie(
   val ids: Ids,
   val generalInfo: GeneralInfo,
@@ -11,7 +11,7 @@ data class Movie(
   var position: Long = 0,
   var updateTime : Long = System.currentTimeMillis(),
 
-) : Parcelable {
+) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false

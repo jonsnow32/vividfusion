@@ -13,6 +13,7 @@ import cloud.app.avp.databinding.ItemMovieCoverBinding
 import cloud.app.avp.databinding.ItemSeasonBinding
 import cloud.app.avp.databinding.ItemSeasonLargeBinding
 import cloud.app.avp.databinding.ItemStreamBinding
+import cloud.app.avp.ui.media.MediaItemViewHolder.Companion.bind
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.roundTo
 import cloud.app.avp.utils.setTextWithVisibility
@@ -31,7 +32,7 @@ sealed class MediaItemViewHolder(itemView: View) :
   }
 
   fun ItemMovieCoverBinding.bind(item: AVPMediaItem) {
-    item.poster.loadInto(movieImageView, item.placeHolder())
+    item.poster.loadInto(imageView, item.placeHolder())
     this.iconContainer.isVisible = item.rating != null
     this.rating.text = item.rating?.roundTo(1).toString()
   }
@@ -39,7 +40,7 @@ sealed class MediaItemViewHolder(itemView: View) :
   class Movie(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
     private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
     override val transitionView: View
-      get() = binding.cover.movieImageView
+      get() = binding.cover.imageView
 
     override fun bind(item: AVPMediaItem) {
       titleBinding.bind(item)
@@ -111,8 +112,9 @@ sealed class MediaItemViewHolder(itemView: View) :
     override fun bind(item: AVPMediaItem) {
       val season = (item as AVPMediaItem.SeasonItem).season
       binding.seasonTitle.text = season.title ?: "Season ${season.number}"
-      binding.watchProgress.text = "${season.episodes?.size ?: 0}/${season.episodeCount} episodes"
-      binding.seasonProgress.progress = ((season.episodes?.size?.toFloat() ?: 0f / season.episodeCount) * 100).toInt()
+      binding.watchProgress.text = binding.root.context.resources.getString(R.string.season_progress_format, season.episodes?.size ?: 0, season.episodeCount)
+      binding.seasonProgress.progress = (((season.episodes?.size?.toFloat()
+        ?: (0f / season.episodeCount)) * 100)).toInt()
     }
     companion object {
       fun create(
@@ -217,5 +219,10 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.SeasonItem -> R.drawable.ic_video
     }
 
+    fun ItemMediaBinding.bind(item: AVPMediaItem) {
+      item.backdrop.loadInto(cover.imageView, item.placeHolder())
+      cover.iconContainer.isVisible = item.rating != null
+      cover.rating.text = item.rating?.roundTo(1).toString()
+    }
   }
 }

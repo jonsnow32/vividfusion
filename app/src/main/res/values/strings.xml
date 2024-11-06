@@ -8,7 +8,8 @@
   <string name="exception">Exception</string>
   <string name="str_copy">Copy</string>
   <string name="no_internet">No Internet</string>
-  <string name="incompatiable_class">IncompatibleClassChangeError</string>
+  <string name="incompatible_class">Incompatible Class Change Error</string>
+
   <string name="app_crashed">App crashed</string>
   <string name="error">Error</string>
   <string name="settings">Settings</string>
@@ -130,7 +131,22 @@
   <string name="sort_apply">Apply</string>
   <string name="sort_cancel">Cancel</string>
   <string name="select_episode_range">Select a range of episodes to display.</string>
-
+  <string name="season_progress_format">%d/%d episodes</string>
+  <string name="action_show_details">More informations</string>
+  <string name="action_add_to_favorites">Add to Favorites</string>
+  <string name="action_remove_from_favorites">Remove from Favorites</string>
+  <string name="action_load_episodes">Episodes</string>
+  <string name="show_special_season">Show Special Season</string>
+  <string name="content_setting_summary">Manage metadata, sources options</string>
+  <string name="contents">Contents</string>
+  <string name="known_for">Known for</string>
+  <string name="enable_dynamic_color">Use dynamic color</string>
+  <string name="dynamic_color_summary">Creating a personalized and cohesive visual experience.</string>
+  <string name="choose_a_color">Choose a color</string>
+  <string name="random">Random</string>
+  <string name="add">Add</string>
+  <string name="dynamic_color_key">dynamic_color_key</string>
+  <string name="not_implemented">Not implement yet!</string>
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>

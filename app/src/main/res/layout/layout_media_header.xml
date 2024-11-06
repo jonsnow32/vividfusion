@@ -35,8 +35,7 @@
         android:contentDescription="@string/back"
         android:focusable="true"
         android:nextFocusRight="@id/toolbarHolder"
-        android:src="@drawable/ic_back"
-        app:tint="?attr/secondIconColor" />
+        android:src="@drawable/ic_back"/>
 
     </LinearLayout>
 
@@ -57,8 +56,7 @@
         android:layout_height="50dp"
         android:layout_gravity="end|center_vertical"
         android:mediaRouteTypes="user"
-        android:visibility="gone"
-        app:mediaRouteButtonTint="?attr/textColor" />
+        android:visibility="gone" />
 
       <ImageView
         android:id="@+id/showNotify"
@@ -72,7 +70,6 @@
         android:focusable="true"
         android:src="@drawable/notify_24dp"
         android:visibility="gone"
-        app:tint="?attr/textColor"
         tools:visibility="visible" />
 
       <ImageView
@@ -89,8 +86,7 @@
         android:nextFocusLeft="@id/showNotify"
         android:nextFocusRight="@id/showShare"
         android:nextFocusUp="@id/backBtn"
-        android:src="@drawable/favorite_24dp"
-        app:tint="?attr/textColor" />
+        android:src="@drawable/favorite_24dp"/>
 
       <ImageView
         android:id="@+id/showShare"
@@ -103,8 +99,7 @@
         android:contentDescription="@string/share"
         android:elevation="10dp"
         android:focusable="true"
-        android:src="@drawable/share_24dp"
-        app:tint="?attr/textColor" />
+        android:src="@drawable/share_24dp" />
 
       <ImageView
         android:id="@+id/showOpenInBrowser"
@@ -117,8 +112,7 @@
         android:contentDescription="@string/open_in_browser"
         android:elevation="10dp"
         android:focusable="true"
-        android:src="@drawable/ic_baseline_public_24"
-        app:tint="?attr/textColor" />
+        android:src="@drawable/ic_baseline_public_24" />
     </LinearLayout>
   </FrameLayout>
   <!-- Backdrop Image -->
@@ -130,7 +124,7 @@
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/topBar"
-    app:srcCompat="@drawable/ic_artist" />
+    app:srcCompat="@drawable/rounded_rectangle" />
 
   <!-- Poster Image -->
   <ImageView
@@ -142,7 +136,7 @@
     android:scaleType="centerCrop"
     app:layout_constraintTop_toBottomOf="@id/imageBackdrop"
     app:layout_constraintStart_toStartOf="parent"
-    app:srcCompat="@drawable/art_music" />
+    app:srcCompat="@drawable/rounded_rectangle" />
 
   <!-- Title Text -->
   <TextView
@@ -165,9 +159,9 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
     android:layout_marginTop="4dp"
+    android:alpha="0.66"
     android:text="@string/subtitle"
     android:textSize="14sp"
-    android:textColor="?secondTextColor"
     app:layout_constraintStart_toEndOf="@id/imagePoster"
     app:layout_constraintTop_toBottomOf="@id/textTitle"
     app:layout_constraintEnd_toEndOf="parent" />

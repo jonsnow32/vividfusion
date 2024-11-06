@@ -5,7 +5,6 @@
         android:layout_height="wrap_content"
         android:minHeight="?android:attr/listPreferredItemHeightSmall"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/text_selection_color"
         android:textSize="16sp"
         android:textStyle="bold"
         android:gravity="center_vertical"

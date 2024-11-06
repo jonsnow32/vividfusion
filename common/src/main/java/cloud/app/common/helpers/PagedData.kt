@@ -1,5 +1,8 @@
 package cloud.app.common.helpers
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 sealed class PagedData<T : Any> {
   abstract fun clear()
   abstract suspend fun loadFirst(): List<T>
@@ -13,7 +16,11 @@ sealed class PagedData<T : Any> {
 
     suspend fun loadItems(): List<T> {
       if (!loaded) {
-        items.addAll(load())
+        items.addAll(
+          withContext(Dispatchers.IO) {
+            load()
+          }
+        )
         loaded = true
       }
       return items
@@ -35,8 +42,10 @@ sealed class PagedData<T : Any> {
     private val itemMap = mutableMapOf<String?, Page<T, String?>>()
 
     suspend fun loadPage(continuation: String?): Page<T, String?> {
-      return itemMap.getOrPut(continuation) {
-        load(continuation)
+      return withContext(Dispatchers.IO) {
+        itemMap.getOrPut(continuation) {
+          load(continuation)
+        }
       }
     }
 

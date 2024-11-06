@@ -38,9 +38,6 @@ import cloud.app.common.settings.SettingSwitch
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.coroutineContext
 
 class TmdbExtension : BaseExtension, FeedClient, SearchClient {
   private lateinit var tmdb: AppTmdb
@@ -127,15 +124,17 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
       is AVPMediaItem.MovieItem -> getMovieDetail(avpMediaItem.movie.ids.tmdbId)
       is AVPMediaItem.ShowItem -> getShowDetail(avpMediaItem.show.ids.tmdbId)
       is AVPMediaItem.EpisodeItem -> getEpisodeDetail(avpMediaItem.episode.ids.tmdbId)
-      is AVPMediaItem.SeasonItem -> getSeasonDetail(avpMediaItem.season)
+      is AVPMediaItem.SeasonItem -> getSeasonDetail(avpMediaItem)
       else -> null
     }
   }
 
-  private fun getSeasonDetail(season: Season): AVPMediaItem? {
-    return if (season.show.ids.tmdbId != null) {
+  private fun getSeasonDetail(seasonItem: AVPMediaItem.SeasonItem): AVPMediaItem? {
+    val season = seasonItem.season;
+
+    return if (season.showIds.tmdbId != null) {
       val response = tmdb.tvSeasonsService().season(
-        season.show.ids.tmdbId!!,
+        season.showIds.tmdbId!!,
         season.number,
         language
       ).execute().body()
@@ -160,12 +159,16 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
                 ),
                 seasonNumber = episode.season_number,
                 episodeNumber = episode.episode_number,
-                showIds = season.show.ids,
-                showOriginTitle = season.show.generalInfo.title ?: ""
+                showIds = season.showIds,
+                showOriginTitle = season.showOriginTitle ?: ""
               )
             },
-            show = season.show
-          )
+            showIds = season.showIds,
+            showOriginTitle = season.showOriginTitle,
+            backdrop = season.backdrop,
+            releaseDateMsUTC = it.air_date?.time
+          ),
+          showItem = seasonItem.showItem
         )
       }
     } else {
@@ -231,25 +234,23 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     sortBy: com.uwetrottmann.tmdb2.enumerations.SortBy? = null
   ) = genres.toPage(page, pageSize).map { genre ->
     val data = PagedData.Continuous<AVPMediaItem> {
-      withContext(Dispatchers.IO) {
-        val continuation = it?.toInt() ?: 1
-        val builder = tmdb.discoverMovie()
-          .sort_by(sortBy)
-          .with_genres(DiscoverFilter(genre.key))
-          .page(continuation)
-          .language(language)
-          .region(region)
-          .includeAdult()
+      val continuation = it?.toInt() ?: 1
+      val builder = tmdb.discoverMovie()
+        .sort_by(sortBy)
+        .with_genres(DiscoverFilter(genre.key))
+        .page(continuation)
+        .language(language)
+        .region(region)
+        .includeAdult()
 
-        if (includeAdult == true)
-          builder.includeAdult()
+      if (includeAdult == true)
+        builder.includeAdult()
 
-        val items = builder.build().execute().body()!!
-        Page(
-          items.toMediaItemsList(),
-          if (items.results.isNullOrEmpty()) null else (continuation + 1).toString()
-        )
-      }
+      val items = builder.build().execute().body()!!
+      Page(
+        items.toMediaItemsList(),
+        if (items.results.isNullOrEmpty()) null else (continuation + 1).toString()
+      )
     }
     data.loadFirst()
     toMediaItemsContainer(
@@ -267,20 +268,18 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     sortBy: com.uwetrottmann.tmdb2.enumerations.SortBy?
   ) = genres.toPage(page, pageSize).map { genre ->
     val data = PagedData.Continuous<AVPMediaItem> {
-      withContext(Dispatchers.IO) {
-        val continuation = it?.toInt() ?: 1
-        val more = tmdb.discoverTv()
-          .sort_by(sortBy)
-          .with_genres(DiscoverFilter(genre.key))
-          .page(continuation)
-          .language(language)
-          .watch_region(region)
-          .build().execute().body()!!
-        Page(
-          more.toMediaItemsList(),
-          if (more.results.isNullOrEmpty()) null else (continuation + 1).toString()
-        )
-      }
+      val continuation = it?.toInt() ?: 1
+      val more = tmdb.discoverTv()
+        .sort_by(sortBy)
+        .with_genres(DiscoverFilter(genre.key))
+        .page(continuation)
+        .language(language)
+        .watch_region(region)
+        .build().execute().body()!!
+      Page(
+        more.toMediaItemsList(),
+        if (more.results.isNullOrEmpty()) null else (continuation + 1).toString()
+      )
     }
     data.loadFirst() //preload first page to home feed
     toMediaItemsContainer(
@@ -318,17 +317,15 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     extras: Map<String, String>?
   ): PagedData<MediaItemsContainer> {
     val more = PagedData.Continuous<AVPMediaItem> {
-      withContext(Dispatchers.IO) {
-        val continuation = it?.toInt() ?: 1
-        val pageResult = tmdb.searchService()
-          .person(query, continuation, language, region, includeAdult)
-          .execute()
-          .body()
-        Page(
-          pageResult?.toMediaItemsList() ?: emptyList(),
-          if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
-        )
-      }
+      val continuation = it?.toInt() ?: 1
+      val pageResult = tmdb.searchService()
+        .person(query, continuation, language, region, includeAdult)
+        .execute()
+        .body()
+      Page(
+        pageResult?.toMediaItemsList() ?: emptyList(),
+        if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
+      )
     }
     val category = toMediaItemsContainer(query ?: "Actor search", query ?: "Actor search", more)
     return PagedData.Single { listOf(category) }
@@ -339,18 +336,16 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     extras: Map<String, String>?
   ): PagedData<MediaItemsContainer> {
     val more = PagedData.Continuous<AVPMediaItem> {
-      withContext(Dispatchers.IO) {
-        val continuation = it?.toInt() ?: 1
-        val firstAirDateYear = extras?.get("first_air_date_year")?.toInt()
-        val pageResult = tmdb.searchService()
-          .tv(query, continuation, language, firstAirDateYear, includeAdult)
-          .execute()
-          .body()
-        Page(
-          pageResult?.toMediaItemsList() ?: emptyList(),
-          if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
-        )
-      }
+      val continuation = it?.toInt() ?: 1
+      val firstAirDateYear = extras?.get("first_air_date_year")?.toInt()
+      val pageResult = tmdb.searchService()
+        .tv(query, continuation, language, firstAirDateYear, includeAdult)
+        .execute()
+        .body()
+      Page(
+        pageResult?.toMediaItemsList() ?: emptyList(),
+        if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
+      )
     }
     val category = toMediaItemsContainer(query ?: "TV Show search", query ?: "TV Show search", more)
     return PagedData.Single { listOf(category) }
@@ -361,18 +356,16 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     extras: Map<String, String>?
   ): PagedData<MediaItemsContainer> {
     val more = PagedData.Continuous<AVPMediaItem> {
-      withContext(Dispatchers.IO) {
-        val continuation = it?.toInt() ?: 1
-        val year = extras?.get("year")?.toInt()
-        val pageResult =
-          tmdb.searchService()
-            .movie(query, continuation, language, region, includeAdult, year, year)
-            .execute().body()
-        Page(
-          pageResult?.toMediaItemsList() ?: emptyList(),
-          if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
-        )
-      }
+      val continuation = it?.toInt() ?: 1
+      val year = extras?.get("year")?.toInt()
+      val pageResult =
+        tmdb.searchService()
+          .movie(query, continuation, language, region, includeAdult, year, year)
+          .execute().body()
+      Page(
+        pageResult?.toMediaItemsList() ?: emptyList(),
+        if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
+      )
     }
     val category = toMediaItemsContainer(query ?: "Movie search", query ?: "Movie search", more)
     return PagedData.Single { (listOf(category)) }
@@ -383,33 +376,30 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     val movies = mutableListOf<AVPMediaItem.MovieItem>()
     val shows = mutableListOf<AVPMediaItem.ShowItem>()
     val casts = mutableListOf<AVPMediaItem.ActorItem>()
-    withContext(Dispatchers.IO) {
-      val mediaResultsPage =
-        tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
-      mediaResultsPage?.results?.forEach {
-        it.movie?.let { movie ->
-          movies.add(movie.toMediaItem())
-        }
-        it.tvShow?.let { tvShow ->
-          shows.add(tvShow.toMediaItem())
-        }
-        it.person?.let { person ->
-          casts.add(person.toMediaItem())
-        }
+    val mediaResultsPage =
+      tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
+    mediaResultsPage?.results?.forEach {
+      it.movie?.let { movie ->
+        movies.add(movie.toMediaItem())
       }
-      val mediaContainer = mutableListOf<MediaItemsContainer>()
-      if (movies.isNotEmpty()) {
-        mediaContainer.add(toMediaItemsContainer("Movies", "", movies.toPaged()))
+      it.tvShow?.let { tvShow ->
+        shows.add(tvShow.toMediaItem())
       }
-      if (shows.isNotEmpty()) {
-        mediaContainer.add(toMediaItemsContainer("TV Shows", "", shows.toPaged()))
+      it.person?.let { person ->
+        casts.add(person.toMediaItem())
       }
-      if (casts.isNotEmpty()) {
-        mediaContainer.add(toMediaItemsContainer("Actors", "", casts.toPaged()))
-      }
-      mediaContainer
     }
-
+    val mediaContainer = mutableListOf<MediaItemsContainer>()
+    if (movies.isNotEmpty()) {
+      mediaContainer.add(toMediaItemsContainer("Movies", "", movies.toPaged()))
+    }
+    if (shows.isNotEmpty()) {
+      mediaContainer.add(toMediaItemsContainer("TV Shows", "", shows.toPaged()))
+    }
+    if (casts.isNotEmpty()) {
+      mediaContainer.add(toMediaItemsContainer("Actors", "", casts.toPaged()))
+    }
+    mediaContainer
   }
 
 
@@ -427,7 +417,6 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
 
 
   private suspend fun getTvdbEpisodes(show: Show, page: Int): List<Episode> {
-    println("Coroutine Context getSeason: $coroutineContext")
     val list = mutableListOf<Episode>()
     if (show.ids.tvdbId != null) {
       val response = tvdb.series().episodes(
@@ -475,7 +464,6 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
   suspend fun getSeason(show: Show): List<Season> {
     val list = mutableListOf<Season>()
     if (show.ids.tmdbId != null) {
-      println("Coroutine Context getSeason: $coroutineContext")
       val response = tmdb.tvService().tv(show.ids.tmdbId!!, language).execute()
       if (response.isSuccessful) {
         val tvShow = response.body();
@@ -488,41 +476,13 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
                 season.overview,
                 season.episode_count,
                 season.poster_path,
+                show.generalInfo.backdrop,
                 null,
-                show
+                show.ids,
+                show.generalInfo.originalTitle,
+                season.air_date?.time
               )
             )
-
-//              tmdb.tvSeasonsService().season(tvShow.id, season.season_number, language).execute().body()?.let {
-//              list.add(
-//                Season(
-//                  it.name,
-//                  it.season_number ?: -1,
-//                  it.overview,
-//                  it.episode_count ?: it.episodes?.size ?: 0,
-//                  it.poster_path,
-//                  it.episodes?.map { episode ->
-//                    Episode(
-//                      Ids(
-//                        tmdbId = episode.id,
-//                      ),
-//                      GeneralInfo(
-//                        title = episode.name,
-//                        backdrop = episode.still_path,
-//                        poster = episode.still_path,
-//                        overview = episode.overview,
-//                        releaseDateMsUTC = episode.air_date?.time ?: -1,
-//                        originalTitle = episode.name
-//                      ),
-//                      seasonNumber = episode.season_number,
-//                      episodeNumber = episode.episode_number,
-//                      showIds = show.ids,
-//                      showOriginTitle = show.generalInfo.title ?: ""
-//                    )
-//                  } ?: (1..it.episode_count).map { number -> Episode(Ids(tmdbId = number), GeneralInfo(title = "E${number}", originalTitle = "E${number}"), it.season_number, number, show.ids, show.generalInfo.title ?: "") }
-//                )
-//              )
-//            }
           }
         }
       }
@@ -530,45 +490,26 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     } else if (show.ids.tvdbId != null) {
       val episodes = getTvdbEpisodes(show, 1)
       val seasons = episodes.groupBy { it.seasonNumber }
-        .map { Season(null, it.key, null, it.value.size, null, it.value, show) }
+        .map {
+          Season(
+            null,
+            it.key,
+            null,
+            it.value.size,
+            show.generalInfo.backdrop,
+            null,
+            it.value,
+            show.ids,
+            show.generalInfo.originalTitle,
+            null
+          )
+        }
       list.addAll(seasons);
     } else
       throw Exception("No ids found")
     return list
   }
 
-  suspend fun getEpisodes(season: Season): List<Episode>? {
-    return if (season.episodes != null) {
-      season.episodes
-    } else if (season.show.ids.tmdbId != null) {
-      withContext(Dispatchers.IO) {
-        val response = tmdb.tvSeasonsService().season(
-          season.show.ids.tmdbId!!,
-          season.number,
-          language
-        ).execute().body()
-        response?.episodes?.map { episode ->
-          Episode(
-            Ids(tmdbId = episode.id),
-            GeneralInfo(
-              title = episode.name,
-              backdrop = episode.still_path,
-              poster = episode.still_path,
-              overview = episode.overview,
-              releaseDateMsUTC = episode.air_date?.time,
-              originalTitle = episode.name
-            ),
-            seasonNumber = episode.season_number,
-            episodeNumber = episode.episode_number,
-            showIds = season.show.ids,
-            showOriginTitle = "" // You might need to fetch this from the show details
-          )
-        }
-      }
-    } else {
-      null // Handle case where no episodes or show ID is available
-    }
-  }
   private suspend fun getNetworks(
     networks: Map<Int, String>,
     page: Int,
@@ -577,21 +518,19 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
   ): List<MediaItemsContainer> {
     return networks.toPage(page, pageSize).map { network ->
       val data = PagedData.Continuous<AVPMediaItem> {
-        withContext(Dispatchers.IO) {
-          val continuation = it?.toInt() ?: 1
-          val discover = tmdb.discoverTv()
-            .with_networks(DiscoverFilter(network.key))
-            .page(continuation)
-            .language(language)
-            .watch_region(region)
-            .build()
-            .execute()
-            .body()
-          Page(
-            discover?.toMediaItemsList() ?: emptyList(),
-            if (discover?.results.isNullOrEmpty()) null else (continuation + 1).toString()
-          )
-        }
+        val continuation = it?.toInt() ?: 1
+        val discover = tmdb.discoverTv()
+          .with_networks(DiscoverFilter(network.key))
+          .page(continuation)
+          .language(language)
+          .watch_region(region)
+          .build()
+          .execute()
+          .body()
+        Page(
+          discover?.toMediaItemsList() ?: emptyList(),
+          if (discover?.results.isNullOrEmpty()) null else (continuation + 1).toString()
+        )
       }
       data.loadFirst()
       toMediaItemsContainer(network.value, network.value, data)
@@ -606,22 +545,20 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
   ): List<MediaItemsContainer> {
     return companies.toPage(page, pageSize).map { company ->
       val data = PagedData.Continuous<AVPMediaItem> {
-        withContext(Dispatchers.IO) {
-          val continuation = it?.toInt() ?: 1
-          val discover = tmdb.discoverMovie()
-            .with_companies(DiscoverFilter(company.key))
-            .page(continuation)
-            .language(language)
-            .region(region)
-            .includeAdult()
-            .build()
-            .execute()
-            .body()
-          Page(
-            discover?.toMediaItemsList() ?: emptyList(),
-            if (discover?.results.isNullOrEmpty()) null else (continuation + 1).toString()
-          )
-        }
+        val continuation = it?.toInt() ?: 1
+        val discover = tmdb.discoverMovie()
+          .with_companies(DiscoverFilter(company.key))
+          .page(continuation)
+          .language(language)
+          .region(region)
+          .includeAdult()
+          .build()
+          .execute()
+          .body()
+        Page(
+          discover?.toMediaItemsList() ?: emptyList(),
+          if (discover?.results.isNullOrEmpty()) null else (continuation + 1).toString()
+        )
       }
       data.loadFirst()
       toMediaItemsContainer(company.value, company.value, data)

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical">
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="start|center"
+    android:layout_margin="10dp"
+    android:id="@+id/sorting">
+    <View
+      android:layout_marginStart="16dp"
+      android:layout_width="100dp"
+      android:layout_height="30dp"
+
+      android:background="@drawable/rounded_rectangle" />
+
+    <View
+      android:layout_width="60dp"
+      android:layout_height="30dp"
+      android:layout_marginStart="16dp"
+      android:background="@drawable/rounded_rectangle" />
+    <View
+      android:layout_width="120dp"
+      android:layout_height="30dp"
+      android:layout_marginStart="16dp"
+      android:background="@drawable/rounded_rectangle" />
+  </LinearLayout>
+  <include
+    layout="@layout/skeleton_item_episode"/>
+
+  <include
+    layout="@layout/skeleton_item_episode"/>
+
+</LinearLayout>

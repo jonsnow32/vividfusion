@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -14,34 +13,32 @@ import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentMovieBinding
 import cloud.app.avp.ui.detail.bind
+import cloud.app.avp.ui.media.MediaClickListener
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.paging.toFlow
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
-import cloud.app.avp.utils.navigate
+import cloud.app.avp.utils.getSerialized
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
-import cloud.app.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.common.models.movie.Movie
-import cloud.app.common.models.movie.Season
 import cloud.app.common.models.movie.Show
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MovieFragment : Fragment(), MediaItemAdapter.Listener {
+class MovieFragment : Fragment(){
   private var binding by autoCleared<FragmentMovieBinding>()
   private val viewModel by viewModels<MovieViewModel>()
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
-  private val shortItem by lazy { args.getParcel<AVPMediaItem>("mediaItem")!! }
+  private val shortItem by lazy { args.getSerialized<AVPMediaItem>("mediaItem")!! }
 
   @Inject
   lateinit var preferences: SharedPreferences
@@ -129,7 +126,7 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {
-    val actorAdapter = MediaItemAdapter(this, "", clientId)
+    val actorAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", clientId)
     binding.rvActors.adapter = actorAdapter
 
     val actorList = mediaItem.generalInfo?.actors?.map { AVPMediaItem.ActorItem(it) }
@@ -153,7 +150,7 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
     recommendations?.let {
       val recommendationAdapter =
         MediaItemAdapter(
-          this, "", clientId
+          MediaClickListener(parentFragmentManager), "", clientId
         )
       binding.rvRecommendedMedia.adapter = recommendationAdapter
 
@@ -167,24 +164,6 @@ class MovieFragment : Fragment(), MediaItemAdapter.Listener {
   fun bind(item: AVPMediaItem?) {
     if (item == null) return
     binding.header.bind(item)
-  }
-
-  override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
-    val movieFragment = MovieFragment();
-    movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
-    navigate(
-      movieFragment,
-      transitionView
-    )
-  }
-
-
-  override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
-    TODO("Not yet implemented")
-  }
-
-  override fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean) {
-    //bind(item = item)
   }
 
 }

@@ -1,6 +1,5 @@
 package cloud.app.avp.ui.setting
 
-import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.preference.Preference
@@ -10,15 +9,15 @@ import androidx.preference.SwitchPreferenceCompat
 import cloud.app.avp.AVPApplication.Companion.applyUiChanges
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
-import cloud.app.avp.datastore.PREFERENCES_NAME
+import cloud.app.avp.utils.ColorListPreference
 import cloud.app.avp.utils.MaterialListPreference
 import cloud.app.avp.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class UiFragment : BaseSettingsFragment() {
+class UiSettingFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.ui)
-  override val transitionName = "about"
+  override val transitionName = "ui_settings"
   override val creator = { UiPreference() }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -43,9 +42,6 @@ class UiFragment : BaseSettingsFragment() {
       preferenceScreen = screen
       fun uiListener(block: (Any) -> Unit = {}) =
         Preference.OnPreferenceChangeListener { pref, new ->
-          if(pref.key.equals(getString(R.string.pref_theme_key)))
-            applyUiChanges(new as String)
-          //createSnack(message)
           block(new)
           true
         }
@@ -61,11 +57,35 @@ class UiFragment : BaseSettingsFragment() {
         entries = context.resources.getStringArray(R.array.themes)
         entryValues = arrayOf("light", "dark", "system")
         value = preferences.getString(key, "system")
-        onPreferenceChangeListener = uiListener()
+        onPreferenceChangeListener = uiListener {
+          activity?.application?.applyUiChanges(preferences, it as String, currentActivity = activity)
+        }
         screen.addPreference(this)
       }
 
+      SwitchPreferenceCompat(context).apply {
+        key = getString(R.string.enable_dynamic_color_key)
+        title = getString(R.string.enable_dynamic_color)
+        summary = getString(R.string.dynamic_color_summary)
+        layoutResource = R.layout.preference_switch
+        isIconSpaceReserved = false
+        setDefaultValue(false)
+        onPreferenceChangeListener = uiListener {
+          activity?.application?.applyUiChanges(preferences, currentActivity = activity)
+          screen.findPreference<Preference>(getString(R.string.dynamic_color_key))?.isEnabled = it as Boolean
+        }
+        screen.addPreference(this)
+      }
 
+      ColorListPreference(this@UiPreference).apply {
+        key = getString(R.string.dynamic_color_key)
+        isEnabled = preferences.getBoolean(getString(R.string.enable_dynamic_color_key), false)
+        listener = ColorListPreference.Listener {
+          val themeColor = preferences.getString(getString(R.string.pref_theme_key), "system")
+          activity?.application?.applyUiChanges(preferences, themeColor, it, currentActivity = activity)
+        }
+        screen.addPreference(this)
+      }
       PreferenceCategory(context).apply {
         title = getString(R.string.animations)
         key = "animation"

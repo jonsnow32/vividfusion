@@ -1,23 +1,23 @@
 package cloud.app.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+
+import kotlinx.serialization.Serializable
 
 enum class ActorRole {
   Main,
   Supporting,
   Background,
 }
-@Parcelize
+@Serializable
 data class Actor(
   val name: String,
   val image: ImageHolder? = null,
-) : Parcelable
+)
 
-@Parcelize
+@Serializable
 data class ActorData(
   val actor: Actor,
   val role: ActorRole? = null,
   val roleString: String? = null,
   val voiceActor: Actor? = null,
-) : Parcelable
+)

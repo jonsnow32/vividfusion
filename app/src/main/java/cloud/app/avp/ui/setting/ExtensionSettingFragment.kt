@@ -15,7 +15,6 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
 import androidx.preference.SwitchPreferenceCompat
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
-import cloud.app.avp.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentExtensionBinding
 import cloud.app.avp.ui.extension.ExtensionViewModel
@@ -23,7 +22,6 @@ import cloud.app.avp.utils.EMULATOR
 import cloud.app.avp.utils.MaterialListPreference
 import cloud.app.avp.utils.MaterialMultipleChoicePreference
 import cloud.app.avp.utils.MaterialTextInputPreference
-import cloud.app.avp.utils.PHONE
 import cloud.app.avp.utils.TV
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
@@ -43,7 +41,7 @@ import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.SettingTextInput
 import com.google.android.material.appbar.AppBarLayout
 
-class ExtensionFragment : Fragment() {
+class ExtensionSettingFragment : Fragment() {
 
   private var binding by autoCleared<FragmentExtensionBinding>()
   private val viewModel by activityViewModels<ExtensionViewModel>()

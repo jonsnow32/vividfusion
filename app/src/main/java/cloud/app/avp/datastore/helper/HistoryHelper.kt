@@ -17,10 +17,10 @@ fun DataStore.removeHistoryData(data: AVPMediaItem?) {
   )
 }
 
-fun DataStore.getHistoryData(hashCodes: Int?): Boolean {
-  if (hashCodes == null) return false
-  val data = getKey("$RESUME_WATCHING_FOLDER/${hashCodes}", null)
-  return data != null;
+fun DataStore.getHistoryData(slug: String?): AVPMediaItem? {
+  if (slug == null) return null
+  val data = getKey<AVPMediaItem>("$RESUME_WATCHING_FOLDER/${slug}", null)
+  return data
 }
 
 

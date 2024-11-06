@@ -12,7 +12,9 @@ import cloud.app.avp.ui.main.browse.BrowseViewModel
 import cloud.app.avp.ui.detail.movie.MovieFragment
 import cloud.app.avp.ui.detail.show.ShowFragment
 import cloud.app.avp.ui.detail.show.season.SeasonFragment
+import cloud.app.avp.ui.widget.ItemOptionDialog
 import cloud.app.avp.utils.navigate
+import cloud.app.avp.utils.putSerialized
 import cloud.app.avp.utils.tryWith
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.common.helpers.PagedData
@@ -33,10 +35,9 @@ class MediaClickListener(
   ) {
     val bundle = Bundle()
     bundle.putString("clientId", clientId)
-    bundle.putParcelable("mediaItem", item)
+    bundle.putSerialized("mediaItem", item)
 
     when(item) {
-
       is AVPMediaItem.MovieItem -> {
         val movieFragment = MovieFragment()
         movieFragment.arguments = bundle;
@@ -50,7 +51,7 @@ class MediaClickListener(
 
       is AVPMediaItem.SeasonItem -> {
         val seasonFragment = SeasonFragment();
-        seasonFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
+        seasonFragment.arguments = bundleOf("mediaItem" to item, "parentMediaItem" to item.showItem,  "clientId" to "clientID")
         fragment.navigate(
           seasonFragment,
           transitionView
@@ -59,15 +60,19 @@ class MediaClickListener(
       is AVPMediaItem.ActorItem,
       is AVPMediaItem.EpisodeItem,
       is AVPMediaItem.StreamItem -> {
-        TODO()
+        fragment.createSnack(fragment.getString(R.string.not_implemented))
       }
     }
-
   }
 
   override fun onLongClick(
     clientId: String?, item: AVPMediaItem, transitionView: View?
   ): Boolean {
+    clientId?.let {
+      ItemOptionDialog.newInstance(clientId, item)
+        .show(fragmentManager, null)
+      return true
+    }
     return false
   }
 

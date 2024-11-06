@@ -26,7 +26,7 @@ import kotlin.math.roundToInt
 
 
 @AndroidEntryPoint
-class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
+class BrowseFragment : Fragment() {
   private var binding by autoCleared<FragmentBrowseBinding>()
   private val activityViewModel by activityViewModels<BrowseViewModel>()
   private val viewModel by viewModels<BrowseViewModel>()
@@ -42,14 +42,10 @@ class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
     setupTransition(view)
 
     applyInsets {
-      binding.appBarLayoutCustom.setPadding(0, it.top, 0, 0)
+      binding.topBar.setPadding(0, it.top, 0, 0)
       binding.recyclerView.setPadding(0, 0, 0, it.bottom)
     }
 
-
-    binding.btnSettings.setOnClickListener {
-      navigate(SettingsFragment())
-    }
     FastScrollerHelper.applyTo(binding.recyclerView)
     if (viewModel.moreFlow == null) {
       val category = activityViewModel.moreFlow ?: return
@@ -59,6 +55,9 @@ class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
       viewModel.initialize()
     }
 
+    binding.backBtn.setOnClickListener {
+      parentFragmentManager.popBackStack()
+    }
     binding.title.text = viewModel.title
 
 
@@ -72,12 +71,17 @@ class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
       (binding.recyclerView.layoutManager as GridLayoutManager).spanCount = span
 
 
-
       val itemWidth = (viewWidth / span) - ctx.resources.getDimension(R.dimen.media_margin) * 4
 
       val itemHeight = itemWidth * 3 / 2 + ctx.resources.getDimension(R.dimen.media_title_height)
 
-      val adapter = MediaItemAdapter(MediaClickListener(this.parentFragmentManager), view.transitionName, "", itemWidth.roundToInt(), itemHeight.roundToInt())
+      val adapter = MediaItemAdapter(
+        MediaClickListener(this.parentFragmentManager),
+        view.transitionName,
+        "",
+        itemWidth.roundToInt(),
+        itemHeight.roundToInt()
+      )
       //val concatAdapter = adapter.withLoaders()
       binding.recyclerView.adapter = adapter
 
@@ -97,19 +101,4 @@ class BrowseFragment : Fragment(), MediaItemAdapter.Listener {
 
     }
   }
-
-
-  override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
-    TODO("Not yet implemented")
-  }
-
-  override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
-    TODO("Not yet implemented")
-  }
-
-  override fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean) {
-
-  }
-
-
 }

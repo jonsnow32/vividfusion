@@ -14,7 +14,6 @@ import cloud.app.avp.ui.setting.SettingsFragment
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.firstVisible
 import cloud.app.avp.utils.navigate
-import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.scrollTo
 import cloud.app.avp.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint

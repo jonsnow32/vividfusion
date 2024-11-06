@@ -1,47 +1,48 @@
 [versions]
-agp = "8.4.2"
+agp = "8.6.1"
 browser = "1.8.0"
 glideTransformations = "4.3.0"
-jacksonModuleKotlin = "2.13.1"
-kotlin = "1.9.21"
-coreKtx = "1.13.1"
+kotlin = "2.0.21"
+coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
+kotlinxSerializationJson = "1.7.1"
 library = "1.3.0"
 material = "1.12.0"
 hilt = "2.48.1"
-ksp = "1.9.21-1.0.15"
+ksp = "2.0.21-1.0.26"
 media3 = "1.1.1"
 mediahome = "1.0.0"
-navigation = "2.7.7"
-lifecycle = "2.7.0"
+navigation = "2.8.3"
+lifecycle = "2.8.7"
+pikolo = "2.0.2"
 tvprovider = "1.0.0"
-work = "2.9.0"
+work = "2.10.0"
 preference = "1.2.1"
 timber = "5.0.1"
-paging = "3.3.0"
+paging = "3.3.2"
 thetvdb = "2.4.0"
-tmdb = "2.10.0"
-trakt = "6.11.2"
+tmdb = "2.11.0"
+trakt = "6.13.0"
 swiperefresh = "1.1.0"
 okhttp = "5.0.0-alpha.12"
 cookiejar = "v1.0.1"
 serialize = "1.6.2"
 glide = "4.16.0"
 jsoup = "1.18.1"
-fragment = "1.6.0"
+fragment = "1.8.5"
 [libraries]
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 androidx-tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "tvprovider" }
 glide-transformations = { module = "jp.wasabeef:glide-transformations", version.ref = "glideTransformations" }
-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jacksonModuleKotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 
 # Android core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+kotlinx-serialization-json-v171 = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kotlinx-serialize-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialize" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -75,6 +76,7 @@ androidx-media3-exoplayer-dash = { group = "androidx.media3", name = "media3-exo
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3" }
 
 # Logging
+pikolo = { module = "com.github.madrapps:pikolo", version.ref = "pikolo" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 # service

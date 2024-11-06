@@ -3,10 +3,6 @@
   <attr name="colorOnCustomColor" format="color" />
   <attr name="colorCustomColorContainer" format="color" />
   <attr name="colorOnCustomColorContainer" format="color" />
-  <attr name="iconColor" format="color" />
-  <attr name="secondIconColor" format="color" />
-  <attr name="textColor" foriconColormat="color" />
-  <attr name="secondTextColor" format="color" />
 
 
   <attr name="navBackground" format="reference|color" />

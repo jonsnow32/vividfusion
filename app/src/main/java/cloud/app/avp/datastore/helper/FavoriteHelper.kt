@@ -16,8 +16,8 @@ fun DataStore.removeFavoritesData(data: AVPMediaItem?) {
   )
 }
 
-fun DataStore.getFavoritesData(slug: String?): Boolean {
+inline fun <reified T: AVPMediaItem> DataStore.getFavoritesData(slug: String?): Boolean {
   if (slug == null) return false
-  val data = getKey("$FAVORITE_FOLDER/${slug}", null)
+  val data = getKey<T>("$FAVORITE_FOLDER/${slug}", null)
   return data != null;
 }

@@ -18,7 +18,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class ExtensionModule {
-
   @Provides
   @Singleton
   fun provideExtensionRepo(context: Application, tmdb: AppTmdb) = getComposer(context)

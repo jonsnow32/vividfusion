@@ -1,15 +1,15 @@
 package cloud.app.common.models.movie
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Ids(
   var tmdbId: Int? = null,
   var imdbId: String? = null,
   var traktId: Int? = null,
   var tvdbId: Int? = null
-) : Parcelable {
+) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false

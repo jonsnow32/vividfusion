@@ -47,7 +47,14 @@ class SettingsFragment : BaseSettingsFragment() {
         title = getString(R.string.ui)
         key = "ui"
         summary = getString(R.string.ui_summary)
-        icon = AppCompatResources.getDrawable(context, R.drawable.ic_extension_24dp)
+        icon = AppCompatResources.getDrawable(context, R.drawable.tune_24dp)
+      }
+
+      TransitionPreference(context).add {
+        title = getString(R.string.contents)
+        key = "content"
+        summary = getString(R.string.content_setting_summary)
+        icon = AppCompatResources.getDrawable(context, R.drawable.database_24dp)
       }
     }
 
@@ -65,7 +72,8 @@ class SettingsFragment : BaseSettingsFragment() {
       val fragment = when (preference.key) {
         "about" -> AboutFragment()
         "extension" -> ManageExtensionsFragment()
-        "ui" -> UiFragment()
+        "ui" -> UiSettingFragment()
+        "content" -> ContentSettingFragment()
         else -> null
       }
       fragment ?: return false

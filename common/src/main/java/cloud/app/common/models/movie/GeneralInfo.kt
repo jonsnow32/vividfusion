@@ -1,16 +1,17 @@
 package cloud.app.common.models.movie
 
 import android.os.Build
-import android.os.Parcelable
+
 import androidx.annotation.RequiresApi
 import cloud.app.common.models.Actor
 import cloud.app.common.models.ActorData
-import kotlinx.parcelize.Parcelize
+import cloud.app.common.utils.getYear
+import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Calendar
 
-@Parcelize
+@Serializable
 data class GeneralInfo(
   var title: String,
   var originalTitle: String,
@@ -25,14 +26,10 @@ data class GeneralInfo(
   var rating: Double? = null,
   var actors: List<ActorData>? = null,
   private var slug: String? = null
-) : Parcelable {
+) {
 
   fun getReleaseYear(): Int? {
-    return releaseDateMsUTC?.let {
-      val calendar = Calendar.getInstance()
-      calendar.timeInMillis = it
-      calendar.get(Calendar.YEAR)
-    }
+    return releaseDateMsUTC?.getYear()
   }
 
   fun getSlug(): String? {

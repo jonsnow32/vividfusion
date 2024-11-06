@@ -33,7 +33,7 @@ abstract class FeedViewModel(
   var recyclerPosition = 0
   var recyclerOffset = 0
 
-  val loading = MutableStateFlow(false)
+  val loading = MutableSharedFlow<Boolean>()
   val feed = MutableStateFlow<PagingData<MediaItemsContainer>?>(null)
   val tabs = MutableStateFlow<List<Tab>>(emptyList())
   var tab: Tab? = null

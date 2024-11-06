@@ -5,6 +5,7 @@ import cloud.app.avp.base.CatchingViewModel
 import cloud.app.avp.datastore.DataStore
 import cloud.app.avp.datastore.helper.addFavoritesData
 import cloud.app.avp.datastore.helper.getFavoritesData
+import cloud.app.avp.datastore.helper.getHistoryData
 import cloud.app.avp.datastore.helper.removeFavoritesData
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.mvdatabase.FeedClient
@@ -25,25 +26,30 @@ class ShowViewModel @Inject constructor(
   val dataStore: DataStore,
 ) : CatchingViewModel(throwableFlow) {
 
-  var loading = MutableStateFlow(false);
-  var fullMediaItem = MutableStateFlow<AVPMediaItem?>(null)
+  var loading = MutableSharedFlow<Boolean>();
+  var fullMediaItem = MutableStateFlow<AVPMediaItem.ShowItem?>(null)
 
   //topbar
   val favoriteStatus = MutableStateFlow(false)
+  val lastWatchedEpisode = MutableStateFlow<AVPMediaItem?>(null)
 
   fun getItemDetails(shortItem: AVPMediaItem) {
     viewModelScope.launch(Dispatchers.IO) {
       viewModelScope.launch(Dispatchers.IO) {
         extensionFlow.collect { client ->
           if (client is FeedClient) {
-            loading.value = true
+            loading.emit(true)
             val showDetail = client.getMediaDetail(shortItem) ?: shortItem
-            fullMediaItem.value = showDetail
+            fullMediaItem.value = showDetail as AVPMediaItem.ShowItem
 
-            val favoriteDeferred = async { dataStore.getFavoritesData(fullMediaItem.value?.id?.toString()) }
+            val favoriteDeferred = async { dataStore.getFavoritesData<AVPMediaItem.ShowItem>(fullMediaItem.value?.id?.toString()) }
+            val lastWatchedDeferred = async { dataStore.getHistoryData(fullMediaItem.value?.id?.toString())}
+
             favoriteStatus.value = favoriteDeferred.await()
+            lastWatchedEpisode.value = lastWatchedDeferred.await()
 
-            loading.value = false
+            loading.emit(false)
+
           }
         }
       }

@@ -1,13 +1,13 @@
 package cloud.app.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Request(
     val url: String,
     val headers: Map<String, String> = emptyMap()
-) : Parcelable {
+) {
     companion object {
         fun String.toRequest(headers: Map<String, String> = emptyMap()): Request {
             return Request(this, headers)

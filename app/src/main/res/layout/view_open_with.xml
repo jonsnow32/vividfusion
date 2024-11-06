@@ -22,7 +22,6 @@
       android:paddingEnd="80dp"
       android:text="@string/title_discover"
       android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-      android:textColor="?android:attr/textColorSecondary"
       android:textSize="@dimen/content_header_text_size"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
@@ -40,8 +39,7 @@
       android:src="@drawable/quantum_ic_keyboard_arrow_down_white_36"
       app:layout_constraintBottom_toBottomOf="@+id/titleDiscover"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/titleDiscover"
-      app:tint="?iconColor" />
+      app:layout_constraintTop_toTopOf="@+id/titleDiscover"/>
 
     <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/discoverItems"
@@ -68,7 +66,6 @@
       android:paddingEnd="80dp"
       android:text="@string/title_watch_providers"
       android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-      android:textColor="?android:attr/textColorSecondary"
       android:textSize="@dimen/content_header_text_size"
 
       app:layout_constraintEnd_toEndOf="parent"
@@ -88,8 +85,7 @@
       android:src="@drawable/quantum_ic_keyboard_arrow_down_white_36"
       app:layout_constraintBottom_toBottomOf="@+id/titleStreaming"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/titleStreaming"
-      app:tint="?iconColor" />
+      app:layout_constraintTop_toTopOf="@+id/titleStreaming" />
 
     <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/streamingItems"
@@ -114,7 +110,6 @@
       android:paddingEnd="80dp"
       android:text="@string/extensions"
       android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-      android:textColor="?android:attr/textColorSecondary"
       android:textSize="@dimen/content_header_text_size"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
@@ -132,8 +127,7 @@
       android:src="@drawable/quantum_ic_keyboard_arrow_down_white_36"
       app:layout_constraintBottom_toBottomOf="@+id/titleExtension"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/titleExtension"
-      app:tint="?iconColor" />
+      app:layout_constraintTop_toTopOf="@+id/titleExtension" />
 
     <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/extensionItems"
@@ -158,7 +152,6 @@
       android:paddingEnd="80dp"
       android:text="@string/title_social_media"
       android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-      android:textColor="?android:attr/textColorSecondary"
       android:textSize="@dimen/content_header_text_size"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
@@ -176,8 +169,7 @@
       android:src="@drawable/quantum_ic_keyboard_arrow_down_white_36"
       app:layout_constraintBottom_toBottomOf="@+id/titleSocialMedia"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/titleSocialMedia"
-      app:tint="?iconColor" />
+      app:layout_constraintTop_toTopOf="@+id/titleSocialMedia" />
 
     <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/socialMediaItems"

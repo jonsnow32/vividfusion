@@ -20,6 +20,7 @@ import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.paging.toFlow
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
+import cloud.app.avp.utils.getSerialized
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
@@ -37,13 +38,13 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ShowFragment : Fragment(), MediaItemAdapter.Listener {
+class ShowFragment : Fragment() {
   private var binding by autoCleared<FragmentShowBinding>()
   private val viewModel by viewModels<ShowViewModel>()
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
-  private val shortItem by lazy { args.getParcel<AVPMediaItem>("mediaItem")!! }
+  private val shortItem by lazy { args.getSerialized<AVPMediaItem>("mediaItem")!! }
 
   @Inject
   lateinit var preferences: SharedPreferences
@@ -102,6 +103,9 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
       if (mediaItem is AVPMediaItem.ShowItem) {
         setUpSeasons(mediaItem.show.seasons)
       }
+    }
+    observe(viewModel.lastWatchedEpisode) { lastWatchedEpisode ->
+      binding.btnResume.isGone = lastWatchedEpisode == null
     }
   }
 
@@ -163,7 +167,7 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
     val seasonAdapter = binding.rvSeason.adapter as MediaItemAdapter
 
     lifecycleScope.launch(Dispatchers.IO) {
-      sortedSeasons.map { it.toMediaItem() }.toPagedList().toFlow()
+      sortedSeasons.map { it.toMediaItem(shortItem as AVPMediaItem.ShowItem) }.toPagedList().toFlow()
         .collectLatest(seasonAdapter::submit)
     }
   }
@@ -200,7 +204,7 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {
-    val actorAdapter = MediaItemAdapter(this, "", clientId)
+    val actorAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", clientId)
     binding.rvActors.adapter = actorAdapter
 
     val actorList = mediaItem.generalInfo?.actors?.map { AVPMediaItem.ActorItem(it) }
@@ -234,45 +238,9 @@ class ShowFragment : Fragment(), MediaItemAdapter.Listener {
     }
   }
 
-
   fun bind(item: AVPMediaItem?) {
     if (item == null) return
     binding.header.bind(item)
-  }
-
-  override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
-    when (item) {
-      is AVPMediaItem.ShowItem -> {
-        val movieFragment = ShowFragment();
-        movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
-        navigate(
-          movieFragment,
-          transitionView
-        )
-      }
-
-      is AVPMediaItem.EpisodeItem -> TODO()
-      is AVPMediaItem.SeasonItem -> {
-        val movieFragment = SeasonFragment();
-        movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
-        navigate(
-          movieFragment,
-          transitionView
-        )
-      }
-
-      else -> TODO()
-    }
-
-  }
-
-
-  override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
-    TODO("Not yet implemented")
-  }
-
-  override fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean) {
-    //bind(item = item)
   }
 
 }

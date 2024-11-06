@@ -13,7 +13,6 @@
         android:layout_marginBottom="10dp"
         android:textStyle="bold"
         android:textSize="20sp"
-        android:textColor="?attr/textColor"
         android:layout_width="match_parent"
         android:layout_rowWeight="1"
         tools:text="Test"

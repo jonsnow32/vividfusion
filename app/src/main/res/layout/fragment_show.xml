@@ -5,7 +5,7 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:orientation="vertical"
-  android:transitionName="exception"
+  android:transitionName="show"
   tools:visibility="visible">
 
   <androidx.core.widget.NestedScrollView
@@ -40,37 +40,23 @@
 
         <com.google.android.material.button.MaterialButton
           android:id="@+id/btnPlay"
-          style="@style/NiceButton"
+          android:layout_height="wrap_content"
           android:layout_width="match_parent"
-          android:layout_gravity="center"
-          android:insetTop="2dp"
-          android:insetBottom="2dp"
-          android:text="@string/play_now"
-
-          app:icon="@drawable/cast_ic_notification_play"
-          app:iconGravity="textStart" />
+          android:text="@string/play_now" />
 
         <com.google.android.material.button.MaterialButton
           android:id="@+id/btnDownload"
-          style="@style/NiceButton"
+          android:layout_height="wrap_content"
           android:layout_width="match_parent"
-          android:layout_gravity="center"
           android:text="@string/download"
-          app:backgroundTint="?textColor"
-          app:icon="@drawable/ic_arrow_down"
-          android:visibility="gone"
-          app:iconGravity="textStart" />
+          android:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
           android:id="@+id/btnResume"
-          style="@style/NiceButton"
+          android:layout_height="wrap_content"
           android:layout_width="match_parent"
-          android:layout_gravity="center"
           android:text="@string/resume"
-          app:backgroundTint="?textColor"
-          app:icon="@drawable/cast_ic_notification_play"
-          android:visibility="gone"
-          app:iconGravity="textStart" />
+          android:visibility="gone"/>
 
       </LinearLayout>
 

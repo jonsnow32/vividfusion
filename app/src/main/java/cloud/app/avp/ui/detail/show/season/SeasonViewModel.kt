@@ -4,12 +4,14 @@ import androidx.lifecycle.viewModelScope
 import cloud.app.avp.base.CatchingViewModel
 import cloud.app.avp.datastore.DataStore
 import cloud.app.avp.datastore.helper.addFavoritesData
+import cloud.app.avp.datastore.helper.addHistoryData
 import cloud.app.avp.datastore.helper.getFavoritesData
 import cloud.app.avp.datastore.helper.removeFavoritesData
 import cloud.app.avp.network.api.trakt.services.model.stats.Episodes
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.models.AVPMediaItem
+import cloud.app.common.models.movie.Episode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -36,7 +38,7 @@ class SeasonViewModel @Inject constructor(
           if (client is FeedClient) {
             loading.value = true
             fullMediaItem.value = client.getMediaDetail(shortItem) ?: shortItem
-            val favoriteDeferred = async { dataStore.getFavoritesData(fullMediaItem.value?.id?.toString()) }
+            val favoriteDeferred = async { dataStore.getFavoritesData<AVPMediaItem.SeasonItem>(fullMediaItem.value?.id?.toString()) }
             favoriteStatus.value = favoriteDeferred.await()
             loading.value = false
           }
@@ -55,7 +57,10 @@ class SeasonViewModel @Inject constructor(
     statusChangedCallback.invoke(favoriteStatus.value)
   }
 
-
-
+  fun saveHistory(episode: AVPMediaItem.EpisodeItem) {
+    viewModelScope.launch(Dispatchers.IO) {
+      dataStore.addHistoryData(episode)
+    }
+  }
 
 }

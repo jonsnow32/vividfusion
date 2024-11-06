@@ -1,13 +1,13 @@
 plugins {
   alias(libs.plugins.android.library)
   alias(libs.plugins.jetbrains.kotlin.android)
-  alias(libs.plugins.kotlin.parcelize)
+  kotlin("plugin.serialization")
   id("maven-publish")
 }
 
 android {
   namespace = "cloud.app.common"
-  compileSdk = 34
+  compileSdk = 35
 
   defaultConfig {
     minSdk = 21
@@ -42,10 +42,12 @@ android {
 }
 
 dependencies {
-  implementation(libs.androidx.core.ktx)
-  implementation(libs.squareup.okhttp)
+  api(libs.androidx.core.ktx)
+  api(libs.squareup.okhttp)
   // parse html
-  implementation(libs.jsoup);
+  api(libs.jsoup);
+  api(libs.timber)
+  api(libs.kotlinx.serialization.json.v171)
 }
 
 // run command in terminal to publish to maven local "./gradlew publishToMavenLocal"

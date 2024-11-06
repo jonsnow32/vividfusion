@@ -1,6 +1,7 @@
 package cloud.app.avp
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -8,7 +9,6 @@ import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.edit
 import androidx.core.os.LocaleListCompat
-import cloud.app.avp.datastore.DataStore
 import cloud.app.avp.datastore.FOLDER_APP_SETTINGS
 import cloud.app.avp.plugin.TmdbExtension
 import cloud.app.avp.utils.tryWith
@@ -17,6 +17,8 @@ import cloud.app.common.clients.BaseExtension
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.settings.PrefSettings
 import cloud.app.plugger.RepoComposer
+import com.google.android.material.color.DynamicColors
+import com.google.android.material.color.DynamicColorsOptions
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
@@ -57,7 +59,9 @@ class AVPApplication : Application() {
       ExceptionActivity.start(this, exception, false)
       Runtime.getRuntime().exit(0)
     }
-    applyUiChanges(sharedPreferences.getString(getString(R.string.pref_theme_key), "system"))
+    applyUiChanges(
+      sharedPreferences
+    )
     scope.launch {
       throwableFlow.collect {
         it.printStackTrace()
@@ -87,12 +91,33 @@ class AVPApplication : Application() {
   companion object {
 
     @SuppressLint("RestrictedApi")
-    fun applyUiChanges(mode: String?) {
-      when (mode) {
+    fun Application.applyUiChanges(
+      preferences: SharedPreferences,
+      newTheme: String? = null,
+      newColor: Int? = null,
+      currentActivity: Activity? = null
+    ) {
+      var theme: String? = null
+
+      theme = newTheme ?: preferences.getString(getString(R.string.pref_theme_key), "system")
+
+      val customColor =
+        if (!preferences.getBoolean(getString(R.string.enable_dynamic_color_key), false)) null
+        else newColor ?: preferences.getInt(getString(R.string.dynamic_color_key), -1)
+          .takeIf { it != -1 }
+
+      val builder = if (customColor != null) DynamicColorsOptions.Builder()
+        .setContentBasedSource(customColor)
+      else DynamicColorsOptions.Builder()
+
+      DynamicColors.applyToActivitiesIfAvailable(this, builder.build())
+
+      when (theme) {
         "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
       }
+      currentActivity?.recreate()
     }
 
 

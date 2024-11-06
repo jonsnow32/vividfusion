@@ -1,10 +1,10 @@
 package cloud.app.avp.network.api.realdebrid.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
-class UnRestrictCheckObject : Parcelable {
+import kotlinx.serialization.Serializable
+
+@Serializable
+class UnRestrictCheckObject  {
     /**
      * host : string
      * link : string

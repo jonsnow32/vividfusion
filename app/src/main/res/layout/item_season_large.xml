@@ -78,7 +78,8 @@
 
           <com.google.android.material.button.MaterialButton
             android:id="@+id/episode_filler"
-            style="@style/SmallButton"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
             android:layout_gravity="start"
             android:layout_marginEnd="10dp"
             android:text="@string/filler"
@@ -89,7 +90,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:textColor="?attr/textColor"
             android:textStyle="bold"
             tools:text="Season 01" />
         </LinearLayout>
@@ -108,7 +108,7 @@
           android:id="@+id/watchProgress"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:textColor="?attr/secondTextColor"
+          android:alpha="0.66"
           tools:text="10/10 episodes" />
 
       </LinearLayout>
@@ -124,7 +124,7 @@
       android:maxLines="4"
       android:paddingTop="10dp"
       android:paddingBottom="10dp"
-      android:textColor="?attr/secondTextColor"
+      android:alpha="0.66"
       tools:text="Jon and Daenerys arrive in Winterfell and are met with skepticism. Sam learns about the fate of his family. Cersei gives Euron the reward he aims for. Theon follows his heart. Jon and Daenerys arrive in Winterfell and are met with skepticism. Sam learns about the fate of his family. Cersei gives Euron the reward he aims for. Theon follows his heart." />
 
   </LinearLayout>

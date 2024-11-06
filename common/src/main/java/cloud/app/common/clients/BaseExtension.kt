@@ -1,14 +1,14 @@
 package cloud.app.common.clients
 
-import android.os.Parcelable
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.models.ExtensionType
 import cloud.app.common.models.LoginType
-import cloud.app.common.settings.Setting
 import cloud.app.common.settings.PrefSettings
-import kotlinx.parcelize.Parcelize
+import cloud.app.common.settings.Setting
+import kotlinx.serialization.Serializable
 
-@Parcelize
+
+@Serializable
 data class ExtensionMetadata(
   val name: String,
   val type: ExtensionType,
@@ -17,7 +17,7 @@ data class ExtensionMetadata(
   val version: String,
   val icon: String,
   val loginType: LoginType = LoginType.NONE
-) : Parcelable
+)
 
 interface BaseExtension {
   val defaultSettings: List<Setting>

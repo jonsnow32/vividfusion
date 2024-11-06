@@ -3,7 +3,8 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  android:transitionName="browse">
 
   <LinearLayout
     android:id="@+id/appBarLayoutCustom"
@@ -15,56 +16,74 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent">
 
-    <LinearLayout
-      android:id="@+id/toolbar"
+    <FrameLayout
+      android:id="@+id/topBar"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:gravity="center_vertical"
-      android:orientation="horizontal">
+      android:background="?attr/navBackground"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
 
       <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
         android:gravity="center_vertical"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
+
+        <ImageView
+          android:id="@+id/backBtn"
+          android:layout_width="wrap_content"
+
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_vertical|start"
+          android:background="?android:attr/selectableItemBackgroundBorderless"
+
+          android:clickable="true"
+          android:contentDescription="@string/back"
+          android:focusable="true"
+          android:nextFocusRight="@id/toolbarHolder"
+          android:src="@drawable/ic_back" />
 
         <TextView
           android:id="@+id/title"
-          style="@style/TextAppearance.Material3.ActionBar.Title"
+          style="@style/TextAppearance.AppCompat.Widget.ActionBar.Title"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_marginTop="8dp"
-          android:ellipsize="end"
-          android:gravity="center_vertical"
-          android:maxLines="2"
-          tools:text="@tools:sample/lorem/random" />
-
-        <TextView
-          android:id="@+id/subtitle"
-          android:layout_width="@dimen/media_cover_width"
-          android:layout_height="wrap_content"
-          android:alpha="0.66"
-          android:ellipsize="end"
-          android:gravity="center_vertical"
-          android:maxLines="2"
-          android:textSize="12sp"
-          tools:text="@tools:sample/full_names" />
+          android:layout_marginStart="8dp"
+          android:gravity="center"
+          tools:text="title" />
       </LinearLayout>
 
-      <ImageButton
-        android:id="@+id/btnSettings"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:padding="10dp"
-        android:layout_gravity="end"
-        android:layout_marginEnd="8dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="@string/settings"
-        android:src="@drawable/settings_outlined_2dp"
-        android:transitionName="settings" />
-    </LinearLayout>
+      <LinearLayout
+        android:id="@+id/toolbarHolder"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_size"
+        android:layout_gravity="center_vertical|end"
+        android:animateLayoutChanges="true"
+        android:background="@color/transparent"
+        android:descendantFocusability="beforeDescendants"
+        android:gravity="end"
+        android:paddingHorizontal="10dp">
+
+        <ImageView
+          android:id="@+id/filter"
+          android:layout_width="25dp"
+          android:layout_height="25dp"
+          android:layout_gravity="end|center_vertical"
+          android:layout_margin="5dp"
+          android:background="?android:attr/selectableItemBackgroundBorderless"
+          android:clickable="true"
+          android:elevation="10dp"
+          android:focusable="true"
+          android:src="@drawable/filter_list_24dp"
+          android:visibility="gone"
+          tools:visibility="visible" />
+
+      </LinearLayout>
+    </FrameLayout>
   </LinearLayout>
 
   <View
@@ -90,7 +109,7 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-      tools:listitem="@layout/item_media"/>
+      tools:listitem="@layout/item_media" />
 
   </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

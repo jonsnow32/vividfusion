@@ -1,11 +1,11 @@
 package cloud.app.avp.network.api.realdebrid.model
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+
+import kotlinx.serialization.Serializable
 import java.util.*
 
-@Parcelize
-class RealDebridTorrentInfoObject : Parcelable {
+@Serializable
+class RealDebridTorrentInfoObject  {
     /**
      * id : HCCVEDF6ZKPKC
      * filename : rep-avengersinfinitywar.2018.1080p.bluray.x264[EtHD].mkv
@@ -50,8 +50,8 @@ class RealDebridTorrentInfoObject : Parcelable {
             return fileIDs
         }
 
-    @Parcelize
-    class FilesBean : Parcelable {
+    @Serializable
+    class FilesBean  {
         /**
          * id : 1
          * path : /Downloaded from www.ETTV.tv .txt

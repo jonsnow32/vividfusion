@@ -74,7 +74,7 @@ class ExceptionFragment : Fragment() {
     }
 
     fun Context.getTitle(throwable: Throwable): String = when (throwable) {
-      is IncompatibleClassChangeError -> getString(R.string.incompatiable_class)
+      is IncompatibleClassChangeError -> getString(R.string.incompatible_class)
       is ExceptionActivity.AppCrashException -> getString(R.string.app_crashed)
       is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
       else -> throwable.message ?: getString(R.string.error)

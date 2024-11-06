@@ -3,6 +3,7 @@ package cloud.app.avp
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.hardware.input.InputManager
 import android.os.Bundle
@@ -44,9 +45,9 @@ class MainActivity : AppCompatActivity() {
     setContentView(binding.root)
 
     enableEdgeToEdge(
-      SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
-      if (isNightMode()) SystemBarStyle.dark(Color.TRANSPARENT)
-      else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT)
+      SystemBarStyle.auto(TRANSPARENT, TRANSPARENT),
+      if (isNightMode()) SystemBarStyle.dark(TRANSPARENT)
+      else SystemBarStyle.light(TRANSPARENT, TRANSPARENT)
     )
 
     configureSnackBar(binding.root)

@@ -22,6 +22,5 @@ class HomeViewModel @Inject constructor(
 
   override suspend fun getTabs(client: BaseExtension): List<Tab>? = (client as? FeedClient)?.getHomeTabs()
   override fun getFeed(client: BaseExtension) = (client as? FeedClient)?.getHomeFeed(tab)?.toFlow()
-
 }
 

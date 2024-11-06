@@ -5,7 +5,7 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:orientation="vertical"
-  android:transitionName="exception"
+  android:transitionName="season"
   tools:visibility="visible">
 
   <androidx.core.widget.NestedScrollView
@@ -37,42 +37,13 @@
         android:layout_marginTop="16dp"
         android:orientation="vertical"
         android:paddingHorizontal="16dp">
-
-        <com.google.android.material.button.MaterialButton
-          android:id="@+id/btnPlay"
-          style="@style/NiceButton"
-          android:layout_width="match_parent"
-          android:layout_gravity="center"
-          android:insetTop="2dp"
-          android:insetBottom="2dp"
-          android:text="@string/play_now"
-
-          app:icon="@drawable/cast_ic_notification_play"
-          app:iconGravity="textStart" />
-
-        <com.google.android.material.button.MaterialButton
-          android:id="@+id/btnDownload"
-          style="@style/NiceButton"
-          android:layout_width="match_parent"
-          android:layout_gravity="center"
-          android:text="@string/download"
-          app:backgroundTint="?textColor"
-          app:icon="@drawable/ic_arrow_down"
-          android:visibility="gone"
-          app:iconGravity="textStart" />
-
-        <com.google.android.material.button.MaterialButton
-          android:id="@+id/btnResume"
-          style="@style/NiceButton"
-          android:layout_width="match_parent"
-          android:layout_gravity="center"
-          android:text="@string/resume"
-          app:backgroundTint="?textColor"
-          app:icon="@drawable/cast_ic_notification_play"
-          android:visibility="gone"
-          app:iconGravity="textStart" />
-
       </LinearLayout>
+
+      <include
+        android:id="@+id/skeletonEpisodes"
+        layout="@layout/skeleton_season_episodes">
+      </include>
+
 
       <LinearLayout
         android:id="@+id/episodeHolder"
@@ -100,25 +71,35 @@
             android:textSize="@dimen/content_header_text_size"
             tools:ignore="TextSizeCheck" />
 
-          <com.google.android.material.button.MaterialButton
+          <TextView
             android:id="@+id/episodeSelectRange"
-            style="@style/MultiSelectButton"
-            android:layout_gravity="center_vertical"
-            android:layout_marginStart="0dp"
-            android:layout_marginEnd="10dp"
-            android:paddingStart="10dp"
-            android:paddingEnd="5dp"
-            android:visibility="gone"
-            tools:text="50-100"
-            tools:visibility="visible" />
-
-          <com.google.android.material.button.MaterialButton
-            style="@style/MultiSelectButton"
-            android:id="@+id/episodeSortTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:foreground="@drawable/ripple_item_container"
             android:text="@string/ascending_sort"
+            android:focusable="true"
+            android:clickable="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:visibility="gone"
+            android:paddingHorizontal="16dp"
+            tools:text="50-100"
             app:drawableEndCompat="@drawable/ic_arrow_down">
-          </com.google.android.material.button.MaterialButton>
+          </TextView>
+
+          <TextView
+            android:id="@+id/episodeSortTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:foreground="@drawable/ripple_item_container"
+            android:text="@string/ascending_sort"
+            android:focusable="true"
+            android:clickable="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:paddingHorizontal="16dp"
+            app:drawableEndCompat="@drawable/ic_arrow_down">
+          </TextView>
         </LinearLayout>
 
 

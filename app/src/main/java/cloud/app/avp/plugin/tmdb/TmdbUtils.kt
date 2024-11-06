@@ -111,7 +111,10 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
         overview = tvSeason.overview,
         episodeCount = tvSeason.episode_count,
         posterPath = tvSeason.poster_path,
-        show = show
+        showIds = show.ids,
+        showOriginTitle = show.generalInfo.originalTitle,
+        backdrop = show.generalInfo.backdrop,
+        releaseDateMsUTC = tvSeason.air_date?.time
       )
     }
     show.tagLine = this.tagline

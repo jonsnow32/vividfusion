@@ -5,7 +5,7 @@ plugins {
 
 android {
   namespace = "cloud.app.sampleextensionclient"
-  compileSdk = 34
+  compileSdk = 35
 
   defaultConfig {
     applicationId = "cloud.app.sampleextensionclient"

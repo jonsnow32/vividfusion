@@ -3,6 +3,7 @@ package cloud.app.avp.utils
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.content.Intent
 import android.text.Spanned
 import android.view.ContextThemeWrapper
 import android.view.Gravity
@@ -22,13 +23,16 @@ import androidx.core.view.marginLeft
 import androidx.core.view.marginRight
 import androidx.core.view.marginTop
 import cloud.app.avp.R
-import cloud.app.avp.databinding.BottomInputDialogBinding
-import cloud.app.avp.databinding.BottomSelectionDialogBinding
-import cloud.app.avp.databinding.BottomTextDialogBinding
+
+import cloud.app.avp.databinding.DialogBottomSelectionBinding
+import cloud.app.avp.databinding.DialogBottomTextBinding
+import cloud.app.avp.databinding.DialogBottomInputBinding
 import cloud.app.avp.databinding.OptionsPopupTvBinding
+import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.ImageHolder.Companion.toImageHolder
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import timber.log.Timber
 
 
 fun Dialog?.dismissSafe(activity: Activity?) {
@@ -127,7 +131,7 @@ fun Activity?.showOptionSelectStringRes(
 
 
 fun Activity?.showDialog(
-  binding: BottomSelectionDialogBinding,
+  binding: DialogBottomSelectionBinding,
   dialog: Dialog,
   items: List<String>,
   selectedIndex: List<Int>,
@@ -210,7 +214,7 @@ fun Activity?.showDialog(
 }
 
 private fun Activity?.showInputDialog(
-  binding: BottomInputDialogBinding,
+  binding: DialogBottomInputBinding,
   dialog: Dialog,
   value: String,
   name: String,
@@ -259,7 +263,7 @@ fun Activity?.showMultiDialog(
 ) {
   if (this == null) return
 
-  val binding: BottomSelectionDialogBinding = BottomSelectionDialogBinding.inflate(
+  val binding: DialogBottomSelectionBinding = DialogBottomSelectionBinding.inflate(
     LayoutInflater.from(this)
   )
   val builder =
@@ -291,7 +295,7 @@ fun Activity?.showDialog(
 ) {
   if (this == null) return
 
-  val binding: BottomSelectionDialogBinding = BottomSelectionDialogBinding.inflate(
+  val binding: DialogBottomSelectionBinding = DialogBottomSelectionBinding.inflate(
     LayoutInflater.from(this)
   )
   val builder = MaterialAlertDialogBuilder(this)
@@ -325,7 +329,7 @@ fun Activity?.showBottomDialog(
 ) {
   if (this == null) return
 
-  val binding: BottomSelectionDialogBinding = BottomSelectionDialogBinding.inflate(
+  val binding: DialogBottomSelectionBinding = DialogBottomSelectionBinding.inflate(
     LayoutInflater.from(this)
   )
 
@@ -356,7 +360,7 @@ fun Activity.showBottomDialogInstant(
   val builder =
     BottomSheetDialog(this)
 
-  val binding: BottomSelectionDialogBinding = BottomSelectionDialogBinding.inflate(
+  val binding: DialogBottomSelectionBinding = DialogBottomSelectionBinding.inflate(
     LayoutInflater.from(this)
   )
 
@@ -387,7 +391,7 @@ fun Activity.showNginxTextInputDialog(
 ) {
   val builder = BottomSheetDialog(this)
 
-  val binding: BottomInputDialogBinding = BottomInputDialogBinding.inflate(
+  val binding: DialogBottomInputBinding = DialogBottomInputBinding.inflate(
     LayoutInflater.from(this)
   )
 
@@ -410,7 +414,7 @@ fun Activity.showBottomDialogText(
   text: Spanned,
   dismissCallback: () -> Unit
 ) {
-  val binding = BottomTextDialogBinding.inflate(layoutInflater)
+  val binding = DialogBottomTextBinding.inflate(layoutInflater)
   val dialog = BottomSheetDialog(this)
 
   dialog.setContentView(binding.root)
@@ -421,6 +425,16 @@ fun Activity.showBottomDialogText(
   dialog.setOnDismissListener {
     dismissCallback.invoke()
   }
-
   dialog.show()
+}
+
+fun Activity.shareItem(item : AVPMediaItem) {
+  try {
+    val i = Intent(Intent.ACTION_SEND)
+    i.type = "text/plain"
+    i.putExtra(Intent.EXTRA_SUBJECT, item.title)
+    startActivity(Intent.createChooser(i, item.title))
+  } catch (e: Exception) {
+    Timber.e(e)
+  }
 }

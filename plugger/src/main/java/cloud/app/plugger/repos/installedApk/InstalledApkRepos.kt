@@ -52,8 +52,10 @@ class InstalledApkRepos<TPlugin>(
           featureInfo.name == configuration.featureName
         }
       }
-      .map {
-        runCatching { manifestParser.parse(it.applicationInfo) }
+      .mapNotNull {
+        it.applicationInfo?.let {
+          runCatching { manifestParser.parse(it) }
+        }
       }
       .map {
         runCatching { loader<TPlugin>(it.getOrThrow()) }

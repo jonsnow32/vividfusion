@@ -1,9 +1,9 @@
 package cloud.app.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class SubtitleData(
   val name: String,
   val url: String,
@@ -11,7 +11,7 @@ data class SubtitleData(
   val mimeType: String,
   val headers: Map<String, String>,
   val languageCode: String?
-) : Parcelable {
+) {
   /** Internal ID for exoplayer, unique for each link*/
   fun getId(): String {
     return if (origin == SubtitleOrigin.EMBEDDED_IN_VIDEO) url

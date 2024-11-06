@@ -5,13 +5,11 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 import cloud.app.avp.datastore.DataStore
 import cloud.app.avp.datastore.PREFERENCES_NAME
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.kotlinModule
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -26,19 +24,19 @@ class DataStoreModule {
 
   @Singleton
   @Provides
-  fun provideJsonMapper(): JsonMapper {
-    return JsonMapper.builder()
-      .addModule(kotlinModule())
-      .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-      .build()
+  fun provideJson() = Json {
+    ignoreUnknownKeys = true
   }
 
   @Singleton
   @Provides
   fun provideDataStore(
     context: Context,
-    jsonMapper: JsonMapper
+    jsonMapper: Json
   ): DataStore {
-    return DataStore(context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE), jsonMapper)
+    return DataStore(
+      context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE),
+      jsonMapper
+    )
   }
 }

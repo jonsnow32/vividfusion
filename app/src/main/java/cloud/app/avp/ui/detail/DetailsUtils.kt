@@ -24,22 +24,24 @@ fun ImageView.loadWith(imageHolder: ImageHolder?) {
 fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem) {
 
   when (mediaItem) {
-    is AVPMediaItem.SeasonItem -> imageBackdrop.loadWith(mediaItem.season.show.generalInfo.backdrop?.toImageHolder())
+    is AVPMediaItem.SeasonItem -> imageBackdrop.loadWith(mediaItem.season.backdrop?.toImageHolder())
     else -> imageBackdrop.loadWith(mediaItem.backdrop)
   }
 
   imagePoster.loadWith(mediaItem.poster)
 
   textTitle.setTextWithVisibility(mediaItem.title)
-  textSubtitle.setTextWithVisibility(mediaItem.subtitle)
+  if(mediaItem is AVPMediaItem.SeasonItem) {
+    val progress = textSubtitle.context.getString(R.string.season_progress_format, 0, mediaItem.season.episodeCount)
+    textSubtitle.setTextWithVisibility(progress)
+  } else textSubtitle.setTextWithVisibility(mediaItem.subtitle)
   textOverview.setTextWithVisibility(mediaItem.overview ?: "")
   textReleaseYear.setTextWithVisibility((mediaItem.releaseYear ?: "").toString())
   textRating.setTextWithVisibility(mediaItem.rating?.toString() ?: "")
 
-  textReleaseYear.setTextWithVisibility(mediaItem.generalInfo?.releaseDateMsUTC?.toLocalMonthYear())
+  textReleaseYear.setTextWithVisibility(mediaItem.releaseMonthYear)
   val format = getString(this.imageBackdrop.context, R.string.rating_format)
-  textRating.setTextWithVisibility(String.format(format, mediaItem.rating?.roundTo(1)))
-
+  textRating.setTextWithVisibility(if(mediaItem.rating != null) String.format(format, mediaItem.rating?.roundTo(1)) else null)
   textOverview.setOnClickListener {
     val dialogView =
       LayoutInflater.from(textOverview.context).inflate(R.layout.dialog_full_text, null)

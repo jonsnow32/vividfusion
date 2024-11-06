@@ -37,7 +37,7 @@ class MovieViewModel @Inject constructor(
             loading.value = true
             val showDetail = client.getMediaDetail(shortItem) ?: shortItem
             fullMediaItem.value = showDetail
-            val favoriteDeferred = async { dataStore.getFavoritesData(fullMediaItem.value?.id?.toString()) }
+            val favoriteDeferred = async { dataStore.getFavoritesData<AVPMediaItem.MovieItem>(fullMediaItem.value?.id?.toString()) }
             favoriteStatus.value = favoriteDeferred.await()
             loading.value = false
           }

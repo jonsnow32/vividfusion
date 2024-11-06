@@ -1,9 +1,9 @@
 package cloud.app.common.models
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Playlist(
   val id: String,
   val title: String,
@@ -16,4 +16,4 @@ data class Playlist(
   val description: String? = null,
   val subtitle: String? = null,
   val extras: Map<String, String> = mapOf()
-) : Parcelable
+)

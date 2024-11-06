@@ -15,7 +15,6 @@ import cloud.app.avp.ui.extension.ExtensionAdapter
 import cloud.app.avp.ui.extension.ExtensionViewModel
 import cloud.app.avp.utils.EMULATOR
 import cloud.app.avp.utils.FastScrollerHelper
-import cloud.app.avp.utils.PHONE
 import cloud.app.avp.utils.TV
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.configure
@@ -78,12 +77,12 @@ class ManageExtensionsFragment : Fragment() {
     }
 
     val extensionAdapter = ExtensionAdapter { extension, view ->
-      val extensionFragment = ExtensionFragment()
-      extensionFragment.arguments = bundleOf(
+      val extensionSettingFragment = ExtensionSettingFragment()
+      extensionSettingFragment.arguments = bundleOf(
         "extensionMetadata" to extension.metadata,
         "extensionClassName" to extension.javaClass.toString()
       )
-      navigate(extensionFragment, view)
+      navigate(extensionSettingFragment, view)
     }
     binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
 

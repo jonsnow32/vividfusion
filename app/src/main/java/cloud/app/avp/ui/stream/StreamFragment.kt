@@ -12,6 +12,7 @@ import cloud.app.avp.features.player.PlayerManager
 import cloud.app.avp.features.player.data.PlayData
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
+import cloud.app.avp.utils.getSerialized
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.models.AVPMediaItem
@@ -25,7 +26,7 @@ class StreamFragment : Fragment(), StreamAdapter.ItemClickListener {
   private val adapter = StreamAdapter(this)
 
   private val args by lazy { requireArguments() }
-  private val mediaItem by lazy { args.getParcel<AVPMediaItem>("mediaItem")!! }
+  private val mediaItem by lazy { args.getSerialized<AVPMediaItem>("mediaItem")!! }
 
   override fun onCreateView(
     inflater: LayoutInflater,

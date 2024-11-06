@@ -1,10 +1,10 @@
 package cloud.app.common.models.stream
 
-import android.os.Parcelable
-import cloud.app.common.models.subtitle.SubtitleData
-import kotlinx.parcelize.Parcelize
 
-@Parcelize
+import cloud.app.common.models.subtitle.SubtitleData
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class StreamData(
   var originalUrl: String,
   var resolvedUrl: String? = null,
@@ -17,4 +17,4 @@ data class StreamData(
   var headers: HashMap<String, String>? = null,
   var magnets: List<MagnetObject>? = null,
   var subtitles: List<SubtitleData>? = null
-) : Parcelable
+)

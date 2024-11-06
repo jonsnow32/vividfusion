@@ -1,6 +1,6 @@
 package cloud.app.common.models
 
-import android.os.Parcelable
+
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.common.models.movie.Episode
@@ -8,24 +8,37 @@ import cloud.app.common.models.movie.Movie
 import cloud.app.common.models.movie.Season
 import cloud.app.common.models.movie.Show
 import cloud.app.common.models.stream.StreamData
-import kotlinx.parcelize.Parcelize
+import cloud.app.common.utils.getYear
+import cloud.app.common.utils.toLocalMonthYear
+import kotlinx.serialization.Serializable
 
-@Parcelize
-sealed class AVPMediaItem : Parcelable {
+@Serializable
+sealed class AVPMediaItem {
+  @Serializable
   data class MovieItem(val movie: Movie) : AVPMediaItem()
+
+  @Serializable
   data class ShowItem(val show: Show) : AVPMediaItem()
-  data class EpisodeItem(val episode: Episode, val show: Show? = null) : AVPMediaItem()
+
+  @Serializable
+  data class EpisodeItem(val episode: Episode, val seasonItem: SeasonItem) : AVPMediaItem()
+
+  @Serializable
   data class ActorItem(val actorData: ActorData) : AVPMediaItem()
+
+  @Serializable
   data class StreamItem(val streamData: StreamData) : AVPMediaItem()
-  data class SeasonItem(val season: Season) : AVPMediaItem()
+
+  @Serializable
+  data class SeasonItem(val season: Season, val showItem: ShowItem) : AVPMediaItem()
 
   companion object {
     fun ActorData.toMediaItem() = ActorItem(this)
     fun Movie.toMediaItem() = MovieItem(this)
     fun Show.toMediaItem() = ShowItem(this)
-    fun Episode.toMediaItem() = EpisodeItem(this)
+    fun Episode.toMediaItem(season: SeasonItem) = EpisodeItem(this, season)
     fun StreamData.toMediaItem() = StreamItem(this)
-    fun Season.toMediaItem() = SeasonItem(this)
+    fun Season.toMediaItem(showItem: ShowItem) = SeasonItem(this, showItem)
 
     fun toMediaItemsContainer(
       title: String, subtitle: String? = null, more: PagedData<AVPMediaItem>? = null
@@ -33,16 +46,6 @@ sealed class AVPMediaItem : Parcelable {
 
   }
 
-  fun toMediaItemsContainer() = MediaItemsContainer.Item(
-    when (this) {
-      is MovieItem -> movie.toMediaItem()
-      is ActorItem -> actorData.toMediaItem()
-      is ShowItem -> show.toMediaItem()
-      is EpisodeItem -> episode.toMediaItem()
-      is StreamItem -> streamData.toMediaItem()
-      is SeasonItem -> season.toMediaItem()
-    }
-  )
 
   fun sameAs(other: AVPMediaItem) = when (this) {
     is ActorItem -> other is ActorItem && actorData.actor.name == other.actorData.actor.name
@@ -79,8 +82,17 @@ sealed class AVPMediaItem : Parcelable {
       is MovieItem -> movie.generalInfo.getReleaseYear()
       is ShowItem -> show.generalInfo.getReleaseYear()
       is EpisodeItem -> episode.generalInfo.getReleaseYear()
-      is SeasonItem -> null
+      is SeasonItem -> season.releaseDateMsUTC?.getYear()
       is StreamItem -> null
+    }
+
+  val releaseMonthYear
+    get() = when (this) {
+      is MovieItem -> movie.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
+      is ShowItem -> show.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
+      is EpisodeItem -> episode.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
+      is SeasonItem -> season.releaseDateMsUTC?.toLocalMonthYear()
+      else -> null
     }
 
   val generalInfo
@@ -92,9 +104,9 @@ sealed class AVPMediaItem : Parcelable {
     }
 
   val recommendations
-    get() = when(this) {
+    get() = when (this) {
       is ShowItem -> show.recommendations
-      is MovieItem-> movie.recommendations
+      is MovieItem -> movie.recommendations
       else -> null
     }
   val poster
@@ -124,7 +136,7 @@ sealed class AVPMediaItem : Parcelable {
       is ShowItem -> show.generalInfo.genres?.firstOrNull() ?: ""
       is EpisodeItem -> episode.generalInfo.genres?.firstOrNull() ?: ""
       is StreamItem -> streamData.providerName
-      is SeasonItem -> season.title
+      else -> null
     }
 
   val overview
@@ -139,10 +151,9 @@ sealed class AVPMediaItem : Parcelable {
 
   val rating
     get() = when (this) {
-      is ActorItem -> null
       is MovieItem -> movie.generalInfo.rating
       is ShowItem -> show.generalInfo.rating
       is EpisodeItem -> episode.generalInfo.rating
-       else -> null
+      else -> null
     }
 }

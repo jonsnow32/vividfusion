@@ -28,8 +28,7 @@
       android:layout_marginStart="10dp"
       android:layout_marginEnd="10dp"
       android:contentDescription="@string/play_episode"
-      android:src="@drawable/ic_video"
-      app:tint="?attr/textColor" />
+      android:src="@drawable/ic_video" />
     <!--marquee_forever-->
 
 
@@ -49,7 +48,8 @@
 
         <com.google.android.material.button.MaterialButton
           android:id="@+id/episode_filler"
-          style="@style/SmallButton"
+          android:layout_height="wrap_content"
+          android:layout_width="wrap_content"
           android:layout_gravity="start"
           android:layout_marginEnd="10dp"
           android:text="@string/filler"
@@ -60,7 +60,6 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:textColor="?attr/textColor"
           android:textStyle="bold"
           tools:text="Season 01" />
       </LinearLayout>
@@ -80,7 +79,6 @@
         android:id="@+id/watchProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?attr/secondTextColor"
         tools:text="10/10 episodes" />
 
     </LinearLayout>

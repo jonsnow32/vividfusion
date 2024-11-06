@@ -39,8 +39,7 @@
       android:layout_marginStart="10dp"
       android:layout_marginEnd="10dp"
       android:contentDescription="@string/play_episode"
-      android:src="@drawable/ic_video"
-      app:tint="?attr/textColor" />
+      android:src="@drawable/ic_video"/>
     <!--marquee_forever-->
 
 
@@ -60,7 +59,8 @@
 
         <com.google.android.material.button.MaterialButton
           android:id="@+id/episode_filler"
-          style="@style/SmallButton"
+          android:layout_height="wrap_content"
+          android:layout_width="wrap_content"
           android:layout_gravity="start"
           android:layout_marginEnd="10dp"
           android:visibility="gone"
@@ -71,7 +71,6 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:textColor="?attr/textColor"
           android:textStyle="bold"
           tools:text="1. Jobless" />
       </LinearLayout>
@@ -87,7 +86,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginEnd="10dp"
-          android:textColor="?attr/secondTextColor"
+          android:alpha="0.66"
           tools:text="Rated: 8.8" />
 
         <TextView
@@ -95,7 +94,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginEnd="10dp"
-          android:textColor="?attr/secondTextColor"
+          android:alpha="0.66"
           tools:text="80min" />
 
       </LinearLayout>
@@ -104,7 +103,7 @@
         android:id="@+id/episode_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="?attr/secondTextColor"
+        android:alpha="0.66"
         tools:text="15 Apr 2024" />
 
 

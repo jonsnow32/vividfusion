@@ -17,25 +17,26 @@ import cloud.app.avp.ui.detail.show.episode.EpisodeAdapter
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
+import cloud.app.avp.utils.getSerialized
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
 import cloud.app.avp.utils.showDialog
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.common.models.AVPMediaItem
+import cloud.app.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.common.models.movie.Episode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class SeasonFragment : Fragment(), MediaItemAdapter.Listener {
+class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   private var binding by autoCleared<FragmentSeasonBinding>()
   private val viewModel by viewModels<SeasonViewModel>()
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
-  private val shortItem by lazy { args.getParcel<AVPMediaItem>("mediaItem")!! }
-
+  private val shortItem by lazy { args.getSerialized<AVPMediaItem>("mediaItem")!! }
   @Inject
   lateinit var preferences: SharedPreferences
 
@@ -103,6 +104,10 @@ class SeasonFragment : Fragment(), MediaItemAdapter.Listener {
 
       return SortMode.entries[key]
     }
+
+    binding.episodeHolder.isGone = false
+    binding.skeletonEpisodes.root.isGone = true
+
     if (episodes.isNullOrEmpty()) return
 
     val rangeSize = 50
@@ -127,7 +132,7 @@ class SeasonFragment : Fragment(), MediaItemAdapter.Listener {
 
 
     if (binding.rvEpisodes.adapter == null) {
-      binding.rvEpisodes.adapter = EpisodeAdapter()
+      binding.rvEpisodes.adapter = EpisodeAdapter(this)
       binding.rvEpisodes.setHasFixedSize(true)
     }
 
@@ -172,6 +177,7 @@ class SeasonFragment : Fragment(), MediaItemAdapter.Listener {
   }
 
   private fun loadInitialData() {
+    binding.episodeHolder.isGone = true;
     viewModel.getItemDetails(shortItem)
   }
 
@@ -180,23 +186,7 @@ class SeasonFragment : Fragment(), MediaItemAdapter.Listener {
     binding.header.bind(item)
   }
 
-  override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
-    val movieFragment = SeasonFragment()
-    movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
-    navigate(
-      movieFragment,
-      transitionView
-    )
-  }
-
-  override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
-    return false
-  }
-
-  override fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean) {}
-
-
-  fun divideEpisodesIntoRanges(episodes: List<Episode>, rangeSize: Int): List<EpisodeRange> {
+  private fun divideEpisodesIntoRanges(episodes: List<Episode>, rangeSize: Int): List<EpisodeRange> {
     return episodes.chunked(rangeSize).mapIndexed { index, chunk ->
       val start = index * rangeSize + 1
       val end = start + chunk.size - 1
@@ -208,4 +198,8 @@ class SeasonFragment : Fragment(), MediaItemAdapter.Listener {
     val rangeLabel: String,
     val episodes: List<Episode>
   )
+
+  override fun onClick(episode: Episode) {
+    viewModel.saveHistory(episode.toMediaItem(shortItem as AVPMediaItem.SeasonItem))
+  }
 }
