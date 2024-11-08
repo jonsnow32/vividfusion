@@ -3,14 +3,15 @@ package cloud.app.avp.ui.detail.show
 import androidx.lifecycle.viewModelScope
 import cloud.app.avp.base.CatchingViewModel
 import cloud.app.avp.datastore.DataStore
+import cloud.app.avp.datastore.helper.WatchedItem
 import cloud.app.avp.datastore.helper.addFavoritesData
 import cloud.app.avp.datastore.helper.getFavoritesData
-import cloud.app.avp.datastore.helper.getHistoryData
+import cloud.app.avp.datastore.helper.getLastWatched
+import cloud.app.avp.datastore.helper.getWatched
 import cloud.app.avp.datastore.helper.removeFavoritesData
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.models.AVPMediaItem
-import cloud.app.common.models.movie.Season
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -31,7 +32,7 @@ class ShowViewModel @Inject constructor(
 
   //topbar
   val favoriteStatus = MutableStateFlow(false)
-  val lastWatchedEpisode = MutableStateFlow<AVPMediaItem?>(null)
+  val lastWatchedEpisode = MutableStateFlow<WatchedItem?>(null)
 
   fun getItemDetails(shortItem: AVPMediaItem) {
     viewModelScope.launch(Dispatchers.IO) {
@@ -43,7 +44,7 @@ class ShowViewModel @Inject constructor(
             fullMediaItem.value = showDetail as AVPMediaItem.ShowItem
 
             val favoriteDeferred = async { dataStore.getFavoritesData<AVPMediaItem.ShowItem>(fullMediaItem.value?.id?.toString()) }
-            val lastWatchedDeferred = async { dataStore.getHistoryData(fullMediaItem.value?.id?.toString())}
+            val lastWatchedDeferred = async { dataStore.getLastWatched(shortItem)}
 
             favoriteStatus.value = favoriteDeferred.await()
             lastWatchedEpisode.value = lastWatchedDeferred.await()

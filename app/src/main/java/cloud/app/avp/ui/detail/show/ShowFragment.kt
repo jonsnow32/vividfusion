@@ -23,6 +23,7 @@ import cloud.app.avp.utils.getParcel
 import cloud.app.avp.utils.getSerialized
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
+import cloud.app.avp.utils.setTextWithVisibility
 import cloud.app.avp.utils.setupTransition
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.common.helpers.PagedData
@@ -100,12 +101,11 @@ class ShowFragment : Fragment() {
 
       setupActorAdapter(mediaItem)
       setupRecommendationAdapter(mediaItem)
-      if (mediaItem is AVPMediaItem.ShowItem) {
-        setUpSeasons(mediaItem.show.seasons)
-      }
+      setUpSeasons(mediaItem.show.seasons)
     }
     observe(viewModel.lastWatchedEpisode) { lastWatchedEpisode ->
       binding.btnResume.isGone = lastWatchedEpisode == null
+      binding.btnResume.setTextWithVisibility(lastWatchedEpisode?.item?.title)
     }
   }
 

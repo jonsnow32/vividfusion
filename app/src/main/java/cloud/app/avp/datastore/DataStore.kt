@@ -16,18 +16,16 @@ class DataStore @Inject constructor(
   val mapper: Json
 ) {
 
-  val accountId: String = "default"
-
   // Editor class for batch edits
-  data class Editor(val editor: SharedPreferences.Editor, val accountId: String) {
+  data class Editor(val editor: SharedPreferences.Editor) {
     fun <T> setKeyRaw(path: String, value: T) {
       when (value) {
-        is Set<*> -> if (value.all { it is String }) editor.putStringSet("$accountId/$path", value as Set<String>)
-        is Boolean -> editor.putBoolean("$accountId/$path", value)
-        is Int -> editor.putInt("$accountId/$path", value)
-        is String -> editor.putString("$accountId/$path", value)
-        is Float -> editor.putFloat("$accountId/$path", value)
-        is Long -> editor.putLong("$accountId/$path", value)
+        is Set<*> -> if (value.all { it is String }) editor.putStringSet(path, value as Set<String>)
+        is Boolean -> editor.putBoolean(path, value)
+        is Int -> editor.putInt(path, value)
+        is String -> editor.putString(path, value)
+        is Float -> editor.putFloat(path, value)
+        is Long -> editor.putLong(path, value)
       }
     }
 
@@ -38,38 +36,38 @@ class DataStore @Inject constructor(
 
   // Functions for DataStore
   fun editor(): Editor {
-    return Editor(sharedPreferences.edit(), accountId)
+    return Editor(sharedPreferences.edit())
   }
 
   fun getKeys(folder: String): List<String> {
-    return sharedPreferences.all.keys.filter { it.startsWith("$accountId/$folder") }
+    return sharedPreferences.all.keys.filter { it.startsWith(folder) }
   }
 
   fun removeKey(folder: String, path: String) {
-    removeKey("$accountId/$folder/$path")
+    removeKey("$folder/$path")
   }
 
   fun containsKey(path: String): Boolean {
-    return sharedPreferences.contains("$accountId/$path")
+    return sharedPreferences.contains(path)
   }
 
   fun removeKey(path: String) {
     try {
-      sharedPreferences.edit().remove("$accountId/$path").apply()
+      sharedPreferences.edit().remove(path).apply()
     } catch (e: Exception) {
       Timber.e(e)
     }
   }
 
   fun removeKeys(folder: String): Int {
-    val keys = getKeys("$accountId/$folder")
+    val keys = getKeys(folder)
     keys.forEach { removeKey(it) }
     return keys.size
   }
 
   inline fun <reified T> setKey(path: String, value: T) {
     try {
-      sharedPreferences.edit().putString("$accountId/$path", value.toJson()).apply()
+      sharedPreferences.edit().putString(path, value.toJson()).apply()
     } catch (e: Exception) {
       Timber.e(e)
     }
@@ -77,7 +75,8 @@ class DataStore @Inject constructor(
 
   inline fun <reified T> getKey(path: String, defVal: T? = null): T? {
     return try {
-      sharedPreferences.getString("$accountId/$path", null)?.toData()
+      Timber.i("getKey $path ${T::class.java}" )
+      sharedPreferences.getString(path, null)?.toData<T>()
     } catch (e: Exception) {
       Timber.e(e)
       defVal

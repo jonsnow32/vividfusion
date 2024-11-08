@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import timber.log.Timber
 import javax.inject.Inject
 
 
@@ -59,6 +60,11 @@ class AVPApplication : Application() {
       ExceptionActivity.start(this, exception, false)
       Runtime.getRuntime().exit(0)
     }
+
+    if(BuildConfig.DEBUG){
+      Timber.plant(Timber.DebugTree())
+    }
+
     applyUiChanges(
       sharedPreferences
     )

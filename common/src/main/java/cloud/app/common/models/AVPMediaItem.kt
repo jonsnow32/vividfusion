@@ -15,13 +15,33 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class AVPMediaItem {
   @Serializable
-  data class MovieItem(val movie: Movie) : AVPMediaItem()
+  data class MovieItem(val movie: Movie) : AVPMediaItem() {
+    fun getSlug() : String {
+      val formattedName = movie.generalInfo.title
+        .trim()
+        .lowercase()
+        .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
+        .replace("\\s+".toRegex(), "-")
+      return "$formattedName-${releaseYear}"
+    }
+  }
 
   @Serializable
-  data class ShowItem(val show: Show) : AVPMediaItem()
+  data class ShowItem(val show: Show) : AVPMediaItem() {
+    fun getSlug() : String {
+      val formattedName = show.generalInfo.title
+        .trim()
+        .lowercase()
+        .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
+        .replace("\\s+".toRegex(), "-")
+      return "$formattedName-${releaseYear}"
+    }
+  }
 
   @Serializable
-  data class EpisodeItem(val episode: Episode, val seasonItem: SeasonItem) : AVPMediaItem()
+  data class EpisodeItem(val episode: Episode, val seasonItem: SeasonItem) : AVPMediaItem() {
+    fun getSlug() = "${seasonItem.getSlug()}/${episode.episodeNumber}"
+  }
 
   @Serializable
   data class ActorItem(val actorData: ActorData) : AVPMediaItem()
@@ -30,7 +50,9 @@ sealed class AVPMediaItem {
   data class StreamItem(val streamData: StreamData) : AVPMediaItem()
 
   @Serializable
-  data class SeasonItem(val season: Season, val showItem: ShowItem) : AVPMediaItem()
+  data class SeasonItem(val season: Season, val showItem: ShowItem) : AVPMediaItem() {
+    fun getSlug() = "${showItem.getSlug()}/${season.number}"
+  }
 
   companion object {
     fun ActorData.toMediaItem() = ActorItem(this)
@@ -59,11 +81,11 @@ sealed class AVPMediaItem {
   val id
     get() = when (this) {
       is ActorItem -> actorData.actor.name.hashCode()
-      is MovieItem -> movie.generalInfo.getSlug()
-      is ShowItem -> show.generalInfo.getSlug()
-      is EpisodeItem -> episode.generalInfo.getSlug()
+      is MovieItem -> getSlug()
+      is ShowItem -> getSlug()
+      is EpisodeItem -> getSlug()
       is StreamItem -> streamData.fileName.hashCode()
-      is SeasonItem -> season.number
+      is SeasonItem -> getSlug()
     }
 
   val title

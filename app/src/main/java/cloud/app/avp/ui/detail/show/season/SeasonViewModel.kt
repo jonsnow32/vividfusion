@@ -3,15 +3,14 @@ package cloud.app.avp.ui.detail.show.season
 import androidx.lifecycle.viewModelScope
 import cloud.app.avp.base.CatchingViewModel
 import cloud.app.avp.datastore.DataStore
+import cloud.app.avp.datastore.helper.WatchedItem
 import cloud.app.avp.datastore.helper.addFavoritesData
-import cloud.app.avp.datastore.helper.addHistoryData
 import cloud.app.avp.datastore.helper.getFavoritesData
 import cloud.app.avp.datastore.helper.removeFavoritesData
-import cloud.app.avp.network.api.trakt.services.model.stats.Episodes
+import cloud.app.avp.datastore.helper.setWatched
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.mvdatabase.FeedClient
 import cloud.app.common.models.AVPMediaItem
-import cloud.app.common.models.movie.Episode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -59,7 +58,7 @@ class SeasonViewModel @Inject constructor(
 
   fun saveHistory(episode: AVPMediaItem.EpisodeItem) {
     viewModelScope.launch(Dispatchers.IO) {
-      dataStore.addHistoryData(episode)
+      dataStore.setWatched(WatchedItem(episode, 1000003, 39843984, System.currentTimeMillis()))
     }
   }
 

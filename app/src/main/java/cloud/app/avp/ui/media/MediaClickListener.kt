@@ -37,12 +37,13 @@ class MediaClickListener(
     bundle.putString("clientId", clientId)
     bundle.putSerialized("mediaItem", item)
 
-    when(item) {
+    when (item) {
       is AVPMediaItem.MovieItem -> {
         val movieFragment = MovieFragment()
         movieFragment.arguments = bundle;
         fragment.navigate(movieFragment, transitionView)
       }
+
       is AVPMediaItem.ShowItem -> {
         val showFragment = ShowFragment()
         showFragment.arguments = bundle;
@@ -51,12 +52,13 @@ class MediaClickListener(
 
       is AVPMediaItem.SeasonItem -> {
         val seasonFragment = SeasonFragment();
-        seasonFragment.arguments = bundleOf("mediaItem" to item, "parentMediaItem" to item.showItem,  "clientId" to "clientID")
+        seasonFragment.arguments = bundle;
         fragment.navigate(
           seasonFragment,
           transitionView
         )
       }
+
       is AVPMediaItem.ActorItem,
       is AVPMediaItem.EpisodeItem,
       is AVPMediaItem.StreamItem -> {
@@ -82,7 +84,7 @@ class MediaClickListener(
 
   override fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View) {
     when (container) {
-      is MediaItemsContainer.Item -> tryWith {  onClick(clientId, container.media, transitionView) }
+      is MediaItemsContainer.Item -> tryWith { onClick(clientId, container.media, transitionView) }
       is MediaItemsContainer.Category -> openContainer(
         clientId,
         container.title,
@@ -96,7 +98,7 @@ class MediaClickListener(
     clientId: String?,
     title: String,
     transitionView: View?,
-    pagedData : PagedData<AVPMediaItem>?
+    pagedData: PagedData<AVPMediaItem>?
   ) {
     clientId ?: return noClient()
     val viewModel by fragment.activityViewModels<BrowseViewModel>()

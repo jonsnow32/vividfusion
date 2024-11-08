@@ -25,25 +25,11 @@ data class GeneralInfo(
   var contentRating: String? = null,
   var rating: Double? = null,
   var actors: List<ActorData>? = null,
-  private var slug: String? = null
-) {
 
+) {
   fun getReleaseYear(): Int? {
     return releaseDateMsUTC?.getYear()
   }
-
-  fun getSlug(): String? {
-    if(slug == null) {
-      val formattedName = originalTitle
-        .trim()
-        .lowercase()
-        .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
-        .replace("\\s+".toRegex(), "-")        // Replace spaces with hyphens
-      slug = "$formattedName-${getReleaseYear()}"
-    }
-    return slug;
-  }
-
 }
 
 
