@@ -50,7 +50,7 @@ sealed class AVPMediaItem {
   data class StreamItem(val streamData: StreamData) : AVPMediaItem()
 
   @Serializable
-  data class SeasonItem(val season: Season, val showItem: ShowItem) : AVPMediaItem() {
+  data class SeasonItem(val season: Season, val showItem: ShowItem, var watchedEpisodeNumber: Int? = 0) : AVPMediaItem() {
     fun getSlug() = "${showItem.getSlug()}/${season.number}"
   }
 

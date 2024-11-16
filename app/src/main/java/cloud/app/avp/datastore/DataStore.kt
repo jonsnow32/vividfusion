@@ -40,6 +40,7 @@ class DataStore @Inject constructor(
   }
 
   fun getKeys(folder: String): List<String> {
+    Timber.i(folder)
     return sharedPreferences.all.keys.filter { it.startsWith(folder) }
   }
 

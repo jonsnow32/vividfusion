@@ -112,9 +112,8 @@ sealed class MediaItemViewHolder(itemView: View) :
     override fun bind(item: AVPMediaItem) {
       val season = (item as AVPMediaItem.SeasonItem).season
       binding.seasonTitle.text = season.title ?: "Season ${season.number}"
-      binding.watchProgress.text = binding.root.context.resources.getString(R.string.season_progress_format, season.episodes?.size ?: 0, season.episodeCount)
-      binding.seasonProgress.progress = (((season.episodes?.size?.toFloat()
-        ?: (0f / season.episodeCount)) * 100)).toInt()
+      binding.watchProgress.text = binding.root.context.resources.getString(R.string.season_progress_format, item.watchedEpisodeNumber ?: 0, season.episodeCount)
+      binding.seasonProgress.progress = (((season.episodes?.size?.toFloat() ?: (0f / season.episodeCount)) * 100)).toInt()
     }
     companion object {
       fun create(

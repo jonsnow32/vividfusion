@@ -23,6 +23,7 @@ import javax.inject.Inject
 class SeasonViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionFlow: MutableStateFlow<BaseExtension?>,
+  val updateUIFlow: MutableStateFlow<AVPMediaItem?>,
   val dataStore: DataStore,
 ) : CatchingViewModel(throwableFlow) {
 
@@ -59,7 +60,7 @@ class SeasonViewModel @Inject constructor(
   fun saveHistory(episode: AVPMediaItem.EpisodeItem) {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.setWatched(WatchedItem(episode, 1000003, 39843984, System.currentTimeMillis()))
+      updateUIFlow.emit(episode)
     }
   }
-
 }

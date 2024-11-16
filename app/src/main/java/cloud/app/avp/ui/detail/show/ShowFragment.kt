@@ -101,17 +101,21 @@ class ShowFragment : Fragment() {
 
       setupActorAdapter(mediaItem)
       setupRecommendationAdapter(mediaItem)
-      setUpSeasons(mediaItem.show.seasons)
+
     }
     observe(viewModel.lastWatchedEpisode) { lastWatchedEpisode ->
       binding.btnResume.isGone = lastWatchedEpisode == null
       binding.btnResume.setTextWithVisibility(lastWatchedEpisode?.item?.title)
     }
+
+    observe(viewModel.watchedSeasons) {
+      setUpSeasons(it)
+    }
   }
 
   fun List<AVPMediaItem>.toPagedList() = PagedData.Single { this }
 
-  private fun setUpSeasons(seasons: List<Season>?) {
+  private fun setUpSeasons(seasons: List<AVPMediaItem.SeasonItem>?) {
     binding.seasonHolder.isGone = seasons.isNullOrEmpty()
     seasons?.let {
       binding.rvSeason.adapter =
@@ -122,7 +126,7 @@ class ShowFragment : Fragment() {
 
   private enum class SortMode { ASCENDING, DESCENDING }
 
-  private fun setupSortOptions(seasons: List<Season>) {
+  private fun setupSortOptions(seasons: List<AVPMediaItem.SeasonItem>) {
     binding.seasonSortTxt.isGone = (seasons.size < 2)
 
     val key = preferences.getInt(
@@ -144,12 +148,12 @@ class ShowFragment : Fragment() {
         SortMode.DESCENDING -> SortMode.ASCENDING
         SortMode.ASCENDING -> SortMode.DESCENDING
       }
-
       updateSortUI(newSortMode)
       displaySortedSeasons(seasons, newSortMode)
-
       preferences.edit().putInt(getString(R.string.season_sort_key), newSortMode.ordinal).apply()
     }
+
+
   }
 
   private fun updateSortUI(sortMode: SortMode) {
@@ -162,20 +166,20 @@ class ShowFragment : Fragment() {
     )
   }
 
-  private fun displaySortedSeasons(seasons: List<Season>, sortMode: SortMode) {
+  private fun displaySortedSeasons(seasons: List<AVPMediaItem.SeasonItem>, sortMode: SortMode) {
     val sortedSeasons = sortSeasons(seasons, sortMode)
     val seasonAdapter = binding.rvSeason.adapter as MediaItemAdapter
 
     lifecycleScope.launch(Dispatchers.IO) {
-      sortedSeasons.map { it.toMediaItem(shortItem as AVPMediaItem.ShowItem) }.toPagedList().toFlow()
+      sortedSeasons.toPagedList().toFlow()
         .collectLatest(seasonAdapter::submit)
     }
   }
 
-  private fun sortSeasons(seasons: List<Season>, sortMode: SortMode): List<Season> {
+  private fun sortSeasons(seasons: List<AVPMediaItem.SeasonItem>, sortMode: SortMode): List<AVPMediaItem.SeasonItem> {
     return when (sortMode) {
-      SortMode.DESCENDING -> seasons.sortedByDescending { it.number }
-      SortMode.ASCENDING -> seasons.sortedBy { it.number }
+      SortMode.DESCENDING -> seasons.sortedByDescending { it.season.number }
+      SortMode.ASCENDING -> seasons.sortedBy { it.season.number }
     }
   }
 
