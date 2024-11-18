@@ -38,6 +38,7 @@ import cloud.app.common.settings.SettingSwitch
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
+import com.uwetrottmann.tmdb2.enumerations.MediaType
 
 class TmdbExtension : BaseExtension, FeedClient, SearchClient {
   private lateinit var tmdb: AppTmdb
@@ -127,6 +128,13 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
       is AVPMediaItem.SeasonItem -> getSeasonDetail(avpMediaItem)
       else -> null
     }
+  }
+
+  override fun getKnowFor(actor: AVPMediaItem.ActorItem) = PagedData.Continuous<AVPMediaItem> {
+    val page = it?.toInt() ?: 1
+    val items = getKnowFor(actor, page, pageSize)
+    val continuation = if (items.size < pageSize) null else (page + 1).toString()
+    Page(items, continuation)
   }
 
   private fun getSeasonDetail(seasonItem: AVPMediaItem.SeasonItem): AVPMediaItem? {
@@ -508,6 +516,30 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     } else
       throw Exception("No ids found")
     return list
+  }
+
+  private suspend fun getKnowFor(
+    actor: AVPMediaItem.ActorItem,
+    page: Int,
+    pageSize: Int
+  ): List<AVPMediaItem> {
+    val personID = actor.actorData.actor.id ?: return emptyList()
+    val response = tmdb.personService().combinedCredits(personID, language).execute()
+    if (response.isSuccessful) {
+      val credits = response.body()
+      val cast = credits?.cast
+      if (cast != null) {
+        val startIndex = (page - 1) * pageSize
+        val endIndex = minOf(startIndex + pageSize, cast.size)
+        return cast.subList(startIndex, endIndex).flatMap {
+          listOfNotNull(
+            it.media?.movie?.toMediaItem(),
+            it.media?.tvShow?.toMediaItem()
+          )
+        }
+      }
+    }
+    return emptyList()
   }
 
   private suspend fun getNetworks(

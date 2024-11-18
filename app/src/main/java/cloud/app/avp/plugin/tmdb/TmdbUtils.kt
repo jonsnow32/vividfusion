@@ -65,7 +65,7 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
     movie.generalInfo.runtime = this.runtime
     movie.generalInfo.actors = this.credits?.cast?.map {
       ActorData(
-        actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder()),
+        actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id),
       )
     }
   }
@@ -101,7 +101,7 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
     show.status = this.status?.toString() ?: "";
     show.generalInfo.actors = this.credits?.cast?.map {
       ActorData(
-        actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder()),
+        actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id),
       )
     }
     show.seasons = this.seasons?.map { tvSeason ->
@@ -124,7 +124,7 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
 
 fun BasePerson.toMediaItem() = AVPMediaItem.ActorItem(
   ActorData(
-    actor = Actor(name = name, image = profile_path?.toImageHolder()),
+    actor = Actor(name = name, image = profile_path?.toImageHolder(), id = id),
   )
 )
 

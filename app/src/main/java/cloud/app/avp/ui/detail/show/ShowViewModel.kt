@@ -69,7 +69,6 @@ class ShowViewModel @Inject constructor(
             is AVPMediaItem.SeasonItem -> {
 
             }
-
             is AVPMediaItem.ActorItem -> TODO()
             is AVPMediaItem.EpisodeItem -> {
               if (item.seasonItem.showItem.id == fullMediaItem.value?.id) {

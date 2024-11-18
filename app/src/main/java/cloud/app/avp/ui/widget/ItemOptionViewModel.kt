@@ -10,12 +10,15 @@ import cloud.app.avp.datastore.helper.getFavoritesData
 import cloud.app.avp.datastore.helper.removeFavoritesData
 import cloud.app.common.clients.BaseExtension
 import cloud.app.common.clients.mvdatabase.FeedClient
+import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
+import cloud.app.common.models.MediaItemsContainer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -30,6 +33,7 @@ class ItemOptionViewModel @Inject constructor(
   var loading = MutableSharedFlow<Boolean>();
   var detailItem = MutableStateFlow<AVPMediaItem?>(null)
   val favoriteStatus = MutableStateFlow(false)
+  val knowFors = MutableStateFlow<MediaItemsContainer.Category?>(null)
 
   fun getItemDetails(shortItem: AVPMediaItem) {
     viewModelScope.launch(Dispatchers.IO) {
@@ -64,6 +68,16 @@ class ItemOptionViewModel @Inject constructor(
     }
     favoriteStatus.value = !favoriteStatus.value
     statusChangedCallback.invoke(favoriteStatus.value)
+  }
+
+  fun getKnowFor(clientId: String, item: AVPMediaItem.ActorItem) {
+    viewModelScope.launch {
+      extensionFlow.collect{
+        if (it is FeedClient) {
+          knowFors.value = MediaItemsContainer.Category(title = item.title, more = it.getKnowFor(item))
+        }
+      }
+    }
   }
 
 }

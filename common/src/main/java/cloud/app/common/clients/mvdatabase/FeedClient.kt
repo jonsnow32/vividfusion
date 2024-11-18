@@ -9,5 +9,6 @@ interface FeedClient {
     suspend fun getHomeTabs(): List<Tab>
     fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer>
     suspend fun getMediaDetail(avpMediaItem: AVPMediaItem): AVPMediaItem?
+    fun getKnowFor(actor: AVPMediaItem.ActorItem): PagedData<AVPMediaItem>
 }
 

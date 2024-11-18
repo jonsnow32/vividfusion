@@ -38,7 +38,7 @@ class MovieFragment : Fragment(){
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
-  private val shortItem by lazy { args.getSerialized<AVPMediaItem>("mediaItem")!! }
+  private val shortItem by lazy { args.getSerialized<AVPMediaItem.MovieItem>("mediaItem")!! }
 
   @Inject
   lateinit var preferences: SharedPreferences
@@ -103,26 +103,6 @@ class MovieFragment : Fragment(){
 
   private fun loadInitialData() {
     viewModel.getItemDetails(shortItem)
-    when (shortItem) {
-      is AVPMediaItem.MovieItem -> {
-        //viewModel.checkResume(shortItem.movie)
-      }
-
-      is AVPMediaItem.ShowItem -> {
-      }
-
-      is AVPMediaItem.ActorItem -> {
-
-      }
-
-      is AVPMediaItem.EpisodeItem -> {
-
-      }
-
-      else -> {
-
-      }
-    }
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {

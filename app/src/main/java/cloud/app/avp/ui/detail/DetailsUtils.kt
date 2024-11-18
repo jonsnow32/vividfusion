@@ -7,6 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getString
 import cloud.app.avp.R
 import cloud.app.avp.databinding.LayoutMediaHeaderBinding
+import cloud.app.avp.datastore.helper.WatchedItem
 import cloud.app.avp.utils.TimeUtils.toLocalMonthYear
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.roundTo
@@ -21,7 +22,7 @@ fun ImageView.loadWith(imageHolder: ImageHolder?) {
   imageHolder.loadInto(this)
 }
 
-fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem) {
+fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, extras: Map<String, String>? = null) {
 
   when (mediaItem) {
     is AVPMediaItem.SeasonItem -> imageBackdrop.loadWith(mediaItem.season.backdrop?.toImageHolder())
@@ -32,7 +33,7 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem) {
 
   textTitle.setTextWithVisibility(mediaItem.title)
   if(mediaItem is AVPMediaItem.SeasonItem) {
-    val progress = textSubtitle.context.getString(R.string.season_progress_format, 0, mediaItem.season.episodeCount)
+    val progress = textSubtitle.context.getString(R.string.season_progress_format, mediaItem.watchedEpisodeNumber ?: 0, mediaItem.season.episodeCount)
     textSubtitle.setTextWithVisibility(progress)
   } else textSubtitle.setTextWithVisibility(mediaItem.subtitle)
   textOverview.setTextWithVisibility(mediaItem.overview ?: "")

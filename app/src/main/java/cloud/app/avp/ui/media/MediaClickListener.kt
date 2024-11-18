@@ -59,7 +59,9 @@ class MediaClickListener(
         )
       }
 
-      is AVPMediaItem.ActorItem,
+      is AVPMediaItem.ActorItem -> {
+        onLongClick(clientId, item, transitionView)
+      }
       is AVPMediaItem.EpisodeItem,
       is AVPMediaItem.StreamItem -> {
         fragment.createSnack(fragment.getString(R.string.not_implemented))

@@ -12,6 +12,7 @@ enum class ActorRole {
 data class Actor(
   val name: String,
   val image: ImageHolder? = null,
+  val id: Int? = null,
 )
 
 @Serializable

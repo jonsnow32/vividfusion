@@ -56,4 +56,8 @@ class TraktExtension : BaseExtension, FeedClient {
   override suspend fun getMediaDetail(avpMediaItem: AVPMediaItem): AVPMediaItem? {
     TODO("Not yet implemented")
   }
+
+  override fun getKnowFor(actor: AVPMediaItem.ActorItem): PagedData<AVPMediaItem> {
+    TODO("Not yet implemented")
+  }
 }

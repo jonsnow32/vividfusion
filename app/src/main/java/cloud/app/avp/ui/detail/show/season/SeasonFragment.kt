@@ -9,6 +9,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentSeasonBinding
@@ -27,6 +28,8 @@ import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.common.models.movie.Episode
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -36,7 +39,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
-  private val shortItem by lazy { args.getSerialized<AVPMediaItem>("mediaItem")!! }
+  private val shortItem by lazy { args.getSerialized<AVPMediaItem.SeasonItem>("mediaItem")!! }
   @Inject
   lateinit var preferences: SharedPreferences
 
@@ -87,9 +90,10 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
 
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
-      if (mediaItem is AVPMediaItem.SeasonItem)
-        setupEpisodes(mediaItem.season.episodes)
+      setupEpisodes(mediaItem.season.episodes)
+      bind(mediaItem)
     }
+
   }
 
   private enum class SortMode { ASCENDING, DESCENDING }

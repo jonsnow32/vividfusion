@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,8 @@ import cloud.app.avp.databinding.ItemDialogButtonBinding
 import cloud.app.avp.databinding.ItemDialogButtonLoadingBinding
 import cloud.app.avp.ui.detail.show.ShowFragment
 import cloud.app.avp.ui.detail.show.season.SeasonFragment
+import cloud.app.avp.ui.main.browse.BrowseFragment
+import cloud.app.avp.ui.main.browse.BrowseViewModel
 import cloud.app.avp.ui.media.MediaItemViewHolder.Companion.bind
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getSerialized
@@ -78,6 +81,14 @@ class ItemOptionDialog : BottomSheetDialogFragment() {
       }
     }
 
+    observe(viewModel.knowFors) {
+      if (it != null) {
+        val browseViewModel by activityViewModels<BrowseViewModel>()
+        browseViewModel.moreFlow = it.more
+        browseViewModel.title = it.title
+        requireActivity().navigate(BrowseFragment())
+      }
+    }
   }
 
   private fun getActions(item: AVPMediaItem): List<ItemAction> = when (item) {
@@ -85,7 +96,10 @@ class ItemOptionDialog : BottomSheetDialogFragment() {
       listOfNotNull(
         ItemAction.Resource(R.drawable.ic_more_horiz, R.string.action_show_details) {
           val movieFragment = ShowFragment();
-          movieFragment.arguments = bundleOf("mediaItem" to item, "clientId" to "clientID")
+          val bundle = Bundle()
+          bundle.putString("clientId", clientId)
+          bundle.putSerialized("mediaItem", item)
+          movieFragment.arguments = bundle
           requireActivity().navigate(
             movieFragment
           )
@@ -100,8 +114,8 @@ class ItemOptionDialog : BottomSheetDialogFragment() {
     }
 
     is AVPMediaItem.ActorItem -> {
-      listOfNotNull(ItemAction.Resource(R.drawable.play_arrow_24dp, R.string.known_for) {
-        viewModel.getItemDetails(item)
+      listOfNotNull(ItemAction.Resource(R.drawable.playlist_play_24dp, R.string.known_for) {
+        viewModel.getKnowFor(clientId, item)
       })
     }
 

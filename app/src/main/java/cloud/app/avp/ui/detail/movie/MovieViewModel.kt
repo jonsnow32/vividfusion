@@ -31,16 +31,15 @@ class MovieViewModel @Inject constructor(
 
   fun getItemDetails(shortItem: AVPMediaItem) {
     viewModelScope.launch(Dispatchers.IO) {
-      viewModelScope.launch(Dispatchers.IO) {
-        extensionFlow.collect { client ->
-          if (client is FeedClient) {
-            loading.value = true
-            val showDetail = client.getMediaDetail(shortItem) ?: shortItem
-            fullMediaItem.value = showDetail
-            val favoriteDeferred = async { dataStore.getFavoritesData<AVPMediaItem.MovieItem>(fullMediaItem.value?.id?.toString()) }
-            favoriteStatus.value = favoriteDeferred.await()
-            loading.value = false
-          }
+      extensionFlow.collect { client ->
+        if (client is FeedClient) {
+          loading.value = true
+          val showDetail = client.getMediaDetail(shortItem) ?: shortItem
+          fullMediaItem.value = showDetail
+          val favoriteDeferred =
+            async { dataStore.getFavoritesData<AVPMediaItem.MovieItem>(fullMediaItem.value?.id?.toString()) }
+          favoriteStatus.value = favoriteDeferred.await()
+          loading.value = false
         }
       }
     }
