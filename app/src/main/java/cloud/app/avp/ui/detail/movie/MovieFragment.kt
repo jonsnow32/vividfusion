@@ -93,6 +93,7 @@ class MovieFragment : Fragment(){
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
 
+      bind(mediaItem)
       setupActorAdapter(mediaItem)
       setupRecommendationAdapter(mediaItem)
     }

@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 sealed class AVPMediaItem {
   @Serializable
   data class MovieItem(val movie: Movie) : AVPMediaItem() {
-    fun getSlug() : String {
+    fun getSlug(): String {
       val formattedName = movie.generalInfo.title
         .trim()
         .lowercase()
@@ -28,7 +28,7 @@ sealed class AVPMediaItem {
 
   @Serializable
   data class ShowItem(val show: Show) : AVPMediaItem() {
-    fun getSlug() : String {
+    fun getSlug(): String {
       val formattedName = show.generalInfo.title
         .trim()
         .lowercase()
@@ -50,7 +50,11 @@ sealed class AVPMediaItem {
   data class StreamItem(val streamData: StreamData) : AVPMediaItem()
 
   @Serializable
-  data class SeasonItem(val season: Season, val showItem: ShowItem, var watchedEpisodeNumber: Int? = 0) : AVPMediaItem() {
+  data class SeasonItem(
+    val season: Season,
+    val showItem: ShowItem,
+    var watchedEpisodeNumber: Int? = 0
+  ) : AVPMediaItem() {
     fun getSlug() = "${showItem.getSlug()}/${season.number}"
   }
 
@@ -177,5 +181,15 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.rating
       is EpisodeItem -> episode.generalInfo.rating
       else -> null
+    }
+
+  val homePage
+    get() = when (this) {
+      is ActorItem -> null
+      is EpisodeItem -> seasonItem.showItem.show.generalInfo.homepage
+      is MovieItem -> movie.generalInfo.homepage
+      is SeasonItem -> showItem.show.generalInfo.homepage
+      is ShowItem -> show.generalInfo.homepage
+      is StreamItem -> null
     }
 }

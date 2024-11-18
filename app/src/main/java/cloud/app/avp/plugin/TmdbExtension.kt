@@ -163,7 +163,9 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
                   poster = episode.still_path,
                   overview = episode.overview,
                   releaseDateMsUTC = episode.air_date?.time,
-                  originalTitle = episode.name
+                  originalTitle = episode.name,
+                  homepage = null
+
                 ),
                 seasonNumber = episode.season_number,
                 episodeNumber = episode.episode_number,
@@ -451,7 +453,8 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
                   poster = null,
                   overview = episode.overview,
                   releaseDateMsUTC = episode.firstAired?.iso8601ToMillis(),
-                  originalTitle = episodeTitle
+                  originalTitle = episodeTitle,
+                  homepage = null
                 ),
                 seasonNumber = episode.airedSeason,
                 episodeNumber = episode.airedEpisodeNumber,

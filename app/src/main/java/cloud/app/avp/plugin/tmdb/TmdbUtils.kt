@@ -51,7 +51,8 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
       poster = baseMovie.poster_path,
       backdrop = baseMovie.backdrop_path,
       rating = baseMovie.vote_average,
-      genres = getGenre(this)
+      genres = getGenre(this),
+      homepage = null
       //to be continued
     )
   )
@@ -63,6 +64,7 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
 
     movie.recommendations = this.recommendations?.results?.map { toMovie(it) }
     movie.generalInfo.runtime = this.runtime
+    movie.generalInfo.homepage = this.homepage
     movie.generalInfo.actors = this.credits?.cast?.map {
       ActorData(
         actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id),
@@ -87,6 +89,7 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
       backdrop = baseShow.backdrop_path,
       rating = baseShow.vote_average,
       genres = baseShow.genre_ids?.map { showGenres[it] ?: "" },
+      homepage = null
       //to be continued
     ),
   )
@@ -104,6 +107,7 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
         actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id),
       )
     }
+    show.generalInfo.homepage = this.homepage
     show.seasons = this.seasons?.map { tvSeason ->
       Season(
         title = tvSeason.name,

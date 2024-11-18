@@ -98,10 +98,9 @@ class ShowFragment : Fragment() {
 
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
-
+      bind(mediaItem)
       setupActorAdapter(mediaItem)
       setupRecommendationAdapter(mediaItem)
-
     }
     observe(viewModel.lastWatchedEpisode) { lastWatchedEpisode ->
       binding.btnResume.isGone = lastWatchedEpisode == null
@@ -176,7 +175,10 @@ class ShowFragment : Fragment() {
     }
   }
 
-  private fun sortSeasons(seasons: List<AVPMediaItem.SeasonItem>, sortMode: SortMode): List<AVPMediaItem.SeasonItem> {
+  private fun sortSeasons(
+    seasons: List<AVPMediaItem.SeasonItem>,
+    sortMode: SortMode
+  ): List<AVPMediaItem.SeasonItem> {
     return when (sortMode) {
       SortMode.DESCENDING -> seasons.sortedByDescending { it.season.number }
       SortMode.ASCENDING -> seasons.sortedBy { it.season.number }

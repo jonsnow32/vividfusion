@@ -5,10 +5,12 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getString
+import androidx.core.view.isGone
 import cloud.app.avp.R
 import cloud.app.avp.databinding.LayoutMediaHeaderBinding
 import cloud.app.avp.datastore.helper.WatchedItem
 import cloud.app.avp.utils.TimeUtils.toLocalMonthYear
+import cloud.app.avp.utils.Utils
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.roundTo
 import cloud.app.avp.utils.setTextWithVisibility
@@ -32,8 +34,12 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, extras: Map<String, S
   imagePoster.loadWith(mediaItem.poster)
 
   textTitle.setTextWithVisibility(mediaItem.title)
-  if(mediaItem is AVPMediaItem.SeasonItem) {
-    val progress = textSubtitle.context.getString(R.string.season_progress_format, mediaItem.watchedEpisodeNumber ?: 0, mediaItem.season.episodeCount)
+  if (mediaItem is AVPMediaItem.SeasonItem) {
+    val progress = textSubtitle.context.getString(
+      R.string.season_progress_format,
+      mediaItem.watchedEpisodeNumber ?: 0,
+      mediaItem.season.episodeCount
+    )
     textSubtitle.setTextWithVisibility(progress)
   } else textSubtitle.setTextWithVisibility(mediaItem.subtitle)
   textOverview.setTextWithVisibility(mediaItem.overview ?: "")
@@ -42,7 +48,12 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, extras: Map<String, S
 
   textReleaseYear.setTextWithVisibility(mediaItem.releaseMonthYear)
   val format = getString(this.imageBackdrop.context, R.string.rating_format)
-  textRating.setTextWithVisibility(if(mediaItem.rating != null) String.format(format, mediaItem.rating?.roundTo(1)) else null)
+  textRating.setTextWithVisibility(
+    if (mediaItem.rating != null) String.format(
+      format,
+      mediaItem.rating?.roundTo(1)
+    ) else null
+  )
   textOverview.setOnClickListener {
     val dialogView =
       LayoutInflater.from(textOverview.context).inflate(R.layout.dialog_full_text, null)
@@ -53,5 +64,14 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, extras: Map<String, S
       .setView(dialogView)
       .setPositiveButton("Close", null)
       .show()
+  }
+  if (mediaItem.homePage.isNullOrEmpty()) {
+    showOpenInBrowser.isGone = true;
+  } else {
+    showOpenInBrowser.isGone = false
+    showOpenInBrowser.setOnClickListener {
+      Utils.launchWebsite(this.root.context, mediaItem.homePage!!)
+    }
+
   }
 }

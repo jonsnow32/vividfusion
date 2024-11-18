@@ -25,7 +25,7 @@ data class GeneralInfo(
   var contentRating: String? = null,
   var rating: Double? = null,
   var actors: List<ActorData>? = null,
-
+  var homepage: String? = null,
 ) {
   fun getReleaseYear(): Int? {
     return releaseDateMsUTC?.getYear()
