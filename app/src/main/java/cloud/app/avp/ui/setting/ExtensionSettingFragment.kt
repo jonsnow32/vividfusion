@@ -9,14 +9,18 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
 import androidx.preference.SwitchPreferenceCompat
+import cloud.app.avp.AVPApplication.Companion.noClient
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentExtensionBinding
+import cloud.app.avp.extension.getExtension
+import cloud.app.avp.extension.run
 import cloud.app.avp.ui.extension.ExtensionViewModel
 import cloud.app.avp.utils.EMULATOR
 import cloud.app.avp.utils.MaterialListPreference
@@ -24,14 +28,13 @@ import cloud.app.avp.utils.MaterialMultipleChoicePreference
 import cloud.app.avp.utils.MaterialTextInputPreference
 import cloud.app.avp.utils.TV
 import cloud.app.avp.utils.autoCleared
-import cloud.app.avp.utils.getParcel
 import cloud.app.avp.utils.isLayout
 import cloud.app.avp.utils.loadWith
 import cloud.app.avp.utils.setupTransition
-import cloud.app.common.clients.ExtensionMetadata
+import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
+import cloud.app.common.clients.Extension
 import cloud.app.common.models.ExtensionType
 import cloud.app.common.models.ImageHolder.Companion.toImageHolder
-import cloud.app.common.models.LoginType
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingCategory
 import cloud.app.common.settings.SettingItem
@@ -40,17 +43,34 @@ import cloud.app.common.settings.SettingMultipleChoice
 import cloud.app.common.settings.SettingSwitch
 import cloud.app.common.settings.SettingTextInput
 import com.google.android.material.appbar.AppBarLayout
+import kotlinx.coroutines.launch
 
 class ExtensionSettingFragment : Fragment() {
+
+  companion object {
+    fun newInstance(
+      clientId: String, clientName: String, extensionType: ExtensionType
+    ) = ExtensionSettingFragment().apply {
+      arguments = Bundle().apply {
+        putString("clientId", clientId)
+        putString("clientName", clientName)
+        putString("extensionType", extensionType.name)
+      }
+    }
+
+    fun newInstance(extension: Extension<*>) =
+      newInstance(extension.id, extension.name, extension.type)
+  }
 
   private var binding by autoCleared<FragmentExtensionBinding>()
   private val viewModel by activityViewModels<ExtensionViewModel>()
 
   private val args by lazy { requireArguments() }
-  private val extensionClassName by lazy { args.getString("extensionClassName")!! }
-  private val extensionMetadata by lazy { args.getParcel<ExtensionMetadata>("extensionMetadata")!! }
-
-
+  private val clientId by lazy { args.getString("clientId")!! }
+  private val clientName by lazy { args.getString("clientName")!! }
+  private val extensionType by lazy {
+    ExtensionType.valueOf(args.getString("extensionType")!!)
+  }
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -72,7 +92,7 @@ class ExtensionSettingFragment : Fragment() {
     }
 
     binding.toolbar.apply {
-      title = extensionMetadata.name
+      title = clientName
       setNavigationIcon(R.drawable.ic_back)
       setNavigationOnClickListener {
         activity?.onBackPressedDispatcher?.onBackPressed()
@@ -88,27 +108,40 @@ class ExtensionSettingFragment : Fragment() {
       }
     }
 
-    extensionMetadata.icon.toImageHolder()
+    val extension = when (extensionType) {
+      ExtensionType.DATABASE -> viewModel.databaseExtensionListFlow.getExtension(clientId)
+      ExtensionType.STREAM -> viewModel.streamExtensionListFlow.getExtension(clientId)
+      ExtensionType.SUBTITLE -> viewModel.subtitleExtensionListFlow.getExtension(clientId)
+    }
+
+    if (extension == null) {
+      createSnack(requireContext().noClient())
+      parentFragmentManager.popBackStack()
+      return
+    }
+    val extensionMetadata = extension.metadata
+
+    extensionMetadata.iconUrl?.toImageHolder()
       .loadWith(binding.extensionIcon, R.drawable.ic_extension_24dp) {
         binding.extensionIcon.setImageDrawable(it)
       }
 
     binding.extensionDetails.text =
-      "${extensionMetadata.version} • ${extensionMetadata.type.name}"
+      "${extensionMetadata.version} • ${extensionMetadata.importType.name}"
 
     val byAuthor = getString(R.string.by_author, extensionMetadata.author)
-    val typeString = getString(R.string.name_extension, extensionMetadata.type.name)
+    val typeString = getString(R.string.name_extension, extensionMetadata.importType.name)
     binding.extensionDescription.text =
       "$typeString\n\n${extensionMetadata.description}\n\n$byAuthor"
 
-    when (extensionMetadata.loginType) {
-      LoginType.API_KEY -> binding.extensionApiKey.root.visibility = View.VISIBLE
-      LoginType.USERNAME_PASSWORD -> binding.extensionLoginUser.root.visibility = View.VISIBLE
-      LoginType.WEBAUTH -> binding.extensionWebLogin.root.visibility = View.VISIBLE
-      LoginType.NONE -> {
-        //nothing to show
-      }
-    }
+//    when (extensionMetadata.loginType) {
+//      LoginType.API_KEY -> binding.extensionApiKey.root.visibility = View.VISIBLE
+//      LoginType.USERNAME_PASSWORD -> binding.extensionLoginUser.root.visibility = View.VISIBLE
+//      LoginType.WEBAUTH -> binding.extensionWebLogin.root.visibility = View.VISIBLE
+//      LoginType.NONE -> {
+//        //nothing to show
+//      }
+//    }
 
     childFragmentManager.beginTransaction()
       .add(R.id.settingsFragment, creator())
@@ -117,11 +150,11 @@ class ExtensionSettingFragment : Fragment() {
 
 
   val creator =
-    { ExtensionPreference.newInstance(extensionClassName, extensionMetadata.type.name) }
+    { ExtensionPreference.newInstance(clientId, extensionType.name) }
 
   class ExtensionPreference : PreferenceFragmentCompat() {
     private val args by lazy { requireArguments() }
-    private val className by lazy { args.getString("className")!! }
+    private val extensionId by lazy { args.getString("extensionId")!! }
     private val extensionType: ExtensionType by lazy {
       val type = args.getString("extensionType")!!
       ExtensionType.valueOf(type)
@@ -129,18 +162,29 @@ class ExtensionSettingFragment : Fragment() {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
-      preferenceManager.sharedPreferencesName = "$extensionType-$className"
+      preferenceManager.sharedPreferencesName = "$extensionType-$extensionId"
       preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val screen = preferenceManager.createPreferenceScreen(context)
       preferenceScreen = screen
 
       val viewModel by activityViewModels<ExtensionViewModel>()
-      val client = viewModel.run {
-        extensionFlowList.value.find { it.javaClass.toString() == className }
-      }
-      client ?: return
-      client.defaultSettings.forEach { setting ->
-        setting.addPreferenceTo(screen)
+      viewModel.apply {
+        val client = when (extensionType) {
+          ExtensionType.DATABASE -> databaseExtensionListFlow.getExtension(extensionId)
+          ExtensionType.STREAM -> streamExtensionListFlow.getExtension(extensionId)
+          ExtensionType.SUBTITLE -> subtitleExtensionListFlow.getExtension(extensionId)
+        }
+
+        viewModelScope.launch {
+          client?.run(throwableFlow) {
+            defaultSettings.forEach { setting ->
+              setting.addPreferenceTo(screen)
+            }
+//            val prefs = preferenceManager.sharedPreferences ?: return@run
+//            val settings = toSettings(prefs)
+
+          }
+        }
       }
     }
 
@@ -242,7 +286,7 @@ class ExtensionSettingFragment : Fragment() {
     companion object {
       fun newInstance(id: String, type: String): ExtensionPreference {
         val bundle = Bundle().apply {
-          putString("className", id)
+          putString("extensionId", id)
           putString("extensionType", type)
         }
         return ExtensionPreference().apply {

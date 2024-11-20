@@ -2,7 +2,6 @@ package cloud.app.plugger
 
 import kotlinx.coroutines.flow.StateFlow
 
-interface PluginRepo<TPlugin> {
-  fun load() : StateFlow<List<Lazy<Result<TPlugin>>>>
+interface PluginRepo<TMetadata, TPlugin> {
+  fun load() : StateFlow<List<Result<Pair<TMetadata,Lazy<Result<TPlugin>>>>>>
 }
-fun <T> lazily(value: T) = lazy { runCatching { value } }

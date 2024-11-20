@@ -1,4 +1,6 @@
 package cloud.app.common.clients.subtitles
 
-interface SubtitleClient {
+import cloud.app.common.clients.BaseClient
+
+interface SubtitleClient : BaseClient {
 }

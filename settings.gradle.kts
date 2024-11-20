@@ -23,5 +23,4 @@ dependencyResolutionManagement {
 rootProject.name = "Audio Video Player"
 include(":app")
 include(":common")
-include(":plugger")
 include(":app:sampleextensionclient")

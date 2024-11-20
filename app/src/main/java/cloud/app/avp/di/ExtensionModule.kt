@@ -1,17 +1,19 @@
 package cloud.app.avp.di
 
 import android.app.Application
-import android.content.Context
-import cloud.app.avp.plugin.tmdb.AppTmdb
-import cloud.app.avp.plugin.LocalRepos
-import cloud.app.common.clients.BaseExtension
-import cloud.app.plugger.RepoComposer
-import cloud.app.plugger.repos.installedApk.InstalledApkConfig
-import cloud.app.plugger.repos.installedApk.InstalledApkRepos
+import android.content.SharedPreferences
+import cloud.app.avp.datastore.DataStore
+import cloud.app.avp.extension.ExtensionLoader
+import cloud.app.common.clients.DatabaseExtension
+import cloud.app.common.clients.StreamExtension
+import cloud.app.common.clients.SubtitleExtension
+import cloud.app.common.helpers.network.HttpHelper
+import cloud.app.common.settings.PrefSettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Singleton
 
@@ -20,25 +22,53 @@ import javax.inject.Singleton
 class ExtensionModule {
   @Provides
   @Singleton
-  fun provideExtensionRepo(context: Application, tmdb: AppTmdb) = getComposer(context)
-
-  private fun getComposer(
-    context: Context,
-  ): RepoComposer<BaseExtension> {
-    val installedApkRepo = InstalledApkRepos<BaseExtension>(
-      context,
-      InstalledApkConfig("cloud.app.avp"),
-    )
-    val localRepo = LocalRepos()
-    return RepoComposer(installedApkRepo,localRepo)
-  }
+  fun provideExtensionLoader(
+    context: Application,
+    dataStore: DataStore,
+    httpHelper: HttpHelper,
+    sharedPreferences: SharedPreferences,
+    throwableFlow: MutableSharedFlow<Throwable>,
+    databaseExtensionListFlow: MutableStateFlow<List<DatabaseExtension>>,
+    databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
+    streamExtensionListFlow: MutableStateFlow<List<StreamExtension>>,
+    subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>
+  ) = ExtensionLoader(
+    context,
+    dataStore,
+    httpHelper,
+    throwableFlow,
+    sharedPreferences,
+    databaseExtensionListFlow,
+    databaseExtensionFlow,
+    streamExtensionListFlow,
+    subtitleExtensionListFlow
+  )
 
   @Provides
   @Singleton
-  fun provideExtensionFlow() = MutableStateFlow<BaseExtension?>(null)
+  fun provideCurrentDatabaseExtension() = MutableStateFlow<DatabaseExtension?>(null)
 
   @Provides
   @Singleton
-  fun provideExtensionFlowList() = MutableStateFlow<List<BaseExtension>>(emptyList())
+  fun provideDatabaseExtensionList() = MutableStateFlow<List<DatabaseExtension>>(emptyList())
+
+
+  @Provides
+  @Singleton
+  fun provideCurrentStreamExtension() = MutableStateFlow<StreamExtension?>(null)
+
+  @Provides
+  @Singleton
+  fun provideStreamExtensionList() = MutableStateFlow<List<StreamExtension>>(emptyList())
+
+
+  @Provides
+  @Singleton
+  fun provideCurrentSubtitleExtension() = MutableStateFlow<SubtitleExtension?>(null)
+
+  @Provides
+  @Singleton
+  fun provideSubtitleExtensionList() = MutableStateFlow<List<SubtitleExtension>>(emptyList())
+
 
 }

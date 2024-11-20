@@ -61,9 +61,7 @@ class ShowFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(binding.header.imagePoster)
     applyInsets { binding.header.topBar.setPadding(0, it.top, 0, 0) }
-
     bind(shortItem)
-
     setupListeners()
     setupObservers()
     loadInitialData()
@@ -98,9 +96,21 @@ class ShowFragment : Fragment() {
 
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
-      bind(mediaItem)
       setupActorAdapter(mediaItem)
-      setupRecommendationAdapter(mediaItem)
+      viewModel.loadRecommended()
+    }
+    observe(viewModel.recommendations) { paging ->
+      paging?.let {
+        binding.recommendedHolder.isGone = false
+        if (binding.rvRecommendedMedia.adapter == null) {
+          val recommendationAdapter =
+            MediaItemAdapter(
+              MediaClickListener(fragmentManager = parentFragmentManager), "", clientId
+            )
+          binding.rvRecommendedMedia.adapter = recommendationAdapter
+        }
+        (binding.rvRecommendedMedia.adapter as MediaItemAdapter).submit(paging)
+      }
     }
     observe(viewModel.lastWatchedEpisode) { lastWatchedEpisode ->
       binding.btnResume.isGone = lastWatchedEpisode == null
@@ -151,8 +161,6 @@ class ShowFragment : Fragment() {
       displaySortedSeasons(seasons, newSortMode)
       preferences.edit().putInt(getString(R.string.season_sort_key), newSortMode.ordinal).apply()
     }
-
-
   }
 
   private fun updateSortUI(sortMode: SortMode) {
@@ -214,7 +222,7 @@ class ShowFragment : Fragment() {
     recommendations?.let {
       val recommendationAdapter =
         MediaItemAdapter(
-          MediaClickListener(fragmentManager = childFragmentManager), "", clientId
+          MediaClickListener(fragmentManager = parentFragmentManager), "", clientId
         )
       binding.rvRecommendedMedia.adapter = recommendationAdapter
 

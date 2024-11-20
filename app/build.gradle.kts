@@ -48,8 +48,7 @@ android {
 dependencies {
 
   implementation(project(":common"))
-  implementation(project(":plugger"))
-
+  implementation(libs.plugger)
   //Android
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.appcompat)

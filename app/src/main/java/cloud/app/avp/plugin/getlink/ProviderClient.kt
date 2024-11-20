@@ -1,34 +1,22 @@
 package cloud.app.avp.plugin.getlink
 
 import cloud.app.avp.extension.provider.M4UFree
-import cloud.app.common.clients.BaseExtension
-import cloud.app.common.clients.ExtensionMetadata
+import cloud.app.common.clients.BaseClient
 import cloud.app.common.clients.streams.StreamClient
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.models.AVPMediaItem
-import cloud.app.common.models.ExtensionType
-import cloud.app.common.models.LoginType
 import cloud.app.common.models.stream.StreamData
+import cloud.app.common.settings.PrefSettings
 import cloud.app.common.settings.Setting
 import cloud.app.common.settings.SettingSwitch
-import cloud.app.common.settings.PrefSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class ProviderExtension:  BaseExtension , StreamClient {
-    override val metadata: ExtensionMetadata
-        get() = ExtensionMetadata(
-            name = "The extension of Providers",
-            ExtensionType.STREAM,
-            description = "A sample extension that does nothing",
-            author = "avp",
-            version = "v001",
-            icon = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
-            loginType = LoginType.NONE
-        )
+class ProviderClient:  BaseClient , StreamClient {
+
 
     override val defaultSettings: List<Setting> = listOf(
         SettingSwitch(

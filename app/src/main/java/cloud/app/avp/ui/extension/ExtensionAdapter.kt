@@ -14,26 +14,26 @@ import cloud.app.avp.R
 import cloud.app.avp.databinding.ItemExtensionBinding
 import cloud.app.avp.ui.media.MediaContainerEmptyAdapter
 import cloud.app.avp.utils.loadWith
-import cloud.app.common.clients.BaseExtension
+import cloud.app.common.clients.BaseClient
+import cloud.app.common.clients.Extension
 import cloud.app.common.models.ImageHolder.Companion.toImageHolder
 
 class ExtensionAdapter(
     val listener: Listener
-) : PagingDataAdapter<BaseExtension, ExtensionAdapter.ViewHolder>(DiffCallback) {
+) : PagingDataAdapter<Extension<*>, ExtensionAdapter.ViewHolder>(DiffCallback) {
 
-    fun interface Listener {
-        fun onClick(metadata: BaseExtension, view: View)
-    }
+  interface Listener {
+    fun onClick(extension: Extension<*>, view: View)
+    fun onDragHandleTouched(viewHolder: ViewHolder)
+  }
 
-    object DiffCallback : DiffUtil.ItemCallback<BaseExtension>() {
-        override fun areItemsTheSame(
-            oldItem: BaseExtension, newItem: BaseExtension
-        ) = oldItem.javaClass == newItem.javaClass
+  object DiffCallback : DiffUtil.ItemCallback<Extension<*>>() {
+    override fun areItemsTheSame(oldItem: Extension<*>, newItem: Extension<*>) =
+      oldItem.id == newItem.id
 
-        override fun areContentsTheSame(
-            oldItem: BaseExtension, newItem: BaseExtension
-        ) = oldItem.metadata == newItem.metadata
-    }
+    override fun areContentsTheSame(oldItem: Extension<*>, newItem: Extension<*>) =
+      oldItem == newItem
+  }
 
     private val empty = MediaContainerEmptyAdapter()
     fun withEmptyAdapter() = ConcatAdapter(empty, this)
@@ -41,13 +41,13 @@ class ExtensionAdapter(
     class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :
         RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
-        fun bind(extension: BaseExtension) {
-            binding.root.transitionName = extension.metadata.name
+        fun bind(extension: Extension<*>) {
+            binding.root.transitionName = extension.name
             binding.root.setOnClickListener { listener.onClick(extension, binding.root) }
             binding.extensionName.text = extension.metadata.name
             binding.extensionVersion.text = extension.metadata.version
             binding.itemExtension.apply {
-              extension.metadata.icon.toImageHolder().loadWith(this, R.drawable.ic_extension_24dp) {
+              extension.metadata.iconUrl?.toImageHolder().loadWith(this, R.drawable.ic_extension_24dp) {
                     setImageDrawable(it)
                 }
             }
@@ -64,7 +64,7 @@ class ExtensionAdapter(
         holder.bind(download)
     }
 
-    suspend fun submit(list: List<BaseExtension>) {
+    suspend fun submit(list: List<Extension<*>>) {
         empty.loadState = if (list.isEmpty()) LoadState.Loading else LoadState.NotLoading(true)
         submitData(PagingData.from(list))
     }

@@ -50,6 +50,20 @@
       android:gravity="end"
       android:paddingHorizontal="10dp">
 
+      <ImageView
+        android:id="@+id/homeButton"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="end|center_vertical"
+        android:layout_margin="5dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:elevation="10dp"
+        android:focusable="true"
+        android:src="@drawable/anim_home"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
       <androidx.mediarouter.app.MediaRouteButton
         android:id="@+id/mediaRouteButton"
         android:layout_width="50dp"
@@ -57,6 +71,9 @@
         android:layout_gravity="end|center_vertical"
         android:mediaRouteTypes="user"
         android:visibility="gone" />
+
+
+
 
       <ImageView
         android:id="@+id/showNotify"

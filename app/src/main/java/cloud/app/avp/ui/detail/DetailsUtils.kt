@@ -1,17 +1,25 @@
 package cloud.app.avp.ui.detail
 
+import android.content.ContextWrapper
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.getString
 import androidx.core.view.isGone
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.commit
+import cloud.app.avp.MainActivity
 import cloud.app.avp.R
 import cloud.app.avp.databinding.LayoutMediaHeaderBinding
 import cloud.app.avp.datastore.helper.WatchedItem
+import cloud.app.avp.ui.main.MainFragment
+import cloud.app.avp.ui.main.home.HomeFragment
 import cloud.app.avp.utils.TimeUtils.toLocalMonthYear
 import cloud.app.avp.utils.Utils
 import cloud.app.avp.utils.loadInto
+import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.roundTo
 import cloud.app.avp.utils.setTextWithVisibility
 import cloud.app.common.models.AVPMediaItem
@@ -74,4 +82,25 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, extras: Map<String, S
     }
 
   }
+
+  val activity = when (val context = this.root.context) {
+    is FragmentActivity -> context
+    is ContextWrapper -> (context.baseContext as? FragmentActivity)
+    else -> null
+  }
+  val backStackCount = activity?.supportFragmentManager?.backStackEntryCount ?: 0
+  if(backStackCount > 3) {
+    homeButton.isGone = false
+    homeButton.setOnClickListener {
+      activity?.let {
+        val fragmentManager = it.supportFragmentManager
+        fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        fragmentManager.commit {
+          setCustomAnimations(0,0)
+          replace(R.id.navHostFragment, MainFragment())
+        }
+      }
+    }
+  }
 }
+

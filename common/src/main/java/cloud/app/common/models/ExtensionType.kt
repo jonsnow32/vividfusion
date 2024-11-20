@@ -1,8 +1,10 @@
 package cloud.app.common.models
 
-enum class ExtensionType {
-    DATABASE, STREAM, SUBTITLE
+enum class ExtensionType(val feature: String) {
+  DATABASE("database"), STREAM("stream"), SUBTITLE("subtitle");
 }
+
+fun ExtensionType.priorityKey() = "priority_$this"
 
 //Database is tmdb, imdb, tvdb, trakt
 //StreamSource is scrappers, realdebrid, allldebrid, ...

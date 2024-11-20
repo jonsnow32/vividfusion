@@ -13,7 +13,6 @@ import cloud.app.avp.databinding.ItemMovieCoverBinding
 import cloud.app.avp.databinding.ItemSeasonBinding
 import cloud.app.avp.databinding.ItemSeasonLargeBinding
 import cloud.app.avp.databinding.ItemStreamBinding
-import cloud.app.avp.ui.media.MediaItemViewHolder.Companion.bind
 import cloud.app.avp.utils.loadInto
 import cloud.app.avp.utils.roundTo
 import cloud.app.avp.utils.setTextWithVisibility
@@ -155,9 +154,8 @@ sealed class MediaItemViewHolder(itemView: View) :
 
     override fun bind(item: AVPMediaItem) {
       item as AVPMediaItem.ActorItem
-      binding.actorName.setTextWithVisibility(item.actorData.actor.name)
-      binding.voiceActorName.setTextWithVisibility(item.actorData.voiceActor?.name)
-      binding.actorExtra.setTextWithVisibility(item.actorData.roleString)
+      binding.actorName.setTextWithVisibility(item.actor.name)
+      binding.actorRole.setTextWithVisibility(item.actor.role)
       item.poster.loadInto(binding.actorImage, item.placeHolder())
     }
 
@@ -200,14 +198,7 @@ sealed class MediaItemViewHolder(itemView: View) :
   }
 
   companion object {
-    fun AVPMediaItem.placeHolder() = when (this) {
-      is AVPMediaItem.MovieItem -> R.drawable.rounded_rectangle
-      is AVPMediaItem.ShowItem -> R.drawable.rounded_rectangle
-      is AVPMediaItem.EpisodeItem -> R.drawable.art_user
-      is AVPMediaItem.ActorItem -> R.drawable.art_user
-      is AVPMediaItem.StreamItem -> R.drawable.ic_video
-      is AVPMediaItem.SeasonItem -> R.drawable.ic_video
-    }
+    fun AVPMediaItem.placeHolder() = R.drawable.rounded_rectangle
 
     fun AVPMediaItem.icon() = when (this) {
       is AVPMediaItem.MovieItem -> R.drawable.ic_video

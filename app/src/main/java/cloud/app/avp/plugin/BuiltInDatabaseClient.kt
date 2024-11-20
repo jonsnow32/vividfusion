@@ -11,17 +11,15 @@ import cloud.app.avp.plugin.tmdb.showGenres
 import cloud.app.avp.plugin.tmdb.toMediaItem
 import cloud.app.avp.plugin.tmdb.toMediaItemsList
 import cloud.app.avp.plugin.tvdb.AppTheTvdb
-import cloud.app.common.clients.BaseExtension
-import cloud.app.common.clients.ExtensionMetadata
-import cloud.app.common.clients.mvdatabase.FeedClient
-import cloud.app.common.clients.mvdatabase.SearchClient
+import cloud.app.common.clients.mvdatabase.DatabaseClient
+import cloud.app.common.helpers.ImportType
 import cloud.app.common.helpers.Page
 import cloud.app.common.helpers.PagedData
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.AVPMediaItem.Companion.toMediaItemsContainer
-import cloud.app.common.models.ExtensionType
-import cloud.app.common.models.LoginType
+import cloud.app.common.models.Actor
+import cloud.app.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.QuickSearchItem
 import cloud.app.common.models.SortBy
@@ -38,21 +36,11 @@ import cloud.app.common.settings.SettingSwitch
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
-import com.uwetrottmann.tmdb2.enumerations.MediaType
+import cloud.app.common.models.ExtensionMetadata
 
-class TmdbExtension : BaseExtension, FeedClient, SearchClient {
+class BuiltInDatabaseClient : DatabaseClient {
   private lateinit var tmdb: AppTmdb
   private lateinit var tvdb: AppTheTvdb
-  override val metadata: ExtensionMetadata
-    get() = ExtensionMetadata(
-      name = "The extension of TMDB",
-      ExtensionType.DATABASE,
-      description = "A sample extension that does nothing",
-      author = "avp",
-      version = "v001",
-      icon = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
-      loginType = LoginType.API_KEY
-    )
 
   override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(
@@ -126,6 +114,7 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
       is AVPMediaItem.ShowItem -> getShowDetail(avpMediaItem.show.ids.tmdbId)
       is AVPMediaItem.EpisodeItem -> getEpisodeDetail(avpMediaItem.episode.ids.tmdbId)
       is AVPMediaItem.SeasonItem -> getSeasonDetail(avpMediaItem)
+      is AVPMediaItem.ActorItem -> getActorDetail(avpMediaItem.actor.id)
       else -> null
     }
   }
@@ -135,6 +124,50 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     val items = getKnowFor(actor, page, pageSize)
     val continuation = if (items.size < pageSize) null else (page + 1).toString()
     Page(items, continuation)
+  }
+
+  override fun getRecommended(avpMediaItem: AVPMediaItem): PagedData<AVPMediaItem> {
+    return when (avpMediaItem) {
+      is AVPMediaItem.MovieItem -> getMovieRecommendations(avpMediaItem.movie.ids.tmdbId)
+      is AVPMediaItem.ShowItem -> getShowRecommendations(avpMediaItem.show.ids.tmdbId)
+      else -> emptyList<AVPMediaItem>().toPaged() // Or handle other types as needed
+    }
+  }
+
+  private fun getMovieRecommendations(tmdbId: Int?): PagedData<AVPMediaItem> {
+    tmdbId ?: return emptyList<AVPMediaItem>().toPaged()
+    return PagedData.Continuous { page ->
+      val continuation = page?.toInt() ?: 1
+      val response = tmdb.moviesService().recommendations(tmdbId, continuation, language).execute()
+      if (response.isSuccessful) {
+        val recommendations =
+          response.body()?.results?.mapNotNull { it.toMediaItem() } ?: emptyList()
+        Page(
+          recommendations,
+          if (recommendations.isEmpty()) null else (continuation + 1).toString()
+        )
+      } else {
+        Page(emptyList(), null) // Handle error, maybe emit to throwableFlow
+      }
+    }
+  }
+
+  private fun getShowRecommendations(tmdbId: Int?): PagedData<AVPMediaItem> {
+    tmdbId ?: return emptyList<AVPMediaItem>().toPaged()
+    return PagedData.Continuous { page ->
+      val continuation = page?.toInt() ?: 1
+      val response = tmdb.tvService().recommendations(tmdbId, continuation, language).execute()
+      if (response.isSuccessful) {
+        val recommendations =
+          response.body()?.results?.mapNotNull { it.toMediaItem() } ?: emptyList()
+        Page(
+          recommendations,
+          if (recommendations.isEmpty()) null else (continuation + 1).toString()
+        )
+      } else {
+        Page(emptyList(), null) // Handle error, maybe emit to throwableFlow
+      }
+    }
   }
 
   private fun getSeasonDetail(seasonItem: AVPMediaItem.SeasonItem): AVPMediaItem? {
@@ -183,6 +216,33 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
       }
     } else {
       null // Handle case where no show ID is available
+    }
+  }
+
+  private fun getActorDetail(tmdbId: Int?): AVPMediaItem.ActorItem? {
+    tmdbId ?: return null
+
+    val response = tmdb.personService().summary(
+      tmdbId,
+      language,
+      AppendToResponse(
+        AppendToResponseItem.MOVIE_CREDITS,
+        AppendToResponseItem.TV_CREDITS,
+        AppendToResponseItem.COMBINED_CREDITS,
+        AppendToResponseItem.IMAGES,
+        AppendToResponseItem.EXTERNAL_IDS
+      )
+    ).execute().body()
+
+    return response?.let {
+      AVPMediaItem.ActorItem(
+        actor = Actor(
+          name = it.name ?: "unknown",
+          id = it.id,
+          role = it.also_known_as?.toString(),
+          image = it.profile_path?.toImageHolder(),
+        ),
+      )
     }
   }
 
@@ -414,6 +474,19 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
 
 
   companion object {
+
+    val metadata = ExtensionMetadata(
+      className = "OfflineExtension",
+      path = "",
+      importType = ImportType.BuiltIn,
+      id = "tmdb-built-in",
+      name = "The extension of TMDB",
+      description = "tmdb extension",
+      version = "1.0.0",
+      author = "Avp",
+      iconUrl = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
+    )
+
     private fun List<MediaItemsContainer>.toPaged() = PagedData.Single { this }
     val sortMapper: Map<String, com.uwetrottmann.tmdb2.enumerations.SortBy> = mapOf(
       SortBy.POPULARITY.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.POPULARITY_DESC,
@@ -526,7 +599,7 @@ class TmdbExtension : BaseExtension, FeedClient, SearchClient {
     page: Int,
     pageSize: Int
   ): List<AVPMediaItem> {
-    val personID = actor.actorData.actor.id ?: return emptyList()
+    val personID = actor.actor.id ?: return emptyList()
     val response = tmdb.personService().combinedCredits(personID, language).execute()
     if (response.isSuccessful) {
       val credits = response.body()

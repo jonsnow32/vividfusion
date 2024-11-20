@@ -65,11 +65,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:descendantFocusability="afterDescendants"
-        android:fadingEdge="horizontal"
         android:nestedScrollingEnabled="false"
         android:orientation="horizontal"
         android:paddingTop="10dp"
-        android:requiresFadingEdge="horizontal"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         tools:itemCount="5"
         tools:listitem="@layout/item_actor"
@@ -78,9 +76,8 @@
       <LinearLayout
         android:id="@+id/recommendedHolder"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:visibility="gone"
         android:orientation="vertical">
 
         <TextView
@@ -100,11 +97,11 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:descendantFocusability="afterDescendants"
-          android:fadingEdge="horizontal"
           android:nestedScrollingEnabled="false"
           android:orientation="horizontal"
+          android:paddingHorizontal="16dp"
           android:paddingTop="5dp"
-          android:requiresFadingEdge="horizontal"
+          android:clipToPadding="false"
           app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
           tools:itemCount="3"
           tools:listitem="@layout/item_media"/>
@@ -115,7 +112,7 @@
       <LinearLayout
         android:id="@+id/seasonHolder"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -141,9 +138,10 @@
           <TextView
             android:id="@+id/seasonSortTxt"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:foreground="@drawable/ripple_item_container"
             android:text="@string/ascending_sort"
+            android:gravity="center"
             android:focusable="true"
             android:clickable="true"
             android:ellipsize="end"

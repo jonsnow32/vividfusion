@@ -90,8 +90,8 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
 
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
-      setupEpisodes(mediaItem.season.episodes)
       bind(mediaItem)
+      setupEpisodes(mediaItem.season.episodes)
     }
 
   }

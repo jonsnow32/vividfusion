@@ -34,7 +34,7 @@ sealed class AVPMediaItem {
         .lowercase()
         .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
         .replace("\\s+".toRegex(), "-")
-      return "$formattedName-${releaseYear}"
+      return "tv-$formattedName-${releaseYear}"
     }
   }
 
@@ -43,11 +43,6 @@ sealed class AVPMediaItem {
     fun getSlug() = "${seasonItem.getSlug()}/${episode.episodeNumber}"
   }
 
-  @Serializable
-  data class ActorItem(val actorData: ActorData) : AVPMediaItem()
-
-  @Serializable
-  data class StreamItem(val streamData: StreamData) : AVPMediaItem()
 
   @Serializable
   data class SeasonItem(
@@ -58,8 +53,15 @@ sealed class AVPMediaItem {
     fun getSlug() = "${showItem.getSlug()}/${season.number}"
   }
 
+
+  @Serializable
+  data class ActorItem(val actor: Actor) : AVPMediaItem()
+
+  @Serializable
+  data class StreamItem(val streamData: StreamData) : AVPMediaItem()
+
   companion object {
-    fun ActorData.toMediaItem() = ActorItem(this)
+    fun Actor.toMediaItem() = ActorItem(this)
     fun Movie.toMediaItem() = MovieItem(this)
     fun Show.toMediaItem() = ShowItem(this)
     fun Episode.toMediaItem(season: SeasonItem) = EpisodeItem(this, season)
@@ -73,18 +75,11 @@ sealed class AVPMediaItem {
   }
 
 
-  fun sameAs(other: AVPMediaItem) = when (this) {
-    is ActorItem -> other is ActorItem && actorData.actor.name == other.actorData.actor.name
-    is MovieItem -> other is MovieItem && movie == other.movie
-    is ShowItem -> other is ShowItem && show == other.show
-    is EpisodeItem -> other is EpisodeItem && episode.ids == other.episode.ids
-    is StreamItem -> other is StreamItem && streamData.hashCode() == other.streamData.hashCode()
-    is SeasonItem -> other is SeasonItem && id == other.id
-  }
+  fun sameAs(other: AVPMediaItem) = id == other.id
 
   val id
     get() = when (this) {
-      is ActorItem -> actorData.actor.name.hashCode()
+      is ActorItem -> actor.name.hashCode()
       is MovieItem -> getSlug()
       is ShowItem -> getSlug()
       is EpisodeItem -> getSlug()
@@ -94,7 +89,7 @@ sealed class AVPMediaItem {
 
   val title
     get() = when (this) {
-      is ActorItem -> actorData.actor.name
+      is ActorItem -> actor.name
       is MovieItem -> movie.generalInfo.title
       is ShowItem -> show.generalInfo.title
       is EpisodeItem -> episode.generalInfo.title
@@ -104,7 +99,7 @@ sealed class AVPMediaItem {
 
   val releaseYear
     get() = when (this) {
-      is ActorItem -> actorData.actor.name
+      is ActorItem -> actor.name
       is MovieItem -> movie.generalInfo.getReleaseYear()
       is ShowItem -> show.generalInfo.getReleaseYear()
       is EpisodeItem -> episode.generalInfo.getReleaseYear()
@@ -137,7 +132,7 @@ sealed class AVPMediaItem {
     }
   val poster
     get() = when (this) {
-      is ActorItem -> actorData.actor.image
+      is ActorItem -> actor.image
       is MovieItem -> movie.generalInfo.poster?.toImageHolder()
       is ShowItem -> show.generalInfo.poster?.toImageHolder()
       is EpisodeItem -> episode.generalInfo.poster?.toImageHolder()
@@ -147,7 +142,7 @@ sealed class AVPMediaItem {
 
   val backdrop
     get() = when (this) {
-      is ActorItem -> actorData.actor.image
+      is ActorItem -> actor.image
       is MovieItem -> movie.generalInfo.backdrop?.toImageHolder()
       is ShowItem -> show.generalInfo.backdrop?.toImageHolder()
       is EpisodeItem -> episode.generalInfo.backdrop?.toImageHolder()
@@ -157,7 +152,7 @@ sealed class AVPMediaItem {
 
   val subtitle
     get() = when (this) {
-      is ActorItem -> actorData.roleString
+      is ActorItem -> actor.role
       is MovieItem -> movie.generalInfo.genres?.firstOrNull() ?: ""
       is ShowItem -> show.generalInfo.genres?.firstOrNull() ?: ""
       is EpisodeItem -> episode.generalInfo.genres?.firstOrNull() ?: ""

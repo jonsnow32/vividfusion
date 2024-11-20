@@ -111,13 +111,13 @@ fun Fragment.setupTransition(view: View) {
       }
       sharedElementEnterTransition = transition
     }
+
     exitTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
     reenterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
     enterTransition = MaterialSharedAxis(MaterialSharedAxis.Y, true)
     returnTransition = MaterialSharedAxis(MaterialSharedAxis.Y, false)
+
     postponeEnterTransition()
-    view.doOnPreDraw {
-      startPostponedEnterTransition()
-    }
+    view.doOnPreDraw { startPostponedEnterTransition() }
   }
 }

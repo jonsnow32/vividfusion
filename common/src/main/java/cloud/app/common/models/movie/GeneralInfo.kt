@@ -1,15 +1,8 @@
 package cloud.app.common.models.movie
 
-import android.os.Build
-
-import androidx.annotation.RequiresApi
 import cloud.app.common.models.Actor
-import cloud.app.common.models.ActorData
 import cloud.app.common.utils.getYear
 import kotlinx.serialization.Serializable
-import java.time.Instant
-import java.time.ZoneId
-import java.util.Calendar
 
 @Serializable
 data class GeneralInfo(
@@ -24,7 +17,7 @@ data class GeneralInfo(
   var genres: List<String>? = null,
   var contentRating: String? = null,
   var rating: Double? = null,
-  var actors: List<ActorData>? = null,
+  var actors: List<Actor>? = null,
   var homepage: String? = null,
 ) {
   fun getReleaseYear(): Int? {

@@ -24,7 +24,7 @@ import cloud.app.avp.utils.collect
 import cloud.app.avp.utils.firstVisible
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
-import cloud.app.common.clients.mvdatabase.SearchClient
+import cloud.app.common.clients.mvdatabase.DatabaseClient
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.QuickSearchItem
 import cloud.app.common.models.Tab
@@ -89,10 +89,10 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     val mediaContainerAdapter = MediaContainerAdapter(parentFragment as Fragment, 1, "search")
     val concatAdapter = mediaContainerAdapter.withLoaders()
     binding.recyclerView.adapter = concatAdapter
-    collect(viewModel.extensionFlow) {
+    collect(viewModel.databaseExtensionFlow) {
       binding.recyclerView.itemAnimator = null
       mediaContainerAdapter.clientId = it?.javaClass.toString()
-      binding.recyclerView.applyAdapter<SearchClient>(it, id, concatAdapter)
+      binding.recyclerView.applyAdapter<DatabaseClient>(it, id, concatAdapter)
     }
 
     observe(viewModel.feed) {

@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -22,10 +21,7 @@ import cloud.app.avp.utils.isLayout
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
-import cloud.app.common.clients.BaseExtension
-import cloud.app.common.clients.mvdatabase.FeedClient
-import cloud.app.common.clients.streams.StreamClient
-import cloud.app.common.clients.subtitles.SubtitleClient
+import cloud.app.common.clients.Extension
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -76,43 +72,43 @@ class ManageExtensionsFragment : Fragment() {
       }
     }
 
-    val extensionAdapter = ExtensionAdapter { extension, view ->
-      val extensionSettingFragment = ExtensionSettingFragment()
-      extensionSettingFragment.arguments = bundleOf(
-        "extensionMetadata" to extension.metadata,
-        "extensionClassName" to extension.javaClass.toString()
-      )
-      navigate(extensionSettingFragment, view)
-    }
+
+    val extensionAdapter = ExtensionAdapter(object : ExtensionAdapter.Listener {
+      override fun onClick(extension: Extension<*>, view: View) {
+        navigate(ExtensionSettingFragment.newInstance(extension), view)
+      }
+
+      override fun onDragHandleTouched(viewHolder: ExtensionAdapter.ViewHolder) {
+       // touchHelper.startDrag(viewHolder)
+      }
+    })
+
     binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
 
-    val flow = MutableStateFlow(
-      viewModel.extensionFlowList.value
-    )
-    fun change(pos: Int, extentions: List<BaseExtension>) {
+    val flow = MutableStateFlow<List<Extension<*>>>(emptyList())
+    fun change(pos: Int) {
       when (pos) {
-        0 -> flow.value = extentions
-        1 -> flow.value = extentions.filter { it is FeedClient }
-        2 -> flow.value = extentions.filter { it is StreamClient }
-        3 -> flow.value = extentions.filter { it is SubtitleClient }
+        0 -> flow.value = viewModel.databaseExtensionListFlow.value
+        1 -> flow.value = viewModel.streamExtensionListFlow.value
+        2 -> flow.value = viewModel.streamExtensionListFlow.value
       }
     }
 
-    observe(flow) { extensionAdapter.submit(it ?: emptyList()) }
-
+    observe(flow) { extensionAdapter.submit(it) }
+    change(binding.extTabLayout.selectedTabPosition)
 
     binding.extTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
       override fun onTabSelected(tab: TabLayout.Tab) {
-        change(tab.position, viewModel.extensionFlowList.value)
+        change(tab.position)
       }
 
       override fun onTabUnselected(tab: TabLayout.Tab) {}
       override fun onTabReselected(tab: TabLayout.Tab) {}
     })
 
-    observe(viewModel.extensionFlowList) { extensions ->
-      change(binding.extTabLayout.selectedTabPosition, extensions)
-    }
+//    observe(viewModel.extensionFlowList) { extensions ->
+//      change(binding.extTabLayout.selectedTabPosition)
+//    }
   }
 
 }

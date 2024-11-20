@@ -5,20 +5,20 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.avp.ui.main.ClientNotSupportedAdapter
 import cloud.app.avp.ui.main.home.ClientLoadingAdapter
-import cloud.app.common.clients.BaseExtension
+import cloud.app.common.clients.BaseClient
+import cloud.app.common.clients.Extension
 
 inline fun <reified T> RecyclerView.applyAdapter(
-  extension: BaseExtension?,
+  extension: Extension<*>?,
   name: Int,
-  adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
-  block: ((T?) -> Unit) = {}
+  adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>
 ) {
-  block(extension as? T)
+  val client = extension?.instance?.value?.getOrNull()
   setAdapter(
     if (extension == null)
       ClientLoadingAdapter()
-    else if (extension !is T)
-      ClientNotSupportedAdapter(name, extension::class.java.simpleName)
+    else if (client !is T)
+      ClientNotSupportedAdapter(name, extension.name)
     else adapter
   )
 }

@@ -10,7 +10,7 @@ import cloud.app.avp.utils.applyAdapter
 import cloud.app.avp.utils.collect
 import cloud.app.avp.utils.configure
 import cloud.app.avp.utils.observe
-import cloud.app.common.clients.mvdatabase.FeedClient
+import cloud.app.common.clients.mvdatabase.DatabaseClient
 import cloud.app.common.models.Tab
 import com.google.android.material.tabs.TabLayout
 
@@ -37,11 +37,11 @@ fun Fragment.configureFeedUI(
   if (listener == null) {
     val concatAdapter = mediaContainerAdapter.withLoaders()
     recyclerView.adapter = concatAdapter
-    collect(viewModel.extensionFlow) {
+    collect(viewModel.databaseExtensionFlow) {
       recyclerView.itemAnimator = null
       swipeRefresh.isEnabled = it != null
       mediaContainerAdapter.clientId = it?.hashCode().toString();// it?.metadata?.id
-      recyclerView.applyAdapter<FeedClient>(it, id, concatAdapter)
+      recyclerView.applyAdapter<DatabaseClient>(it, id, concatAdapter)
     }
   }
 

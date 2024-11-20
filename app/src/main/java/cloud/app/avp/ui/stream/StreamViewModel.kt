@@ -2,8 +2,10 @@ package cloud.app.avp.ui.stream
 
 import androidx.lifecycle.viewModelScope
 import cloud.app.avp.base.CatchingViewModel
+import cloud.app.avp.extension.run
 import cloud.app.avp.utils.catchWith
-import cloud.app.common.clients.BaseExtension
+import cloud.app.common.clients.BaseClient
+import cloud.app.common.clients.StreamExtension
 import cloud.app.common.clients.streams.StreamClient
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.stream.StreamData
@@ -18,9 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StreamViewModel @Inject constructor(
-  throwableFlow: MutableSharedFlow<Throwable>,
-  val extensionFlow: MutableStateFlow<BaseExtension?>,
-  val extensionFlowList: MutableStateFlow<List<BaseExtension>>,
+    throwableFlow: MutableSharedFlow<Throwable>,
+    val extensionFlowList: MutableStateFlow<List<StreamExtension>>,
 ) :
   CatchingViewModel(throwableFlow) {
   val streams = MutableStateFlow<List<StreamData>>(emptyList())
@@ -31,8 +32,9 @@ class StreamViewModel @Inject constructor(
     viewModelScope.launch {
       extensionFlowList.collect { extensions ->
         extensions.forEach {
-          if (it is StreamClient)
-            loadStream(it, mediaItem)
+         it.run(throwableFlow) {
+           loadStream(this, mediaItem)
+         }
         }
       }
     }

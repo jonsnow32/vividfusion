@@ -8,9 +8,11 @@ import cloud.app.avp.R
 import cloud.app.avp.base.CatchingViewModel
 import cloud.app.avp.ui.main.ClientNotSupportedAdapter
 import cloud.app.avp.ui.main.home.ClientLoadingAdapter
-import cloud.app.avp.utils.mapState
 import cloud.app.avp.viewmodels.SnackBarViewModel
-import cloud.app.common.clients.BaseExtension
+import cloud.app.common.clients.BaseClient
+import cloud.app.common.clients.DatabaseExtension
+import cloud.app.common.clients.StreamExtension
+import cloud.app.common.clients.SubtitleExtension
 import kotlinx.coroutines.flow.MutableSharedFlow
 import javax.inject.Inject
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,10 +22,10 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val extensionFlow: MutableStateFlow<BaseExtension>,
-  val extensionFlowList: MutableStateFlow<List<BaseExtension>>,
   val settings: SharedPreferences,
-//  val refresher: MutableSharedFlow<Boolean>
+  val databaseExtensionListFlow: MutableStateFlow<List<DatabaseExtension>>,
+  val streamExtensionListFlow: MutableStateFlow<List<StreamExtension>>,
+  val subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>
 ) : CatchingViewModel(throwableFlow) {
 
   fun refresh() {
@@ -49,10 +51,10 @@ class ExtensionViewModel @Inject constructor(
     )
 
     inline fun <reified T> RecyclerView.applyAdapter(
-      extension: BaseExtension?,
-      name: Int,
-      adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
-      block: ((T?) -> Unit) = {}
+        extension: BaseClient?,
+        name: Int,
+        adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
+        block: ((T?) -> Unit) = {}
     ) {
       block(extension as? T)
       setAdapter(

@@ -18,11 +18,12 @@ mediahome = "1.0.0"
 navigation = "2.8.3"
 lifecycle = "2.8.7"
 pikolo = "2.0.2"
+plugger = "82e00ea5a4"
 tvprovider = "1.0.0"
 work = "2.10.0"
 preference = "1.2.1"
 timber = "5.0.1"
-paging = "3.3.2"
+paging = "3.3.4"
 thetvdb = "2.4.0"
 tmdb = "2.11.0"
 trakt = "6.13.0"
@@ -77,6 +78,7 @@ androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-
 
 # Logging
 pikolo = { module = "com.github.madrapps:pikolo", version.ref = "pikolo" }
+plugger = { module = "com.github.jeelpatel231:plugger", version.ref = "plugger" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 # service

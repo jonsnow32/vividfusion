@@ -1,6 +1,6 @@
 package cloud.app.avp.extension
 
-import cloud.app.common.clients.BaseExtension
+import cloud.app.common.clients.BaseClient
 import cloud.app.common.clients.ExtensionMetadata
 import cloud.app.common.clients.streams.StreamClient
 import cloud.app.common.helpers.network.HttpHelper
@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
-class SampleClient : BaseExtension, StreamClient {
+class SampleClient : BaseClient, StreamClient {
   private lateinit var httpHelper: HttpHelper
 
   override val metadata: ExtensionMetadata

@@ -7,13 +7,13 @@ import cloud.app.avp.datastore.helper.WatchedFolder
 import cloud.app.avp.datastore.helper.WatchedItem
 import cloud.app.avp.datastore.helper.addFavoritesData
 import cloud.app.avp.datastore.helper.getFavoritesData
-import cloud.app.avp.datastore.helper.getLastWatched
 import cloud.app.avp.datastore.helper.removeFavoritesData
 import cloud.app.avp.datastore.helper.setWatched
-import cloud.app.common.clients.BaseExtension
-import cloud.app.common.clients.mvdatabase.FeedClient
+import cloud.app.avp.extension.run
+import cloud.app.common.clients.BaseClient
+import cloud.app.common.clients.DatabaseExtension
+import cloud.app.common.clients.mvdatabase.DatabaseClient
 import cloud.app.common.models.AVPMediaItem
-import cloud.app.common.models.AVPMediaItem.Companion.toMediaItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -26,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SeasonViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val extensionFlow: MutableStateFlow<BaseExtension?>,
+  val databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
   val updateUIFlow: MutableStateFlow<AVPMediaItem?>,
   val dataStore: DataStore,
 ) : CatchingViewModel(throwableFlow) {
@@ -36,18 +36,18 @@ class SeasonViewModel @Inject constructor(
   val favoriteStatus = MutableStateFlow(false)
   fun getItemDetails(shortItem: AVPMediaItem) {
     viewModelScope.launch(Dispatchers.IO) {
-      extensionFlow.collect { client ->
-        if (client is FeedClient) {
-          loading.value = true
-          val detail = client.getMediaDetail(shortItem) ?: shortItem
-          (detail as AVPMediaItem.SeasonItem).watchedEpisodeNumber =
-            dataStore.getKeys("$WatchedFolder/${detail.id}").count()
-          fullMediaItem.value = detail
-          val favoriteDeferred =
-            async { dataStore.getFavoritesData<AVPMediaItem.SeasonItem>(fullMediaItem.value?.id?.toString()) }
-          favoriteStatus.value = favoriteDeferred.await()
-          loading.value = false
-        }
+      databaseExtensionFlow.collect { extension ->
+        val detail = extension?.run(throwableFlow) {
+          getMediaDetail(shortItem)
+        }  ?: shortItem
+        loading.value = true
+        (detail as AVPMediaItem.SeasonItem).watchedEpisodeNumber =
+          dataStore.getKeys("$WatchedFolder/${detail.id}").count()
+        fullMediaItem.value = detail
+        val favoriteDeferred =
+          async { dataStore.getFavoritesData<AVPMediaItem.SeasonItem>(fullMediaItem.value?.id?.toString()) }
+        favoriteStatus.value = favoriteDeferred.await()
+        loading.value = false
 
         updateUIFlow.collectLatest { item ->
           when (item) {

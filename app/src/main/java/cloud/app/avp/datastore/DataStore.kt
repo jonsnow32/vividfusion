@@ -8,7 +8,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 const val PREFERENCES_NAME = "data_in_preference"
-const val FOLDER_APP_SETTINGS = "folder_app_settings"
+const val FOLDER_PLUGIN_SETTINGS = "folder_app_settings"
 const val HISTORY_FOLDER = "history"
 
 class DataStore @Inject constructor(

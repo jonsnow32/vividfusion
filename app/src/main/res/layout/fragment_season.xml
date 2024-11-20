@@ -36,13 +36,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:orientation="vertical"
-        android:paddingHorizontal="16dp">
-      </LinearLayout>
+        android:paddingHorizontal="16dp" />
 
       <include
         android:id="@+id/skeletonEpisodes"
-        layout="@layout/skeleton_season_episodes">
-      </include>
+        layout="@layout/skeleton_season_episodes" />
 
 
       <LinearLayout
@@ -53,12 +51,12 @@
         android:orientation="vertical">
 
         <LinearLayout
+          android:id="@+id/sorting"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:orientation="horizontal"
-          android:gravity="start|center"
           android:layout_margin="10dp"
-          android:id="@+id/sorting">
+          android:gravity="start|center"
+          android:orientation="horizontal">
 
           <TextView
             android:id="@+id/episodeTxt"
@@ -74,32 +72,32 @@
           <TextView
             android:id="@+id/episodeSelectRange"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:foreground="@drawable/ripple_item_container"
-            android:text="@string/ascending_sort"
-            android:focusable="true"
+            android:layout_height="48dp"
             android:clickable="true"
             android:ellipsize="end"
+            android:focusable="true"
+            android:foreground="@drawable/ripple_item_container"
+            android:gravity="center"
             android:maxLines="1"
-            android:visibility="gone"
             android:paddingHorizontal="16dp"
-            tools:text="50-100"
-            app:drawableEndCompat="@drawable/ic_arrow_down">
-          </TextView>
+            android:text="@string/ascending_sort"
+            android:visibility="gone"
+            app:drawableEndCompat="@drawable/ic_arrow_down"
+            tools:text="50-100" />
 
           <TextView
             android:id="@+id/episodeSortTxt"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:foreground="@drawable/ripple_item_container"
-            android:text="@string/ascending_sort"
-            android:focusable="true"
+            android:layout_height="48dp"
             android:clickable="true"
             android:ellipsize="end"
+            android:focusable="true"
+            android:foreground="@drawable/ripple_item_container"
+            android:gravity="center"
             android:maxLines="1"
             android:paddingHorizontal="16dp"
-            app:drawableEndCompat="@drawable/ic_arrow_down">
-          </TextView>
+            android:text="@string/ascending_sort"
+            app:drawableEndCompat="@drawable/ic_arrow_down" />
         </LinearLayout>
 
 
@@ -111,11 +109,11 @@
           android:fadingEdge="horizontal"
           android:nestedScrollingEnabled="false"
           android:orientation="vertical"
+          android:padding="10dp"
           android:paddingTop="5dp"
           android:requiresFadingEdge="horizontal"
           app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
           tools:itemCount="3"
-          android:padding="10dp"
           tools:listitem="@layout/episode_item_large"
           tools:visibility="visible" />
       </LinearLayout>

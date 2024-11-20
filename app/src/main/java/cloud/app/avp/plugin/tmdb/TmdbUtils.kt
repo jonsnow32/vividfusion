@@ -1,12 +1,9 @@
 package cloud.app.avp.plugin.tmdb
 
 import android.annotation.SuppressLint
-import cloud.app.common.helpers.PagedData
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.Actor
-import cloud.app.common.models.ActorData
 import cloud.app.common.models.ImageHolder.Companion.toImageHolder
-import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.movie.GeneralInfo
 import cloud.app.common.models.movie.Ids
 import cloud.app.common.models.movie.Movie
@@ -15,15 +12,12 @@ import cloud.app.common.models.movie.Show
 import com.uwetrottmann.tmdb2.entities.BaseMovie
 import com.uwetrottmann.tmdb2.entities.BasePerson
 import com.uwetrottmann.tmdb2.entities.BaseTvShow
-import com.uwetrottmann.tmdb2.entities.CastMember
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage
 import com.uwetrottmann.tmdb2.entities.PersonResultsPage
 import com.uwetrottmann.tmdb2.entities.TvShowResultsPage
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
-import kotlin.collections.mapNotNull
-import kotlin.text.*
 
 const val TMDB_IMAGE_BASE_URL = "https://image.tmdb.org/t/p/"
 
@@ -38,7 +32,7 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
     if (baseMovie.genres.isNullOrEmpty()) {
       return baseMovie.genre_ids?.map { movieGenres[it] ?: "" }
     }
-    return baseMovie.genres.map { it.name }
+    return baseMovie.genres?.map { it.name } as List<String>?
   }
 
   fun toMovie(baseMovie: BaseMovie) = Movie(
@@ -58,7 +52,6 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
   )
 
   val movie = toMovie(this);
-
   if (this is com.uwetrottmann.tmdb2.entities.Movie) {
     movie.ids.imdbId = this.external_ids?.imdb_id
 
@@ -66,9 +59,7 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
     movie.generalInfo.runtime = this.runtime
     movie.generalInfo.homepage = this.homepage
     movie.generalInfo.actors = this.credits?.cast?.map {
-      ActorData(
-        actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id),
-      )
+      Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id)
     }
   }
 
@@ -76,8 +67,6 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
 }
 
 fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
-
-
   fun toShow(baseShow: BaseTvShow) = Show(
     ids = Ids(tmdbId = baseShow.id),
     generalInfo = GeneralInfo(
@@ -103,17 +92,15 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
     show.generalInfo.genres = this.genres?.map { it.name ?: "unknown" }
     show.status = this.status?.toString() ?: "";
     show.generalInfo.actors = this.credits?.cast?.map {
-      ActorData(
-        actor = Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id),
-      )
+      Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id)
     }
     show.generalInfo.homepage = this.homepage
     show.seasons = this.seasons?.map { tvSeason ->
       Season(
         title = tvSeason.name,
-        number = tvSeason.season_number,
+        number = tvSeason.season_number ?: 0,
         overview = tvSeason.overview,
-        episodeCount = tvSeason.episode_count,
+        episodeCount = tvSeason.episode_count ?: 0,
         posterPath = tvSeason.poster_path,
         showIds = show.ids,
         showOriginTitle = show.generalInfo.originalTitle,
@@ -127,9 +114,7 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
 }
 
 fun BasePerson.toMediaItem() = AVPMediaItem.ActorItem(
-  ActorData(
-    actor = Actor(name = name, image = profile_path?.toImageHolder(), id = id),
-  )
+  Actor(name = name, image = profile_path?.toImageHolder(), id = id)
 )
 
 @SuppressLint("DefaultLocale")
