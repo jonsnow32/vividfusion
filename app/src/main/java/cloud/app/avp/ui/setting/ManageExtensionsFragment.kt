@@ -90,11 +90,14 @@ class ManageExtensionsFragment : Fragment() {
       when (pos) {
         0 -> flow.value = viewModel.databaseExtensionListFlow.value
         1 -> flow.value = viewModel.streamExtensionListFlow.value
-        2 -> flow.value = viewModel.streamExtensionListFlow.value
+        2 -> flow.value = viewModel.subtitleExtensionListFlow.value
       }
     }
 
-    observe(flow) { extensionAdapter.submit(it) }
+    observe(flow) {
+      extensionAdapter.submit(it)
+    }
+
     change(binding.extTabLayout.selectedTabPosition)
 
     binding.extTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

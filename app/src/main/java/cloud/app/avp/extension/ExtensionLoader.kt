@@ -8,13 +8,14 @@ import cloud.app.avp.datastore.FOLDER_PLUGIN_SETTINGS
 import cloud.app.avp.datastore.helper.getExtension
 import cloud.app.avp.extension.plugger.FileChangeListener
 import cloud.app.avp.extension.plugger.PackageChangeListener
-import cloud.app.avp.plugin.BuiltInExtensionRepo
+import cloud.app.avp.plugin.DatabaseBuiltInExtensionRepo
+import cloud.app.avp.plugin.StreamBuiltInExtensionRepo
 import cloud.app.avp.utils.catchWith
 import cloud.app.common.clients.BaseClient
 import cloud.app.common.clients.DatabaseExtension
+import cloud.app.common.clients.Extension
 import cloud.app.common.clients.StreamExtension
 import cloud.app.common.clients.SubtitleExtension
-import cloud.app.common.clients.mvdatabase.DatabaseClient
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.models.ExtensionType
 import kotlinx.coroutines.CoroutineName
@@ -30,6 +31,9 @@ import cloud.app.common.models.priorityKey
 import cloud.app.common.settings.PrefSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 
@@ -41,13 +45,18 @@ class ExtensionLoader(
   private val sharedPreferences: SharedPreferences,
   private val databaseExtensionListFlow: MutableStateFlow<List<DatabaseExtension>>,
   private val databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
-  private val streamExtensionFlow: MutableStateFlow<List<StreamExtension>>,
-  private val subtitleExtensionFlow: MutableStateFlow<List<SubtitleExtension>>,
+  private val streamExtensionListFlow: MutableStateFlow<List<StreamExtension>>,
+  private val streamExtensionFlow: MutableStateFlow<StreamExtension?>,
+  private val subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>,
+  private val subtitleExtensionFlow: MutableStateFlow<SubtitleExtension?>,
+  private val extensionsFlow: MutableStateFlow<List<Extension<*>>>
+
 ) {
   private val scope = MainScope() + CoroutineName("ExtensionLoader")
   private val listener = PackageChangeListener(context)
   private val fileListener = FileChangeListener(scope)
-  private val builtIn = BuiltInExtensionRepo<DatabaseClient>()
+  private val databaseEtxBuiltin = DatabaseBuiltInExtensionRepo()
+  private val streamEtxBuiltin = StreamBuiltInExtensionRepo()
 
   private val databaseExtensionRepo = DatabaseExtensionRepo(
     context,
@@ -55,7 +64,7 @@ class ExtensionLoader(
     toSettings(ExtensionType.DATABASE),
     listener,
     fileListener,
-    builtIn
+    databaseEtxBuiltin
   )
   private val streamExtensionRepo =
     StreamExtensionRepo(
@@ -63,7 +72,8 @@ class ExtensionLoader(
       httpHelper,
       toSettings(ExtensionType.STREAM),
       listener,
-      fileListener
+      fileListener,
+      streamEtxBuiltin
     )
   private val subtitleExtensionRepo =
     SubtitleExtensionRepo(
@@ -112,41 +122,44 @@ class ExtensionLoader(
   }
 
   private suspend fun getAllPlugins(scope: CoroutineScope) {
-    val databasePlugins = MutableStateFlow<Unit?>(null)
-    val streamPlugins = MutableStateFlow<Unit?>(null)
-    val subtitlePlugins = MutableStateFlow<Unit?>(null)
-
-    scope.launch {
-      databaseExtensionRepo.getPlugins { list ->
-        val databaseExtensions = list.map { (metadata, client) ->
-          DatabaseExtension(metadata, client)
-        }
+    val databaseJob = scope.async {
+      databaseExtensionRepo.getPlugins().map { list ->
+        list.map { (metadata, client) -> DatabaseExtension(metadata, client) }
+      }.collect { databaseExtensions ->
         databaseExtensionListFlow.value = databaseExtensions
-        databaseExtensionFlow.value = databaseExtensions.get(0)
-        databasePlugins.emit(Unit)
+        databaseExtensionFlow.value = databaseExtensions.firstOrNull()
       }
     }
-  }
 
-  private suspend fun <T : BaseClient> ExtensionRepo<T>.getPlugins(
-    collector: FlowCollector<List<Pair<ExtensionMetadata, Lazy<Result<T>>>>>
-  ) {
+    val streamJob = scope.async {
+      streamExtensionRepo.getPlugins().map { list ->
+        list.map { (metadata, client) -> StreamExtension(metadata, client) }
+      }.collect { streamExtensions ->
+        streamExtensionListFlow.value = streamExtensions
+        streamExtensionFlow.value = streamExtensions.firstOrNull()
+      }
+    }
+
+     listOf(databaseJob, streamJob).awaitAll()
+    // Wait for both tasks to complete
+    extensionsFlow.value = databaseExtensionListFlow.value + streamExtensionListFlow.value
+  }
+  private suspend fun <T : BaseClient> ExtensionRepo<T>.getPlugins(): Flow<List<Pair<ExtensionMetadata, Lazy<Result<T>>>>> {
     val pluginFlow = getAllPlugins().catchWith(throwableFlow).map { list ->
       list.mapNotNull { result ->
-        val (metadata, client) = result.getOrElse {
-          val error = it.cause ?: it
-          throwableFlow.emit(ExtensionLoadingException(type, error))
+        result.getOrElse {
+          throwableFlow.emit(ExtensionLoadingException(type, it.cause ?: it))
           null
-        } ?: return@mapNotNull null
-        val metadataEnabled = isExtensionEnabled(type, metadata)
-        Pair(metadataEnabled, client)
+        }?.takeIf { isExtensionEnabled(type, it.first).enabled }
       }
     }
     val priorityFlow = votingMap[type]!!
-    pluginFlow.combine(priorityFlow) { list, set ->
+    return pluginFlow.combine(priorityFlow) { list, set ->
       list.sortedBy { set.indexOf(it.first.id) }
-    }.collect(collector)
+    }
   }
+
+
 
   private val votingMap = ExtensionType.entries.associateWith {
     val key = it.priorityKey()

@@ -13,7 +13,6 @@ interface DatabaseClient : BaseClient{
   suspend fun getMediaDetail(avpMediaItem: AVPMediaItem): AVPMediaItem?
   fun getKnowFor(actor: AVPMediaItem.ActorItem): PagedData<AVPMediaItem>
   fun getRecommended(avpMediaItem: AVPMediaItem): PagedData<AVPMediaItem>
-
   suspend fun quickSearch(query: String): List<QuickSearchItem>
   suspend fun searchTabs(query: String?): List<Tab>
   fun searchFeed(query: String?, tab: Tab?): PagedData<MediaItemsContainer>

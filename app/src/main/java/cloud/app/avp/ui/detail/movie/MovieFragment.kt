@@ -12,13 +12,17 @@ import androidx.lifecycle.lifecycleScope
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentMovieBinding
+import cloud.app.avp.features.player.PlayerManager
+import cloud.app.avp.features.player.data.PlayData
 import cloud.app.avp.ui.detail.bind
 import cloud.app.avp.ui.media.MediaClickListener
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.paging.toFlow
+import cloud.app.avp.ui.stream.StreamFragment
 import cloud.app.avp.utils.autoCleared
 import cloud.app.avp.utils.getParcel
 import cloud.app.avp.utils.getSerialized
+import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.setupTransition
 import cloud.app.avp.viewmodels.SnackBarViewModel.Companion.createSnack
@@ -76,6 +80,22 @@ class MovieFragment : Fragment(){
           R.string.favorite_removed
         }
         createSnack(getString(messageResId, shortItem.title))
+      }
+    }
+
+    binding.btnPlay.setOnClickListener {
+//      viewModel.loadLink() {
+//        val streamData = it?.firstOrNull() ?: return@loadLink
+//
+//        val playData = PlayData(
+//          listOf(streamData),
+//          selectedId = 0,
+//          title = streamData.fileName
+//        )
+//        PlayerManager.getInstance().play(playData, parentFragmentManager)
+//      }
+      viewModel.fullMediaItem.value?.let {
+        navigate(StreamFragment.newInstance(it))
       }
     }
   }

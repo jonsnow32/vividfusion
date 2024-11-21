@@ -19,6 +19,7 @@ import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.AVPMediaItem.Companion.toMediaItemsContainer
 import cloud.app.common.models.Actor
+import cloud.app.common.models.ExtensionMetadata
 import cloud.app.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.common.models.MediaItemsContainer
 import cloud.app.common.models.QuickSearchItem
@@ -36,7 +37,6 @@ import cloud.app.common.settings.SettingSwitch
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
-import cloud.app.common.models.ExtensionMetadata
 
 class BuiltInDatabaseClient : DatabaseClient {
   private lateinit var tmdb: AppTmdb
@@ -191,17 +191,17 @@ class BuiltInDatabaseClient : DatabaseClient {
               Episode(
                 Ids(tmdbId = episode.id),
                 GeneralInfo(
-                  title = episode.name,
+                  title = episode.name ?: "",
                   backdrop = episode.still_path,
                   poster = episode.still_path,
                   overview = episode.overview,
                   releaseDateMsUTC = episode.air_date?.time,
-                  originalTitle = episode.name,
+                  originalTitle = episode.name ?: "",
                   homepage = null
 
                 ),
-                seasonNumber = episode.season_number,
-                episodeNumber = episode.episode_number,
+                seasonNumber = episode.season_number ?: 0,
+                episodeNumber = episode.episode_number ?: 0,
                 showIds = season.showIds,
                 showOriginTitle = season.showOriginTitle ?: ""
               )
@@ -512,8 +512,8 @@ class BuiltInDatabaseClient : DatabaseClient {
         response.body()?.let {
           it.data?.forEach { episode ->
             val episodeTitle = episode.episodeName ?: formatSeasonEpisode(
-              episode.airedSeason,
-              episode.airedEpisodeNumber
+              episode.airedSeason ?: 0,
+              episode.airedEpisodeNumber ?: 0
             )
             list.add(
               Episode(
@@ -529,10 +529,10 @@ class BuiltInDatabaseClient : DatabaseClient {
                   originalTitle = episodeTitle,
                   homepage = null
                 ),
-                seasonNumber = episode.airedSeason,
-                episodeNumber = episode.airedEpisodeNumber,
+                seasonNumber = episode.airedSeason ?: 0,
+                episodeNumber = episode.airedEpisodeNumber ?: 0,
                 showIds = show.ids,
-                showOriginTitle = show.generalInfo.title ?: ""
+                showOriginTitle = show.generalInfo.title
               )
             )
           }
@@ -556,9 +556,9 @@ class BuiltInDatabaseClient : DatabaseClient {
             list.add(
               Season(
                 season.name,
-                season.season_number,
+                season.season_number ?: 0,
                 season.overview,
-                season.episode_count,
+                season.episode_count ?: 0,
                 season.poster_path,
                 show.generalInfo.backdrop,
                 null,

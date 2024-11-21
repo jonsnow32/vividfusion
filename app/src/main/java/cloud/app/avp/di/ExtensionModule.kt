@@ -5,8 +5,10 @@ import android.content.SharedPreferences
 import cloud.app.avp.datastore.DataStore
 import cloud.app.avp.extension.ExtensionLoader
 import cloud.app.common.clients.DatabaseExtension
+import cloud.app.common.clients.Extension
 import cloud.app.common.clients.StreamExtension
 import cloud.app.common.clients.SubtitleExtension
+import cloud.app.common.clients.mvdatabase.DatabaseClient
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.settings.PrefSettings
 import dagger.Module
@@ -30,8 +32,14 @@ class ExtensionModule {
     throwableFlow: MutableSharedFlow<Throwable>,
     databaseExtensionListFlow: MutableStateFlow<List<DatabaseExtension>>,
     databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
+
     streamExtensionListFlow: MutableStateFlow<List<StreamExtension>>,
-    subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>
+    streamExtensionFlow: MutableStateFlow<StreamExtension?>,
+
+    subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>,
+    subtitleExtensionFlow: MutableStateFlow<SubtitleExtension?>,
+
+    extensionsFlow: MutableStateFlow<List<Extension<*>>>
   ) = ExtensionLoader(
     context,
     dataStore,
@@ -40,13 +48,23 @@ class ExtensionModule {
     sharedPreferences,
     databaseExtensionListFlow,
     databaseExtensionFlow,
+
     streamExtensionListFlow,
-    subtitleExtensionListFlow
+    streamExtensionFlow,
+
+    subtitleExtensionListFlow,
+    subtitleExtensionFlow,
+    extensionsFlow
   )
 
   @Provides
   @Singleton
   fun provideCurrentDatabaseExtension() = MutableStateFlow<DatabaseExtension?>(null)
+
+
+  @Provides
+  @Singleton
+  fun provideExtensionList() = MutableStateFlow<List<Extension<*>>>(emptyList())
 
   @Provides
   @Singleton

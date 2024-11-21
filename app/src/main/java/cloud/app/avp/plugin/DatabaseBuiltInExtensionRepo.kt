@@ -3,15 +3,16 @@ package cloud.app.avp.plugin
 import cloud.app.avp.extension.plugger.LazyPluginRepo
 import cloud.app.avp.extension.plugger.catchLazy
 import cloud.app.common.clients.BaseClient
+import cloud.app.common.clients.mvdatabase.DatabaseClient
 import cloud.app.common.models.ExtensionMetadata
 import kotlinx.coroutines.flow.MutableStateFlow
 
-class BuiltInExtensionRepo<T: BaseClient> : LazyPluginRepo<ExtensionMetadata, T> {
+class DatabaseBuiltInExtensionRepo : LazyPluginRepo<ExtensionMetadata, DatabaseClient> {
   override fun getAllPlugins() = MutableStateFlow(
     listOf(
-      getLazy(BuiltInDatabaseClient.metadata, BuiltInDatabaseClient() as T),
+      getLazy(BuiltInDatabaseClient.metadata, BuiltInDatabaseClient() ),
     )
   )
-  private  fun getLazy(extensionMetadata: ExtensionMetadata, client: T) =
+  private  fun getLazy(extensionMetadata: ExtensionMetadata, client: DatabaseClient) =
     Result.success(Pair(extensionMetadata, catchLazy { client }))
 }
