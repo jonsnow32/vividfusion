@@ -1,5 +1,6 @@
 package cloud.app.vvf.plugin.getlink
 
+import androidx.annotation.Discouraged
 import cloud.app.vvf.extension.provider.M4UFree
 import cloud.app.vvf.common.clients.streams.StreamClient
 import cloud.app.vvf.common.helpers.ImportType
@@ -11,6 +12,9 @@ import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingSwitch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.Dispatcher
 
 class ProviderClient: StreamClient {
     override val defaultSettings: List<Setting> = listOf(
@@ -50,7 +54,9 @@ class ProviderClient: StreamClient {
     callback: (StreamData) -> Unit
   ): Boolean {
     providers.getList().forEach { scraper ->
-      scraper.invoke(mediaItem, subtitleCallback, callback)
+      withContext(Dispatchers.IO) {
+        scraper.invoke(mediaItem, subtitleCallback, callback)
+      }
     }
     return true
   }
