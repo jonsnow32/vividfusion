@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-  namespace = "cloud.app.common"
+  namespace = "cloud.app.vvf.common"
   compileSdk = 35
 
   defaultConfig {

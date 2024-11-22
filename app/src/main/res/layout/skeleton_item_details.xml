@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<cloud.app.avp.utils.ShimmerLayoutSelf xmlns:android="http://schemas.android.com/apk/res/android"
+<cloud.app.vvf.utils.ShimmerLayoutSelf xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -59,4 +59,4 @@
     </FrameLayout>
 
   </LinearLayout>
-</cloud.app.avp.utils.ShimmerLayoutSelf>
+</cloud.app.vvf.utils.ShimmerLayoutSelf>

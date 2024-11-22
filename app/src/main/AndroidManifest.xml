@@ -11,7 +11,7 @@
     android:required="false" />
 
   <application
-    android:name=".AVPApplication"
+    android:name=".VVFApplication"
     android:allowBackup="true"
     android:appCategory="productivity"
     android:banner="@mipmap/ic_launcher"

@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-  namespace = "cloud.app.avp"
+  namespace = "cloud.app.vvf"
   compileSdk = 35
 
   defaultConfig {
-    applicationId = "cloud.app.avp"
+    applicationId = "cloud.app.vvf"
     minSdk = 24
     targetSdk = 34
     versionCode = 1

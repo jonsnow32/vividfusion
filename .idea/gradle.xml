@@ -13,7 +13,6 @@
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/app/sampleextensionclient" />
             <option value="$PROJECT_DIR$/common" />
-            <option value="$PROJECT_DIR$/plugger" />
           </set>
         </option>
       </GradleProjectSettings>
