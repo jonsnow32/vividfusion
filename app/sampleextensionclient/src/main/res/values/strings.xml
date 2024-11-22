@@ -1,4 +1,0 @@
-<resources>
-    <string name="app_name">sampleExtensionClient</string>
-    <string name="class_path">cloud.app.avp.extension.SampleClient</string>
-</resources>

@@ -1,16 +1,5 @@
 package cloud.app.vvf.plugin
 
-import cloud.app.vvf.plugin.tmdb.AppTmdb
-import cloud.app.vvf.plugin.tmdb.SearchSuggestion
-import cloud.app.vvf.plugin.tmdb.companies
-import cloud.app.vvf.plugin.tmdb.formatSeasonEpisode
-import cloud.app.vvf.plugin.tmdb.iso8601ToMillis
-import cloud.app.vvf.plugin.tmdb.movieGenres
-import cloud.app.vvf.plugin.tmdb.networks
-import cloud.app.vvf.plugin.tmdb.showGenres
-import cloud.app.vvf.plugin.tmdb.toMediaItem
-import cloud.app.vvf.plugin.tmdb.toMediaItemsList
-import cloud.app.vvf.plugin.tvdb.AppTheTvdb
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.Page
@@ -34,9 +23,22 @@ import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingList
 import cloud.app.vvf.common.settings.SettingSwitch
+import cloud.app.vvf.plugin.tmdb.AppTmdb
+import cloud.app.vvf.plugin.tmdb.SearchSuggestion
+import cloud.app.vvf.plugin.tmdb.companies
+import cloud.app.vvf.plugin.tmdb.formatSeasonEpisode
+import cloud.app.vvf.plugin.tmdb.iso8601ToMillis
+import cloud.app.vvf.plugin.tmdb.movieGenres
+import cloud.app.vvf.plugin.tmdb.networks
+import cloud.app.vvf.plugin.tmdb.showGenres
+import cloud.app.vvf.plugin.tmdb.toMediaItem
+import cloud.app.vvf.plugin.tmdb.toMediaItemsList
+import cloud.app.vvf.plugin.tvdb.AppTheTvdb
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class BuiltInDatabaseClient : DatabaseClient {
   private lateinit var tmdb: AppTmdb
@@ -138,7 +140,9 @@ class BuiltInDatabaseClient : DatabaseClient {
     tmdbId ?: return emptyList<AVPMediaItem>().toPaged()
     return PagedData.Continuous { page ->
       val continuation = page?.toInt() ?: 1
-      val response = tmdb.moviesService().recommendations(tmdbId, continuation, language).execute()
+      val response = withContext(Dispatchers.IO) {
+        tmdb.moviesService().recommendations(tmdbId, continuation, language).execute()
+      }
       if (response.isSuccessful) {
         val recommendations =
           response.body()?.results?.mapNotNull { it.toMediaItem() } ?: emptyList()
@@ -156,7 +160,9 @@ class BuiltInDatabaseClient : DatabaseClient {
     tmdbId ?: return emptyList<AVPMediaItem>().toPaged()
     return PagedData.Continuous { page ->
       val continuation = page?.toInt() ?: 1
-      val response = tmdb.tvService().recommendations(tmdbId, continuation, language).execute()
+      val response = withContext(Dispatchers.IO) {
+        tmdb.tvService().recommendations(tmdbId, continuation, language).execute()
+      }
       if (response.isSuccessful) {
         val recommendations =
           response.body()?.results?.mapNotNull { it.toMediaItem() } ?: emptyList()
@@ -170,15 +176,17 @@ class BuiltInDatabaseClient : DatabaseClient {
     }
   }
 
-  private fun getSeasonDetail(seasonItem: AVPMediaItem.SeasonItem): AVPMediaItem? {
+  private suspend fun getSeasonDetail(seasonItem: AVPMediaItem.SeasonItem): AVPMediaItem? {
     val season = seasonItem.season;
 
     return if (season.showIds.tmdbId != null) {
-      val response = tmdb.tvSeasonsService().season(
-        season.showIds.tmdbId!!,
-        season.number,
-        language
-      ).execute().body()
+      val response = withContext(Dispatchers.IO) {
+        tmdb.tvSeasonsService().season(
+          season.showIds.tmdbId!!,
+          season.number,
+          language
+        ).execute().body()
+      }
       response?.let {
         AVPMediaItem.SeasonItem(
           season = Season(
@@ -219,20 +227,22 @@ class BuiltInDatabaseClient : DatabaseClient {
     }
   }
 
-  private fun getActorDetail(tmdbId: Int?): AVPMediaItem.ActorItem? {
+  private suspend fun getActorDetail(tmdbId: Int?): AVPMediaItem.ActorItem? {
     tmdbId ?: return null
 
-    val response = tmdb.personService().summary(
-      tmdbId,
-      language,
-      AppendToResponse(
-        AppendToResponseItem.MOVIE_CREDITS,
-        AppendToResponseItem.TV_CREDITS,
-        AppendToResponseItem.COMBINED_CREDITS,
-        AppendToResponseItem.IMAGES,
-        AppendToResponseItem.EXTERNAL_IDS
-      )
-    ).execute().body()
+    val response = withContext(Dispatchers.IO) {
+      tmdb.personService().summary(
+        tmdbId,
+        language,
+        AppendToResponse(
+          AppendToResponseItem.MOVIE_CREDITS,
+          AppendToResponseItem.TV_CREDITS,
+          AppendToResponseItem.COMBINED_CREDITS,
+          AppendToResponseItem.IMAGES,
+          AppendToResponseItem.EXTERNAL_IDS
+        )
+      ).execute().body()
+    }
 
     return response?.let {
       AVPMediaItem.ActorItem(
@@ -250,45 +260,50 @@ class BuiltInDatabaseClient : DatabaseClient {
     TODO("Not yet implemented")
   }
 
-  private fun getShowDetail(tmdbId: Int?): AVPMediaItem.ShowItem? {
+  private suspend fun getShowDetail(tmdbId: Int?): AVPMediaItem.ShowItem? {
     tmdbId ?: return null
-    val response = tmdb.tvService().tv(
-      tmdbId,
-      language,
-      AppendToResponse(
-        AppendToResponseItem.MOVIES,
-        AppendToResponseItem.EXTERNAL_IDS,
-        AppendToResponseItem.CREDITS,
-        AppendToResponseItem.COMBINED_CREDITS,
-        AppendToResponseItem.IMAGES,
-        AppendToResponseItem.RECOMMENDATIONS,
-        AppendToResponseItem.VIDEOS,
-        AppendToResponseItem.REVIEWS
-      )
-    )
-    val body = response.execute().body()
+    val response = withContext(Dispatchers.IO) {
+      tmdb.tvService().tv(
+        tmdbId,
+        language,
+        AppendToResponse(
+          AppendToResponseItem.MOVIES,
+          AppendToResponseItem.EXTERNAL_IDS,
+          AppendToResponseItem.CREDITS,
+          AppendToResponseItem.COMBINED_CREDITS,
+          AppendToResponseItem.IMAGES,
+          AppendToResponseItem.RECOMMENDATIONS,
+          AppendToResponseItem.VIDEOS,
+          AppendToResponseItem.REVIEWS
+        )
+      ).execute()
+    }
+
+    val body = response.body()
     return body?.toMediaItem()
   }
 
-  private fun getMovieDetail(tmdbId: Int?): AVPMediaItem.MovieItem? {
+  private suspend fun getMovieDetail(tmdbId: Int?): AVPMediaItem.MovieItem? {
 
     tmdbId ?: return null
-    val response = tmdb.moviesService().summary(
-      tmdbId,
-      language,
-      AppendToResponse(
-        AppendToResponseItem.MOVIES,
-        AppendToResponseItem.EXTERNAL_IDS,
-        AppendToResponseItem.MOVIE_CREDITS,
-        AppendToResponseItem.CREDITS,
-        AppendToResponseItem.COMBINED_CREDITS,
-        AppendToResponseItem.IMAGES,
-        AppendToResponseItem.RECOMMENDATIONS,
-        AppendToResponseItem.VIDEOS,
-        AppendToResponseItem.REVIEWS
-      )
-    )
-    return response.execute().body()?.toMediaItem()
+    val response = withContext(Dispatchers.IO) {
+      tmdb.moviesService().summary(
+        tmdbId,
+        language,
+        AppendToResponse(
+          AppendToResponseItem.MOVIES,
+          AppendToResponseItem.EXTERNAL_IDS,
+          AppendToResponseItem.MOVIE_CREDITS,
+          AppendToResponseItem.CREDITS,
+          AppendToResponseItem.COMBINED_CREDITS,
+          AppendToResponseItem.IMAGES,
+          AppendToResponseItem.RECOMMENDATIONS,
+          AppendToResponseItem.VIDEOS,
+          AppendToResponseItem.REVIEWS
+        )
+      ).execute()
+    }
+    return response.body()?.toMediaItem()
   }
 
   private fun Map<Int, String>.toPage(page: Int, pageSize: Int): Map<Int, String> {
@@ -305,18 +320,20 @@ class BuiltInDatabaseClient : DatabaseClient {
   ) = genres.toPage(page, pageSize).map { genre ->
     val data = PagedData.Continuous<AVPMediaItem> {
       val continuation = it?.toInt() ?: 1
-      val builder = tmdb.discoverMovie()
-        .sort_by(sortBy)
-        .with_genres(DiscoverFilter(genre.key))
-        .page(continuation)
-        .language(language)
-        .region(region)
-        .includeAdult()
+      val items = withContext(Dispatchers.IO) {
+        val builder = tmdb.discoverMovie()
+          .sort_by(sortBy)
+          .with_genres(DiscoverFilter(genre.key))
+          .page(continuation)
+          .language(language)
+          .region(region)
+          .includeAdult()
 
-      if (includeAdult == true)
-        builder.includeAdult()
 
-      val items = builder.build().execute().body()!!
+        if (includeAdult == true)
+          builder.includeAdult()
+        builder.build().execute().body()!!
+      }
       Page(
         items.toMediaItemsList(),
         if (items.results.isNullOrEmpty()) null else (continuation + 1).toString()
@@ -339,13 +356,15 @@ class BuiltInDatabaseClient : DatabaseClient {
   ) = genres.toPage(page, pageSize).map { genre ->
     val data = PagedData.Continuous<AVPMediaItem> {
       val continuation = it?.toInt() ?: 1
-      val more = tmdb.discoverTv()
-        .sort_by(sortBy)
-        .with_genres(DiscoverFilter(genre.key))
-        .page(continuation)
-        .language(language)
-        .watch_region(region)
-        .build().execute().body()!!
+      val more = withContext(Dispatchers.IO) {
+        tmdb.discoverTv()
+          .sort_by(sortBy)
+          .with_genres(DiscoverFilter(genre.key))
+          .page(continuation)
+          .language(language)
+          .watch_region(region)
+          .build().execute().body()!!
+      }
       Page(
         more.toMediaItemsList(),
         if (more.results.isNullOrEmpty()) null else (continuation + 1).toString()
@@ -388,10 +407,12 @@ class BuiltInDatabaseClient : DatabaseClient {
   ): PagedData<MediaItemsContainer> {
     val more = PagedData.Continuous<AVPMediaItem> {
       val continuation = it?.toInt() ?: 1
-      val pageResult = tmdb.searchService()
-        .person(query, continuation, language, region, includeAdult)
-        .execute()
-        .body()
+      val pageResult = withContext(Dispatchers.IO) {
+        tmdb.searchService()
+          .person(query, continuation, language, region, includeAdult)
+          .execute()
+          .body()
+      }
       Page(
         pageResult?.toMediaItemsList() ?: emptyList(),
         if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
@@ -408,10 +429,12 @@ class BuiltInDatabaseClient : DatabaseClient {
     val more = PagedData.Continuous<AVPMediaItem> {
       val continuation = it?.toInt() ?: 1
       val firstAirDateYear = extras?.get("first_air_date_year")?.toInt()
-      val pageResult = tmdb.searchService()
-        .tv(query, continuation, language, firstAirDateYear, includeAdult)
-        .execute()
-        .body()
+      val pageResult = withContext(Dispatchers.IO) {
+        tmdb.searchService()
+          .tv(query, continuation, language, firstAirDateYear, includeAdult)
+          .execute()
+          .body()
+      }
       Page(
         pageResult?.toMediaItemsList() ?: emptyList(),
         if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
@@ -429,9 +452,11 @@ class BuiltInDatabaseClient : DatabaseClient {
       val continuation = it?.toInt() ?: 1
       val year = extras?.get("year")?.toInt()
       val pageResult =
-        tmdb.searchService()
-          .movie(query, continuation, language, region, includeAdult, year, year)
-          .execute().body()
+        withContext(Dispatchers.IO) {
+          tmdb.searchService()
+            .movie(query, continuation, language, region, includeAdult, year, year)
+            .execute().body()
+        }
       Page(
         pageResult?.toMediaItemsList() ?: emptyList(),
         if (pageResult?.results.isNullOrEmpty()) null else (continuation + 1).toString()
@@ -447,7 +472,9 @@ class BuiltInDatabaseClient : DatabaseClient {
     val shows = mutableListOf<AVPMediaItem.ShowItem>()
     val casts = mutableListOf<AVPMediaItem.ActorItem>()
     val mediaResultsPage =
-      tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
+      withContext(Dispatchers.IO) {
+        tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
+      }
     mediaResultsPage?.results?.forEach {
       it.movie?.let { movie ->
         movies.add(movie.toMediaItem())
@@ -548,7 +575,8 @@ class BuiltInDatabaseClient : DatabaseClient {
   suspend fun getSeason(show: Show): List<Season> {
     val list = mutableListOf<Season>()
     if (show.ids.tmdbId != null) {
-      val response = tmdb.tvService().tv(show.ids.tmdbId!!, language).execute()
+      val response =
+        withContext(Dispatchers.IO) { tmdb.tvService().tv(show.ids.tmdbId!!, language).execute() }
       if (response.isSuccessful) {
         val tvShow = response.body();
         tvShow?.seasons?.sortedBy { season -> season.season_number }?.forEach { season ->
@@ -600,7 +628,9 @@ class BuiltInDatabaseClient : DatabaseClient {
     pageSize: Int
   ): List<AVPMediaItem> {
     val personID = actor.actor.id ?: return emptyList()
-    val response = tmdb.personService().combinedCredits(personID, language).execute()
+    val response = withContext(Dispatchers.IO) {
+      tmdb.personService().combinedCredits(personID, language).execute()
+    }
     if (response.isSuccessful) {
       val credits = response.body()
       val cast = credits?.cast
@@ -627,14 +657,16 @@ class BuiltInDatabaseClient : DatabaseClient {
     return networks.toPage(page, pageSize).map { network ->
       val data = PagedData.Continuous<AVPMediaItem> {
         val continuation = it?.toInt() ?: 1
-        val discover = tmdb.discoverTv()
-          .with_networks(DiscoverFilter(network.key))
-          .page(continuation)
-          .language(language)
-          .watch_region(region)
-          .build()
-          .execute()
-          .body()
+        val discover = withContext(Dispatchers.IO) {
+          tmdb.discoverTv()
+            .with_networks(DiscoverFilter(network.key))
+            .page(continuation)
+            .language(language)
+            .watch_region(region)
+            .build()
+            .execute()
+            .body()
+        }
         Page(
           discover?.toMediaItemsList() ?: emptyList(),
           if (discover?.results.isNullOrEmpty()) null else (continuation + 1).toString()
@@ -654,15 +686,17 @@ class BuiltInDatabaseClient : DatabaseClient {
     return companies.toPage(page, pageSize).map { company ->
       val data = PagedData.Continuous<AVPMediaItem> {
         val continuation = it?.toInt() ?: 1
-        val discover = tmdb.discoverMovie()
-          .with_companies(DiscoverFilter(company.key))
-          .page(continuation)
-          .language(language)
-          .region(region)
-          .includeAdult()
-          .build()
-          .execute()
-          .body()
+        val discover = withContext(Dispatchers.IO) {
+          tmdb.discoverMovie()
+            .with_companies(DiscoverFilter(company.key))
+            .page(continuation)
+            .language(language)
+            .region(region)
+            .includeAdult()
+            .build()
+            .execute()
+            .body()
+        }
         Page(
           discover?.toMediaItemsList() ?: emptyList(),
           if (discover?.results.isNullOrEmpty()) null else (continuation + 1).toString()

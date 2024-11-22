@@ -1,13 +1,14 @@
 package cloud.app.vvf.common.helpers.network
 
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import okhttp3.*
 import okhttp3.Headers.Companion.toHeaders
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONArray
-import org.json.JSONObject
 import kotlin.reflect.KClass
 
 interface ResponseParser {
@@ -25,57 +26,40 @@ object RequestBodyTypes {
 
 class HttpHelper(val okHttpClient: OkHttpClient) {
 
-  var USER_AGENT: String =
+  var userAgent: String =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"
-
-  suspend inline fun Call.await(): Response {
-    return suspendCancellableCoroutine { continuation ->
-      val callback = ContinuationCallback(this, continuation)
-      enqueue(callback)
-      continuation.invokeOnCancellation(callback)
-    }
-  }
 
   suspend fun get(
     url: String,
-    headers: Map<String, String>? = emptyMap(),
+    headers: Map<String, String>? = null,
     referer: String? = null,
     responseParser: ResponseParser? = null
   ): HttpResponse {
-    val request = Request.Builder()
-      .url(url)
-      .applyHeaders(headers)
-      .applyReferer(referer)
-      .get()
-      .build()
-
-    val response = okHttpClient.newCall(request).await()
-    return HttpResponse(response, responseParser)
+    val request = buildRequest(url, headers, referer) {
+      get()
+    }
+    return executeRequest(request, responseParser)
   }
 
   suspend fun post(
     url: String,
-    data: Map<String, String>? = emptyMap(),
+    data: Map<String, String>? = null,
     json: Any? = null,
-    headers: Map<String, String>? = emptyMap(),
+    headers: Map<String, String>? = null,
     referer: String? = null,
     responseParser: ResponseParser? = null
   ): HttpResponse {
-    val body = createRequestBody(data, json, responseParser)
-    val request = Request.Builder()
-      .url(url)
-      .applyHeaders(headers)
-      .applyReferer(referer)
-      .post(body ?: FormBody.Builder().build())
-      .build()
-
-    val response = okHttpClient.newCall(request).await()
-    return HttpResponse(response, responseParser)
+    val body = createRequestBody(data, json, responseParser) ?: FormBody.Builder().build()
+    val request = buildRequest(url, headers, referer) {
+      post(body)
+    }
+    return executeRequest(request, responseParser)
   }
 
   fun loadCookieForRequest(url: String): String? {
     val httpUrl = url.toHttpUrlOrNull() ?: return null
-    return okHttpClient.cookieJar.loadForRequest(httpUrl).joinToString(";") { "${it.name}=${it.value}" }
+    return okHttpClient.cookieJar.loadForRequest(httpUrl)
+      .joinToString(";") { "${it.name}=${it.value}" }
   }
 
   fun saveCookieFromResponse(url: String, cookieStr: String) {
@@ -84,10 +68,29 @@ class HttpHelper(val okHttpClient: OkHttpClient) {
     okHttpClient.cookieJar.saveFromResponse(httpUrl, cookies)
   }
 
+  private fun buildRequest(
+    url: String,
+    headers: Map<String, String>?,
+    referer: String?,
+    methodSetup: Request.Builder.() -> Unit
+  ): Request {
+    return Request.Builder()
+      .url(url)
+      .applyHeaders(headers)
+      .applyReferer(referer)
+      .apply(methodSetup)
+      .build()
+  }
+
+  private fun executeRequest(request: Request, responseParser: ResponseParser?): HttpResponse {
+    val response = okHttpClient.newCall(request).execute()
+    return HttpResponse(response, responseParser)
+  }
+
   private fun Request.Builder.applyHeaders(headers: Map<String, String>?): Request.Builder {
     headers?.toHeaders()?.let { this.headers(it) }
     if (headers.isNullOrEmpty() || headers["User-Agent"].isNullOrEmpty()) {
-      addHeader("User-Agent", USER_AGENT)
+      addHeader("User-Agent", userAgent)
     }
     return this
   }
@@ -108,8 +111,10 @@ class HttpHelper(val okHttpClient: OkHttpClient) {
       }.build()
       json != null -> {
         val jsonString = when (json) {
-          is JSONObject, is JSONArray, is String, is JsonAsString -> json.toString()
-          else -> responseParser?.writeValueAsString(json) ?: json.toString()
+          is JsonObject, is JsonArray -> Json.encodeToString(json)
+          is String -> json
+          is JsonAsString -> json.string
+          else -> responseParser?.writeValueAsString(json) ?: Json.encodeToString(json)
         }
         val mediaType = if (json is String) RequestBodyTypes.TEXT else RequestBodyTypes.JSON
         jsonString.toRequestBody(mediaType.toMediaTypeOrNull())

@@ -12,7 +12,7 @@ import cloud.app.vvf.common.models.SubtitleData
 import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.stream.StreamData
-import com.domain.usecases.stream.Utils.RegexUtils
+import cloud.app.vvf.common.helpers.network.utils.RegexUtils
 import org.jsoup.nodes.Element
 
 

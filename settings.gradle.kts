@@ -20,7 +20,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Audio Video Player"
+rootProject.name = "ViVidFusion"
 include(":app")
 include(":common")
-include(":app:sampleextensionclient")

@@ -19,6 +19,7 @@ navigation = "2.8.3"
 lifecycle = "2.8.7"
 pikolo = "2.0.2"
 plugger = "82e00ea5a4"
+slf4jApi = "2.0.13"
 tvprovider = "1.0.0"
 work = "2.10.0"
 preference = "1.2.1"
@@ -107,6 +108,5 @@ dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
-
-
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 

@@ -1,6 +1,5 @@
-package com.domain.usecases.stream.Utils
+package cloud.app.vvf.common.helpers.network.utils
 
-import android.util.Log
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.math.pow
@@ -42,7 +41,7 @@ object HunterPacker {
                 return hunter(h, n, t, e)
             }
         } catch (e: Exception) {
-            Log.e("HunterPacker",e.toString())
+            //Log.e("HunterPacker",e.toString())
         }
         return null
     }

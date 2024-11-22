@@ -1,6 +1,5 @@
-package com.domain.usecases.stream.Utils
+package cloud.app.vvf.common.helpers.network.utils
 
-import android.util.Log
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -119,7 +118,7 @@ object RegexUtils {
                     continue
                 }
             } catch (e: Throwable) {
-                Log.e("RegexUtils", "getGroupArray: ", e)
+                //Log.e("RegexUtils", "getGroupArray: ", e)
             }
         }
         if (arrayList.isEmpty()) {

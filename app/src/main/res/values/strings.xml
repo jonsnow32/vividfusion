@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-  <string name="app_name">Audio Video Player</string>
+  <string name="app_name">ViVidFusion</string>
   <string name="home">Home</string>
   <string name="search">Search</string>
   <string name="library">Library</string>
@@ -123,7 +123,7 @@
   <string name="type_completed">Completed</string>
   <string name="type_dropped">Dropped</string>
   <string name="type_plan_to_watch">Plan to Watch</string>
-  <string name="type_none" translatable="false">@string/none</string>
+  <string name="type_none" translatable="false">None</string>
     <string name="download">Download</string>
   <string name="resume">Resume</string>
     <string name="seasons">Seasons</string>

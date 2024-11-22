@@ -1,13 +1,10 @@
 package cloud.app.vvf.common.helpers.network
 
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.CompletionHandler
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import okhttp3.*
+import okhttp3.CacheControl
+import okhttp3.Headers
 import okhttp3.Headers.Companion.toHeaders
+import okhttp3.OkHttpClient
 import java.io.File
-import java.io.IOException
-import java.io.InterruptedIOException
 import java.net.URI
 import java.net.URL
 import java.security.SecureRandom
@@ -16,7 +13,6 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
-import kotlin.coroutines.resumeWithException
 
 private val mustHaveBody = listOf("POST", "PUT")
 private val cantHaveBody = listOf("GET", "HEAD")
@@ -92,39 +88,6 @@ fun Headers.getCookies(cookieKey: String): Map<String, String> {
 }
 
 
-//Provides async-able Calls
-class ContinuationCallback(
-  private val call: Call,
-  private val continuation: CancellableContinuation<Response>
-) : Callback, CompletionHandler {
-
-  @OptIn(ExperimentalCoroutinesApi::class)
-  override fun onResponse(call: Call, response: Response) {
-    continuation.resume(response, null)
-  }
-
-  override fun onFailure(call: Call, e: IOException) {
-    // Cannot throw exception on SocketException since that can lead to un-catchable crashes
-    // when you exit an activity as a request
-    println("Exception in NiceHttp: ${e.javaClass.name} ${e.message}")
-    if (call.isCanceled()) {
-      // Must be able to throw errors, for example timeouts
-      if (e is InterruptedIOException)
-        continuation.cancel(e)
-      else
-        e.printStackTrace()
-    } else {
-      continuation.resumeWithException(e)
-    }
-  }
-
-  override fun invoke(cause: Throwable?) {
-    try {
-      call.cancel()
-    } catch (_: Throwable) {
-    }
-  }
-}
 
 
 // https://github.com, id=test -> https://github.com?id=test
