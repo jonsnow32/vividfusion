@@ -7,10 +7,8 @@ import cloud.app.avp.datastore.helper.addFavoritesData
 import cloud.app.avp.datastore.helper.getFavoritesData
 import cloud.app.avp.datastore.helper.removeFavoritesData
 import cloud.app.avp.extension.run
-import cloud.app.common.clients.BaseClient
 import cloud.app.common.clients.DatabaseExtension
 import cloud.app.common.clients.StreamExtension
-import cloud.app.common.clients.mvdatabase.DatabaseClient
 import cloud.app.common.models.AVPMediaItem
 import cloud.app.common.models.stream.StreamData
 import dagger.hilt.android.lifecycle.HiltViewModel

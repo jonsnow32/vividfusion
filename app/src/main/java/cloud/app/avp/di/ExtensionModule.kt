@@ -8,9 +8,7 @@ import cloud.app.common.clients.DatabaseExtension
 import cloud.app.common.clients.Extension
 import cloud.app.common.clients.StreamExtension
 import cloud.app.common.clients.SubtitleExtension
-import cloud.app.common.clients.mvdatabase.DatabaseClient
 import cloud.app.common.helpers.network.HttpHelper
-import cloud.app.common.settings.PrefSettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

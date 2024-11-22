@@ -4,20 +4,16 @@ import android.util.Log
 import cloud.app.avp.extension.Constants
 import cloud.app.avp.plugin.getlink.BaseScaper
 import cloud.app.avp.utils.TimeUtils
-
 import cloud.app.common.helpers.network.HttpHelper
 import cloud.app.common.helpers.network.Utils
 import cloud.app.common.helpers.network.utils.AES256Cryptor
-import cloud.app.common.helpers.network.utils.GoogleReCaptchar
 import cloud.app.common.helpers.network.utils.MD5Utils
 import cloud.app.common.models.SubtitleData
 import cloud.app.common.models.movie.Episode
 import cloud.app.common.models.movie.Movie
 import cloud.app.common.models.stream.StreamData
 import com.domain.usecases.stream.Utils.RegexUtils
-import kotlinx.coroutines.channels.ProducerScope
 import org.jsoup.nodes.Element
-import java.util.Base64
 
 
 class M4UFree(val httpHelper: HttpHelper) : BaseScaper() {
@@ -325,13 +321,13 @@ class M4UFree(val httpHelper: HttpHelper) : BaseScaper() {
   }
 
   fun mahoa_data(input: String, key: String): String {
-    var a = AES256Cryptor.encrypt(input, key).toString();
-    var b = a.replace("U2FsdGVkX1", "");
-    b = b.replace(Regex("\n"), "");
-    b = b.replace(Regex("\\/"), "|a")
-    b = b.replace(Regex("\\+"), "|b");
-    b = b.replace(Regex("\\="), "|c");
-    b = b.replace(Regex("\\|"), "-z");
+    var a = AES256Cryptor.encrypt(input, key).toString()
+    var b = a.replace("U2FsdGVkX1", "")
+    b = b.replace(Regex("\n"), "")
+    b = b.replace(Regex("/"), "|a")
+    b = b.replace(Regex("\\+"), "|b")
+    b = b.replace(Regex("="), "|c")
+    b = b.replace(Regex("\\|"), "-z")
 
     return b;
   }
@@ -346,8 +342,8 @@ class M4UFree(val httpHelper: HttpHelper) : BaseScaper() {
   fun f0001(input: String, key: String): String {
     var input = AES256Cryptor.encrypt(input, key)
     if (input.isNullOrEmpty())
-      return "";
-    val result = base64ToHex(input);
+      return ""
+    val result = base64ToHex(input)
     return result
   }
 

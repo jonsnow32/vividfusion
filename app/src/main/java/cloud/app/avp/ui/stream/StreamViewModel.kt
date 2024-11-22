@@ -11,25 +11,33 @@ import cloud.app.common.models.stream.StreamData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class StreamViewModel @Inject constructor(
-    throwableFlow: MutableSharedFlow<Throwable>,
-    val extensionFlowList: MutableStateFlow<List<StreamExtension>>,
+  throwableFlow: MutableSharedFlow<Throwable>,
+  val extensionFlowList: MutableStateFlow<List<StreamExtension>>,
 ) :
   CatchingViewModel(throwableFlow) {
-  val streams = MutableStateFlow<StreamData?>(null)
+    
+  private val _streams = MutableStateFlow<List<StreamData>>(emptyList())
+  val streams: StateFlow<List<StreamData>> = _streams.asStateFlow()
+
+  private val _subtitles = MutableStateFlow<List<SubtitleData>>(emptyList())
+  val subtitles: StateFlow<List<SubtitleData>> = _subtitles.asStateFlow()
+
   var mediaItem: AVPMediaItem? = null
 
   override fun onInitialize() {
     viewModelScope.launch {
       extensionFlowList.collect { extensions ->
         extensions.forEach {
-         it.run(throwableFlow) {
-           loadStream(this, mediaItem)
-         }
+          it.run(throwableFlow) {
+            loadStream(this, mediaItem)
+          }
         }
       }
     }
@@ -38,14 +46,15 @@ class StreamViewModel @Inject constructor(
   fun loadStream(client: StreamClient, avpMediaItem: AVPMediaItem?) {
     val item = avpMediaItem ?: return
     viewModelScope.launch {
-      client.loadLinks(item, subtitleCallback = ::onSubtitleReceived, callback =  ::onLinkReceived)
+      client.loadLinks(item, subtitleCallback = ::onSubtitleReceived, callback = ::onLinkReceived)
     }
-
   }
+
   fun onSubtitleReceived(subtitleData: SubtitleData) {
-
+    _subtitles.value = _subtitles.value + subtitleData
   }
+
   fun onLinkReceived(streamData: StreamData) {
-    streams.value = streamData
+    _streams.value = _streams.value + streamData
   }
 }

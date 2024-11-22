@@ -5,7 +5,6 @@ import cloud.app.common.models.SubtitleData
 import cloud.app.common.models.movie.Episode
 import cloud.app.common.models.movie.Movie
 import cloud.app.common.models.stream.StreamData
-import kotlinx.coroutines.channels.ProducerScope
 
 abstract class BaseScaper {
 

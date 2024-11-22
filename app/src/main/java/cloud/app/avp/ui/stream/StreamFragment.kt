@@ -10,15 +10,12 @@ import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.databinding.FragmentStreamBinding
 import cloud.app.avp.features.player.PlayerManager
 import cloud.app.avp.features.player.data.PlayData
-import cloud.app.avp.ui.setting.ExtensionSettingFragment
 import cloud.app.avp.utils.autoCleared
-import cloud.app.avp.utils.getParcel
 import cloud.app.avp.utils.getSerialized
 import cloud.app.avp.utils.observe
 import cloud.app.avp.utils.putSerialized
 import cloud.app.avp.utils.setupTransition
 import cloud.app.common.models.AVPMediaItem
-import cloud.app.common.models.ExtensionType
 import cloud.app.common.models.stream.StreamData
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -60,11 +57,7 @@ class StreamFragment : Fragment(), StreamAdapter.ItemClickListener {
     viewModel.mediaItem = mediaItem
     binding.recyclerView.adapter = adapter
     observe(viewModel.streams) { stream ->
-      if (stream == null) return@observe
-      val current = adapter.currentList.toMutableList()
-      if (!current.contains(stream))
-        current.add(stream)
-      adapter.submitList(current)
+      adapter.submitList(stream)
     }
 
     viewModel.initialize()

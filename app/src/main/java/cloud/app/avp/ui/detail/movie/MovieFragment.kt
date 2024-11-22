@@ -12,15 +12,12 @@ import androidx.lifecycle.lifecycleScope
 import cloud.app.avp.MainActivityViewModel.Companion.applyInsets
 import cloud.app.avp.R
 import cloud.app.avp.databinding.FragmentMovieBinding
-import cloud.app.avp.features.player.PlayerManager
-import cloud.app.avp.features.player.data.PlayData
 import cloud.app.avp.ui.detail.bind
 import cloud.app.avp.ui.media.MediaClickListener
 import cloud.app.avp.ui.media.MediaItemAdapter
 import cloud.app.avp.ui.paging.toFlow
 import cloud.app.avp.ui.stream.StreamFragment
 import cloud.app.avp.utils.autoCleared
-import cloud.app.avp.utils.getParcel
 import cloud.app.avp.utils.getSerialized
 import cloud.app.avp.utils.navigate
 import cloud.app.avp.utils.observe
