@@ -22,7 +22,6 @@ class StreamViewModel @Inject constructor(
   val extensionFlowList: MutableStateFlow<List<StreamExtension>>,
 ) :
   CatchingViewModel(throwableFlow) {
-
   private val _streams = MutableStateFlow<List<StreamData>>(emptyList())
   val streams: StateFlow<List<StreamData>> = _streams.asStateFlow()
 
@@ -35,18 +34,22 @@ class StreamViewModel @Inject constructor(
     viewModelScope.launch {
       extensionFlowList.collect { extensions ->
         extensions.forEach {
-          it.run(throwableFlow) {
-            loadStream(this, mediaItem)
-          }
+          loadStream(it, mediaItem)
         }
       }
     }
   }
 
-  fun loadStream(client: StreamClient, avpMediaItem: AVPMediaItem?) {
+  fun loadStream(extension: StreamExtension, avpMediaItem: AVPMediaItem?) {
     val item = avpMediaItem ?: return
     viewModelScope.launch {
-      client.loadLinks(item, subtitleCallback = ::onSubtitleReceived, callback = ::onLinkReceived)
+      extension.run(throwableFlow) {
+        loadLinks(
+          item,
+          subtitleCallback = ::onSubtitleReceived,
+          callback = ::onLinkReceived
+        )
+      }
     }
   }
 

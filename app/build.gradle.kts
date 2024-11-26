@@ -10,7 +10,6 @@ android {
   namespace = "cloud.app.vvf"
   compileSdk = 35
 
-
   defaultConfig {
     applicationId = "cloud.app.vvf"
     minSdk = 24

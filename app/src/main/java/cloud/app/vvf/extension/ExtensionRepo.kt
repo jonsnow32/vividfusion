@@ -67,7 +67,7 @@ sealed class ExtensionRepo<T : BaseClient>(
   override fun getAllPlugins() = injected()
 
   companion object {
-    const val FEATURE = "cloud.app.avp.extension."
+    const val FEATURE = "cloud.app.vvf."
     fun Context.getPluginFileDir(type: ExtensionType) =
       File(filesDir, type.feature).apply { mkdirs() }
   }

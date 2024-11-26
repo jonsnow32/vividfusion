@@ -15,7 +15,6 @@ abstract class CatchingViewModel(
 ) : ViewModel() {
 
   private var initialized = false
-
   open fun onInitialize() {}
 
   fun initialize() {
