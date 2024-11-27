@@ -32,11 +32,9 @@ class DataStoreModule {
   @Provides
   fun provideDataStore(
     context: Context,
-    jsonMapper: Json
   ): DataStore {
     return DataStore(
       context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE),
-      jsonMapper
     )
   }
 }

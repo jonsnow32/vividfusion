@@ -50,8 +50,8 @@ public class TraktModule {
         return trakt.users();
     }
 
-    @Provides
-    AppTrakt provideTrakt(Context context, OkHttpClient okHttpClient, SharedPreferences preferences) {
-        return new AppTrakt(context, okHttpClient, "f6828254ed50cb58c2c9ee321f8ed7fe88512a2b52a6831feb7ea509fad13ec2", "4a00040c96b943f5d7203916c3f2499d4583cea0eb74016800c792b1152d67c1", preferences);
-    }
+//    @Provides
+//    AppTrakt provideTrakt( OkHttpClient okHttpClient, SharedPreferences preferences) {
+//        return new AppTrakt(okHttpClient, "f6828254ed50cb58c2c9ee321f8ed7fe88512a2b52a6831feb7ea509fad13ec2", "4a00040c96b943f5d7203916c3f2499d4583cea0eb74016800c792b1152d67c1", preferences);
+//    }
 }

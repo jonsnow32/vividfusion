@@ -8,12 +8,9 @@ import timber.log.Timber
 import javax.inject.Inject
 
 const val PREFERENCES_NAME = "data_in_preference"
-const val FOLDER_PLUGIN_SETTINGS = "folder_app_settings"
-const val HISTORY_FOLDER = "history"
 
 class DataStore @Inject constructor(
   val sharedPreferences: SharedPreferences,
-  val mapper: Json
 ) {
 
   // Editor class for batch edits
@@ -76,7 +73,7 @@ class DataStore @Inject constructor(
 
   inline fun <reified T> getKey(path: String, defVal: T? = null): T? {
     return try {
-      Timber.i("getKey $path ${T::class.java}" )
+      Timber.i("getKey $path ${T::class.java}")
       sharedPreferences.getString(path, null)?.toData<T>()
     } catch (e: Exception) {
       Timber.e(e)

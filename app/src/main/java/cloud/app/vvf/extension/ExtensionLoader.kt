@@ -2,15 +2,6 @@ package cloud.app.vvf.extension
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.core.content.edit
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.FOLDER_PLUGIN_SETTINGS
-import cloud.app.vvf.datastore.helper.getExtension
-import cloud.app.vvf.extension.plugger.FileChangeListener
-import cloud.app.vvf.extension.plugger.PackageChangeListener
-import cloud.app.vvf.plugin.DatabaseBuiltInExtensionRepo
-import cloud.app.vvf.plugin.StreamBuiltInExtensionRepo
-import cloud.app.vvf.utils.catchWith
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.DatabaseExtension
 import cloud.app.vvf.common.clients.Extension
@@ -20,7 +11,13 @@ import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.priorityKey
-import cloud.app.vvf.common.settings.PrefSettings
+import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.helper.getExtension
+import cloud.app.vvf.extension.plugger.FileChangeListener
+import cloud.app.vvf.extension.plugger.PackageChangeListener
+import cloud.app.vvf.plugin.DatabaseBuiltInExtensionRepo
+import cloud.app.vvf.plugin.StreamBuiltInExtensionRepo
+import cloud.app.vvf.utils.catchWith
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -60,7 +57,6 @@ class ExtensionLoader(
   private val databaseExtensionRepo = DatabaseExtensionRepo(
     context,
     httpHelper,
-    toSettings(ExtensionType.DATABASE),
     appListener,
     fileListener,
     databaseEtxBuiltin
@@ -69,7 +65,6 @@ class ExtensionLoader(
     StreamExtensionRepo(
       context,
       httpHelper,
-      toSettings(ExtensionType.STREAM),
       appListener,
       fileListener,
       streamEtxBuiltin
@@ -78,7 +73,6 @@ class ExtensionLoader(
     SubtitleExtensionRepo(
       context,
       httpHelper,
-      toSettings(ExtensionType.SUBTITLE),
       appListener,
       fileListener
     )
@@ -86,37 +80,6 @@ class ExtensionLoader(
   fun initialize() {
     scope.launch {
       getAllPlugins(scope)
-    }
-  }
-
-  private fun toSettings(type: ExtensionType) = object : PrefSettings {
-    override fun getString(key: String) =
-      sharedPreferences.getString("$FOLDER_PLUGIN_SETTINGS/${type.feature}/$key", null)
-
-    override fun putString(key: String, value: String?) {
-      sharedPreferences.edit { putString("$FOLDER_PLUGIN_SETTINGS/${type.feature}/$key", value) }
-    }
-
-    override fun getInt(key: String) =
-      if (sharedPreferences.contains(key)) sharedPreferences.getInt(
-        "$FOLDER_PLUGIN_SETTINGS/${type.feature}/$key",
-        0
-      )
-      else null
-
-    override fun putInt(key: String, value: Int?) {
-      sharedPreferences.edit { putInt(key, value) }
-    }
-
-    override fun getBoolean(key: String) =
-      if (sharedPreferences.contains(key)) sharedPreferences.getBoolean(
-        "$FOLDER_PLUGIN_SETTINGS/${type.feature}/$key",
-        false
-      )
-      else null
-
-    override fun putBoolean(key: String, value: Boolean?) {
-      sharedPreferences.edit { putBoolean("$FOLDER_PLUGIN_SETTINGS/${type.feature}/$key", value) }
     }
   }
 
@@ -139,10 +102,11 @@ class ExtensionLoader(
       }
     }
 
-     listOf(databaseJob, streamJob).awaitAll()
+    listOf(databaseJob, streamJob).awaitAll()
     // Wait for both tasks to complete
     extensionsFlow.value = databaseExtensionListFlow.value + streamExtensionListFlow.value
   }
+
   private suspend fun <T : BaseClient> ExtensionRepo<T>.getPlugins(): Flow<List<Pair<ExtensionMetadata, Lazy<Result<T>>>>> {
     val pluginFlow = getAllPlugins().catchWith(throwableFlow).map { list ->
       list.mapNotNull { result ->
@@ -157,7 +121,6 @@ class ExtensionLoader(
       list.sortedBy { set.indexOf(it.first.id) }
     }
   }
-
 
 
   private val votingMap = ExtensionType.entries.associateWith {

@@ -21,13 +21,13 @@ import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.settings.PrefSettings
+import cloud.app.vvf.utils.getSettings
 import tel.jeelpa.plugger.utils.mapState
 import java.io.File
 
 sealed class ExtensionRepo<T : BaseClient>(
   private val context: Context,
   private val httpHelper: HttpHelper,
-  private val prefSettings: PrefSettings,
   private val listener: PackageChangeListener,
   private val fileChangeListener: FileChangeListener,
   private vararg val repo: LazyPluginRepo<ExtensionMetadata, T>
@@ -57,7 +57,7 @@ sealed class ExtensionRepo<T : BaseClient>(
         val (metadata, resultLazy) = plugin
         metadata to catchLazy {
           val instance = resultLazy.value.getOrThrow()
-          instance.init(prefSettings, httpHelper)
+          instance.init(getSettings(context, type, metadata), httpHelper)
           instance
         }
       }
@@ -77,14 +77,12 @@ sealed class ExtensionRepo<T : BaseClient>(
 class DatabaseExtensionRepo(
   context: Context,
   httpHelper: HttpHelper,
-  prefSettings: PrefSettings,
   listener: PackageChangeListener,
   fileChangeListener: FileChangeListener,
   vararg repo: LazyPluginRepo<ExtensionMetadata, DatabaseClient>
 ) : ExtensionRepo<DatabaseClient>(
   context,
   httpHelper,
-  prefSettings,
   listener,
   fileChangeListener,
   *repo
@@ -95,14 +93,12 @@ class DatabaseExtensionRepo(
 class StreamExtensionRepo(
   context: Context,
   httpHelper: HttpHelper,
-  prefSettings: PrefSettings,
   listener: PackageChangeListener,
   fileChangeListener: FileChangeListener,
   vararg repo: LazyPluginRepo<ExtensionMetadata, StreamClient>
 ) : ExtensionRepo<StreamClient>(
   context,
   httpHelper,
-  prefSettings,
   listener,
   fileChangeListener,
   *repo
@@ -113,14 +109,12 @@ class StreamExtensionRepo(
 class SubtitleExtensionRepo(
   context: Context,
   httpHelper: HttpHelper,
-  prefSettings: PrefSettings,
   listener: PackageChangeListener,
   fileChangeListener: FileChangeListener,
   vararg repo: LazyPluginRepo<ExtensionMetadata, SubtitleClient>
 ) : ExtensionRepo<SubtitleClient>(
   context,
   httpHelper,
-  prefSettings,
   listener,
   fileChangeListener,
   *repo

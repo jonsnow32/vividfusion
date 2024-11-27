@@ -23,6 +23,7 @@ import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingList
 import cloud.app.vvf.common.settings.SettingSwitch
+import cloud.app.vvf.network.api.trakt.AppTrakt
 import cloud.app.vvf.plugin.tmdb.AppTmdb
 import cloud.app.vvf.plugin.tmdb.SearchSuggestion
 import cloud.app.vvf.plugin.tmdb.companies
@@ -39,31 +40,51 @@ import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.Date
 
 class BuiltInDatabaseClient : DatabaseClient {
+
   private lateinit var tmdb: AppTmdb
   private lateinit var tvdb: AppTheTvdb
+  private lateinit var trakt: AppTrakt
 
   override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(
       "Include Adult",
-      "tmdb_include_adult",
+      "include_adult_key",
       "Include adult",
       false
     ),
+
+    SettingSwitch(
+      "Show Special Season",
+      "show_special_season_key",
+      "Show Special Season",
+      true
+    ),
+
+    SettingSwitch(
+      "Show unAired episode",
+      "show_unaired_episode_key",
+      "Show unAired episode",
+      true
+    ),
+
     SettingList(
       "Language",
-      "tmdb_language",
+      "language_key",
       "Language",
       entryTitles = listOf("English", "Spanish"),
-      entryValues = listOf("en", "es")
+      entryValues = listOf("en", "es"),
+      defaultEntryIndex = 0
     ),
     SettingList(
       "Region",
-      "tmdb_Region",
+      "region_key",
       "Region",
       entryTitles = listOf("English", "Spanish"),
-      entryValues = listOf("en", "es")
+      entryValues = listOf("en", "es"),
+      defaultEntryIndex = 0
     )
   )
 
@@ -79,11 +100,19 @@ class BuiltInDatabaseClient : DatabaseClient {
       prefSettings.getString("pref_tvdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57",
       prefSettings,
     )
+    trakt = AppTrakt(
+      httpHelper.okHttpClient,
+      "4ef60b9d635f533695cbcaccb6603a57",
+      "4ef60b9d635f533695cbcaccb6603a57",
+      prefSettings
+    )
   }
 
-  private val includeAdult get() = prefSettings.getBoolean("tmdb_include_adult")
-  private val region get() = prefSettings.getString("tmdb_region")
-  private val language get() = prefSettings.getString("tmdb_language")
+  private val includeAdult get() = prefSettings.getBoolean("include_adult_key")
+  private val region get() = prefSettings.getString("region_key")
+  private val language get() = prefSettings.getString("language_key")
+  private val showSpecialSeason get() = prefSettings.getBoolean("show_special_season_key")
+  private val showUnairedEpisode get() = prefSettings.getBoolean("show_unaired_episode_key")
 
   override suspend fun onExtensionSelected() {
     TODO("TMDB EXTENSION Not yet implemented")
@@ -195,7 +224,13 @@ class BuiltInDatabaseClient : DatabaseClient {
             overview = it.overview,
             episodeCount = it.episodes?.size ?: 0,
             posterPath = it.poster_path,
-            episodes = it.episodes?.map { episode ->
+            episodes = it.episodes?.filter { episode ->
+              if(showUnairedEpisode == true) {
+                true
+              } else
+                //episode.air_date?.before(Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000))) == true
+                episode.air_date?.before(Date(System.currentTimeMillis())) == true
+            }?.map { episode ->
               Episode(
                 Ids(tmdbId = episode.id),
                 GeneralInfo(
@@ -280,7 +315,14 @@ class BuiltInDatabaseClient : DatabaseClient {
     }
 
     val body = response.body()
-    return body?.toMediaItem()
+    val showItem = body?.toMediaItem()
+
+    if (showSpecialSeason == false) {
+      val seasons = showItem?.show?.seasons?.filter { season -> season.number > 0 }
+      showItem?.show?.seasons = seasons
+    }
+    return showItem
+
   }
 
   private suspend fun getMovieDetail(tmdbId: Int?): AVPMediaItem.MovieItem? {

@@ -16,6 +16,15 @@ class StateViewModel : ViewModel() {
 }
 
 
+/**
+ * A base class for ViewHolder that supports saving and restoring state.
+ * This class can be extended to create ViewHolders that can save their state when they are recycled and restore it when they are re-bound.
+ *
+ * @param T The type of the state object.
+ * @param viewBinding The ViewBinding associated with the ViewHolder.
+ *
+ * @property viewBinding The ViewBinding associated with the ViewHolder.
+ */
 open class ViewHolderState<T>(val viewBinding: ViewBinding) : RecyclerView.ViewHolder(viewBinding.root) {
   open fun save(): T? = null
   open fun restore(state: T) = Unit
@@ -25,6 +34,17 @@ open class ViewHolderState<T>(val viewBinding: ViewBinding) : RecyclerView.ViewH
 }
 
 
+/**
+ * Base class for PagingDataAdapter that provides state management and other functionalities.
+ *
+ * @param T The type of the items in the adapter.
+ * @param S The type of the state to be saved and restored for each item.
+ * @param rootFragment The fragment that owns this adapter. Used to access the StateViewModel.
+ * @param id An optional unique ID for this adapter. Used to differentiate state management
+ *           between multiple adapters in the same fragment. Defaults to 0.
+ * @param diffCallback The DiffUtil.ItemCallback to be used for calculating differences between items.
+ *                     Defaults to a basic BaseDiffCallback.
+ */
 abstract class BasePagingAdapter<T : Any, S : Any>(
   rootFragment: Fragment,
   val id: Int = 0,

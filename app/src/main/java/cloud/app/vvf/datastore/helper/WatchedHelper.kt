@@ -14,7 +14,6 @@ data class WatchedItem(
   val lastUpdated: Long = System.currentTimeMillis()
 )
 
-
 fun DataStore.setWatched(data: WatchedItem): Boolean {
   if (data.item is AVPMediaItem.EpisodeItem || data.item is AVPMediaItem.MovieItem) {
     setKey("$WatchedFolder/${data.item.id}", data)

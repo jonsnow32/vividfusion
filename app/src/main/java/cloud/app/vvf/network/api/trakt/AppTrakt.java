@@ -1,15 +1,15 @@
 package cloud.app.vvf.network.api.trakt;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 
 import androidx.annotation.Nullable;
 
-import cloud.app.vvf.network.api.trakt.services.ExtendService;
 import com.uwetrottmann.trakt5.TraktV2;
 import com.uwetrottmann.trakt5.entities.TraktError;
 import com.uwetrottmann.trakt5.entities.TraktOAuthError;
 
+import cloud.app.vvf.common.settings.PrefSettings;
+import cloud.app.vvf.network.api.trakt.services.ExtendService;
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -18,17 +18,15 @@ import retrofit2.Response;
 public class AppTrakt extends TraktV2 {
 
     public static String CALLBACK_URL = "mmat://trakt/auth/callback";
-    private final Context context;
     private final OkHttpClient okHttpClient;
-    private final SharedPreferences sharedPreferences;
+    private final PrefSettings prefSettings;
 
-    public AppTrakt(Context context, OkHttpClient okHttpClient, String client_id, String clientSecret, SharedPreferences sharedPreferences) {
+    public AppTrakt(OkHttpClient okHttpClient, String client_id, String clientSecret, PrefSettings prefSettings) {
         super(client_id, clientSecret, CALLBACK_URL);
-        this.context = context;
         OkHttpClient.Builder builder = okHttpClient.newBuilder();
         setOkHttpClientDefaults(builder);
         this.okHttpClient = builder.build();
-        this.sharedPreferences = sharedPreferences;
+        this.prefSettings = prefSettings;
     }
 
     /**
@@ -116,12 +114,12 @@ public class AppTrakt extends TraktV2 {
 
     @Override
     public String accessToken() {
-        return TraktOAuthSettings.getAccessToken(sharedPreferences);
+        return TraktOAuthSettings.getAccessToken(prefSettings);
     }
 
     @Override
     public String refreshToken() {
-        return TraktOAuthSettings.getRefreshToken(sharedPreferences);
+        return TraktOAuthSettings.getRefreshToken(prefSettings);
     }
 
     protected synchronized OkHttpClient okHttpClient() {

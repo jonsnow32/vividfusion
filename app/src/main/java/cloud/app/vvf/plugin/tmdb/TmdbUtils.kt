@@ -32,7 +32,7 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
     if (baseMovie.genres.isNullOrEmpty()) {
       return baseMovie.genre_ids?.map { movieGenres[it] ?: "" }
     }
-    return baseMovie.genres?.map { it.name } as List<String>?
+    return baseMovie.genres?.map { it.name }
   }
 
   fun toMovie(baseMovie: BaseMovie) = Movie(
