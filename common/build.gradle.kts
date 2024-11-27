@@ -20,14 +20,15 @@ dependencies {
   api(libs.kotlinx.serialization.json.v171)
 }
 
-publishing {
-  publications {
-    create<MavenPublication>("mavenJava") {
-      groupId = "cloud.app.vvf"
-      artifactId = "common"
-      version = "1.0"
-
-      from(components["java"])
+afterEvaluate {
+  publishing {
+    publications {
+      create<MavenPublication>("mavenJava") {
+        groupId = "cloud.app.vvf"
+        artifactId = "common"
+        version = "1.0"
+        from(components["java"])
+      }
     }
   }
 }
