@@ -12,6 +12,4 @@ interface StreamClient : BaseClient {
     subtitleCallback: (SubtitleData) -> Unit,
     callback: (StreamData) -> Unit
   ): Boolean
-
-
 }

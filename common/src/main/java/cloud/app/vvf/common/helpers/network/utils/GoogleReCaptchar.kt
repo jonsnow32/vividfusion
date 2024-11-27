@@ -3,7 +3,6 @@ package cloud.app.vvf.common.helpers.network.utils
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.helpers.network.utils.RegexUtils.getGroup
 import java.net.URI
-import java.util.Base64
 
 object GoogleReCaptcha {
   suspend fun getCaptchaToken(
@@ -16,8 +15,7 @@ object GoogleReCaptcha {
     var referer = referer
     val uri = URI(url)
     val baseDomain = uri.scheme + "://" + uri.host
-    val domain = Base64.getEncoder()
-      .encodeToString("$baseDomain:443".toByteArray())
+    val domain = Base64Util.encode("$baseDomain:443".toByteArray())
       .replace("\n", "")
       .replace("=", ".")
 
@@ -37,17 +35,15 @@ object GoogleReCaptcha {
     hashMap["User-Agent"] = userAgent
     val recapToken =
       getGroup(html, "<input[^>]*recaptcha-token.*value\\s*=\\s*['\"]([^'\"]+)['\"][^>]*>", 1)
-    if (recapToken != null) {
-      val data = mapOf("v" to vtoken, "k" to key, "c" to recapToken, "co" to domain, "reason" to "q")
-      html = httpHelper.post(
-        "https://www.google.com/recaptcha/api2/reload?k=$key",
-        data = data,
-        headers = hashMap
-      ).text
-      if (html.isNotEmpty()) {
-        val token = getGroup(html, "rresp['\"]\\,['\"]([^'\"]+)['\"]", 1)
-        return token
-      }
+    val data = mapOf("v" to vtoken, "k" to key, "c" to recapToken, "co" to domain, "reason" to "q")
+    html = httpHelper.post(
+      "https://www.google.com/recaptcha/api2/reload?k=$key",
+      data = data,
+      headers = hashMap
+    ).text
+    if (html.isNotEmpty()) {
+      val token = getGroup(html, "rresp['\"]\\,['\"]([^'\"]+)['\"]", 1)
+      return token
     }
 
     return ""

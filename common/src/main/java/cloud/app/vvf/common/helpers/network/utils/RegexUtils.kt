@@ -30,15 +30,14 @@ object RegexUtils {
 
     fun getGroup(str: String, str2: String, g: Int, z: Boolean): ArrayList<String> {
         val arrayList: ArrayList<String> = ArrayList<String>()
-        if (str == null || str.isEmpty()) {
+        if (str.isEmpty()) {
             return arrayList
         }
-        val matcher: Matcher
-        matcher = if (z) {
-            Pattern.compile(str2, 32).matcher(str)
-        } else {
-            Pattern.compile(str2).matcher(str)
-        }
+      val matcher: Matcher = if (z) {
+          Pattern.compile(str2, 32).matcher(str)
+      } else {
+          Pattern.compile(str2).matcher(str)
+      }
         while (matcher.find()) {
             if (!arrayList.contains(matcher.group(g))) arrayList.add(matcher.group(g))
         }
