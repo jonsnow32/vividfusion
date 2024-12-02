@@ -13,4 +13,13 @@
   </declare-styleable>
   <declare-styleable name="FlowLayout_Layout_layout_space" />
 
+  <declare-styleable name="DownloadButton">
+    <attr name="downloadStatus" format="enum">
+      <enum name="NOT_STARTED" value="0" />
+      <enum name="DOWNLOADING" value="1" />
+      <enum name="PAUSED" value="2" />
+      <enum name="COMPLETED" value="3" />
+      <enum name="FAILED" value="4" />
+    </attr>
+  </declare-styleable>
 </resources>

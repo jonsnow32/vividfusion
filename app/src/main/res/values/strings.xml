@@ -70,7 +70,7 @@
   <string name="extension_summary">Manage your installed/downloaded Extensions</string>
   <string name="all">All</string>
   <string name="by_author">By %1$s</string>
-  <string name="name_extension">%1$s Extension</string>
+  <string name="name_extension">%1$s Extension by %2$s</string>
   <string name="input_api_key">Enter your api key</string>
   <string name="subbmit">Subbmit</string>
   <string name="open_browser">Open browser</string>
@@ -147,6 +147,33 @@
   <string name="add">Add</string>
   <string name="dynamic_color_key">dynamic_color_key</string>
   <string name="not_implemented">Not implement yet!</string>
+  <string name="extension_url_hint">input extension url</string>
+  <string name="permission_denied">Permisson denied</string>
+  <string name="permission_required">Permission Required</string>
+  <string name="music_permission_required_summary">This permission is required to access your library</string>
+  <string name="add_extensions">Add Extensions</string>
+  <string name="extension">Extension</string>
+  <string name="link">Link</string>
+  <string name="file">File</string>
+  <string name="link_or_code">Link or Code</string>
+  <string name="list_is_empty">List is empty</string>
+  <string name="file_not_found">File not found</string>
+  <string name="extension_installed_successfully">Extension installed successfully.</string>
+  <string name="extension_uninstalled_successfully">Extension uninstalled successfully.</string>
+  <string name="installation_type_warning">Not available if you install the extension as a File.</string>
+  <string name="extension_installer">Extension Installer</string>
+  <string name="installation_type">Installation Type</string>
+  <string name="installation_type_summary">App installation will allow the following links to open in app:</string>
+  <string name="app">App</string>
+  <string name="install">Install</string>
+  <string name="database">Database</string>
+  <string name="extension_installed">Extension installed</string>
+  <string name="downloading_update_for_extension">Downloading update for %1$s</string>
+  <string name="allow_opening_links">Allow opening links</string>
+  <string name="open_links_instruction">To allow opening these links, you need to:\\n- Scroll down and click on \\\"Open by Default\\\"\\n- Click on \\\"+ Add Link\\\"</string>
+  <string name="enable">Enable</string>
+  <string name="enabled">Enabled</string>
+  <string name="disabled">Disabled</string>
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>

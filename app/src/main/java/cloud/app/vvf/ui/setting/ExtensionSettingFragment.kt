@@ -71,6 +71,7 @@ class ExtensionSettingFragment : Fragment() {
   private val extensionType by lazy {
     ExtensionType.valueOf(args.getString("extensionType")!!)
   }
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -82,29 +83,12 @@ class ExtensionSettingFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     setupTransition(view)
     applyInsets {
-      binding.appBarLayout.setPadding(0,it.top, 0,0)
+      binding.appBarLayout.setPadding(0, it.top, 0, 0)
     }
 
     if (context?.isLayout(TV or EMULATOR) == true) {
       binding.toolbar.updateLayoutParams<AppBarLayout.LayoutParams> {
         scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL
-      }
-    }
-
-    binding.toolbar.apply {
-      title = clientName
-      setNavigationIcon(R.drawable.ic_back)
-      setNavigationOnClickListener {
-        activity?.onBackPressedDispatcher?.onBackPressed()
-      }
-      setOnMenuItemClickListener {
-        when (it.itemId) {
-          R.id.menu_refresh -> {
-            viewModel.refresh()
-            true
-          }
-          else -> false
-        }
       }
     }
 
@@ -119,20 +103,55 @@ class ExtensionSettingFragment : Fragment() {
       parentFragmentManager.popBackStack()
       return
     }
+
+
     val extensionMetadata = extension.metadata
+
+    fun updateText(enabled: Boolean) {
+      binding.enabledText.text = getString(
+        if (enabled) R.string.enabled else R.string.disabled
+      )
+    }
+    binding.enabledSwitch.apply {
+      updateText(extensionMetadata.enabled)
+      isChecked = extensionMetadata.enabled
+      setOnCheckedChangeListener { _, isChecked ->
+        updateText(isChecked)
+        viewModel.setExtensionEnabled(extensionType, extensionMetadata.id, isChecked)
+      }
+      binding.enabledCont.setOnClickListener { toggle() }
+    }
+
+    binding.toolbar.apply {
+      title = clientName
+      setNavigationIcon(R.drawable.ic_back)
+      setNavigationOnClickListener {
+        activity?.onBackPressedDispatcher?.onBackPressed()
+      }
+      setOnMenuItemClickListener {
+        when (it.itemId) {
+          R.id.menu_refresh -> {
+            viewModel.refresh()
+            true
+          }
+
+          else -> false
+        }
+      }
+    }
+
 
     extensionMetadata.iconUrl?.toImageHolder()
       .loadWith(binding.extensionIcon, R.drawable.ic_extension_24dp) {
         binding.extensionIcon.setImageDrawable(it)
       }
 
-    binding.extensionDetails.text =
-      "${extensionMetadata.version} • ${extensionMetadata.importType.name}"
+    val nameAndAuthor = getString(R.string.name_extension, extensionMetadata.importType.name, extensionMetadata.author)
 
-    val byAuthor = getString(R.string.by_author, extensionMetadata.author)
-    val typeString = getString(R.string.name_extension, extensionMetadata.importType.name)
-    binding.extensionDescription.text =
-      "$typeString\n\n${extensionMetadata.description}\n\n$byAuthor"
+    binding.extensionDetails.text =
+      "${nameAndAuthor}\n${extensionMetadata.id} •${extensionMetadata.version}"
+
+    binding.extensionDescription.text = extensionMetadata.description
 
 //    when (extensionMetadata.loginType) {
 //      LoginType.API_KEY -> binding.extensionApiKey.root.visibility = View.VISIBLE

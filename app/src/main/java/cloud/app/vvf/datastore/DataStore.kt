@@ -1,10 +1,12 @@
 package cloud.app.vvf.datastore
 
+import android.content.Context
 import android.content.SharedPreferences
 import cloud.app.vvf.utils.toData
 import cloud.app.vvf.utils.toJson
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 
 const val PREFERENCES_NAME = "data_in_preference"
@@ -80,4 +82,12 @@ class DataStore @Inject constructor(
       defVal
     }
   }
+
+  companion object {
+    fun Context.getTempApkDir() = File(cacheDir, "apks").apply { mkdirs() }
+    fun Context.cleanupTempApks() {
+      getTempApkDir().deleteRecursively()
+    }
+  }
+
 }

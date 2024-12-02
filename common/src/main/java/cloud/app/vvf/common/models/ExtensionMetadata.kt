@@ -1,19 +1,22 @@
 package cloud.app.vvf.common.models
 
 import cloud.app.vvf.common.helpers.ImportType
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class ExtensionMetadata(
   val className: String,
   val path: String,
   val importType: ImportType,
   val id: String,
-  val name: String,
-  val version: String,
-  val description: String,
-  val author: String,
-  val authorUrl: String? = null,
-  val iconUrl: String? = null,
-  val repoUrl: String? = null,
-  val updateUrl: String? = null,
-  val enabled: Boolean = true
+  var name: String,
+  var version: String,
+  var description: String,
+  var author: String,
+  var authorUrl: String? = null,
+  var iconUrl: String? = null,
+  var repoUrl: String? = null,
+  var updateUrl: String? = null,
+  var enabled: Boolean = true,
+  var type: String? = null
 )

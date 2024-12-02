@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
@@ -18,32 +17,7 @@
       android:layout_height="?actionBarSize"
       android:touchscreenBlocksFocus="false"
       app:layout_scrollFlags="scroll|enterAlways"
-      app:menu="@menu/manage_extensions_menu"
       app:title="@string/extensions" />
-
-    <com.google.android.material.tabs.TabLayout
-      android:id="@+id/extTabLayout"
-      style="@style/TabLayout"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content">
-
-      <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/mv_source" />
-
-      <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/streams" />
-
-      <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/subtitle" />
-
-    </com.google.android.material.tabs.TabLayout>
-
     <View
       android:id="@+id/appBarOutline"
       style="@style/AppBarOutline"
@@ -82,23 +56,4 @@
   </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 
-  <FrameLayout
-    android:id="@+id/fabContainer"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="end|bottom">
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-      android:id="@+id/fabAddExtensions"
-      style="?floatingActionButtonTertiaryStyle"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_margin="24dp"
-      android:contentDescription="@string/add_extensions"
-      app:srcCompat="@drawable/ic_add_20dp" />
-
-  </FrameLayout>
-
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

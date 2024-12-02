@@ -24,7 +24,7 @@ class MainActivityViewModel @Inject constructor(
 ) : ViewModel() {
 
   private val navInsets = MutableStateFlow(Insets())
-  private val systemInsets = MutableStateFlow(Insets())
+  val systemInsets = MutableStateFlow(Insets())
   private val bannerAdInsets = MutableStateFlow(Insets())
 
   private val combineInsets = systemInsets.combine(navInsets) { system, nav ->

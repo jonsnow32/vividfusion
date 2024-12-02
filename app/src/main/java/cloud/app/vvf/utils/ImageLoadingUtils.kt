@@ -101,7 +101,20 @@ fun <T> ImageHolder?.createRequest(
   request = error?.let { request.error(it) } ?: request
   return if (crop) request.transform(SquareBitmapTransformation()) else request
 }
-
+//
+//val circleCrop = CircleCropTransformation()
+//val squareCrop = SquareCropTransformation()
+//fun <T : View> ImageHolder?.loadAsCircle(
+//  view: T, placeholder: Int? = null, errorDrawable: Int? = null, onDrawable: (Drawable?) -> Unit
+//) = tryWith {
+//  val request = createRequest(view.context, placeholder, errorDrawable, circleCrop)
+//  fun setDrawable(image: Image?) {
+//    val drawable = image?.asDrawable(view.resources)
+//    tryWith(false) { onDrawable(drawable) }
+//  }
+//  request.target(::setDrawable, ::setDrawable, ::setDrawable)
+//  view.enqueue(request)
+//}
 class ViewTarget<T : View>(val target: T, private val onDrawable: (Drawable?) -> Unit) :
   CustomViewTarget<View, Drawable>(target) {
   override fun onLoadFailed(errorDrawable: Drawable?) {

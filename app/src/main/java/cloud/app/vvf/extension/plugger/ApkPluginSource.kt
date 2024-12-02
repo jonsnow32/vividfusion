@@ -11,7 +11,7 @@ class ApkPluginSource(
   packageChangeListener: PackageChangeListener,
   private val context: Context,
   private val featureName: String,
-) : PluginSource<AppInfo>, PackageChangeListener.Listener {
+) : PluginSource<ApkFileInfo>, PackageChangeListener.Listener {
 
     init {
         packageChangeListener.add(this)
@@ -21,14 +21,14 @@ class ApkPluginSource(
 
     private val loadedPlugins = MutableStateFlow(context.getStaticPackages(featureName))
 
-    private fun Context.getStaticPackages(featureName: String): List<AppInfo> {
+    private fun Context.getStaticPackages(featureName: String): List<ApkFileInfo> {
         return packageManager.getInstalledPackages(PACKAGE_FLAGS).filter {
             it.reqFeatures.orEmpty().any { featureInfo ->
                 featureInfo.name == featureName
             }
         }.mapNotNull { info ->
             info.applicationInfo?.let {
-                AppInfo(it.sourceDir, it)
+                ApkFileInfo(it.sourceDir, it)
             }
         }
     }

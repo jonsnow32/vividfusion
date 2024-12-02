@@ -20,40 +20,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class ExtensionModule {
-  @Provides
-  @Singleton
-  fun provideExtensionLoader(
-    context: Application,
-    dataStore: DataStore,
-    httpHelper: HttpHelper,
-    sharedPreferences: SharedPreferences,
-    throwableFlow: MutableSharedFlow<Throwable>,
-    databaseExtensionListFlow: MutableStateFlow<List<DatabaseExtension>>,
-    databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
-
-    streamExtensionListFlow: MutableStateFlow<List<StreamExtension>>,
-    streamExtensionFlow: MutableStateFlow<StreamExtension?>,
-
-    subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>,
-    subtitleExtensionFlow: MutableStateFlow<SubtitleExtension?>,
-
-    extensionsFlow: MutableStateFlow<List<Extension<*>>>
-  ) = ExtensionLoader(
-    context,
-    dataStore,
-    httpHelper,
-    throwableFlow,
-    sharedPreferences,
-    databaseExtensionListFlow,
-    databaseExtensionFlow,
-
-    streamExtensionListFlow,
-    streamExtensionFlow,
-
-    subtitleExtensionListFlow,
-    subtitleExtensionFlow,
-    extensionsFlow
-  )
 
   @Provides
   @Singleton
@@ -86,5 +52,45 @@ class ExtensionModule {
   @Singleton
   fun provideSubtitleExtensionList() = MutableStateFlow<List<SubtitleExtension>>(emptyList())
 
+  @Provides
+  @Singleton
+  fun providesRefresher(): MutableSharedFlow<Boolean> = MutableStateFlow(false)
+
+  @Provides
+  @Singleton
+  fun provideExtensionLoader(
+    context: Application,
+    dataStore: DataStore,
+    httpHelper: HttpHelper,
+    sharedPreferences: SharedPreferences,
+    throwableFlow: MutableSharedFlow<Throwable>,
+    databaseExtensionListFlow: MutableStateFlow<List<DatabaseExtension>>,
+    databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
+
+    streamExtensionListFlow: MutableStateFlow<List<StreamExtension>>,
+    streamExtensionFlow: MutableStateFlow<StreamExtension?>,
+
+    subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>,
+    subtitleExtensionFlow: MutableStateFlow<SubtitleExtension?>,
+
+    extensionsFlow: MutableStateFlow<List<Extension<*>>>,
+    refresher: MutableSharedFlow<Boolean>
+  ) = ExtensionLoader(
+    context,
+    dataStore,
+    httpHelper,
+    throwableFlow,
+    sharedPreferences,
+    databaseExtensionListFlow,
+    databaseExtensionFlow,
+
+    streamExtensionListFlow,
+    streamExtensionFlow,
+
+    subtitleExtensionListFlow,
+    subtitleExtensionFlow,
+    extensionsFlow,
+    refresher
+  )
 
 }

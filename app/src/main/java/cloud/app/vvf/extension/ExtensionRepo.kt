@@ -2,7 +2,7 @@ package cloud.app.vvf.extension
 
 import android.content.Context
 import cloud.app.vvf.extension.plugger.AndroidPluginLoader
-import cloud.app.vvf.extension.plugger.ApkFileManifestParser
+import cloud.app.vvf.extension.plugger.FileManifestParser
 import cloud.app.vvf.extension.plugger.ApkManifestParser
 import cloud.app.vvf.extension.plugger.ApkPluginSource
 import cloud.app.vvf.extension.plugger.FileChangeListener
@@ -20,7 +20,6 @@ import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.utils.getSettings
 import tel.jeelpa.plugger.utils.mapState
 import java.io.File
@@ -37,9 +36,9 @@ sealed class ExtensionRepo<T : BaseClient>(
   private val composed by lazy {
     val loader = AndroidPluginLoader<T>(context)
     val dir = context.getPluginFileDir(type)
-    val apkFilePluginRepo = LazyPluginRepoImpl(
+    val filePluginRepo = LazyPluginRepoImpl(
       FilePluginSource(dir, fileChangeListener.scope, fileChangeListener.getFlow(type)),
-      ApkFileManifestParser(context.packageManager, ApkManifestParser(ImportType.File)),
+      FileManifestParser(context.packageManager),
       loader,
     )
     val appPluginRepo = LazyPluginRepoImpl(
@@ -47,7 +46,7 @@ sealed class ExtensionRepo<T : BaseClient>(
       ApkManifestParser(ImportType.App),
       loader
     )
-    LazyRepoComposer(*repo, appPluginRepo, apkFilePluginRepo)
+    LazyRepoComposer(*repo, appPluginRepo, filePluginRepo)
   }
 
   private fun injected() = composed.getAllPlugins().mapState { list ->

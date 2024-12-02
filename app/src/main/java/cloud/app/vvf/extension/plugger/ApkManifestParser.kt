@@ -5,8 +5,8 @@ import tel.jeelpa.plugger.ManifestParser
 import cloud.app.vvf.common.models.ExtensionMetadata
 class ApkManifestParser(
     private val importType: ImportType
-) : ManifestParser<AppInfo, ExtensionMetadata> {
-    override fun parseManifest(data: AppInfo): ExtensionMetadata = with(data.appInfo.metaData) {
+) : ManifestParser<ApkFileInfo, ExtensionMetadata> {
+    override fun parseManifest(data: ApkFileInfo): ExtensionMetadata = with(data.appInfo.metaData) {
         fun get(key: String): String = getString(key)
             ?: error("$key not found in Metadata for ${data.appInfo.packageName}")
 

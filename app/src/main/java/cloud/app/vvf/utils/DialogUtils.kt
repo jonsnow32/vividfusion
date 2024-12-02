@@ -30,6 +30,7 @@ import cloud.app.vvf.databinding.DialogBottomInputBinding
 import cloud.app.vvf.databinding.OptionsPopupTvBinding
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
+import cloud.app.vvf.databinding.DialogAddRepoInputBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import timber.log.Timber

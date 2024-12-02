@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -19,7 +18,7 @@
             android:layout_width="32dp"
             android:layout_height="@dimen/collapsed_cover_size"
             android:layout_marginHorizontal="8dp"
-            android:contentDescription="@string/extensions"
+            android:contentDescription="@string/extension"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/ic_extension_24dp" />
 
@@ -49,26 +48,18 @@
                 tools:text="@tools:sample/full_names" />
 
             <TextView
-                android:id="@+id/extensionVersion"
+                android:id="@+id/extensionSubtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 tools:text="@tools:sample/cities" />
         </LinearLayout>
 
-        <LinearLayout
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/extensionSwitch"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="8dp">
-
-            <cloud.app.vvf.ui.extension.widget.ExtensionStatusButton
-                android:id="@+id/extensionAddOrRemove"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/close"
-                android:padding="8dp"
-                app:downloadStatus="NOT_STARTED"
-                tools:ignore="DuplicateClickableBoundsCheck" />
-        </LinearLayout>
+            android:checked="true"
+            android:padding="16dp" />
     </LinearLayout>
 </LinearLayout>
