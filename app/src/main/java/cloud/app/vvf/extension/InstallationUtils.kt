@@ -35,8 +35,8 @@ suspend fun addApkFile(context: FragmentActivity, file: File): Result<Boolean> =
   val type = getType(packageInfo!!)
   val metadata = ApkManifestParser(ImportType.File)
     .parseManifest(ApkFileInfo(file.path, packageInfo.applicationInfo!!))
-  val flow = fileChangeListener.getFlow(type)
-  val dir = context.getPluginFileDir(type)
+  val flow = fileChangeListener.flow
+  val dir = context.getPluginFileDir()
   val newFile = File(dir, "${metadata.id}.apk")
   flow.emit(newFile)
   dir.setWritable(true)
@@ -53,9 +53,8 @@ suspend fun addJarFile(context: FragmentActivity, file: File): Result<Boolean> =
   val extensionLoader = viewModel.extensionLoader
   val fileChangeListener = extensionLoader.fileListener
   val metadata = FileManifestParser(context.packageManager).parseManifest(file)
-  val type = ExtensionType.entries.first { metadata.type == it.feature }
-  val flow = fileChangeListener.getFlow(type)
-  val dir = context.getPluginFileDir(type)
+  val flow = fileChangeListener.flow
+  val dir = context.getPluginFileDir()
   val newFile = File(dir, "${metadata.id}.jar")
   flow.emit(newFile)
   dir.setWritable(true)
@@ -104,7 +103,7 @@ suspend fun uninstallExtension(
       val file = File(extension.metadata.path)
       val viewModel by context.viewModels<ExtensionViewModel>()
       val extensionLoader = viewModel.extensionLoader
-      val flow = extensionLoader.fileListener.getFlow(extension.type)
+      val flow = extensionLoader.fileListener.flow
       flow.emit(file)
       file.parentFile!!.setWritable(true)
       file.setWritable(true)
@@ -155,3 +154,5 @@ fun getType(appInfo: PackageInfo) = appInfo.reqFeatures?.find { featureInfo ->
   ExtensionType.entries.first { it.feature == featureInfo.name.removePrefix(FEATURE) }
 } ?: error("Extension type not found for ${appInfo.packageName}")
 
+
+fun getID(appInfo: PackageInfo) = appInfo.applicationInfo?.metaData?.getString("id")

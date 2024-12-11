@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.MainActivityViewModel.Companion.applyFabInsets
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
@@ -29,6 +30,7 @@ import cloud.app.vvf.utils.showNginxTextInputDialog
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class ManageExtensionsFragment : Fragment() {
   var binding by autoCleared<FragmentManageExtensionsBinding>()
@@ -97,19 +99,18 @@ class ManageExtensionsFragment : Fragment() {
 
 
     var type = ExtensionType.entries[binding.extTabLayout.selectedTabPosition]
-    fun change(pos: Int): Job {
+    fun change(pos: Int) {
       type = ExtensionType.entries[pos]
-      val flow = viewModel.getExtensionListFlow(type)
-      return observe(flow) { list ->
-        extensionAdapter.submit(list ?: emptyList())
+      val list = viewModel.getExtensionsByType(type)
+      if(list != null)
+      lifecycleScope.launch {
+        extensionAdapter.submit(list)
       }
     }
 
     binding.extTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-      var job: Job? = null
-      override fun onTabSelected(tab: TabLayout.Tab) {
-        job?.cancel()
-        job = change(tab.position)
+
+      override fun onTabSelected(tab: TabLayout.Tab) { change(tab.position)
       }
 
       override fun onTabUnselected(tab: TabLayout.Tab) {}

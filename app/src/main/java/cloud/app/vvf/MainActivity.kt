@@ -1,6 +1,7 @@
 package cloud.app.vvf
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
@@ -14,10 +15,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.databinding.ActivityMainBinding
 import cloud.app.vvf.features.player.PlayerManager
 import cloud.app.vvf.utils.Utils.isAndroidTV
+import cloud.app.vvf.utils.openItemFragmentFromUri
 import cloud.app.vvf.utils.tv.screenHeight
 import cloud.app.vvf.utils.updateTv
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.configureSnackBar
@@ -87,9 +90,20 @@ class MainActivity : AppCompatActivity() {
         centerView(view)
       }
     }
+
+    addOnNewIntentListener { onIntent(it) }
+    onIntent(intent)
   }
 
-
+  private fun onIntent(intent: Intent?) {
+    this.intent = null
+    intent ?: return
+    val uri = intent.data
+    when (uri?.scheme) {
+      "vvf" -> openItemFragmentFromUri(uri)
+      "file" -> openExtensionInstaller(uri)
+    }
+  }
   private fun centerView(view: View?) {
     if (view == null) return
     try {

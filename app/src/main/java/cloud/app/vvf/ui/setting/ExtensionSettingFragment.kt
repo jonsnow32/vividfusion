@@ -42,6 +42,8 @@ import cloud.app.vvf.common.settings.SettingList
 import cloud.app.vvf.common.settings.SettingMultipleChoice
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.common.settings.SettingTextInput
+import cloud.app.vvf.datastore.helper.getExtension
+import cloud.app.vvf.extension.getExtensions
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.launch
 
@@ -49,17 +51,15 @@ class ExtensionSettingFragment : Fragment() {
 
   companion object {
     fun newInstance(
-      clientId: String, clientName: String, extensionType: ExtensionType
+      clientId: String, clientName: String
     ) = ExtensionSettingFragment().apply {
       arguments = Bundle().apply {
         putString("clientId", clientId)
-        putString("clientName", clientName)
-        putString("extensionType", extensionType.name)
       }
     }
 
     fun newInstance(extension: Extension<*>) =
-      newInstance(extension.id, extension.name, extension.type)
+      newInstance(extension.id, extension.name)
   }
 
   private var binding by autoCleared<FragmentExtensionBinding>()
@@ -67,11 +67,8 @@ class ExtensionSettingFragment : Fragment() {
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
-  private val clientName by lazy { args.getString("clientName")!! }
-  private val extensionType by lazy {
-    ExtensionType.valueOf(args.getString("extensionType")!!)
-  }
-
+  private val clientName by lazy { viewModel.dataStore.getExtension(clientId)?.name ?: "" }
+  private val extension by lazy { viewModel.extensionListFlow.getExtension(clientId) }
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -92,11 +89,6 @@ class ExtensionSettingFragment : Fragment() {
       }
     }
 
-    val extension = when (extensionType) {
-      ExtensionType.DATABASE -> viewModel.databaseExtensionListFlow.getExtension(clientId)
-      ExtensionType.STREAM -> viewModel.streamExtensionListFlow.getExtension(clientId)
-      ExtensionType.SUBTITLE -> viewModel.subtitleExtensionListFlow.getExtension(clientId)
-    }
 
     if (extension == null) {
       createSnack(requireContext().noClient())
@@ -104,8 +96,7 @@ class ExtensionSettingFragment : Fragment() {
       return
     }
 
-
-    val extensionMetadata = extension.metadata
+    val extensionMetadata = extension?.metadata ?: return
 
     fun updateText(enabled: Boolean) {
       binding.enabledText.text = getString(
@@ -117,7 +108,7 @@ class ExtensionSettingFragment : Fragment() {
       isChecked = extensionMetadata.enabled
       setOnCheckedChangeListener { _, isChecked ->
         updateText(isChecked)
-        viewModel.setExtensionEnabled(extensionType, extensionMetadata.id, isChecked)
+        viewModel.setExtensionEnabled(extensionMetadata.id, isChecked)
       }
       binding.enabledCont.setOnClickListener { toggle() }
     }
@@ -168,31 +159,22 @@ class ExtensionSettingFragment : Fragment() {
   }
 
 
-  val creator =
-    { ExtensionPreference.newInstance(clientId, extensionType.name) }
+  val creator = { ExtensionPreference.newInstance(clientId) }
 
   class ExtensionPreference : PreferenceFragmentCompat() {
     private val args by lazy { requireArguments() }
     private val extensionId by lazy { args.getString("extensionId")!! }
-    private val extensionType: ExtensionType by lazy {
-      val type = args.getString("extensionType")!!
-      ExtensionType.valueOf(type)
-    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
-      preferenceManager.sharedPreferencesName = "$extensionType-$extensionId"
+      preferenceManager.sharedPreferencesName = extensionId
       preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val screen = preferenceManager.createPreferenceScreen(context)
       preferenceScreen = screen
 
       val viewModel by activityViewModels<ExtensionViewModel>()
       viewModel.apply {
-        val client = when (extensionType) {
-          ExtensionType.DATABASE -> databaseExtensionListFlow.getExtension(extensionId)
-          ExtensionType.STREAM -> streamExtensionListFlow.getExtension(extensionId)
-          ExtensionType.SUBTITLE -> subtitleExtensionListFlow.getExtension(extensionId)
-        }
+        val client = viewModel.extensionListFlow.getExtension(extensionId)
 
         viewModelScope.launch {
           client?.run(throwableFlow) {
@@ -303,10 +285,9 @@ class ExtensionSettingFragment : Fragment() {
     }
 
     companion object {
-      fun newInstance(id: String, type: String): ExtensionPreference {
+      fun newInstance(id: String): ExtensionPreference {
         val bundle = Bundle().apply {
           putString("extensionId", id)
-          putString("extensionType", type)
         }
         return ExtensionPreference().apply {
           arguments = bundle

@@ -3,6 +3,8 @@ package cloud.app.vvf.extension.plugger
 import cloud.app.vvf.common.helpers.ImportType
 import tel.jeelpa.plugger.ManifestParser
 import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.ExtensionType
+
 class ApkManifestParser(
     private val importType: ImportType
 ) : ManifestParser<ApkFileInfo, ExtensionMetadata> {
@@ -10,6 +12,7 @@ class ApkManifestParser(
         fun get(key: String): String = getString(key)
             ?: error("$key not found in Metadata for ${data.appInfo.packageName}")
 
+      val types = getString("types")?.split(",")?.map { type -> ExtensionType.entries.first { it.feature == type } }
         ExtensionMetadata(
             path = data.path,
             className = get("class"),
@@ -23,7 +26,8 @@ class ApkManifestParser(
             iconUrl = getString("icon_url"),
             repoUrl = getString("repo_url"),
             updateUrl = getString("update_url"),
-            enabled = getBoolean("enabled", true)
+            enabled = getBoolean("enabled", true),
+            types =types
         )
     }
 }

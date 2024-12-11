@@ -2,13 +2,13 @@ package cloud.app.vvf.ui.main.search
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
-import cloud.app.vvf.ui.main.FeedViewModel
-import cloud.app.vvf.ui.paging.toFlow
 import cloud.app.vvf.common.clients.BaseClient
-import cloud.app.vvf.common.clients.DatabaseExtension
+import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.QuickSearchItem
+import cloud.app.vvf.ui.main.FeedViewModel
+import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -20,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  override val databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
+  override val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
 ) : FeedViewModel(throwableFlow, databaseExtensionFlow) {
 
   var query: String? = ""

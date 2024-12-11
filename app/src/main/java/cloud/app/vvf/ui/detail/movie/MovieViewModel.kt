@@ -2,15 +2,16 @@ package cloud.app.vvf.ui.detail.movie
 
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.base.CatchingViewModel
+import cloud.app.vvf.common.clients.Extension
+import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.clients.streams.StreamClient
+import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.datastore.helper.addFavoritesData
 import cloud.app.vvf.datastore.helper.getFavoritesData
 import cloud.app.vvf.datastore.helper.removeFavoritesData
 import cloud.app.vvf.extension.run
-import cloud.app.vvf.common.clients.DatabaseExtension
-import cloud.app.vvf.common.clients.StreamExtension
-import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.stream.StreamData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -23,8 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MovieViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
-  val streamExtensionFlow: MutableStateFlow<StreamExtension?>,
+  val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  val streamExtensionFlow: MutableStateFlow<Extension<StreamClient>?>,
   val dataStore: DataStore,
 ) : CatchingViewModel(throwableFlow) {
 

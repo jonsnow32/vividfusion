@@ -18,6 +18,7 @@ import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.databinding.DialogExtensionInstallerBinding
 import cloud.app.vvf.extension.ExtensionLoadingException
+import cloud.app.vvf.extension.getID
 import cloud.app.vvf.extension.getType
 import cloud.app.vvf.extension.plugger.ApkManifestParser
 import cloud.app.vvf.extension.plugger.ApkPluginSource
@@ -50,15 +51,14 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
       if (file.path.endsWith("apk")) {
         val packageInfo = requireActivity().packageManager
           .getPackageArchiveInfo(file.path, ApkPluginSource.PACKAGE_FLAGS)!!
-        val type = getType(packageInfo)
+        val id = getID(packageInfo)
         val metadata = ApkManifestParser(ImportType.App).parseManifest(
           ApkFileInfo(file.path, packageInfo.applicationInfo!!)
         )
-        type to metadata
+        id to metadata
       } else {
         val metadata = FileManifestParser(requireActivity().packageManager).parseManifest(file)
-        val type = ExtensionType.entries.first { metadata.type == it.feature }
-        type to metadata
+        metadata.id to metadata
       }
 
 
@@ -79,7 +79,7 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
     val value = pair.getOrElse {
       val viewModel by activityViewModels<ExtensionViewModel>()
       lifecycleScope.launch {
-        viewModel.throwableFlow.emit(ExtensionLoadingException(ExtensionType.DATABASE, it))
+        //viewModel.throwableFlow.emit(ExtensionLoadingException(ExtensionType.DATABASE, it))
       }
       dismiss()
       return
@@ -99,16 +99,9 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
     binding.extensionDetails.text = metadata.version
 
     val byAuthor = getString(R.string.by_author, metadata.author)
-    val type = when (extensionType) {
-      ExtensionType.DATABASE -> R.string.database
-      ExtensionType.STREAM -> R.string.streams
-      ExtensionType.SUBTITLE -> R.string.subtitle
-      else -> {
-        R.string.unknown
-      }
-    }
+    val types = metadata.types.toString()
 
-    val typeString = getString(R.string.name_extension, getString(type), byAuthor)
+    val typeString = getString(R.string.name_extension, types, byAuthor)
     binding.extensionDescription.text = "$typeString\n\n${metadata.description}\n\n$byAuthor"
 
     val isSupported = supportedLinks.isNotEmpty()

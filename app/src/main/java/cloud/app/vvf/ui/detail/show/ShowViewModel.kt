@@ -3,6 +3,10 @@ package cloud.app.vvf.ui.detail.show
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import cloud.app.vvf.base.CatchingViewModel
+import cloud.app.vvf.common.clients.Extension
+import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.datastore.helper.WatchedFolder
 import cloud.app.vvf.datastore.helper.WatchedItem
@@ -12,9 +16,6 @@ import cloud.app.vvf.datastore.helper.getLastWatched
 import cloud.app.vvf.datastore.helper.removeFavoritesData
 import cloud.app.vvf.extension.run
 import cloud.app.vvf.ui.paging.toFlow
-import cloud.app.vvf.common.clients.DatabaseExtension
-import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -27,7 +28,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ShowViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
+  val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
   val updateUIFlow: MutableStateFlow<AVPMediaItem?>,
   private val dataStore: DataStore,
 ) : CatchingViewModel(throwableFlow) {

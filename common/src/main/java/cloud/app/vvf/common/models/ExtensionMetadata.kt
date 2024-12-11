@@ -18,5 +18,5 @@ data class ExtensionMetadata(
   var repoUrl: String? = null,
   var updateUrl: String? = null,
   var enabled: Boolean = true,
-  var type: String? = null
+  var types: List<ExtensionType>? = null
 )

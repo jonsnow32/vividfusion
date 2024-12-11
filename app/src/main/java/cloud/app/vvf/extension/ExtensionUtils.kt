@@ -3,6 +3,7 @@ package cloud.app.vvf.extension
 import cloud.app.vvf.ui.exception.AppException.Companion.toAppException
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
+import cloud.app.vvf.common.models.ExtensionType
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -34,3 +35,6 @@ inline fun <reified T> Extension<*>.isClient() = instance.value.getOrNull() is T
 
 fun StateFlow<List<Extension<*>>?>.getExtension(id: String?) =
   value?.find { it.metadata.id == id }
+
+fun StateFlow<List<Extension<*>>?>.getExtensions(type: ExtensionType) =
+  value?.filter { it.metadata.types?.contains(type) == true}

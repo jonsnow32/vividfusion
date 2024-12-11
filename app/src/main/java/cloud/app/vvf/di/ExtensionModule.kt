@@ -2,13 +2,13 @@ package cloud.app.vvf.di
 
 import android.app.Application
 import android.content.SharedPreferences
+import cloud.app.vvf.common.clients.Extension
+import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.clients.streams.StreamClient
+import cloud.app.vvf.common.clients.subtitles.SubtitleClient
+import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.extension.ExtensionLoader
-import cloud.app.vvf.common.clients.DatabaseExtension
-import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.clients.StreamExtension
-import cloud.app.vvf.common.clients.SubtitleExtension
-import cloud.app.vvf.common.helpers.network.HttpHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,8 +23,7 @@ class ExtensionModule {
 
   @Provides
   @Singleton
-  fun provideCurrentDatabaseExtension() = MutableStateFlow<DatabaseExtension?>(null)
-
+  fun provideCurrentDatabaseExtension() = MutableStateFlow<Extension<DatabaseClient>?>(null)
 
   @Provides
   @Singleton
@@ -32,25 +31,11 @@ class ExtensionModule {
 
   @Provides
   @Singleton
-  fun provideDatabaseExtensionList() = MutableStateFlow<List<DatabaseExtension>>(emptyList())
-
-
-  @Provides
-  @Singleton
-  fun provideCurrentStreamExtension() = MutableStateFlow<StreamExtension?>(null)
+  fun provideCurrentStreamExtension() = MutableStateFlow<Extension<StreamClient>?>(null)
 
   @Provides
   @Singleton
-  fun provideStreamExtensionList() = MutableStateFlow<List<StreamExtension>>(emptyList())
-
-
-  @Provides
-  @Singleton
-  fun provideCurrentSubtitleExtension() = MutableStateFlow<SubtitleExtension?>(null)
-
-  @Provides
-  @Singleton
-  fun provideSubtitleExtensionList() = MutableStateFlow<List<SubtitleExtension>>(emptyList())
+  fun provideCurrentSubtitleExtension() = MutableStateFlow<Extension<SubtitleClient>?>(null)
 
   @Provides
   @Singleton
@@ -64,14 +49,9 @@ class ExtensionModule {
     httpHelper: HttpHelper,
     sharedPreferences: SharedPreferences,
     throwableFlow: MutableSharedFlow<Throwable>,
-    databaseExtensionListFlow: MutableStateFlow<List<DatabaseExtension>>,
-    databaseExtensionFlow: MutableStateFlow<DatabaseExtension?>,
-
-    streamExtensionListFlow: MutableStateFlow<List<StreamExtension>>,
-    streamExtensionFlow: MutableStateFlow<StreamExtension?>,
-
-    subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>,
-    subtitleExtensionFlow: MutableStateFlow<SubtitleExtension?>,
+    databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+    streamExtensionFlow: MutableStateFlow<Extension<StreamClient>?>,
+    subtitleExtensionFlow: MutableStateFlow<Extension<SubtitleClient>?>,
 
     extensionsFlow: MutableStateFlow<List<Extension<*>>>,
     refresher: MutableSharedFlow<Boolean>
@@ -81,13 +61,8 @@ class ExtensionModule {
     httpHelper,
     throwableFlow,
     sharedPreferences,
-    databaseExtensionListFlow,
     databaseExtensionFlow,
-
-    streamExtensionListFlow,
     streamExtensionFlow,
-
-    subtitleExtensionListFlow,
     subtitleExtensionFlow,
     extensionsFlow,
     refresher

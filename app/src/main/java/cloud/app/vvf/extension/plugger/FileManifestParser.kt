@@ -4,8 +4,11 @@ import android.content.pm.PackageManager
 import cloud.app.vvf.common.helpers.ImportType
 import tel.jeelpa.plugger.ManifestParser
 import cloud.app.vvf.common.models.ExtensionMetadata
+import com.google.gson.Gson
 import java.io.File
+import java.io.InputStreamReader
 import java.util.jar.JarFile
+import java.util.zip.ZipFile
 
 class FileManifestParser(
   private val packageManager: PackageManager,
@@ -36,38 +39,23 @@ class FileManifestParser(
     )
   }
 
-  private fun parseJarManifest(data: File): ExtensionMetadata {
-    val manifestAttributes = mutableMapOf<String, String>()
-
-    JarFile(data).use { jar ->
-      val manifest = jar.manifest
-      if (manifest != null) {
-        val attributes = manifest.mainAttributes
-        attributes.forEach { key, value ->
-          manifestAttributes[key.toString()] = value.toString()
+  private fun parseJarManifest(zipFilePath: File): ExtensionMetadata {
+    val zipFile = ZipFile(zipFilePath)
+    zipFile.use { zip ->
+      // Look for metadata.json in the ZIP file
+      val metadataEntry = zip.getEntry("metadata.json")
+      if (metadataEntry != null) {
+        // Open the metadata.json file and parse it
+        zip.getInputStream(metadataEntry).use { inputStream ->
+          val reader = InputStreamReader(inputStream)
+          val gson = Gson()
+          val vvfInfo = gson.fromJson(reader, VvfFileInfo::class.java)
+          if(vvfInfo != null)
+            return vvfInfo.toExtensionMetadata(zipFilePath.absolutePath)
         }
       }
     }
-
-    val vvfFileInfo = if (manifestAttributes.isNotEmpty()) {
-      VvfFileInfo(
-        extensionId = manifestAttributes["Extension-Id"] ?: "",
-        extensionType = manifestAttributes["Extension-Type"] ?: "",
-        extensionClass = manifestAttributes["Extension-Class"] ?: "",
-        extensionVersionCode = manifestAttributes["Extension-Version-Code"]?.toIntOrNull() ?: 0,
-        extensionVersionName = manifestAttributes["Extension-Version-Name"] ?: "",
-        extensionIconUrl = manifestAttributes["Extension-Icon-Url"] ?: "",
-        extensionName = manifestAttributes["Extension-Name"] ?: "",
-        extensionDescription = manifestAttributes["Extension-Description"] ?: "",
-        extensionAuthor = manifestAttributes["Extension-Author"] ?: "",
-        extensionAuthorUrl = manifestAttributes["Extension-Author-Url"] ?: "",
-        extensionRepoUrl = manifestAttributes["Extension-Repo-Url"] ?: "",
-        extensionUpdateUrl = manifestAttributes["Extension-Update-Url"] ?: ""
-      )
-    } else {
-      error("not found in Metadata for ${data.absolutePath}")
-    }
-    return vvfFileInfo.toExtensionMetadata(data.absolutePath)
+    error("metadata.json not found in ZIP file.")
   }
 
   override fun parseManifest(data: File): ExtensionMetadata {

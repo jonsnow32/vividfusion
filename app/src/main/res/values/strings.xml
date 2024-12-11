@@ -174,7 +174,8 @@
   <string name="enable">Enable</string>
   <string name="enabled">Enabled</string>
   <string name="disabled">Disabled</string>
-  <string-array name="themes">
+    <string name="something_went_wrong">Something went wrong!!</string>
+    <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>
     <item>System</item>

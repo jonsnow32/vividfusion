@@ -9,6 +9,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItemsContainer
 import cloud.app.vvf.common.models.Actor
 import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.QuickSearchItem
@@ -554,6 +555,7 @@ class BuiltInDatabaseClient : DatabaseClient {
       version = "1.0.0",
       author = "Avp",
       iconUrl = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
+      types = listOf(ExtensionType.DATABASE)
     )
 
     private fun List<MediaItemsContainer>.toPaged() = PagedData.Single { this }

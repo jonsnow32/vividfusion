@@ -12,10 +12,10 @@ import cloud.app.vvf.ExtensionOpenerActivity.Companion.installExtension
 import cloud.app.vvf.R
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.BaseClient
-import cloud.app.vvf.common.clients.DatabaseExtension
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.clients.StreamExtension
-import cloud.app.vvf.common.clients.SubtitleExtension
+import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.clients.streams.StreamClient
+import cloud.app.vvf.common.clients.subtitles.SubtitleClient
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.datastore.helper.createOrUpdateExtension
@@ -23,7 +23,9 @@ import cloud.app.vvf.datastore.helper.getExtension
 import cloud.app.vvf.extension.ExtensionAssetResponse
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.extension.downloadUpdate
+import cloud.app.vvf.extension.getExtension
 import cloud.app.vvf.extension.getExtensionList
+import cloud.app.vvf.extension.getExtensions
 import cloud.app.vvf.extension.getUpdateFileUrl
 import cloud.app.vvf.extension.installExtension
 import cloud.app.vvf.extension.uninstallExtension
@@ -48,9 +50,7 @@ class ExtensionViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionLoader: ExtensionLoader,
   val settings: SharedPreferences,
-  val databaseExtensionListFlow: MutableStateFlow<List<DatabaseExtension>>,
-  val streamExtensionListFlow: MutableStateFlow<List<StreamExtension>>,
-  val subtitleExtensionListFlow: MutableStateFlow<List<SubtitleExtension>>,
+  val extensionListFlow: MutableStateFlow<List<Extension<*>>>,
   val refresher: MutableSharedFlow<Boolean>,
   val okHttpClient: OkHttpClient,
   val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
@@ -63,16 +63,7 @@ class ExtensionViewModel @Inject constructor(
     }
   }
 
-  suspend fun allExtensions() = ExtensionType.entries.map { type ->
-    val flow = getExtensionListFlow(type)
-    flow.first { true }
-  }.flatten()
-
-  fun getExtensionListFlow(type: ExtensionType) = when (type) {
-    ExtensionType.DATABASE -> databaseExtensionListFlow
-    ExtensionType.STREAM -> streamExtensionListFlow
-    ExtensionType.SUBTITLE -> subtitleExtensionListFlow
-  }
+   fun getExtensionsByType(type: ExtensionType) = extensionListFlow.getExtensions(type)
 
   suspend fun install(context: FragmentActivity, file: File, installAsApk: Boolean): Boolean {
     val result = installExtension(context, file, installAsApk).getOrElse {
@@ -173,10 +164,10 @@ class ExtensionViewModel @Inject constructor(
     }
   }
 
-  fun setExtensionEnabled(extensionType: ExtensionType, id: String, checked: Boolean) {
-    val extension = dataStore.getExtension(extensionType, id)
+  fun setExtensionEnabled(id: String, checked: Boolean) {
+    val extension = dataStore.getExtension(id)
     extension?.enabled = checked
-    extension?.let { dataStore.createOrUpdateExtension(extensionType, extension) }
+    extension?.let { dataStore.createOrUpdateExtension(extension) }
     viewModelScope.launch { refresher.emit(true) }
 
   }
