@@ -58,7 +58,7 @@ class ExtensionInstallerBottomSheet : BottomSheetDialogFragment() {
         id to metadata
       } else {
         val metadata = FileManifestParser(requireActivity().packageManager).parseManifest(file)
-        metadata.id to metadata
+        metadata.className to metadata
       }
 
 

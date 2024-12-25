@@ -1,5 +1,6 @@
 package cloud.app.vvf.ui.extension.adapter
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -9,6 +10,7 @@ import cloud.app.vvf.databinding.ItemExtensionBinding
 import cloud.app.vvf.extension.ExtensionAssetResponse
 import cloud.app.vvf.ui.extension.widget.InstallStatus
 import cloud.app.vvf.utils.loadWith
+import cloud.app.vvf.utils.setTextWithVisibility
 
 class ExtensionsRepoAdapter(
   var list: List<Item>,
@@ -49,13 +51,12 @@ class ExtensionsRepoAdapter(
 
   override fun getItemCount() = list.size
 
+  @SuppressLint("SetTextI18n")
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val item = list[position]
     val binding = holder.binding
-    binding.extensionName.text =
-      if (item.status == InstallStatus.INSTALLED) item.data.name
-      else binding.root.context.getString(R.string.extension_installed, item.data.name)
-    binding.extensionVersion.text = item.data.subtitle ?: item.data.id
+    binding.extensionName.text =  "${item.data.name} [v${item.data.version}]"
+    binding.extensionVersion.setTextWithVisibility(item.data.description)
     binding.itemExtension.apply {
       item.data.iconUrl?.toImageHolder().loadWith(this, R.drawable.ic_extension_24dp) {
         setImageDrawable(it)

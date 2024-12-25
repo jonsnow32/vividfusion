@@ -13,7 +13,7 @@ class LazyRepoComposer<TPlugin>(
     override fun getAllPlugins() = repos.map { it.getAllPlugins() }
         .reduce { a, b -> combineStates(a, b) { x, y -> x + y } }
         .mapState { list ->
-            list.groupBy { it.getOrNull()?.first?.id }.map { entry ->
+            list.groupBy { it.getOrNull()?.first?.className }.map { entry ->
                 entry.value.minBy {
                     it.getOrNull()?.first?.importType?.ordinal ?: Int.MAX_VALUE
                 }

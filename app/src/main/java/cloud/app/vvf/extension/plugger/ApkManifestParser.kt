@@ -17,7 +17,6 @@ class ApkManifestParser(
             path = data.path,
             className = get("class"),
             importType = importType,
-            id = get("id"),
             name = get("name"),
             version = get("version"),
             description = get("description"),

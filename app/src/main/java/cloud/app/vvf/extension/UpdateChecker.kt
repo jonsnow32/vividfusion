@@ -39,6 +39,7 @@ suspend fun downloadUpdate(
   }
   file
 }
+
 private fun getFileNameFromResponse(response: Response): String? {
   val contentDisposition = response.header("Content-Disposition") ?: return null
 
@@ -58,6 +59,7 @@ private fun getFileNameFromResponse(response: Response): String? {
 
   return null
 }
+
 suspend fun getUpdateFileUrl(
   currentVersion: String,
   updateUrl: String,
@@ -66,7 +68,7 @@ suspend fun getUpdateFileUrl(
   if (updateUrl.startsWith("https://api.github.com")) {
     getGithubUpdateUrl(currentVersion, updateUrl, client).getOrThrow()
   } else {
-    throw Exception("Unsupported update url")
+    updateUrl
   }
 }
 
@@ -125,15 +127,43 @@ suspend fun getExtensionList(
   throw InvalidExtensionListException(it)
 }
 
+
 @Serializable
 data class ExtensionAssetResponse(
-  val id: String,
+  @SerialName("repoUrl")
+  val repoUrl: String? = null,
+
+  @SerialName("fileSize")
+  val fileSize: Long? = null,
+
+  @SerialName("author")
+  val author: List<String>? = null,
+
+  @SerialName("name")
   val name: String,
-  val subtitle: String? = null,
+
+  @SerialName("className")
+  val className: String,
+
+  @SerialName("iconUrl")
   val iconUrl: String? = null,
-  val updateUrl: String,
-  val isPreRelease: Boolean = false
+
+  @SerialName("description")
+  val description: String? = null,
+
+  @SerialName("version")
+  val version: String,
+
+  @SerialName("url")
+  val url: String,
+
+  @SerialName("status")
+  val status: Int,
+
+  @SerialName("id")
+  val id: String
 )
+
 
 
 

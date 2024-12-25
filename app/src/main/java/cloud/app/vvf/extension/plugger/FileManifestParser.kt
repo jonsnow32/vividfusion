@@ -26,7 +26,6 @@ class FileManifestParser(
       path = file.path,
       className = get("class"),
       importType = ImportType.File,
-      id = get("id"),
       name = get("name"),
       version = get("version"),
       description = get("description"),

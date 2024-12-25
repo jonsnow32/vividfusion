@@ -15,7 +15,7 @@ fun DataStore.getExtensions(type: ExtensionType, id: String): List<ExtensionMeta
 }
 
 fun DataStore.createOrUpdateExtension(metadata: ExtensionMetadata) {
-  return setKey("$ExtensionFolder/${metadata.id}", metadata)
+  return setKey("$ExtensionFolder/${metadata.className}", metadata)
 }
 
 fun DataStore.removeExtension(id: String) {

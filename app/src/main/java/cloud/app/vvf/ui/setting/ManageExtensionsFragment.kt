@@ -125,7 +125,7 @@ class ManageExtensionsFragment : Fragment() {
     binding.fabAddExtensions.setOnClickListener {
       //ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
       activity?.showNginxTextInputDialog(
-        getString(R.string.add_extensions), "https://gist.github.com/jonsnow32/6decd455453956cdcacfd74c7b2cbb13/raw/d80659811eeab174b6364b4b32f403872a7dd999/sample_extensions_repo.json",
+        getString(R.string.add_extensions), "https://github.com/jonsnow32/vivid-sample-extension/releases/download/1ba398f/plugins.json",
         InputType.TYPE_TEXT_VARIATION_URI, {}) { url ->
         activity?.let {
           viewModel.addFromLinkOrCode(it, url);

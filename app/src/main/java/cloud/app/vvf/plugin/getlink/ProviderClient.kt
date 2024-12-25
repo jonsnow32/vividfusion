@@ -66,7 +66,6 @@ class ProviderClient: StreamClient {
       className = "OfflineExtension",
       path = "",
       importType = ImportType.BuiltIn,
-      id = "stream-built-in",
       name = "Ghost Extension",
       description = "the Sample of Built-in Extension",
       version = "1.0.0",

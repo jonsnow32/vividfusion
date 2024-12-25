@@ -8,7 +8,6 @@ data class ExtensionMetadata(
   val className: String,
   val path: String,
   val importType: ImportType,
-  val id: String,
   var name: String,
   var version: String,
   var description: String,

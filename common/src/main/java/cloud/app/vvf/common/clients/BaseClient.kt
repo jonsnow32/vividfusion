@@ -35,7 +35,7 @@ open class Extension<T : BaseClient>(
   open val metadata: ExtensionMetadata,
   open val instance: Lazy<Result<T>>
 ) {
-  val id : String get() = metadata.id
+  val id : String get() = metadata.className
   val name : String get() = metadata.name
 
   inline fun <reified R : BaseClient> asType(): Extension<R>? {

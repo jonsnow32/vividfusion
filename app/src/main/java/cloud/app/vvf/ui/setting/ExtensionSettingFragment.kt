@@ -108,7 +108,7 @@ class ExtensionSettingFragment : Fragment() {
       isChecked = extensionMetadata.enabled
       setOnCheckedChangeListener { _, isChecked ->
         updateText(isChecked)
-        viewModel.setExtensionEnabled(extensionMetadata.id, isChecked)
+        viewModel.setExtensionEnabled(extensionMetadata.className, isChecked)
       }
       binding.enabledCont.setOnClickListener { toggle() }
     }
@@ -140,7 +140,7 @@ class ExtensionSettingFragment : Fragment() {
     val nameAndAuthor = getString(R.string.name_extension, extensionMetadata.importType.name, extensionMetadata.author)
 
     binding.extensionDetails.text =
-      "${nameAndAuthor}\n${extensionMetadata.id} •${extensionMetadata.version}"
+      "${nameAndAuthor}\n${extensionMetadata.className} •${extensionMetadata.version}"
 
     binding.extensionDescription.text = extensionMetadata.description
 

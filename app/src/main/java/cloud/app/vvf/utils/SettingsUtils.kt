@@ -8,7 +8,7 @@ import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.settings.PrefSettings
 
 fun getSettings(context: Context, metadata: ExtensionMetadata): PrefSettings {
-  val name = metadata.id
+  val name = metadata.className
   val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
   return toSettings(prefs)
 }

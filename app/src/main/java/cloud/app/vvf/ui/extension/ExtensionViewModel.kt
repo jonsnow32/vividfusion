@@ -123,7 +123,7 @@ class ExtensionViewModel @Inject constructor(
 
   suspend fun addExtension(context: FragmentActivity, extension: ExtensionAssetResponse) =
     flow<InstallStatus> {
-      val url = getUpdateFileUrl("", extension.updateUrl, okHttpClient).getOrElse {
+      val url = getUpdateFileUrl("", extension.url, okHttpClient).getOrElse {
         throwableFlow.emit(it)
         emit(InstallStatus.FAILED)
         null
@@ -146,7 +146,7 @@ class ExtensionViewModel @Inject constructor(
   fun addExtensions(context: FragmentActivity, extensions: List<ExtensionAssetResponse>) {
     viewModelScope.launch {
       extensions.forEach { extension ->
-        val url = getUpdateFileUrl("", extension.updateUrl, okHttpClient).getOrElse {
+        val url = getUpdateFileUrl("", extension.url, okHttpClient).getOrElse {
           throwableFlow.emit(it)
           null
         } ?: return@forEach

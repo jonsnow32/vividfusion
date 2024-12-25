@@ -546,10 +546,9 @@ class BuiltInDatabaseClient : DatabaseClient {
   companion object {
 
     val metadata = ExtensionMetadata(
-      className = "OfflineExtension",
+      className = "cloud.app.vvf.plugin.BuiltInDatabaseClient",
       path = "",
       importType = ImportType.BuiltIn,
-      id = "tmdb-built-in",
       name = "The extension of TMDB",
       description = "tmdb extension",
       version = "1.0.0",

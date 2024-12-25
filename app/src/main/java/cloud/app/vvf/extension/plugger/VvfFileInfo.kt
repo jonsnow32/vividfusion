@@ -18,14 +18,13 @@ data class VvfFileInfo(
   val author: List<String>,
   val repoUrl: String?,
   val fileSize: Long?,
-  val status: Int
+  val status: Int,
 ) {
   fun toExtensionMetadata(path: String): ExtensionMetadata {
     return ExtensionMetadata(
       className = className,
       path = path, // Pass the path as an argument
       importType = ImportType.File,
-      id = className,
       name = name,
       version = version, // Use versionName for version
       description = description ?: "",

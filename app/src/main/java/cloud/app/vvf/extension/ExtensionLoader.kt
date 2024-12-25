@@ -121,7 +121,7 @@ class ExtensionLoader(
     }
 
     return pluginFlow.map { list ->
-      list.sortedBy { votingMap[it.first.id] }
+      list.sortedBy { votingMap[it.first.className] }
     }
   }
 
@@ -129,7 +129,7 @@ class ExtensionLoader(
 
   private suspend fun isExtensionEnabled(type: ExtensionType, metadata: ExtensionMetadata) =
     withContext(Dispatchers.IO) {
-      dataStore.getExtension(metadata.id)?.enabled
+      dataStore.getExtension(metadata.className)?.enabled
         ?.let { metadata.copy(enabled = it) } ?: metadata
     }
 }

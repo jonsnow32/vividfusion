@@ -34,7 +34,7 @@ suspend inline fun <reified C, R> Extension<*>.get(
 inline fun <reified T> Extension<*>.isClient() = instance.value.getOrNull() is T
 
 fun StateFlow<List<Extension<*>>?>.getExtension(id: String?) =
-  value?.find { it.metadata.id == id }
+  value?.find { it.metadata.className == id }
 
 fun StateFlow<List<Extension<*>>?>.getExtensions(type: ExtensionType) =
   value?.filter { it.metadata.types?.contains(type) == true}

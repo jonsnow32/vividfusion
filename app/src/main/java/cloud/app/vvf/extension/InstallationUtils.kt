@@ -37,7 +37,7 @@ suspend fun addApkFile(context: FragmentActivity, file: File): Result<Boolean> =
     .parseManifest(ApkFileInfo(file.path, packageInfo.applicationInfo!!))
   val flow = fileChangeListener.flow
   val dir = context.getPluginFileDir()
-  val newFile = File(dir, "${metadata.id}.apk")
+  val newFile = File(dir, "${metadata.className}.apk")
   flow.emit(newFile)
   dir.setWritable(true)
   newFile.setWritable(true)
@@ -55,7 +55,7 @@ suspend fun addJarFile(context: FragmentActivity, file: File): Result<Boolean> =
   val metadata = FileManifestParser(context.packageManager).parseManifest(file)
   val flow = fileChangeListener.flow
   val dir = context.getPluginFileDir()
-  val newFile = File(dir, "${metadata.id}.jar")
+  val newFile = File(dir, "${metadata.className}.jar")
   flow.emit(newFile)
   dir.setWritable(true)
   newFile.setWritable(true)
