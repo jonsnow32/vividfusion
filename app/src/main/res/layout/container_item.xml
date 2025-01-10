@@ -20,7 +20,7 @@
     <androidx.cardview.widget.CardView
       android:id="@+id/background"
       android:layout_width="@dimen/media_cover_width"
-      android:layout_height="@dimen/media_cover_width"
+      android:layout_height="@dimen/media_cover_height"
       android:elevation="10dp">
       <ImageView
         android:id="@+id/imageView"

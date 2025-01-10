@@ -1,6 +1,7 @@
-package cloud.app.vvf.plugin.tmdb
+package cloud.app.vvf.extension.builtIn.tmdb
 
-import cloud.app.vvf.plugin.tmdb.model.ImageResult
+import cloud.app.vvf.extension.builtIn.tmdb.model.ImageResult
+import cloud.app.vvf.extension.builtIn.tmdb.model.TmdbCountry
 import com.uwetrottmann.tmdb2.entities.ReviewResultsPage
 import retrofit2.Call
 import retrofit2.http.GET
@@ -25,10 +26,25 @@ interface ExtendService {
     ): Call<ImageResult>
 
 
+    @GET("configuration/countries")
+    fun getContries(): Call<List<TmdbCountry>>
+
+
     @POST("tv/{tv_id}/reviews")
     fun getReviews(
         @Path("tv_id") tvShowId: Int,
         @Query("page") page: Int,
         @Query("language") language: String?,
     ): Call<ReviewResultsPage>
+
+  @GET("tv/{tv_id}/watch/providers")
+  fun watchTvProviders(
+    @Path("tv_id") tvShowId: Int
+  ): Call<cloud.app.vvf.extension.builtIn.tmdb.model.WatchProviders>
+
+  @GET("movie/{movie_id}/watch/providers")
+  fun watchMovieProviders(
+    @Path("movie_id") movieId: Int
+  ): Call<cloud.app.vvf.extension.builtIn.tmdb.model.WatchProviders>
+
 }

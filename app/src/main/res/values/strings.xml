@@ -175,7 +175,10 @@
   <string name="enabled">Enabled</string>
   <string name="disabled">Disabled</string>
     <string name="something_went_wrong">Something went wrong!!</string>
-    <string-array name="themes">
+    <string name="region">Region</string>
+    <string name="bookmarks">Bookmarks</string>
+  <string name="add_to_bookmark">Add to Bookmarks</string>
+  <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>
     <item>System</item>

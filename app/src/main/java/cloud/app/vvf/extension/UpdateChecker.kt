@@ -159,9 +159,6 @@ data class ExtensionAssetResponse(
 
   @SerialName("status")
   val status: Int,
-
-  @SerialName("id")
-  val id: String
 )
 
 

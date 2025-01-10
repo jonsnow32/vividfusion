@@ -9,8 +9,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.databinding.ItemStreamBinding
 import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.utils.loadInto
 
 class StreamAdapter(val listener: ItemClickListener) :
   ListAdapter<StreamData, StreamAdapter.ViewHolder>(DiffCallback) {
@@ -58,8 +60,10 @@ class StreamAdapter(val listener: ItemClickListener) :
     RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("ResourceType")
     fun bind(streamData: StreamData) {
-      binding.name.text = streamData.fileName
+      binding.name.text = streamData.providerName
       binding.url.text = streamData.originalUrl
+      streamData.providerLogo?.toImageHolder().loadInto(binding.logo)
+      streamData.hostLogo?.toImageHolder().loadInto(binding.extLogo)
     }
   }
 

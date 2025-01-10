@@ -9,6 +9,7 @@ import cloud.app.vvf.common.models.SubtitleData
 import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.extension.run
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class StreamViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val streamExtensionFlow: MutableStateFlow<Extension<StreamClient>>,
+  val currentStreamExtensionFlow: MutableStateFlow<Extension<StreamClient>?>,
 ) :
   CatchingViewModel(throwableFlow) {
   private val _streams = MutableStateFlow<List<StreamData>>(emptyList())
@@ -31,16 +32,19 @@ class StreamViewModel @Inject constructor(
   var mediaItem: AVPMediaItem? = null
 
   override fun onInitialize() {
-    viewModelScope.launch {
-      streamExtensionFlow.collect { extensions ->
-        loadStream(extensions, mediaItem)
+    viewModelScope.launch(Dispatchers.IO) {
+      currentStreamExtensionFlow.collect { extension ->
+        if (extension == null) {
+          throwableFlow.emit(Throwable("No stream extension is selected"))
+        } else
+          loadStream(extension, mediaItem)
       }
     }
   }
 
   fun loadStream(extension: Extension<StreamClient>, avpMediaItem: AVPMediaItem?) {
     val item = avpMediaItem ?: return
-    viewModelScope.launch {
+    viewModelScope.launch(Dispatchers.IO) {
       extension.run(throwableFlow) {
         loadLinks(
           item,

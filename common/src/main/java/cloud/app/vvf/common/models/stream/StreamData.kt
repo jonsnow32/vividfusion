@@ -10,6 +10,8 @@ data class StreamData(
   var resolvedUrl: String? = null,
   var resolverName: String? = null,
   var providerName: String? = null,
+  var providerLogo: String? = null,
+  var hostLogo: String? = null,
   var premiumType: Int = PremiumType.Free.ordinal,
   var streamQuality: StreamQuality = StreamQuality.Unknow,
   var fileSize: Long = 0,

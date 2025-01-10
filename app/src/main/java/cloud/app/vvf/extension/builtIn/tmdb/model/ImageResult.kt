@@ -1,15 +1,15 @@
-package cloud.app.vvf.plugin.tmdb.model
+package cloud.app.vvf.extension.builtIn.tmdb.model
 
 
 import com.google.gson.annotations.SerializedName
 
 data class ImageResult(
-    @SerializedName("backdrops")
+  @SerializedName("backdrops")
     val backdrops: List<Backdrop>,
-    @SerializedName("id")
+  @SerializedName("id")
     val id: Int,
-    @SerializedName("logos")
+  @SerializedName("logos")
     val logos: List<Logo>,
-    @SerializedName("posters")
+  @SerializedName("posters")
     val posters: List<Poster>,
 )

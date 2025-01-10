@@ -1,4 +1,4 @@
-package cloud.app.vvf.plugin.tmdb
+package cloud.app.vvf.extension.builtIn.tmdb
 
 import com.google.gson.Gson
 import okhttp3.OkHttpClient

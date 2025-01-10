@@ -6,12 +6,12 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.WatchedFolder
-import cloud.app.vvf.datastore.helper.WatchedItem
+import cloud.app.vvf.datastore.helper.PlaybackProgress
+import cloud.app.vvf.datastore.helper.PlaybackProgressFolder
 import cloud.app.vvf.datastore.helper.addFavoritesData
 import cloud.app.vvf.datastore.helper.getFavoritesData
 import cloud.app.vvf.datastore.helper.removeFavoritesData
-import cloud.app.vvf.datastore.helper.setWatched
+import cloud.app.vvf.datastore.helper.savePlaybackProgress
 import cloud.app.vvf.extension.run
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -41,7 +41,7 @@ class SeasonViewModel @Inject constructor(
         }  ?: shortItem
         loading.value = true
         (detail as AVPMediaItem.SeasonItem).watchedEpisodeNumber =
-          dataStore.getKeys("$WatchedFolder/${detail.id}").count()
+          dataStore.getKeys("$PlaybackProgressFolder/${detail.id}").count()
         fullMediaItem.value = detail
         val favoriteDeferred =
           async { dataStore.getFavoritesData<AVPMediaItem.SeasonItem>(fullMediaItem.value?.id?.toString()) }
@@ -74,7 +74,7 @@ class SeasonViewModel @Inject constructor(
 
   fun saveHistory(episode: AVPMediaItem.EpisodeItem) {
     viewModelScope.launch(Dispatchers.IO) {
-      dataStore.setWatched(WatchedItem(episode, 1000003, 39843984, System.currentTimeMillis()))
+      dataStore.savePlaybackProgress(PlaybackProgress(episode, 1000003, 39843984, System.currentTimeMillis()))
       updateUIFlow.emit(episode)
     }
   }

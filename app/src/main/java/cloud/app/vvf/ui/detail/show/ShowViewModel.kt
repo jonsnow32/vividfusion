@@ -8,11 +8,12 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.WatchedFolder
-import cloud.app.vvf.datastore.helper.WatchedItem
+import cloud.app.vvf.datastore.helper.BOOKMARK_FOLDER
+import cloud.app.vvf.datastore.helper.PlaybackProgress
+import cloud.app.vvf.datastore.helper.PlaybackProgressFolder
 import cloud.app.vvf.datastore.helper.addFavoritesData
 import cloud.app.vvf.datastore.helper.getFavoritesData
-import cloud.app.vvf.datastore.helper.getLastWatched
+import cloud.app.vvf.datastore.helper.getLatestPlaybackProgress
 import cloud.app.vvf.datastore.helper.removeFavoritesData
 import cloud.app.vvf.extension.run
 import cloud.app.vvf.ui.paging.toFlow
@@ -39,7 +40,7 @@ class ShowViewModel @Inject constructor(
   val recommendations = MutableStateFlow<PagingData<AVPMediaItem>?>(null)
 
   val favoriteStatus = MutableStateFlow(false)
-  val lastWatchedEpisode = MutableStateFlow<WatchedItem?>(null)
+  val lastWatchedEpisode = MutableStateFlow<PlaybackProgress?>(null)
 
   fun getItemDetails(shortItem: AVPMediaItem) {
     viewModelScope.launch(Dispatchers.IO) {
@@ -55,14 +56,14 @@ class ShowViewModel @Inject constructor(
         watchedSeasons.value =
           (showDetail as AVPMediaItem.ShowItem).show.seasons?.map { it.toMediaItem(showDetail) }
             ?.map {
-              it.watchedEpisodeNumber = dataStore.getKeys("$WatchedFolder/${it.id}").count()
+              it.watchedEpisodeNumber = dataStore.getKeys("$PlaybackProgressFolder/${it.id}").count()
               it
             }
 
         fullMediaItem.value = showDetail
         val favoriteDeferred =
           async { dataStore.getFavoritesData<AVPMediaItem.ShowItem>(fullMediaItem.value?.id?.toString()) }
-        val lastWatchedDeferred = async { dataStore.getLastWatched(shortItem) }
+        val lastWatchedDeferred = async { dataStore.getLatestPlaybackProgress(shortItem) }
 
         favoriteStatus.value = favoriteDeferred.await()
         lastWatchedEpisode.value = lastWatchedDeferred.await()
@@ -81,10 +82,10 @@ class ShowViewModel @Inject constructor(
                 watchedSeasons.value =
                   item.seasonItem.showItem.show.seasons?.map { it.toMediaItem(item.seasonItem.showItem) }
                     ?.map {
-                      it.watchedEpisodeNumber = dataStore.getKeys("$WatchedFolder/${it.id}").count()
+                      it.watchedEpisodeNumber = dataStore.getKeys("$BOOKMARK_FOLDER/watching/${it.id}").count() + dataStore.getKeys("$BOOKMARK_FOLDER/watched/${it.id}").count()
                       it
                     }
-                lastWatchedEpisode.value = dataStore.getLastWatched(item.seasonItem.showItem)
+                lastWatchedEpisode.value = dataStore.getLatestPlaybackProgress(item.seasonItem.showItem)
               }
             }
 

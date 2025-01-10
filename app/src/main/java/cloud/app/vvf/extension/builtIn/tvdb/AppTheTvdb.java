@@ -1,4 +1,4 @@
-package cloud.app.vvf.plugin.tvdb;
+package cloud.app.vvf.extension.builtIn.tvdb;
 
 import com.uwetrottmann.thetvdb.TheTvdb;
 

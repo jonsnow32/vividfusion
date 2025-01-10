@@ -16,7 +16,9 @@ import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.stream.PremiumType
 import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.utils.Utils
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -64,12 +66,21 @@ class StreamFragment : Fragment(), StreamAdapter.ItemClickListener {
   }
 
   override fun onStreamItemClick(streamData: StreamData) {
-    val playData = PlayData(
-      listOf(streamData),
-      selectedId = 0,
-      title = streamData.fileName
-    )
-    PlayerManager.getInstance().play(playData, parentFragmentManager)
+    when (streamData.premiumType) {
+      PremiumType.JustWatch.ordinal -> {
+        Utils.launchBrowser(requireContext(), streamData.originalUrl)
+      }
+
+      else -> {
+        val playData = PlayData(
+          listOf(streamData),
+          selectedId = 0,
+          title = streamData.fileName
+        )
+        PlayerManager.getInstance().play(playData, parentFragmentManager)
+      }
+    }
+
   }
 
   override fun onStreamItemLongClick(streamData: StreamData) {

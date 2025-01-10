@@ -1,6 +1,8 @@
-package cloud.app.vvf.plugin
+package cloud.app.vvf.extension.builtIn
 
+import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.clients.streams.StreamClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.Page
 import cloud.app.vvf.common.helpers.PagedData
@@ -14,28 +16,34 @@ import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.QuickSearchItem
 import cloud.app.vvf.common.models.SortBy
+import cloud.app.vvf.common.models.SubtitleData
 import cloud.app.vvf.common.models.Tab
 import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.common.models.movie.GeneralInfo
 import cloud.app.vvf.common.models.movie.Ids
 import cloud.app.vvf.common.models.movie.Season
 import cloud.app.vvf.common.models.movie.Show
+import cloud.app.vvf.common.models.stream.PremiumType
+import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingList
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.network.api.trakt.AppTrakt
-import cloud.app.vvf.plugin.tmdb.AppTmdb
-import cloud.app.vvf.plugin.tmdb.SearchSuggestion
-import cloud.app.vvf.plugin.tmdb.companies
-import cloud.app.vvf.plugin.tmdb.formatSeasonEpisode
-import cloud.app.vvf.plugin.tmdb.iso8601ToMillis
-import cloud.app.vvf.plugin.tmdb.movieGenres
-import cloud.app.vvf.plugin.tmdb.networks
-import cloud.app.vvf.plugin.tmdb.showGenres
-import cloud.app.vvf.plugin.tmdb.toMediaItem
-import cloud.app.vvf.plugin.tmdb.toMediaItemsList
-import cloud.app.vvf.plugin.tvdb.AppTheTvdb
+import cloud.app.vvf.extension.builtIn.tmdb.AppTmdb
+import cloud.app.vvf.extension.builtIn.tmdb.SearchSuggestion
+import cloud.app.vvf.extension.builtIn.tmdb.companies
+import cloud.app.vvf.extension.builtIn.tmdb.formatSeasonEpisode
+import cloud.app.vvf.extension.builtIn.tmdb.iso8601ToMillis
+import cloud.app.vvf.extension.builtIn.tmdb.languageI3691Map
+import cloud.app.vvf.extension.builtIn.tmdb.model.WatchProviders
+import cloud.app.vvf.extension.builtIn.tmdb.movieGenres
+import cloud.app.vvf.extension.builtIn.tmdb.networks
+import cloud.app.vvf.extension.builtIn.tmdb.popularCountriesIsoToEnglishName
+import cloud.app.vvf.extension.builtIn.tmdb.showGenres
+import cloud.app.vvf.extension.builtIn.tmdb.toMediaItem
+import cloud.app.vvf.extension.builtIn.tmdb.toMediaItemsList
+import cloud.app.vvf.extension.builtIn.tvdb.AppTheTvdb
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
@@ -43,12 +51,37 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Date
 
-class BuiltInDatabaseClient : DatabaseClient {
+class BuiltInClient : DatabaseClient, StreamClient {
+
+  companion object {
+
+    val metadata = ExtensionMetadata(
+      className = "cloud.app.vvf.plugin.BuiltInDatabaseClient",
+      path = "",
+      importType = ImportType.BuiltIn,
+      name = "The extension of TMDB",
+      description = "tmdb extension",
+      version = "1.0.0",
+      author = "Avp",
+      iconUrl = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
+      types = listOf(ExtensionType.DATABASE, ExtensionType.STREAM)
+    )
+
+    private fun List<MediaItemsContainer>.toPaged() = PagedData.Single { this }
+    val sortMapper: Map<String, com.uwetrottmann.tmdb2.enumerations.SortBy> = mapOf(
+      SortBy.POPULARITY.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.POPULARITY_DESC,
+      SortBy.RELEASED.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.RELEASE_DATE_DESC,
+      SortBy.RATING.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.VOTE_AVERAGE_DESC,
+      SortBy.TITLE.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.ORIGINAL_TITLE_DESC,
+      // Add other mappings as necessary
+    )
+    const val pageSize = 3;
+  }
+
 
   private lateinit var tmdb: AppTmdb
   private lateinit var tvdb: AppTheTvdb
   private lateinit var trakt: AppTrakt
-
   override val defaultSettings: List<Setting> = listOf(
     SettingSwitch(
       "Include Adult",
@@ -75,19 +108,20 @@ class BuiltInDatabaseClient : DatabaseClient {
       "Language",
       "language_key",
       "Language",
-      entryTitles = listOf("English", "Spanish"),
-      entryValues = listOf("en", "es"),
+      entryTitles = languageI3691Map.values.toList(),
+      entryValues = languageI3691Map.keys.toList(),
       defaultEntryIndex = 0
     ),
     SettingList(
       "Region",
       "region_key",
       "Region",
-      entryTitles = listOf("English", "Spanish"),
-      entryValues = listOf("en", "es"),
+      entryTitles = popularCountriesIsoToEnglishName.values.toList(),
+      entryValues = popularCountriesIsoToEnglishName.keys.toList(),
       defaultEntryIndex = 0
     )
   )
+
 
   private lateinit var prefSettings: PrefSettings
   override fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
@@ -543,30 +577,6 @@ class BuiltInDatabaseClient : DatabaseClient {
   }
 
 
-  companion object {
-
-    val metadata = ExtensionMetadata(
-      className = "cloud.app.vvf.plugin.BuiltInDatabaseClient",
-      path = "",
-      importType = ImportType.BuiltIn,
-      name = "The extension of TMDB",
-      description = "tmdb extension",
-      version = "1.0.0",
-      author = "Avp",
-      iconUrl = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
-      types = listOf(ExtensionType.DATABASE)
-    )
-
-    private fun List<MediaItemsContainer>.toPaged() = PagedData.Single { this }
-    val sortMapper: Map<String, com.uwetrottmann.tmdb2.enumerations.SortBy> = mapOf(
-      SortBy.POPULARITY.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.POPULARITY_DESC,
-      SortBy.RELEASED.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.RELEASE_DATE_DESC,
-      SortBy.RATING.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.VOTE_AVERAGE_DESC,
-      SortBy.TITLE.serializedName to com.uwetrottmann.tmdb2.enumerations.SortBy.ORIGINAL_TITLE_DESC,
-      // Add other mappings as necessary
-    )
-    const val pageSize = 3;
-  }
 
 
   private suspend fun getTvdbEpisodes(show: Show, page: Int): List<Episode> {
@@ -748,5 +758,76 @@ class BuiltInDatabaseClient : DatabaseClient {
       data.loadFirst()
       toMediaItemsContainer(company.value, company.value, data)
     }.toList()
+  }
+
+
+  override suspend fun loadLinks(
+    mediaItem: AVPMediaItem,
+    subtitleCallback: (SubtitleData) -> Unit,
+    callback: (StreamData) -> Unit
+  ): Boolean {
+
+    when (mediaItem) {
+      is AVPMediaItem.MovieItem -> {
+        val tmdbId = mediaItem.movie.ids.tmdbId
+        if (tmdbId != null) {
+          val response = tmdb.extendService().watchMovieProviders(tmdbId).execute()
+          if (response.isSuccessful) {
+            val results = response.body()?.results?.get(region)
+            processProviderTypes(results, callback)
+          }
+        }
+      }
+
+      is AVPMediaItem.EpisodeItem -> {
+        val tmdbId = mediaItem.seasonItem.showItem.show.ids.tmdbId
+        if (tmdbId != null) {
+          val response = tmdb.extendService().watchTvProviders(tmdbId).execute()
+          if (response.isSuccessful) {
+            val results = response.body()?.results?.get(region)
+            processProviderTypes(results, callback)
+          }
+        }
+      }
+
+      else -> {
+        // Handle other cases if necessary
+      }
+    }
+    return true
+  }
+
+  private fun processProviderTypes(
+    providerRegion: WatchProviders.CountryInfo?,
+    callback: (StreamData) -> Unit
+  ) {
+    providerRegion?.let {
+      val link = it.link ?: ""
+      it.flatrate.forEach { provider ->
+        callback(createStreamData(provider, "Subscription", link))
+      }
+      it.buy.forEach { provider ->
+        callback(createStreamData(provider, "Buy", link))
+      }
+      it.ads.forEach { provider ->
+        callback(createStreamData(provider, "Ad-supported", link))
+      }
+      it.free.forEach { provider ->
+        callback(createStreamData(provider, "Free", link))
+      }
+      it.rent.forEach { provider ->
+        callback(createStreamData(provider, "Rent", link))
+      }
+    }
+  }
+
+  private fun createStreamData(provider: WatchProviders.WatchProvider, type: String, link: String): StreamData {
+    return StreamData(
+      originalUrl = link,
+      providerName = "${provider.provider_name} ($type)",
+      providerLogo = "https://image.tmdb.org/t/p/w500${provider.logo_path}",
+      hostLogo = "https://www.justwatch.com/appassets/img/jw-icon.png",
+      premiumType = PremiumType.JustWatch.ordinal,
+    )
   }
 }

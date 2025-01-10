@@ -61,7 +61,9 @@ abstract class FeedViewModel(
     feed.value = null
     val extension = databaseExtensionFlow.value ?: return
 
-    job = viewModelScope.launch(Dispatchers.IO) {
+    job = viewModelScope.launch(Dispatchers.IO) { //this line run at breakpoint
+      println("Coroutine started") // Debug log
+      //but all line below was not call
       if (resetTab) loadTabs(extension)
       feed.value = null
       loadFeed(extension)

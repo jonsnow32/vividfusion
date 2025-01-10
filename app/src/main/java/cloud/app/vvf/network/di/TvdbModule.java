@@ -4,7 +4,7 @@ import com.uwetrottmann.thetvdb.services.TheTvdbEpisodes;
 import com.uwetrottmann.thetvdb.services.TheTvdbSearch;
 import com.uwetrottmann.thetvdb.services.TheTvdbSeries;
 
-import cloud.app.vvf.plugin.tvdb.AppTheTvdb;
+import cloud.app.vvf.extension.builtIn.tvdb.AppTheTvdb;
 import dagger.Module;
 import dagger.Provides;
 import dagger.hilt.InstallIn;

@@ -2,8 +2,8 @@ package cloud.app.vvf.network.di;
 
 import android.content.SharedPreferences;
 
-import cloud.app.vvf.plugin.tmdb.AppTmdb;
-import cloud.app.vvf.plugin.tmdb.ExtendService;
+import cloud.app.vvf.extension.builtIn.tmdb.AppTmdb;
+import cloud.app.vvf.extension.builtIn.tmdb.ExtendService;
 import com.uwetrottmann.tmdb2.services.ConfigurationService;
 
 import dagger.Module;

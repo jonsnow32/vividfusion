@@ -1,4 +1,4 @@
-package cloud.app.vvf.plugin.tmdb
+package cloud.app.vvf.extension.builtIn.tmdb
 
 import com.uwetrottmann.tmdb2.Tmdb
 import com.uwetrottmann.tmdb2.TmdbInterceptor

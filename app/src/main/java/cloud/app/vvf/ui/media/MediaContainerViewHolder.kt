@@ -111,7 +111,7 @@ sealed class MediaContainerViewHolder(
       binding.more.setOnClickListener { listener.onLongClick(clientId, item, transitionView) }
     }
 
-    override val transitionView: View = binding.root
+    override val transitionView: View = binding.imageView
 
     companion object {
       fun create(

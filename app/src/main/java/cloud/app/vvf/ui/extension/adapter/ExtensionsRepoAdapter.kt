@@ -23,7 +23,7 @@ class ExtensionsRepoAdapter(
   )
 
   fun updateItem(item: Item) {
-    val index = list.indexOfFirst { it.data.id == item.data.id }
+    val index = list.indexOfFirst { it.data.className == item.data.className }
     if (index != -1) {
       val updatedList = list.toMutableList()
       updatedList[index] = item

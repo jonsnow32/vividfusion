@@ -1,4 +1,4 @@
-package cloud.app.vvf.plugin.tmdb.model
+package cloud.app.vvf.extension.builtIn.tmdb.model
 
 
 import com.google.gson.annotations.SerializedName

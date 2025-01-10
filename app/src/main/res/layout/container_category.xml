@@ -53,13 +53,13 @@
 
       </LinearLayout>
 
-      <ImageButton
+      <com.google.android.material.button.MaterialButton
         style="@style/IconButton"
         android:id="@+id/more"
         android:layout_height="20dp"
         android:contentDescription="@string/more"
         android:scaleX="-1"
-        android:src="@drawable/ic_back" />
+        app:icon="@drawable/ic_back" />
     </LinearLayout>
 
   </androidx.cardview.widget.CardView>

@@ -1,11 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-  <TextView
-    android:layout_width="wrap_content"
+  <LinearLayout
+    android:id="@+id/appBarLayoutCustom"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:text="Library sample"/>
+    android:background="?attr/colorSurfaceContainer"
+    android:orientation="vertical"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <FrameLayout
+      android:id="@+id/searchHome"
+      android:layout_width="match_parent"
+      android:layout_height="40dp"
+      android:layout_margin="10dp"
+      android:clickable="true"
+      android:focusable="true"
+      android:visibility="gone">
+
+      <com.google.android.material.textview.MaterialTextView
+        style="@style/MaterialAlertDialog.Material3.Body.Text"
+        android:textSize="18sp"
+        android:layout_marginStart="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="@string/home"
+        android:gravity="center_vertical"/>
+
+      <ImageView
+        android:id="@+id/btnSettings"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="end|center_vertical"
+
+        android:layout_margin="10dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:contentDescription="@string/settings"
+        android:tag = "@string/tv_no_focus_tag"
+        android:src="@drawable/ic_settings_outline" />
+    </FrameLayout>
+
+    <com.google.android.material.tabs.TabLayout
+      android:id="@+id/tabLayout"
+      style="@style/TabLayout"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:nextFocusLeft="@id/navView"
+      android:nextFocusUp="@id/navView">
+
+      <com.google.android.material.tabs.TabItem
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Watchlist" />
+
+      <com.google.android.material.tabs.TabItem
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="History" />
+
+      <com.google.android.material.tabs.TabItem
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="Collections" />
+
+    </com.google.android.material.tabs.TabLayout>
+  </LinearLayout>
+
+  <View
+    android:id="@+id/appBarOutline"
+    style="@style/AppBarOutline"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/appBarLayoutCustom" />
+
+  <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    android:id="@+id/swipeRefresh"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="16dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    app:layout_constraintTop_toBottomOf="@+id/appBarOutline"
+    app:layout_constraintBottom_toBottomOf="parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/recyclerView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:clipToPadding="false"
+      android:contentDescription="@string/home"
+      android:orientation="vertical"
+      tools:listitem="@layout/container_category"
+      android:layoutAnimation="@anim/layout_item_enter"
+      app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+  </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

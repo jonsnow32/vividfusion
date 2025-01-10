@@ -109,4 +109,5 @@ dependencies {
   implementation(libs.fastscroll.library)
 
   implementation(libs.pikolo)
+    implementation(kotlin("reflect"))
 }

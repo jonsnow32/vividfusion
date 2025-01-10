@@ -30,13 +30,6 @@ class SettingsFragment : BaseSettingsFragment() {
       }
 
       TransitionPreference(context).add {
-        title = getString(R.string.about)
-        key = "about"
-        summary = getString(R.string.about_summary)
-        icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
-      }
-
-      TransitionPreference(context).add {
         title = getString(R.string.extensions)
         key = "extension"
         summary = getString(R.string.extension_summary)
@@ -56,6 +49,14 @@ class SettingsFragment : BaseSettingsFragment() {
         summary = getString(R.string.content_setting_summary)
         icon = AppCompatResources.getDrawable(context, R.drawable.database_24dp)
       }
+
+      TransitionPreference(context).add {
+        title = getString(R.string.about)
+        key = "about"
+        summary = getString(R.string.about_summary)
+        icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
+      }
+
     }
 
     class TransitionPreference(

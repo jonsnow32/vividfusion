@@ -23,4 +23,7 @@ sealed class MediaItemsContainer {
             is Item -> media.id
             is Category -> title
         }
+  companion object {
+    fun List<MediaItemsContainer>.toPaged() = PagedData.Single { this }
+  }
 }

@@ -1,39 +1,92 @@
 package cloud.app.vvf.datastore.helper
 
+import android.provider.ContactsContract.Data
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import cloud.app.vvf.R
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.common.models.AVPMediaItem
+import kotlinx.serialization.Serializable
 
-const val BOOKMARK_FOLDER = "watchlist"
+const val BOOKMARK_FOLDER = "bookmarks"
 
-enum class BookMarkType(val internalId: Int, @StringRes val stringRes: Int, @DrawableRes val iconRes: Int) {
-  WATCHING(0, R.string.type_watching, R.drawable.anim_bookmark),
-  COMPLETED(1, R.string.type_completed, R.drawable.anim_bookmark),
-  ONHOLD(2, R.string.type_on_hold, R.drawable.anim_bookmark),
-  DROPPED(3, R.string.type_dropped, R.drawable.anim_bookmark),
-  PLANTOWATCH(4, R.string.type_plan_to_watch, R.drawable.anim_bookmark),
-  NONE(5, R.string.type_none, R.drawable.ic_add_20dp);
+@Serializable
+sealed class BookmarkItem {
+  abstract val item: AVPMediaItem
+  abstract val lastUpdated: Long
+
+  @Serializable
+  data class Watching(
+    val position: Long,
+    val duration: Long? = null,
+    override val item: AVPMediaItem,
+    override val lastUpdated: Long = System.currentTimeMillis()
+  ) : BookmarkItem()
+
+  @Serializable
+  data class Completed(
+    val duration: Long? = null,
+    override val item: AVPMediaItem,
+    override val lastUpdated: Long = System.currentTimeMillis()
+  ) : BookmarkItem()
+
+  @Serializable
+  data class OnHold(
+    override val item: AVPMediaItem,
+    override val lastUpdated: Long = System.currentTimeMillis()
+  ) : BookmarkItem()
+
+  @Serializable
+  data class Dropped(
+    override val item: AVPMediaItem,
+    override val lastUpdated: Long = System.currentTimeMillis()
+  ) : BookmarkItem()
+
+  @Serializable
+  data class PlanToWatch(
+    override val item: AVPMediaItem,
+    override val lastUpdated: Long = System.currentTimeMillis()
+  ) : BookmarkItem()
 
   companion object {
-    fun fromInternalId(id: Int?) = entries.find { value -> value.internalId == id } ?: NONE
+    fun getBookmarkItemSubclasses(): List<String> {
+      return BookmarkItem::class.sealedSubclasses.map { it.simpleName ?: "Unnamed" }
+    }
   }
 }
-fun DataStore.addToBookmark(data: AVPMediaItem?) {
-  if (data == null) return
-  setKey("$BOOKMARK_FOLDER/${data.id}", data)
+
+fun DataStore.getAllBookmarks(): List<BookmarkItem>? {
+  return getKeys<BookmarkItem>("$BOOKMARK_FOLDER/", null)
 }
 
-fun DataStore.removeBookmark(data: AVPMediaItem?) {
+
+fun DataStore.addToBookmark(data: BookmarkItem?) {
   if (data == null) return
+  setKey("$BOOKMARK_FOLDER/${data.item.id}", data)
+}
+
+fun DataStore.addToBookmark(avpMediaItem: AVPMediaItem?, type: String) {
+  if (avpMediaItem == null) return
+  when(type) {
+    "Watching" -> addToBookmark( BookmarkItem.Watching(0, null, avpMediaItem))
+    "Completed" -> addToBookmark( BookmarkItem.Completed(null, avpMediaItem))
+    "OnHold" -> addToBookmark( BookmarkItem.OnHold(avpMediaItem))
+    "Dropped" -> addToBookmark( BookmarkItem.Dropped(avpMediaItem))
+    "PlanToWatch" -> addToBookmark( BookmarkItem.PlanToWatch(avpMediaItem))
+    else -> removeBookmark(avpMediaItem)
+  }
+}
+
+fun DataStore.findBookmark(avpMediaItem: AVPMediaItem?): BookmarkItem? {
+  return getKey<BookmarkItem>("$BOOKMARK_FOLDER/${avpMediaItem?.id}", null)
+}
+
+fun DataStore.removeBookmark(avpMediaItem: AVPMediaItem?) {
+  if (avpMediaItem == null) return
   removeKey(
-    "$BOOKMARK_FOLDER/${data.id}"
+    "$BOOKMARK_FOLDER/${avpMediaItem.id}"
   )
 }
 
-//fun DataStore.getWatchListData(hashCodes: Int?): Boolean {
-//  if (hashCodes == null) return false
-//  val data = getKey("$BOOKMARK_FOLDER/${hashCodes}", null)
-//  return data != null;
-//}
+
+

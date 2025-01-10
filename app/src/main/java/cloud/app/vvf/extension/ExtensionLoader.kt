@@ -15,9 +15,7 @@ import cloud.app.vvf.datastore.helper.createOrUpdateExtension
 import cloud.app.vvf.datastore.helper.getExtension
 import cloud.app.vvf.extension.plugger.FileChangeListener
 import cloud.app.vvf.extension.plugger.PackageChangeListener
-import cloud.app.vvf.plugin.BuiltInRepo
-import cloud.app.vvf.plugin.DatabaseBuiltInExtensionRepo
-import cloud.app.vvf.plugin.StreamBuiltInExtensionRepo
+import cloud.app.vvf.extension.builtIn.BuiltInRepo
 import cloud.app.vvf.utils.catchWith
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -40,9 +38,10 @@ class ExtensionLoader(
   private val httpHelper: HttpHelper,
   private val throwableFlow: MutableSharedFlow<Throwable>,
   private val sharedPreferences: SharedPreferences,
-  private val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-  private val streamExtensionFlow: MutableStateFlow<Extension<StreamClient>?>,
-  private val subtitleExtensionFlow: MutableStateFlow<Extension<SubtitleClient>?>,
+
+  private val currentDBExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  private val currentStreamExtFlow: MutableStateFlow<Extension<StreamClient>?>,
+  private val currentSubtitleExtFlow: MutableStateFlow<Extension<SubtitleClient>?>,
 
   private val extensionsFlow: MutableStateFlow<List<Extension<*>>>,
   private val refresher: MutableSharedFlow<Boolean>,
@@ -51,8 +50,6 @@ class ExtensionLoader(
   private val scope = MainScope() + CoroutineName("ExtensionLoader")
   private val appListener = PackageChangeListener(context)
   public val fileListener = FileChangeListener(scope)
-  private val databaseEtxBuiltin = DatabaseBuiltInExtensionRepo()
-  private val streamEtxBuiltin = StreamBuiltInExtensionRepo()
 
   private val extensionRepo = ExtensionRepo(
     context,
@@ -91,10 +88,19 @@ class ExtensionLoader(
       }.first()
 
     extensionsFlow.value = extensions
+
     val databaseExtension = extensions.firstOrNull {
       it.metadata.types?.contains(ExtensionType.DATABASE) == true
     }
-    databaseExtensionFlow.value = databaseExtension as Extension<DatabaseClient>
+    currentDBExtFlow.value = databaseExtension as Extension<DatabaseClient>
+
+
+    val streamExtension = extensions.firstOrNull {
+      it.metadata.types?.contains(ExtensionType.STREAM) == true
+    }
+    currentStreamExtFlow.value = streamExtension as Extension<StreamClient>
+
+
     refresher.emit(false)
   }
 

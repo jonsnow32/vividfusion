@@ -76,12 +76,28 @@ class DataStore @Inject constructor(
   inline fun <reified T> getKey(path: String, defVal: T? = null): T? {
     return try {
       Timber.i("getKey $path ${T::class.java}")
-      sharedPreferences.getString(path, null)?.toData<T>()
+      val data = sharedPreferences.getString(path, null)
+      Timber.i("data $data")
+      data?.toData<T>()
     } catch (e: Exception) {
       Timber.e(e)
       defVal
     }
   }
+
+  inline fun <reified T> getKeys(path: String, defVal: List<T>? = null): List<T>? {
+    return try {
+      val data = sharedPreferences.all.keys.filter { it.startsWith(path) }
+      Timber.i("data $data")
+      data.mapNotNull {
+        getKey<T>(it,null)
+      }
+    } catch (e: Exception) {
+      Timber.e(e)
+      defVal
+    }
+  }
+
 
   companion object {
     fun Context.getTempApkDir() = File(cacheDir, "apks").apply { mkdirs() }

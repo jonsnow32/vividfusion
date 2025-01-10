@@ -17,7 +17,7 @@ sealed class AVPMediaItem {
   @Serializable
   data class MovieItem(val movie: Movie) : AVPMediaItem() {
     fun getSlug(): String {
-      val formattedName = movie.generalInfo.title
+      val formattedName = movie.generalInfo.originalTitle
         .trim()
         .lowercase()
         .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
@@ -29,7 +29,7 @@ sealed class AVPMediaItem {
   @Serializable
   data class ShowItem(val show: Show) : AVPMediaItem() {
     fun getSlug(): String {
-      val formattedName = show.generalInfo.title
+      val formattedName = show.generalInfo.originalTitle
         .trim()
         .lowercase()
         .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters

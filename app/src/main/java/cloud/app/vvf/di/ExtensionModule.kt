@@ -23,11 +23,11 @@ class ExtensionModule {
 
   @Provides
   @Singleton
-  fun provideCurrentDatabaseExtension() = MutableStateFlow<Extension<DatabaseClient>?>(null)
+  fun provideExtensionList() = MutableStateFlow<List<Extension<*>>>(emptyList())
 
   @Provides
   @Singleton
-  fun provideExtensionList() = MutableStateFlow<List<Extension<*>>>(emptyList())
+  fun provideCurrentDatabaseExtension() = MutableStateFlow<Extension<DatabaseClient>?>(null)
 
   @Provides
   @Singleton
@@ -49,9 +49,10 @@ class ExtensionModule {
     httpHelper: HttpHelper,
     sharedPreferences: SharedPreferences,
     throwableFlow: MutableSharedFlow<Throwable>,
-    databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-    streamExtensionFlow: MutableStateFlow<Extension<StreamClient>?>,
-    subtitleExtensionFlow: MutableStateFlow<Extension<SubtitleClient>?>,
+
+    currentDBExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+    currentStreamExtFlow: MutableStateFlow<Extension<StreamClient>?>,
+    currentSubtitleExtFlow: MutableStateFlow<Extension<SubtitleClient>?>,
 
     extensionsFlow: MutableStateFlow<List<Extension<*>>>,
     refresher: MutableSharedFlow<Boolean>
@@ -61,9 +62,9 @@ class ExtensionModule {
     httpHelper,
     throwableFlow,
     sharedPreferences,
-    databaseExtensionFlow,
-    streamExtensionFlow,
-    subtitleExtensionFlow,
+    currentDBExtFlow,
+    currentStreamExtFlow,
+    currentSubtitleExtFlow,
     extensionsFlow,
     refresher
   )

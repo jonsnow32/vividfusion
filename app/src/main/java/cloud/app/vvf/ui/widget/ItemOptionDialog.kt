@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
+import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.DialogMediaItemBinding
 import cloud.app.vvf.databinding.ItemDialogButtonBinding
@@ -27,6 +28,9 @@ import cloud.app.vvf.utils.shareItem
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.ImageHolder
+import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.utils.showBottomDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,7 +38,6 @@ import dagger.hilt.android.AndroidEntryPoint
 class ItemOptionDialog : BottomSheetDialogFragment() {
   private var binding by autoCleared<DialogMediaItemBinding>()
   private val viewModel by viewModels<ItemOptionViewModel>()
-
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
   private val item by lazy { args.getSerialized<AVPMediaItem>("item")!! }
@@ -71,7 +74,6 @@ class ItemOptionDialog : BottomSheetDialogFragment() {
         binding.recyclerView.adapter = ActionAdapter(getActions(it))
       }
     }
-
     observe(viewModel.knowFors) {
       if (it != null) {
         val browseViewModel by activityViewModels<BrowseViewModel>()
@@ -94,6 +96,21 @@ class ItemOptionDialog : BottomSheetDialogFragment() {
           requireActivity().navigate(
             movieFragment
           )
+        }, ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.bookmarks) {
+          val status = viewModel.getBookmark(item)
+          val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
+            add("None")
+          }
+          val selectedIndex = if(status == null) (bookmarks.size - 1)  else  bookmarks.indexOf(status.javaClass.simpleName);
+          requireActivity().showBottomDialog(
+            bookmarks,
+            selectedIndex,
+            getString(R.string.add_to_bookmark),
+            false,
+            {},
+            { selected ->
+              viewModel.addToBookmark(item, bookmarks.get(selected));
+            })
         })
     }
 

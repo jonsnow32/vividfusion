@@ -2,6 +2,7 @@ package cloud.app.vvf.ui.setting
 
 import android.os.Bundle
 import android.view.View
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -13,7 +14,7 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class ContentSettingFragment : BaseSettingsFragment() {
-  override val title get() = getString(R.string.ui)
+  override val title get() = getString(R.string.contents)
   override val transitionName = "content_settings"
   override val creator = { ContentPreference() }
 
@@ -43,7 +44,6 @@ class ContentSettingFragment : BaseSettingsFragment() {
           block(new)
           true
         }
-
       PreferenceCategory(context).apply {
         title = getString(R.string.shows)
         key = getString(R.string.tv_show_settings_key)
@@ -60,6 +60,13 @@ class ContentSettingFragment : BaseSettingsFragment() {
           onPreferenceChangeListener = uiListener()
           addPreference(this)
         }
+      }
+
+      ListPreference(context).apply {
+        key = getString(R.string.region_key)
+        title = getString(R.string.region)
+        layoutResource = R.layout.preference
+        screen.addPreference(this)
       }
     }
   }

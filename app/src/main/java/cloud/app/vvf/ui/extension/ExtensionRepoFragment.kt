@@ -81,7 +81,7 @@ class ExtensionRepoFragment : Fragment(), ExtensionsRepoAdapter.Listener {
       lifecycleScope.launch {
         val installed = extensionViewModel.extensionListFlow.value.map { it.id }
         val extensionListAdapter = ExtensionsRepoAdapter(list.map {
-          val isInstalled = it.id in installed
+          val isInstalled = it.className in installed
           ExtensionsRepoAdapter.Item(
             it,
             if (isInstalled) InstallStatus.INSTALLED else InstallStatus.NOT_INSTALL
