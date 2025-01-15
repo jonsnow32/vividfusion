@@ -44,7 +44,7 @@ class VVFApplication : Application() {
 
     Thread.setDefaultUncaughtExceptionHandler { _, exception ->
       exception.printStackTrace()
-      ExceptionActivity.start(this, exception, false)
+      ExceptionActivity.start(this, exception)
       Runtime.getRuntime().exit(0)
     }
 

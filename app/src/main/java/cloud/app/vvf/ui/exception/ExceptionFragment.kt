@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.ExceptionActivity
 import cloud.app.vvf.MainActivityViewModel.Companion.applyContentInsets
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
@@ -17,17 +18,27 @@ import cloud.app.vvf.VVFApplication.Companion.appVersion
 import cloud.app.vvf.databinding.FragmentExceptionBinding
 import cloud.app.vvf.extension.ExtensionLoadingException
 import cloud.app.vvf.extension.RequiredExtensionsException
+import cloud.app.vvf.utils.ContinuationCallback.Companion.await
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerial
+import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.onAppBarChangeListener
 import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.setupTransition
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 
 class ExceptionFragment : Fragment() {
   private var binding by autoCleared<FragmentExceptionBinding>()
-  private val throwable by lazy { requireArguments().getSerial<Throwable>("exception")!! }
+  private val throwable by lazy {
+    requireArguments().getSerialized<ExceptionActivity.ExceptionDetails>("exception")!!
+  }
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -55,23 +66,37 @@ class ExceptionFragment : Fragment() {
       }
     }
 
-    binding.exceptionMessage.title = requireContext().getTitle(throwable)
-    binding.exceptionDetails.text = requireContext().getDetails(throwable)
+    binding.exceptionMessage.title = throwable.title
+    binding.exceptionDetails.text = throwable.causedBy
     binding.exceptionMessage.setOnMenuItemClickListener { item ->
       when (item.itemId) {
         R.id.exception_copy -> {
-          with(requireContext()) {
-            copyToClipboard(throwable.message, "```\n${getDetails(throwable)}\n```")
+          lifecycleScope.launch {
+            val pasteLink = getPasteLink(throwable).getOrElse {
+              throwable.causedBy
+            }
+            requireContext().copyToClipboard("Error", pasteLink)
           }
           true
         }
-
         else -> false
       }
     }
   }
 
   companion object {
+    private val client = OkHttpClient()
+
+    suspend fun getPasteLink(throwable: ExceptionActivity.ExceptionDetails) =
+      withContext(Dispatchers.IO) {
+        val details = throwable.causedBy
+        val request = Request.Builder()
+          .url("https://paste.rs")
+          .post(details.toRequestBody())
+          .build()
+        runCatching { client.newCall(request).await().body.string() }
+      }
+
     fun Context.copyToClipboard(label: String?, string: String) {
       val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
       val clip = ClipData.newPlainText(label, string)

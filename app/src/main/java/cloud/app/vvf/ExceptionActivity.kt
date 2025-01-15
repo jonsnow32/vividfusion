@@ -11,6 +11,8 @@ import androidx.fragment.app.commit
 import cloud.app.vvf.VVFApplication.Companion.restartApp
 import cloud.app.vvf.databinding.ActivityExceptionBinding
 import cloud.app.vvf.ui.exception.ExceptionFragment
+import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getDetails
+import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
 
@@ -18,7 +20,8 @@ import kotlinx.serialization.Serializable
 class ExceptionActivity : AppCompatActivity() {
 
   private val binding by lazy { ActivityExceptionBinding.inflate(layoutInflater) }
-  private val exception: String by lazy { intent.getStringExtra(EXTRA_STACKTRACE)!! }
+  private val stackTrace: String by lazy { intent.getStringExtra(EXTRA_STACKTRACE)!! }
+  private val title: String by lazy { intent.getStringExtra(EXTRA_TITLE)!! }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,7 +36,12 @@ class ExceptionActivity : AppCompatActivity() {
     supportFragmentManager.commit {
       replace(
         R.id.exceptionFragmentContainer,
-        ExceptionFragment.newInstance(ExceptionDetails(getString(R.string.app_crashed),exception))
+        ExceptionFragment.newInstance(
+          ExceptionDetails(
+            title,
+            stackTrace
+          )
+        )
       )
     }
     binding.restartApp.setOnClickListener { restartApp() }
@@ -41,11 +49,12 @@ class ExceptionActivity : AppCompatActivity() {
 
   companion object {
     const val EXTRA_STACKTRACE = "stackTrace"
-    fun start(context: Context, exception: Throwable, isCached: Boolean = true) {
+    const val EXTRA_TITLE = "title"
+    fun start(context: Context, exception: Throwable) {
       val intent = Intent(context, ExceptionActivity::class.java).apply {
-        putExtra(EXTRA_STACKTRACE, exception.stackTraceToString())
-        if (!isCached)
-          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        putExtra(EXTRA_STACKTRACE, context.getDetails(exception))
+        putExtra(EXTRA_TITLE, context.getTitle(exception))
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
       }
       context.startActivity(intent)
     }
