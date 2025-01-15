@@ -13,6 +13,7 @@
     android:layout_height="@dimen/media_cover_height"
     android:layout_margin="1dp"
     app:cardCornerRadius="28dp"
+    android:translationY="30dp"
     app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
     <ImageView
@@ -28,11 +29,11 @@
   <androidx.recyclerview.widget.RecyclerView
     android:id="@+id/recyclerView"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="2dp"
-    android:clipToPadding="false"
+    android:layout_height="match_parent"
     android:nestedScrollingEnabled="false"
-    android:padding="8dp"
+    android:paddingTop="35dp"
+    android:layout_margin="2dp"
+    android:background="?attr/colorSurfaceContainer"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     tools:listitem="@layout/item_dialog_button" />
 </LinearLayout>

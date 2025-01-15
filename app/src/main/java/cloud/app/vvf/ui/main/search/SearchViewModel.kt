@@ -7,6 +7,7 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.QuickSearchItem
+import cloud.app.vvf.extension.get
 import cloud.app.vvf.ui.main.FeedViewModel
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,10 +36,11 @@ class SearchViewModel @Inject constructor(
   val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
 
   fun quickSearch(query: String) {
-    val client = databaseExtensionFlow.value?.instance
-    if (client !is DatabaseClient) return
+    val extension = databaseExtensionFlow.value ?: return
     viewModelScope.launch(Dispatchers.IO) {
-      val list = tryWith { client.quickSearch(query) } ?: emptyList()
+      val list = extension.get<DatabaseClient, List<QuickSearchItem>>(throwableFlow) {
+        quickSearch(query)
+      } ?: emptyList()
       quickFeed.value = list
     }
   }

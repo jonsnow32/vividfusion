@@ -109,12 +109,6 @@ class ItemOptionViewModel @Inject constructor(
     }
   }
 
-  fun addToBookmark(item: AVPMediaItem.ShowItem, type: String) {
-    dataStore.addToBookmark(item, type)
-  }
 
-  fun getBookmark(item: AVPMediaItem.ShowItem) : BookmarkItem?{
-    return dataStore.findBookmark(item)
-  }
 }
 

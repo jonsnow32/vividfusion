@@ -52,6 +52,16 @@ sealed class BookmarkItem {
     fun getBookmarkItemSubclasses(): List<String> {
       return BookmarkItem::class.sealedSubclasses.map { it.simpleName ?: "Unnamed" }
     }
+    fun getStringIds(bookmarkItem: BookmarkItem?) : Int{
+      return when(bookmarkItem){
+        is Completed -> R.string.type_completed
+        is Dropped -> R.string.type_dropped
+        is OnHold -> R.string.type_on_hold
+        is PlanToWatch -> R.string.type_plan_to_watch
+        is Watching -> R.string.type_watching
+        else -> R.string.type_none
+      }
+    }
   }
 }
 

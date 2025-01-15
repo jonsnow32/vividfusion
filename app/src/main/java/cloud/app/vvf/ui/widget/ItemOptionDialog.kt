@@ -35,7 +35,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ItemOptionDialog : BottomSheetDialogFragment() {
+class ItemOptionDialog : DockingDialog() {
   private var binding by autoCleared<DialogMediaItemBinding>()
   private val viewModel by viewModels<ItemOptionViewModel>()
   private val args by lazy { requireArguments() }
@@ -97,11 +97,13 @@ class ItemOptionDialog : BottomSheetDialogFragment() {
             movieFragment
           )
         }, ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.bookmarks) {
-          val status = viewModel.getBookmark(item)
+          val mainViewModel by activityViewModels<MainActivityViewModel>()
+          val status = mainViewModel.getBookmark(item)
           val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
             add("None")
           }
-          val selectedIndex = if(status == null) (bookmarks.size - 1)  else  bookmarks.indexOf(status.javaClass.simpleName);
+          val selectedIndex =
+            if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
           requireActivity().showBottomDialog(
             bookmarks,
             selectedIndex,
@@ -109,7 +111,7 @@ class ItemOptionDialog : BottomSheetDialogFragment() {
             false,
             {},
             { selected ->
-              viewModel.addToBookmark(item, bookmarks.get(selected));
+              mainViewModel.addToBookmark(item, bookmarks.get(selected));
             })
         })
     }

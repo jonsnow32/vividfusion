@@ -13,10 +13,14 @@ import cloud.app.vvf.ExceptionActivity
 import cloud.app.vvf.MainActivityViewModel.Companion.applyContentInsets
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
+import cloud.app.vvf.VVFApplication.Companion.appVersion
 import cloud.app.vvf.databinding.FragmentExceptionBinding
+import cloud.app.vvf.extension.ExtensionLoadingException
+import cloud.app.vvf.extension.RequiredExtensionsException
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerial
 import cloud.app.vvf.utils.onAppBarChangeListener
+import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.setupTransition
 import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
@@ -61,6 +65,7 @@ class ExceptionFragment : Fragment() {
           }
           true
         }
+
         else -> false
       }
     }
@@ -75,20 +80,65 @@ class ExceptionFragment : Fragment() {
 
     fun Context.getTitle(throwable: Throwable): String = when (throwable) {
       is IncompatibleClassChangeError -> getString(R.string.incompatible_class)
-      is ExceptionActivity.AppCrashException -> getString(R.string.app_crashed)
       is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
+      is ExtensionLoadingException -> "${getString(R.string.invalid_extension)} : ${throwable.metadata?.className}"
+      is RequiredExtensionsException -> getString(
+        R.string.extension_requires,
+        throwable.name,
+        throwable.requiredExtensions.joinToString(", ")
+      )
+
+      is AppException -> throwable.run {
+        when (this) {
+          is AppException.Unauthorized ->
+            getString(R.string.unauthorized, extension.name)
+
+          is AppException.LoginRequired ->
+            getString(R.string.login_required, extension.name)
+
+          is AppException.NotSupported ->
+            getString(R.string.is_not_supported, operation, extension.name)
+
+          is AppException.Other -> "${extension.name} : ${getTitle(cause)}"
+        }
+      }
+
       else -> throwable.message ?: getString(R.string.error)
     }
 
-    @Suppress("UnusedReceiverParameter")
-    fun Context.getDetails(throwable: Throwable) = when (throwable) {
-      is ExceptionActivity.AppCrashException -> throwable.causedBy
+    fun Context.getDetails(throwable: Throwable): String = when (throwable) {
+      is RequiredExtensionsException -> """
+          Extension : ${throwable.name}
+          Required Extensions : ${throwable.requiredExtensions.joinToString(", ")}
+          """.trimIndent()
+
+      is AppException -> """
+          Extension : ${throwable.extension.name}
+          Id : ${throwable.extension.name}
+          Type : ${throwable.extension.type}
+          Version : ${throwable.extension.metadata.version}
+          App Version : ${appVersion()}
+          ${getDetails(throwable.cause)}
+          """.trimIndent()
+
       else -> throwable.stackTraceToString()
     }
 
-    fun newInstance(throwable: Throwable) = ExceptionFragment().apply {
+    fun newInstance(context: Context, throwable: Throwable) = ExceptionFragment().apply {
       arguments = Bundle().apply {
-        putSerializable("exception", throwable)
+        putSerialized(
+          "exception",
+          ExceptionActivity.ExceptionDetails(
+            context.getTitle(throwable),
+            context.getDetails(throwable)
+          )
+        )
+      }
+    }
+
+    fun newInstance(details: ExceptionActivity.ExceptionDetails) = ExceptionFragment().apply {
+      arguments = Bundle().apply {
+        putSerialized("exception", details)
       }
     }
   }

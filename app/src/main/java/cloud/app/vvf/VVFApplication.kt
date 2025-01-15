@@ -55,6 +55,7 @@ class VVFApplication : Application() {
     applyUiChanges(
       sharedPreferences
     )
+
     scope.launch {
       throwableFlow.collect {
         it.printStackTrace()
@@ -119,6 +120,8 @@ class VVFApplication : Application() {
     fun Context.noClient() = SnackBarViewModel.Message(
       getString(R.string.error_no_client)
     )
+
+
   }
 
 

@@ -3,7 +3,9 @@ package cloud.app.vvf.utils
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.text.Spanned
 import android.view.ContextThemeWrapper
 import android.view.Gravity
@@ -439,3 +441,4 @@ fun Activity.shareItem(item : AVPMediaItem) {
     Timber.e(e)
   }
 }
+

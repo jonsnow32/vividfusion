@@ -1,14 +1,20 @@
 package cloud.app.vvf.ui.detail.movie
 
+import android.app.Dialog
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.FragmentMovieBinding
@@ -27,6 +33,8 @@ import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Show
+import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.utils.showBottomDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -36,7 +44,7 @@ import javax.inject.Inject
 class MovieFragment : Fragment(){
   private var binding by autoCleared<FragmentMovieBinding>()
   private val viewModel by viewModels<MovieViewModel>()
-
+  private val mainViewModel by activityViewModels<MainActivityViewModel>()
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.MovieItem>("mediaItem")!! }
@@ -80,21 +88,59 @@ class MovieFragment : Fragment(){
       }
     }
 
-    binding.btnPlay.setOnClickListener {
-//      viewModel.loadLink() {
-//        val streamData = it?.firstOrNull() ?: return@loadLink
-//
-//        val playData = PlayData(
-//          listOf(streamData),
-//          selectedId = 0,
-//          title = streamData.fileName
-//        )
-//        PlayerManager.getInstance().play(playData, parentFragmentManager)
+    binding.buttonShowTrailer.setOnClickListener {
+      val dialog = Dialog(requireActivity(), R.style.RightMaterialDialogTheme)
+      dialog.setContentView(R.layout.dialog_right_material)
+
+// Retrieve the window and adjust layout parameters
+      dialog.window?.apply {
+        setLayout(
+          (resources.displayMetrics.widthPixels * 0.3).toInt(), // 60% of screen width
+          ViewGroup.LayoutParams.MATCH_PARENT // Full height
+        )
+        setGravity(Gravity.END) // Anchor to the right side
+      }
+
+// Show the dialog
+//      dialog.findViewById<Button>(R.id.dialogButton)?.setOnClickListener {
+//        dialog.dismiss()
 //      }
+
+      dialog.show()
+
+    }
+    binding.buttonMovieStreamingSearch.setOnClickListener {
       viewModel.fullMediaItem.value?.let {
         navigate(StreamFragment.newInstance(it))
       }
     }
+
+    binding.buttonBookmark.setOnClickListener {
+      val item = viewModel.fullMediaItem.value ?: return@setOnClickListener
+
+      val status = mainViewModel.getBookmark(item)
+      val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
+        add("None")
+      }
+      val selectedIndex = if(status == null) (bookmarks.size - 1)  else  bookmarks.indexOf(status.javaClass.simpleName);
+      requireActivity().showBottomDialog(
+        bookmarks,
+        selectedIndex,
+        getString(R.string.add_to_bookmark),
+        false,
+        {},
+        { selected ->
+          mainViewModel.addToBookmark(item, bookmarks.get(selected));
+
+          val bookmarkStatus = mainViewModel.getBookmark(item)
+          binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
+          if(bookmarkStatus != null) {
+            binding.buttonBookmark.icon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
+          }
+
+        })
+    }
+
   }
 
   private fun setupObservers() {
@@ -162,6 +208,18 @@ class MovieFragment : Fragment(){
   fun bind(item: AVPMediaItem?) {
     if (item == null) return
     binding.header.bind(item)
+    binding.buttonShowComments.isGone = true
+    binding.buttonShowShare.isGone = true
+    binding.buttonShowWebSearch.isGone = true
+
+    viewModel.fullMediaItem.value?.let {
+      val bookmarkStatus = mainViewModel.getBookmark(it)
+      binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
+      if(bookmarkStatus != null) {
+        binding.buttonBookmark.icon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
+      }
+    }
+
   }
 
 }

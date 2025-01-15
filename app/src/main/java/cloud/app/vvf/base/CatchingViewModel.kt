@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import cloud.app.vvf.utils.catchWith
-import cloud.app.vvf.utils.tryWith
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,8 +22,6 @@ abstract class CatchingViewModel(
     onInitialize()
   }
 
-
-  suspend fun <T> tryWith(block: suspend () -> T) = tryWith(throwableFlow, block)
   suspend fun <T : Any> Flow<PagingData<T>>.collectTo(
     collector: FlowCollector<PagingData<T>>
   ) = cachedIn(viewModelScope).catchWith(throwableFlow).collect(collector)

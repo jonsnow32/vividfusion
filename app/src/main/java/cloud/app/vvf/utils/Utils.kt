@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.GET_ACTIVITIES
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -576,5 +577,14 @@ object Utils {
     val inputMethodManager =
       view.context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
     inputMethodManager?.showSoftInput(view, 0)
+  }
+
+  fun getScreenOrientation(context: Context): String {
+    return when (context.resources.configuration.orientation) {
+      Configuration.ORIENTATION_LANDSCAPE -> "LANDSCAPE"
+      Configuration.ORIENTATION_PORTRAIT -> "PORTRAIT"
+      Configuration.ORIENTATION_UNDEFINED -> "UNDEFINED"
+      else -> "UNKNOWN"
+    }
   }
 }

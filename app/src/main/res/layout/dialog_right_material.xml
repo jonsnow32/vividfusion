@@ -1,0 +1,17 @@
+<com.google.android.material.card.MaterialCardView
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:layout_gravity="start"
+  android:radius="16dp"
+  android:elevation="1dp">
+
+  <!-- Dialog content -->
+  <LinearLayout
+    android:id="@+id/dialogContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+  </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

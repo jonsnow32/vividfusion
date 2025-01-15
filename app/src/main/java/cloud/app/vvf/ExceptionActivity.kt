@@ -12,6 +12,7 @@ import cloud.app.vvf.VVFApplication.Companion.restartApp
 import cloud.app.vvf.databinding.ActivityExceptionBinding
 import cloud.app.vvf.ui.exception.ExceptionFragment
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint
 class ExceptionActivity : AppCompatActivity() {
@@ -32,7 +33,7 @@ class ExceptionActivity : AppCompatActivity() {
     supportFragmentManager.commit {
       replace(
         R.id.exceptionFragmentContainer,
-        ExceptionFragment.newInstance(AppCrashException(exception))
+        ExceptionFragment.newInstance(ExceptionDetails(getString(R.string.app_crashed),exception))
       )
     }
     binding.restartApp.setOnClickListener { restartApp() }
@@ -43,12 +44,13 @@ class ExceptionActivity : AppCompatActivity() {
     fun start(context: Context, exception: Throwable, isCached: Boolean = true) {
       val intent = Intent(context, ExceptionActivity::class.java).apply {
         putExtra(EXTRA_STACKTRACE, exception.stackTraceToString())
-        if(!isCached)
+        if (!isCached)
           addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
       }
       context.startActivity(intent)
     }
   }
 
-  class AppCrashException(val causedBy: String) : Exception()
+  @Serializable
+  class ExceptionDetails(val title: String, val causedBy: String)
 }

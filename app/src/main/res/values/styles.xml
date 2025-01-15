@@ -214,4 +214,41 @@
     <item name="boxCornerRadiusTopStart">12dp</item>
   </style>
 
+  <style name="Button.Outlined" parent="ThemeOverlay.Material3.Button.TextButton">
+    <item name="colorOutline">@color/md_theme_outline</item>
+    <item name="colorOnContainer">?attr/colorOnSurfaceVariant</item>
+  </style>
+
+  <!-- With less bright outline. -->
+  <style name="Button.Outlined.Icon" parent="Widget.Material3.Button.OutlinedButton.Icon">
+    <!-- Parent style decreases only left margin which looks off, so reduce both. -->
+    <item name="android:paddingLeft">16dp</item>
+    <item name="android:paddingRight">16dp</item>
+    <item name="materialThemeOverlay">@style/Button.Outlined</item>
+  </style>
+
+  <style name="RightMaterialDialogTheme" parent="ThemeOverlay.Material3.Dialog">
+    <item name="android:windowNoTitle">true</item>
+    <item name="android:windowBackground">@android:color/transparent</item>
+    <item name="android:layout_gravity">start</item>
+    <item name="android:windowAnimationStyle">@style/RightMaterialDialogAnimation</item>
+  </style>
+
+  <style name="RightMaterialDialogAnimation">
+    <item name="android:windowEnterAnimation">@anim/slide_in_right</item>
+    <item name="android:windowExitAnimation">@anim/slide_out_right</item>
+  </style>
+
+
+  <style name="BottomMaterialDialogTheme" parent="ThemeOverlay.Material3.Dialog">
+    <item name="android:windowNoTitle">true</item>
+    <item name="android:windowBackground">@android:color/transparent</item>
+    <item name="android:layout_gravity">start</item>
+    <item name="android:windowAnimationStyle">@style/BottomMaterialDialogAnimation</item>
+  </style>
+
+  <style name="BottomMaterialDialogAnimation">
+    <item name="android:windowEnterAnimation">@anim/slide_in_bottom</item>
+    <item name="android:windowExitAnimation">@anim/slide_out_bottom</item>
+  </style>
 </resources>

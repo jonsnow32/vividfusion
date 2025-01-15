@@ -124,9 +124,9 @@
   <string name="type_dropped">Dropped</string>
   <string name="type_plan_to_watch">Plan to Watch</string>
   <string name="type_none" translatable="false">None</string>
-    <string name="download">Download</string>
+  <string name="download">Download</string>
   <string name="resume">Resume</string>
-    <string name="seasons">Seasons</string>
+  <string name="seasons">Seasons</string>
   <string name="episodes">Episodes</string>
   <string name="sort_apply">Apply</string>
   <string name="sort_cancel">Cancel</string>
@@ -174,10 +174,16 @@
   <string name="enable">Enable</string>
   <string name="enabled">Enabled</string>
   <string name="disabled">Disabled</string>
-    <string name="something_went_wrong">Something went wrong!!</string>
-    <string name="region">Region</string>
-    <string name="bookmarks">Bookmarks</string>
-  <string name="add_to_bookmark">Add to Bookmarks</string>
+  <string name="something_went_wrong">Something went wrong!!</string>
+  <string name="region">Region</string>
+  <string name="bookmarks">Bookmarks</string>
+  <string name="add_to_bookmark">Bookmark</string>
+  <string name="comments">Comments</string>
+  <string name="action_stream">Stream or purchase</string>
+  <string name="unauthorized">$1%s : User is unauthorized</string>
+  <string name="is_not_supported">%1$s is not supported in %2$s Extension</string>
+  <string name="invalid_extension">Invalid Extension</string>
+  <string name="extension_requires">%1$s requires %2$s</string>
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>
