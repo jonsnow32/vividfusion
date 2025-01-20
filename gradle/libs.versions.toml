@@ -99,6 +99,7 @@ jsoup = {group = "org.jsoup", name = "jsoup", version.ref = "jsoup"}
 # ui
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "ksp", version.ref = "glide" }
+nestedscrollwebview = { module = "com.telefonica:nestedscrollwebview", version = "0.1.6" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

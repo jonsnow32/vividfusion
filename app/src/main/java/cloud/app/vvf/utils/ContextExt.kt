@@ -16,7 +16,7 @@ private var layoutId = INVALID
 
 private fun Context.getLayoutInt(): Int {
   val settingsManager = PreferenceManager.getDefaultSharedPreferences(this)
-  return settingsManager.getInt(this.getString(R.string.app_layout_key), -1)
+  return settingsManager.getInt(this.getString(R.string.pref_layout), -1)
 }
 
 private fun Context.isAutoTv(): Boolean {

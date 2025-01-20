@@ -18,6 +18,7 @@ import cloud.app.vvf.utils.roundTo
 import cloud.app.vvf.utils.setTextWithVisibility
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
+import cloud.app.vvf.databinding.ItemVideoBinding
 
 sealed class MediaItemViewHolder(itemView: View) :
   RecyclerView.ViewHolder(itemView) {
@@ -88,10 +89,12 @@ sealed class MediaItemViewHolder(itemView: View) :
       val season = (item as AVPMediaItem.SeasonItem).season
       binding.seasonTitle.text = season.title ?: "Season ${season.number}"
       binding.watchProgress.text = "${season.episodes?.size ?: 0}/${season.episodeCount} episodes"
-      binding.seasonProgress.progress = ((season.episodes?.size?.toFloat() ?: 0f / season.episodeCount) * 100).toInt()
+      binding.seasonProgress.progress =
+        ((season.episodes?.size?.toFloat() ?: 0f / season.episodeCount) * 100).toInt()
       binding.seasonOverview.setTextWithVisibility(season.overview)
       season.posterPath?.toImageHolder().loadInto(binding.seasonPoster)
     }
+
     companion object {
       fun create(
         parent: ViewGroup
@@ -111,9 +114,15 @@ sealed class MediaItemViewHolder(itemView: View) :
     override fun bind(item: AVPMediaItem) {
       val season = (item as AVPMediaItem.SeasonItem).season
       binding.seasonTitle.text = season.title ?: "Season ${season.number}"
-      binding.watchProgress.text = binding.root.context.resources.getString(R.string.season_progress_format, item.watchedEpisodeNumber ?: 0, season.episodeCount)
-      binding.seasonProgress.progress = (((season.episodes?.size?.toFloat() ?: (0f / season.episodeCount)) * 100)).toInt()
+      binding.watchProgress.text = binding.root.context.resources.getString(
+        R.string.season_progress_format,
+        item.watchedEpisodeNumber ?: 0,
+        season.episodeCount
+      )
+      binding.seasonProgress.progress =
+        (((season.episodes?.size?.toFloat() ?: (0f / season.episodeCount)) * 100)).toInt()
     }
+
     companion object {
       fun create(
         parent: ViewGroup
@@ -172,6 +181,31 @@ sealed class MediaItemViewHolder(itemView: View) :
     }
   }
 
+  class Trailer(val binding: ItemVideoBinding) : MediaItemViewHolder(binding.root) {
+    override val transitionView: View
+      get() = binding.root
+
+    override fun bind(item: AVPMediaItem) {
+      item as AVPMediaItem.TrailerItem
+      binding.videoTitle.text = item.title
+//      binding.voiceActorName.text = item.actorData.voiceActor?.name
+//      binding.actorExtra.text = item.actorData.roleString
+//      item.poster.loadInto(binding.actorImage, item.placeHolder())
+    }
+
+    companion object {
+      fun create(
+        parent: ViewGroup
+      ): MediaItemViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+        return Trailer(
+          ItemVideoBinding.inflate(layoutInflater, parent, false)
+        )
+      }
+    }
+
+  }
+
   class Stream(val binding: ItemStreamBinding) : MediaItemViewHolder(binding.root) {
     override val transitionView: View
       get() = binding.root
@@ -184,14 +218,13 @@ sealed class MediaItemViewHolder(itemView: View) :
 //      item.poster.loadInto(binding.actorImage, item.placeHolder())
     }
 
-
     companion object {
       fun create(
         parent: ViewGroup
       ): MediaItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        return Actor(
-          ItemActorBinding.inflate(layoutInflater, parent, false)
+        return Stream(
+          ItemStreamBinding.inflate(layoutInflater, parent, false)
         )
       }
     }
@@ -207,6 +240,7 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.ActorItem -> R.drawable.ic_person
       is AVPMediaItem.StreamItem -> R.drawable.ic_video
       is AVPMediaItem.SeasonItem -> R.drawable.ic_video
+      is AVPMediaItem.TrailerItem -> R.drawable.ic_video
     }
 
     fun ItemMediaBinding.bind(item: AVPMediaItem) {

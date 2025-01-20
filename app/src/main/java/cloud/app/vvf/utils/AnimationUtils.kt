@@ -87,7 +87,7 @@ private val View.animationDuration: Long
   }
 private val View.animations
   get() = context.applicationContext.run {
-    getDefaultSharedPreferences(context).getBoolean(getString(cloud.app.vvf.R.string.pref_animations_key), true)
+    getDefaultSharedPreferences(context).getBoolean(getString(cloud.app.vvf.R.string.pref_animations), true)
   }
 
 private val View.sharedElementTransitions

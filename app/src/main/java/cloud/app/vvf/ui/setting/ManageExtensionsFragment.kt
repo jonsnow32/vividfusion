@@ -97,20 +97,19 @@ class ManageExtensionsFragment : Fragment() {
 
     binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
 
-
-    var type = ExtensionType.entries[binding.extTabLayout.selectedTabPosition]
     fun change(pos: Int) {
-      type = ExtensionType.entries[pos]
+      val type = ExtensionType.entries[pos]
       val list = viewModel.getExtensionsByType(type)
-      if(list != null)
       lifecycleScope.launch {
-        extensionAdapter.submit(list)
+        if (list != null)
+          extensionAdapter.submit(list)
       }
     }
 
     binding.extTabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 
-      override fun onTabSelected(tab: TabLayout.Tab) { change(tab.position)
+      override fun onTabSelected(tab: TabLayout.Tab) {
+        change(tab.position)
       }
 
       override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -125,8 +124,10 @@ class ManageExtensionsFragment : Fragment() {
     binding.fabAddExtensions.setOnClickListener {
       //ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
       activity?.showNginxTextInputDialog(
-        getString(R.string.add_extensions), "https://github.com/jonsnow32/vivid-sample-extension/releases/download/1ba398f/plugins.json",
-        InputType.TYPE_TEXT_VARIATION_URI, {}) { url ->
+        getString(R.string.add_extensions),
+        "https://github.com/jonsnow32/vivid-sample-extension/releases/download/1ba398f/plugins.json",
+        InputType.TYPE_TEXT_VARIATION_URI,
+        {}) { url ->
         activity?.let {
           viewModel.addFromLinkOrCode(it, url);
         }

@@ -79,43 +79,29 @@
         </LinearLayout>
         <TextView
           android:layout_marginTop="16dp"
+          android:id="@+id/extensionTypes"
+          tools:text="@tools:sample/lorem"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:ellipsize="end" />
+
+        <TextView
+          android:layout_marginTop="16dp"
           android:id="@+id/extensionDescription"
           tools:text="@tools:sample/lorem"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginBottom="16dp"
+
           android:alpha="0.66"
           android:ellipsize="end" />
 
         <include
           android:id="@+id/extensionLoginUser"
           layout="@layout/item_login_user"
-          tools:visibility="visible"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="-24dp"
-          android:layout_marginEnd="-24dp"
-          android:visibility="gone" />
-
-        <include
-          android:id="@+id/extensionApiKey"
-          layout="@layout/item_api_key_auth"
-          tools:visibility="visible"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginStart="-24dp"
-          android:layout_marginEnd="-24dp"
-          android:visibility="gone" />
-
-        <include
-          android:id="@+id/extensionWebLogin"
-          layout="@layout/item_web_auth"
-          tools:visibility="visible"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginStart="-24dp"
-          android:layout_marginEnd="-24dp"
-          android:visibility="gone" />
+          android:layout_marginEnd="-24dp"/>
 
         <LinearLayout
           android:id="@+id/enabledCont"
@@ -168,7 +154,7 @@
         <TextView
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:text="@string/extension_settings"
+          android:text="@string/options"
           android:textSize="18sp" />
 
       </LinearLayout>

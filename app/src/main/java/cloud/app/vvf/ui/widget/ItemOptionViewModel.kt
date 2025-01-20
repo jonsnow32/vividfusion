@@ -79,6 +79,10 @@ class ItemOptionViewModel @Inject constructor(
                 detailItem.value?.id?.toString()
               )
             }
+
+            is AVPMediaItem.TrailerItem -> async {
+              true
+            }
           }
           favoriteStatus.value = favoriteDeferred.await()
 

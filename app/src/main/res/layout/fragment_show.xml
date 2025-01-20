@@ -30,35 +30,93 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-      <LinearLayout
+      <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/mediaActionHolder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="vertical"
-        android:paddingHorizontal="16dp">
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="8dp">
+
+        <androidx.constraintlayout.helper.widget.Flow
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          app:constraint_referenced_ids="buttonLastWatchedEpisode,buttonMovieStreamingSearch,buttonBookmark,buttonMovieDownload,buttonShowTrailer,buttonShowSimilar,buttonShowShare,buttonShowComments,buttonShowShortcut,buttonShowWebSearch,buttonShowMetacritic"
+          app:flow_horizontalBias="0"
+          app:flow_horizontalGap="4dp"
+          app:flow_horizontalStyle="packed"
+          app:flow_wrapMode="chain"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
+
 
         <com.google.android.material.button.MaterialButton
-          android:id="@+id/btnPlay"
+          android:id="@+id/buttonLastWatchedEpisode"
+          style="@style/Button.Outlined.Icon"
+          android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_width="match_parent"
-          android:text="@string/play_now" />
+          android:text="@string/last_watched_episode"
+          app:icon="@drawable/play_arrow_24dp"
+          app:iconGravity="start" />
 
         <com.google.android.material.button.MaterialButton
-          android:id="@+id/btnDownload"
+          android:id="@+id/buttonShowTrailer"
+          style="@style/Button.Outlined.Icon"
+          android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_width="match_parent"
-          android:text="@string/download"
-          android:visibility="gone" />
+          android:text="@string/trailer"
+          app:icon="@drawable/movie_24dp"
+          app:iconGravity="start" />
 
         <com.google.android.material.button.MaterialButton
-          android:id="@+id/btnResume"
+          android:id="@+id/buttonBookmark"
+          style="@style/Button.Outlined.Icon"
+          android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_width="match_parent"
-          android:text="@string/resume"
-          android:visibility="gone"/>
+          android:text="@string/add_to_bookmark"
+          app:icon="@drawable/ic_bookmark_outline"
+          app:iconGravity="start" />
 
-      </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/buttonShowShare"
+          style="@style/Button.Outlined.Icon"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/share"
+          app:icon="@drawable/share_24dp"
+          app:iconGravity="start" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/buttonShowComments"
+          style="@style/Button.Outlined.Icon"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/comments"
+          app:icon="@drawable/forum_24dp"
+          app:iconGravity="start" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/buttonShowWebSearch"
+          style="@style/Button.Outlined.Icon"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          tools:text="name of collections"
+          app:icon="@drawable/ic_search_outline"
+          app:iconGravity="start" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/buttonMovieStreamingSearch"
+          style="@style/Button.Outlined.Icon"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:contentDescription="@string/action_stream"
+          android:text="@string/action_stream"
+          app:icon="@drawable/play_arrow_24dp" />
+
+
+      </androidx.constraintlayout.widget.ConstraintLayout>
 
       <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvActors"

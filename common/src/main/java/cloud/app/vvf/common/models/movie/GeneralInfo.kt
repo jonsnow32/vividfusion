@@ -1,6 +1,7 @@
 package cloud.app.vvf.common.models.movie
 
 import cloud.app.vvf.common.models.Actor
+import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.common.utils.getYear
 import kotlinx.serialization.Serializable
 
@@ -19,6 +20,7 @@ data class GeneralInfo(
   var rating: Double? = null,
   var actors: List<Actor>? = null,
   var homepage: String? = null,
+  var videos: List<StreamData>? = null
 ) {
   fun getReleaseYear(): Int? {
     return releaseDateMsUTC?.getYear()

@@ -38,6 +38,7 @@ class ShowViewModel @Inject constructor(
   var fullMediaItem = MutableStateFlow<AVPMediaItem.ShowItem?>(null)
   val watchedSeasons = MutableStateFlow<List<AVPMediaItem.SeasonItem>?>(emptyList())
   val recommendations = MutableStateFlow<PagingData<AVPMediaItem>?>(null)
+  val trailers = MutableStateFlow<PagingData<AVPMediaItem>?>(null)
 
   val favoriteStatus = MutableStateFlow(false)
   val lastWatchedEpisode = MutableStateFlow<PlaybackProgress?>(null)

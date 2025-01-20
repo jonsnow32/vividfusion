@@ -34,6 +34,7 @@ class MediaItemAdapter(
       3 -> MediaItemViewHolder.Actor.create(parent)
       4 -> MediaItemViewHolder.Stream.create(parent)
       5 -> MediaItemViewHolder.Season.create(parent)
+      6 -> MediaItemViewHolder.Trailer.create(parent)
       else -> throw IllegalArgumentException("Invalid view type")
     }
     return holder
@@ -48,6 +49,7 @@ class MediaItemAdapter(
       is AVPMediaItem.ActorItem -> 3
       is AVPMediaItem.StreamItem -> 4
       is AVPMediaItem.SeasonItem -> 5
+      is AVPMediaItem.TrailerItem -> 6
     }
   }
 

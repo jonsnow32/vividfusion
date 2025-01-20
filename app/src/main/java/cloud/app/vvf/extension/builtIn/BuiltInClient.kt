@@ -3,6 +3,7 @@ package cloud.app.vvf.extension.builtIn
 import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.clients.streams.StreamClient
+import cloud.app.vvf.common.clients.user.LoginClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.Page
 import cloud.app.vvf.common.helpers.PagedData
@@ -15,9 +16,11 @@ import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.QuickSearchItem
+import cloud.app.vvf.common.models.Request
 import cloud.app.vvf.common.models.SortBy
 import cloud.app.vvf.common.models.SubtitleData
 import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.common.models.User
 import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.common.models.movie.GeneralInfo
 import cloud.app.vvf.common.models.movie.Ids
@@ -27,8 +30,10 @@ import cloud.app.vvf.common.models.stream.PremiumType
 import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
+import cloud.app.vvf.common.settings.SettingCategory
 import cloud.app.vvf.common.settings.SettingList
 import cloud.app.vvf.common.settings.SettingSwitch
+import cloud.app.vvf.common.settings.SettingTextInput
 import cloud.app.vvf.network.api.trakt.AppTrakt
 import cloud.app.vvf.extension.builtIn.tmdb.AppTmdb
 import cloud.app.vvf.extension.builtIn.tmdb.SearchSuggestion
@@ -60,7 +65,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
       path = "",
       importType = ImportType.BuiltIn,
       name = "The extension of TMDB",
-      description = "tmdb extension",
+      description = "BuiltInClient is TMDB's core media provider. It handles searching, metadata retrieval, applying JustWatch as a purchase streaming option, and more.",
       version = "1.0.0",
       author = "Avp",
       iconUrl = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
@@ -76,6 +81,9 @@ class BuiltInClient : DatabaseClient, StreamClient {
       // Add other mappings as necessary
     )
     const val pageSize = 3;
+
+    const val PREF_TMDB_API_KEY = "pref_tmdb_api_key"
+    const val PREF_TVDB_API_KEY = "pref_tvdb_api_key"
   }
 
 
@@ -83,56 +91,103 @@ class BuiltInClient : DatabaseClient, StreamClient {
   private lateinit var tvdb: AppTheTvdb
   private lateinit var trakt: AppTrakt
   override val defaultSettings: List<Setting> = listOf(
-    SettingSwitch(
-      "Include Adult",
-      "include_adult_key",
-      "Include adult",
-      false
+
+    SettingCategory(
+      title = "API Access",
+      key = "",
+      items = listOf(
+        SettingTextInput(
+          "TMDB API Key",PREF_TMDB_API_KEY,
+          "Enter your TMDB API key to access movie and TV show data from The Movie Database.",
+          defaultValue = null
+        ),
+        SettingTextInput(
+          "TVDB API Key",PREF_TVDB_API_KEY,
+          "Enter your TVDB API key to access data from The TV Database for TV shows.",
+          defaultValue = null
+        )
+      )
     ),
 
-    SettingSwitch(
-      "Show Special Season",
-      "show_special_season_key",
-      "Show Special Season",
-      true
+    SettingCategory(
+      title = "Media content", key = "media_content_key",
+      items = listOf(
+//        SettingSwitch(
+//          "Show English Movie/TV Show Only",
+//          "show_english_media_only_key",
+//          "Only display movies and TV shows in English.",
+//          false
+//        ),
+        SettingSwitch(
+          "Include Adult Content",
+          "include_adult_key",
+          "Include adult-rated movies and TV shows in your library.",
+          false
+        ),
+        SettingSwitch(
+          "Show Special Seasons",
+          "show_special_season_key",
+          "Display special seasons for TV shows, such as behind-the-scenes or bonus episodes.",
+          true
+        ),
+        SettingSwitch(
+          "Show Unaired Episodes",
+          "show_unaired_episode_key",
+          "Include episodes that are scheduled to air but haven't been broadcast yet.",
+          true
+        ),
+        SettingList(
+          "Metadata Language",
+          "metadata_language_key",
+          "Select the language for displaying movie and TV show metadata, such as titles, descriptions, and other details.",
+          entryTitles = languageI3691Map.values.toList(),
+          entryValues = languageI3691Map.keys.toList(),
+          defaultEntryIndex = 0
+        )
+      )
+
     ),
 
-    SettingSwitch(
-      "Show unAired episode",
-      "show_unaired_episode_key",
-      "Show unAired episode",
-      true
+    SettingCategory(
+      title = "JustWatch",
+      key = "",
+      items = listOf(
+        SettingList(
+          "Region",
+          "region_key",
+          "Select the region to filter content availability based on your location.",
+          entryTitles = popularCountriesIsoToEnglishName.values.toList(),
+          entryValues = popularCountriesIsoToEnglishName.keys.toList(),
+          defaultEntryIndex = 0
+        )
+      )
     ),
 
-    SettingList(
-      "Language",
-      "language_key",
-      "Language",
-      entryTitles = languageI3691Map.values.toList(),
-      entryValues = languageI3691Map.keys.toList(),
-      defaultEntryIndex = 0
-    ),
-    SettingList(
-      "Region",
-      "region_key",
-      "Region",
-      entryTitles = popularCountriesIsoToEnglishName.values.toList(),
-      entryValues = popularCountriesIsoToEnglishName.keys.toList(),
-      defaultEntryIndex = 0
     )
-  )
 
+//  tmdb = AppTmdb(
+//  httpHelper.okHttpClient,
+//  prefSettings.getString(PREF_TMDB_API_KEY) ?: "4ef60b9d635f533695cbcaccb6603a57"
+//  )
+//  tvdb = AppTheTvdb(
+//  httpHelper.okHttpClient,
+//  prefSettings.getString(PREF_TVDB_API_KEY) ?: "4ef60b9d635f533695cbcaccb6603a57",
+//  prefSettings,
+//  )
 
   private lateinit var prefSettings: PrefSettings
-  override fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
+
+  override
+
+  fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
     this.prefSettings = prefSettings
     tmdb = AppTmdb(
       httpHelper.okHttpClient,
-      prefSettings.getString("pref_tmdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57"
+      prefSettings.getString(PREF_TMDB_API_KEY) ?: ""
     )
     tvdb = AppTheTvdb(
       httpHelper.okHttpClient,
-      prefSettings.getString("pref_tvdb_api_key") ?: "4ef60b9d635f533695cbcaccb6603a57",
+      prefSettings.getString(PREF_TVDB_API_KEY) ?: "4ef60b9d635f533695cbcaccb6603a57",
       prefSettings,
     )
     trakt = AppTrakt(
@@ -141,6 +196,17 @@ class BuiltInClient : DatabaseClient, StreamClient {
       "4ef60b9d635f533695cbcaccb6603a57",
       prefSettings
     )
+  }
+
+  override fun onSettingsChanged(key: String, value: Any) {
+    when(key) {
+      PREF_TVDB_API_KEY -> {
+        tvdb.apiKey(value.toString())
+      }
+      PREF_TMDB_API_KEY -> {
+        tmdb.apiKey(value.toString())
+      }
+    }
   }
 
   private val includeAdult get() = prefSettings.getBoolean("include_adult_key")
@@ -260,10 +326,10 @@ class BuiltInClient : DatabaseClient, StreamClient {
             episodeCount = it.episodes?.size ?: 0,
             posterPath = it.poster_path,
             episodes = it.episodes?.filter { episode ->
-              if(showUnairedEpisode == true) {
+              if (showUnairedEpisode == true) {
                 true
               } else
-                //episode.air_date?.before(Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000))) == true
+              //episode.air_date?.before(Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000))) == true
                 episode.air_date?.before(Date(System.currentTimeMillis())) == true
             }?.map { episode ->
               Episode(
@@ -577,8 +643,6 @@ class BuiltInClient : DatabaseClient, StreamClient {
   }
 
 
-
-
   private suspend fun getTvdbEpisodes(show: Show, page: Int): List<Episode> {
     val list = mutableListOf<Episode>()
     if (show.ids.tvdbId != null) {
@@ -821,7 +885,11 @@ class BuiltInClient : DatabaseClient, StreamClient {
     }
   }
 
-  private fun createStreamData(provider: WatchProviders.WatchProvider, type: String, link: String): StreamData {
+  private fun createStreamData(
+    provider: WatchProviders.WatchProvider,
+    type: String,
+    link: String
+  ): StreamData {
     return StreamData(
       originalUrl = link,
       providerName = "${provider.provider_name} ($type)",
@@ -830,4 +898,5 @@ class BuiltInClient : DatabaseClient, StreamClient {
       premiumType = PremiumType.JustWatch.ordinal,
     )
   }
+
 }

@@ -9,12 +9,14 @@ import cloud.app.vvf.common.models.movie.Ids
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Season
 import cloud.app.vvf.common.models.movie.Show
+import cloud.app.vvf.common.models.stream.StreamData
 import com.uwetrottmann.tmdb2.entities.BaseMovie
 import com.uwetrottmann.tmdb2.entities.BasePerson
 import com.uwetrottmann.tmdb2.entities.BaseTvShow
 import com.uwetrottmann.tmdb2.entities.MovieResultsPage
 import com.uwetrottmann.tmdb2.entities.PersonResultsPage
 import com.uwetrottmann.tmdb2.entities.TvShowResultsPage
+import com.uwetrottmann.tmdb2.enumerations.VideoType
 import org.threeten.bp.LocalDate
 import org.threeten.bp.ZoneOffset
 import org.threeten.bp.format.DateTimeFormatter
@@ -61,6 +63,10 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
     movie.generalInfo.actors = this.credits?.cast?.map {
       Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id)
     }
+    movie.generalInfo.videos = this.videos?.results?.filter { it.type == VideoType.TRAILER }?.map { StreamData(
+      originalUrl = "${it.site}/${it.id}",
+      resolvedUrl = "${it.site}/${it.id}",
+    ) }
   }
 
   return AVPMediaItem.MovieItem(movie)

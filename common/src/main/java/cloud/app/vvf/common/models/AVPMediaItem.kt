@@ -60,6 +60,10 @@ sealed class AVPMediaItem {
   @Serializable
   data class StreamItem(val streamData: StreamData) : AVPMediaItem()
 
+  @Serializable
+  data class TrailerItem(val streamData: StreamData) : AVPMediaItem()
+
+
   companion object {
     fun Actor.toMediaItem() = ActorItem(this)
     fun Movie.toMediaItem() = MovieItem(this)
@@ -85,6 +89,7 @@ sealed class AVPMediaItem {
       is EpisodeItem -> getSlug()
       is StreamItem -> streamData.fileName.hashCode()
       is SeasonItem -> getSlug()
+      is TrailerItem -> streamData.originalUrl
     }
 
   val title
@@ -95,6 +100,7 @@ sealed class AVPMediaItem {
       is EpisodeItem -> episode.generalInfo.title
       is StreamItem -> streamData.fileName
       is SeasonItem -> season.title ?: "S${season.number}"
+      is TrailerItem -> streamData.originalUrl
     }
 
   val releaseYear
@@ -104,7 +110,7 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.getReleaseYear()
       is EpisodeItem -> episode.generalInfo.getReleaseYear()
       is SeasonItem -> season.releaseDateMsUTC?.getYear()
-      is StreamItem -> null
+      else  -> null
     }
 
   val releaseMonthYear
@@ -138,6 +144,7 @@ sealed class AVPMediaItem {
       is EpisodeItem -> episode.generalInfo.poster?.toImageHolder()
       is StreamItem -> streamData.streamQuality.toImageHolder()
       is SeasonItem -> season.posterPath?.toImageHolder()
+      else -> null
     }
 
   val backdrop
@@ -185,6 +192,6 @@ sealed class AVPMediaItem {
       is MovieItem -> movie.generalInfo.homepage
       is SeasonItem -> showItem.show.generalInfo.homepage
       is ShowItem -> show.generalInfo.homepage
-      is StreamItem -> null
+      else -> null
     }
 }

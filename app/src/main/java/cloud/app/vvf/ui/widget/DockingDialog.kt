@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import cloud.app.vvf.R
 
-abstract class DockingDialog : DialogFragment() {
+open class DockingDialog : DialogFragment() {
 
   enum class Docking {
     RIGHT, BOTTOM

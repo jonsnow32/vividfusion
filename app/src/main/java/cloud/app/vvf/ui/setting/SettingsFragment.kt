@@ -1,6 +1,7 @@
 package cloud.app.vvf.ui.setting
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
@@ -9,7 +10,6 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import cloud.app.vvf.R
 import cloud.app.vvf.utils.navigate
-
 
 class SettingsFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.settings)
@@ -30,6 +30,13 @@ class SettingsFragment : BaseSettingsFragment() {
       }
 
       TransitionPreference(context).add {
+        title = getString(R.string.general_setting)
+        key = "general"
+        summary = getString(R.string.general_setting)
+        icon = AppCompatResources.getDrawable(context, R.drawable.general_device_24dp)
+      }
+
+      TransitionPreference(context).add {
         title = getString(R.string.extensions)
         key = "extension"
         summary = getString(R.string.extension_summary)
@@ -43,12 +50,12 @@ class SettingsFragment : BaseSettingsFragment() {
         icon = AppCompatResources.getDrawable(context, R.drawable.tune_24dp)
       }
 
-      TransitionPreference(context).add {
-        title = getString(R.string.contents)
-        key = "content"
-        summary = getString(R.string.content_setting_summary)
-        icon = AppCompatResources.getDrawable(context, R.drawable.database_24dp)
-      }
+//      TransitionPreference(context).add {
+//        title = getString(R.string.contents)
+//        key = "content"
+//        summary = getString(R.string.content_setting_summary)
+//        icon = AppCompatResources.getDrawable(context, R.drawable.database_24dp)
+//      }
 
       TransitionPreference(context).add {
         title = getString(R.string.about)
@@ -75,6 +82,7 @@ class SettingsFragment : BaseSettingsFragment() {
         "extension" -> ManageExtensionsFragment()
         "ui" -> UiSettingFragment()
         "content" -> ContentSettingFragment()
+        "general" -> GeneralSettingsFragment()
         else -> null
       }
       fragment ?: return false

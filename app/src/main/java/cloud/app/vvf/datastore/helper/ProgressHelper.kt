@@ -12,7 +12,12 @@ data class PlaybackProgress(
   val position: Long,
   val duration: Long? = null,
   val lastUpdated: Long = System.currentTimeMillis()
-)
+) {
+  fun getEpisode(): AVPMediaItem.EpisodeItem? {
+    return item as? AVPMediaItem.EpisodeItem
+  }
+}
+
 
 fun DataStore.savePlaybackProgress(data: PlaybackProgress): Boolean {
   if (data.item is AVPMediaItem.EpisodeItem || data.item is AVPMediaItem.MovieItem) {

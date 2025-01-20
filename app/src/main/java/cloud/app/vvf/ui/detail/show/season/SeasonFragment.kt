@@ -10,18 +10,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
+import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
+import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.databinding.FragmentSeasonBinding
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.detail.show.episode.EpisodeAdapter
+import cloud.app.vvf.ui.widget.SelectionDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
-import cloud.app.vvf.utils.showDialog
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
-import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
-import cloud.app.vvf.common.models.movie.Episode
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -95,7 +95,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   private fun setupEpisodes(episodes: List<Episode>?) {
     fun getCurrentSort(): SortMode {
       val key = preferences.getInt(
-        getString(R.string.episode_sort_key),
+        getString(R.string.pref_episode_sort),
         SortMode.ASCENDING.ordinal
       )
 
@@ -114,7 +114,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
       binding.episodeSelectRange.isGone = false
       binding.episodeSelectRange.setOnClickListener {
         val listItems = episodeRanges.map { it.rangeLabel }
-        activity?.showDialog(
+        SelectionDialog.single(
           listItems,
           currentSelectedRangeIndex,
           getString(R.string.select_episode_range),
@@ -123,7 +123,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
           currentSelectedRangeIndex = itemId
           binding.episodeSelectRange.text = episodeRanges[currentSelectedRangeIndex].rangeLabel
           displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, getCurrentSort())
-        }
+        }.show(parentFragmentManager, null)
       }
     }
 
@@ -146,7 +146,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
       }
       updateSortUI(newSortMode)
       displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, newSortMode)
-      preferences.edit().putInt(getString(R.string.episode_sort_key), newSortMode.ordinal).apply()
+      preferences.edit().putInt(getString(R.string.pref_episode_sort), newSortMode.ordinal).apply()
     }
   }
 

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -33,8 +34,9 @@ import cloud.app.vvf.utils.loadWith
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.clients.user.LoginClient
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
+import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingCategory
 import cloud.app.vvf.common.settings.SettingItem
@@ -42,8 +44,9 @@ import cloud.app.vvf.common.settings.SettingList
 import cloud.app.vvf.common.settings.SettingMultipleChoice
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.common.settings.SettingTextInput
-import cloud.app.vvf.datastore.helper.getExtension
-import cloud.app.vvf.extension.getExtensions
+import cloud.app.vvf.extension.isClient
+import cloud.app.vvf.ui.login.LoginUserBottomSheet.Companion.bind
+import cloud.app.vvf.ui.login.LoginUserViewModel
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.launch
 
@@ -67,7 +70,6 @@ class ExtensionSettingFragment : Fragment() {
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
-  private val clientName by lazy { viewModel.dataStore.getExtension(clientId)?.name ?: "" }
   private val extension by lazy { viewModel.extensionListFlow.getExtension(clientId) }
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -81,6 +83,7 @@ class ExtensionSettingFragment : Fragment() {
     setupTransition(view)
     applyInsets {
       binding.appBarLayout.setPadding(0, it.top, 0, 0)
+      binding.nestedScrollView.setPadding(0, 0, 0, it.bottom)
     }
 
     if (context?.isLayout(TV or EMULATOR) == true) {
@@ -114,7 +117,7 @@ class ExtensionSettingFragment : Fragment() {
     }
 
     binding.toolbar.apply {
-      title = clientName
+      title = extensionMetadata.name
       setNavigationIcon(R.drawable.ic_back)
       setNavigationOnClickListener {
         activity?.onBackPressedDispatcher?.onBackPressed()
@@ -137,11 +140,14 @@ class ExtensionSettingFragment : Fragment() {
         binding.extensionIcon.setImageDrawable(it)
       }
 
-    val nameAndAuthor = getString(R.string.name_extension, extensionMetadata.importType.name, extensionMetadata.author)
+    binding.extensionDetails.text = getString(
+      R.string.extension_title,
+      extensionMetadata.version,
+      extensionMetadata.author,
+      extensionMetadata.className
+    )
 
-    binding.extensionDetails.text =
-      "${nameAndAuthor}\n${extensionMetadata.className} •${extensionMetadata.version}"
-
+    binding.extensionTypes.text = extensionMetadata.types.toString()
     binding.extensionDescription.text = extensionMetadata.description
 
 //    when (extensionMetadata.loginType) {
@@ -152,6 +158,12 @@ class ExtensionSettingFragment : Fragment() {
 //        //nothing to show
 //      }
 //    }
+
+    if (extension?.isClient<LoginClient>() == true) {
+      val loginViewModel by activityViewModels<LoginUserViewModel>()
+      loginViewModel.currentExtension.value = extension
+      binding.extensionLoginUser.bind(this@ExtensionSettingFragment) {}
+    } else binding.extensionLoginUser.root.isVisible = false
 
     childFragmentManager.beginTransaction()
       .add(R.id.settingsFragment, creator())
@@ -189,6 +201,14 @@ class ExtensionSettingFragment : Fragment() {
       }
     }
 
+    private fun onSettingChanged() =
+      Preference.OnPreferenceChangeListener { pref, new ->
+        val viewModel by activityViewModels<ExtensionViewModel>()
+        val client = viewModel.extensionListFlow.getExtension(extensionId)
+        client?.instance?.value?.getOrNull()?.onSettingsChanged(pref.key, new)
+        true
+      }
+
     private fun Setting.addPreferenceTo(preferenceGroup: PreferenceGroup) {
       when (this) {
         is SettingCategory -> {
@@ -215,6 +235,7 @@ class ExtensionSettingFragment : Fragment() {
             it.isIconSpaceReserved = false
             it.layoutResource = R.layout.preference
             preferenceGroup.addPreference(it)
+            it.onPreferenceChangeListener = onSettingChanged()
           }
         }
 
@@ -227,6 +248,7 @@ class ExtensionSettingFragment : Fragment() {
 
             it.isIconSpaceReserved = false
             it.layoutResource = R.layout.preference_switch
+            it.onPreferenceChangeListener = onSettingChanged()
             preferenceGroup.addPreference(it)
           }
         }
@@ -243,6 +265,7 @@ class ExtensionSettingFragment : Fragment() {
 
             it.isIconSpaceReserved = false
             it.layoutResource = R.layout.preference
+            it.onPreferenceChangeListener = onSettingChanged()
             preferenceGroup.addPreference(it)
           }
         }
@@ -260,7 +283,7 @@ class ExtensionSettingFragment : Fragment() {
             }
             it.entries = this.entryTitles.toTypedArray()
             it.entryValues = this.entryValues.toTypedArray()
-
+            it.onPreferenceChangeListener = onSettingChanged()
             it.isIconSpaceReserved = false
             it.layoutResource = R.layout.preference
             preferenceGroup.addPreference(it)
@@ -276,6 +299,7 @@ class ExtensionSettingFragment : Fragment() {
 
             it.isIconSpaceReserved = false
             it.layoutResource = R.layout.preference
+            it.onPreferenceChangeListener = onSettingChanged()
             preferenceGroup.addPreference(it)
           }
         }

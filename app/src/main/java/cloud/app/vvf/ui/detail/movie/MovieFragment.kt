@@ -7,7 +7,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
@@ -17,31 +16,33 @@ import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
+import cloud.app.vvf.common.helpers.PagedData
+import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.movie.Movie
+import cloud.app.vvf.common.models.movie.Show
 import cloud.app.vvf.databinding.FragmentMovieBinding
+import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.ui.detail.TrailerDialog
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.media.MediaClickListener
 import cloud.app.vvf.ui.media.MediaItemAdapter
 import cloud.app.vvf.ui.paging.toFlow
 import cloud.app.vvf.ui.stream.StreamFragment
+import cloud.app.vvf.ui.widget.DockingDialog
+import cloud.app.vvf.ui.widget.SelectionDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
-import cloud.app.vvf.common.helpers.PagedData
-import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.movie.Movie
-import cloud.app.vvf.common.models.movie.Show
-import cloud.app.vvf.datastore.helper.BookmarkItem
-import cloud.app.vvf.utils.showBottomDialog
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MovieFragment : Fragment(){
+class MovieFragment : Fragment() {
   private var binding by autoCleared<FragmentMovieBinding>()
   private val viewModel by viewModels<MovieViewModel>()
   private val mainViewModel by activityViewModels<MainActivityViewModel>()
@@ -88,27 +89,7 @@ class MovieFragment : Fragment(){
       }
     }
 
-    binding.buttonShowTrailer.setOnClickListener {
-      val dialog = Dialog(requireActivity(), R.style.RightMaterialDialogTheme)
-      dialog.setContentView(R.layout.dialog_right_material)
 
-// Retrieve the window and adjust layout parameters
-      dialog.window?.apply {
-        setLayout(
-          (resources.displayMetrics.widthPixels * 0.3).toInt(), // 60% of screen width
-          ViewGroup.LayoutParams.MATCH_PARENT // Full height
-        )
-        setGravity(Gravity.END) // Anchor to the right side
-      }
-
-// Show the dialog
-//      dialog.findViewById<Button>(R.id.dialogButton)?.setOnClickListener {
-//        dialog.dismiss()
-//      }
-
-      dialog.show()
-
-    }
     binding.buttonMovieStreamingSearch.setOnClickListener {
       viewModel.fullMediaItem.value?.let {
         navigate(StreamFragment.newInstance(it))
@@ -116,29 +97,31 @@ class MovieFragment : Fragment(){
     }
 
     binding.buttonBookmark.setOnClickListener {
-      val item = viewModel.fullMediaItem.value ?: return@setOnClickListener
+      val item = viewModel.fullMediaItem.value ?: shortItem
 
       val status = mainViewModel.getBookmark(item)
       val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
         add("None")
       }
-      val selectedIndex = if(status == null) (bookmarks.size - 1)  else  bookmarks.indexOf(status.javaClass.simpleName);
-      requireActivity().showBottomDialog(
-        bookmarks,
-        selectedIndex,
+      val selectedIndex =
+        if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
+
+      SelectionDialog.single(
+        bookmarks, selectedIndex,
         getString(R.string.add_to_bookmark),
         false,
         {},
         { selected ->
-          mainViewModel.addToBookmark(item, bookmarks.get(selected));
+          mainViewModel.addToBookmark(item, bookmarks[selected]);
 
           val bookmarkStatus = mainViewModel.getBookmark(item)
           binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
-          if(bookmarkStatus != null) {
-            binding.buttonBookmark.icon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
+          if (bookmarkStatus != null) {
+            binding.buttonBookmark.icon =
+              ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
           }
 
-        })
+        }).show(parentFragmentManager, null)
     }
 
   }
@@ -159,6 +142,14 @@ class MovieFragment : Fragment(){
       bind(mediaItem)
       setupActorAdapter(mediaItem)
       setupRecommendationAdapter(mediaItem)
+      setupTrailerAdapter(mediaItem)
+    }
+  }
+
+  private fun setupTrailerAdapter(mediaItem: AVPMediaItem) {
+    binding.buttonShowTrailer.setOnClickListener {
+      val dialog = TrailerDialog.newInstance(mediaItem.generalInfo?.videos, clientId)
+      dialog.show(parentFragmentManager, "")
     }
   }
 
@@ -211,15 +202,15 @@ class MovieFragment : Fragment(){
     binding.buttonShowComments.isGone = true
     binding.buttonShowShare.isGone = true
     binding.buttonShowWebSearch.isGone = true
-
     viewModel.fullMediaItem.value?.let {
       val bookmarkStatus = mainViewModel.getBookmark(it)
       binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
-      if(bookmarkStatus != null) {
-        binding.buttonBookmark.icon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
+      if (bookmarkStatus != null) {
+        binding.buttonBookmark.icon =
+          ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
       }
     }
-
+    binding.buttonShowTrailer.isGone = item.generalInfo?.videos.isNullOrEmpty()
   }
 
 }

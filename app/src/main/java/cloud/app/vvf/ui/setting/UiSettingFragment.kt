@@ -48,7 +48,7 @@ class UiSettingFragment : BaseSettingsFragment() {
 
 
       MaterialListPreference(context).apply {
-        key = getString(R.string.pref_theme_key)
+        key = getString(R.string.pref_theme)
         title = getString(R.string.theme)
         summary = getString(R.string.theme_summary)
         layoutResource = R.layout.preference
@@ -64,7 +64,7 @@ class UiSettingFragment : BaseSettingsFragment() {
       }
 
       SwitchPreferenceCompat(context).apply {
-        key = getString(R.string.enable_dynamic_color_key)
+        key = getString(R.string.enable_dynamic_color)
         title = getString(R.string.enable_dynamic_color)
         summary = getString(R.string.dynamic_color_summary)
         layoutResource = R.layout.preference_switch
@@ -72,16 +72,16 @@ class UiSettingFragment : BaseSettingsFragment() {
         setDefaultValue(false)
         onPreferenceChangeListener = uiListener {
           activity?.application?.applyUiChanges(preferences, currentActivity = activity)
-          screen.findPreference<Preference>(getString(R.string.dynamic_color_key))?.isEnabled = it as Boolean
+          screen.findPreference<Preference>(getString(R.string.dynamic_color))?.isEnabled = it as Boolean
         }
         screen.addPreference(this)
       }
 
       ColorListPreference(this@UiPreference).apply {
-        key = getString(R.string.dynamic_color_key)
-        isEnabled = preferences.getBoolean(getString(R.string.enable_dynamic_color_key), false)
+        key = getString(R.string.dynamic_color)
+        isEnabled = preferences.getBoolean(getString(R.string.pref_enable_dynamic_color), false)
         listener = ColorListPreference.Listener {
-          val themeColor = preferences.getString(getString(R.string.pref_theme_key), "system")
+          val themeColor = preferences.getString(getString(R.string.pref_theme), "system")
           activity?.application?.applyUiChanges(preferences, themeColor, it, currentActivity = activity)
         }
         screen.addPreference(this)
@@ -94,7 +94,7 @@ class UiSettingFragment : BaseSettingsFragment() {
         screen.addPreference(this)
 
         SwitchPreferenceCompat(context).apply {
-          key = getString(R.string.pref_animations_key)
+          key = getString(R.string.pref_animations)
           title = getString(R.string.animations)
           summary = getString(R.string.animations_summary)
           layoutResource = R.layout.preference_switch

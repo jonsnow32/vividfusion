@@ -257,69 +257,6 @@ private fun Activity?.showInputDialog(
 
 }
 
-fun Activity?.showMultiDialog(
-  items: List<String>,
-  selectedIndex: List<Int>,
-  name: String,
-  dismissCallback: () -> Unit,
-  callback: (List<Int>) -> Unit,
-) {
-  if (this == null) return
-
-  val binding: DialogBottomSelectionBinding = DialogBottomSelectionBinding.inflate(
-    LayoutInflater.from(this)
-  )
-  val builder =
-    AlertDialog.Builder(this, R.style.AlertDialogCustom)
-      .setView(binding.root)
-
-  val dialog = builder.create()
-  dialog.show()
-  showDialog(
-    binding,
-    dialog,
-    items,
-    selectedIndex,
-    name,
-    showApply = true,
-    isMultiSelect = true,
-    callback,
-    dismissCallback
-  )
-}
-
-fun Activity?.showDialog(
-  items: List<String>,
-  selectedIndex: Int,
-  name: String,
-  showApply: Boolean,
-  dismissCallback: () -> Unit,
-  callback: (Int) -> Unit,
-) {
-  if (this == null) return
-
-  val binding: DialogBottomSelectionBinding = DialogBottomSelectionBinding.inflate(
-    LayoutInflater.from(this)
-  )
-  val builder = MaterialAlertDialogBuilder(this)
-    .setView(binding.root)
-
-  val dialog = builder.create()
-  dialog.show()
-
-
-  showDialog(
-    binding,
-    dialog,
-    items,
-    listOf(selectedIndex),
-    name,
-    showApply,
-    false,
-    { if (it.isNotEmpty()) callback.invoke(it.first()) },
-    dismissCallback
-  )
-}
 
 /** Only for a low amount of items */
 fun Activity?.showBottomDialog(

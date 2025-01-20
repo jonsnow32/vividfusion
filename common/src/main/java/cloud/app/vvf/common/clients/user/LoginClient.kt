@@ -21,7 +21,7 @@ sealed interface LoginClient {
 
     interface CustomTextInput : LoginClient {
         val loginInputFields: List<InputField>
-        suspend fun onLogin(data: Map<String, String?>): List<User>
+        suspend fun onLogin(data: Map<String, String?>): List<User>?
     }
 
     data class InputField(

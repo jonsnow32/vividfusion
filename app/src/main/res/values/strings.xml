@@ -71,6 +71,7 @@
   <string name="all">All</string>
   <string name="by_author">By %1$s</string>
   <string name="name_extension">%1$s Extension by %2$s</string>
+  <string name="extension_title">v%1$s • by %2$s \nId : %3$s</string>
   <string name="input_api_key">Enter your api key</string>
   <string name="subbmit">Subbmit</string>
   <string name="open_browser">Open browser</string>
@@ -117,6 +118,7 @@
   <string name="episode">Episode</string>
   <string name="season_short">S</string>
   <string name="episode_short">E</string>
+    <string name="episode_short_format">S%02dE%02d</string>
 
   <string name="type_watching">Watching</string>
   <string name="type_on_hold">On-Hold</string>
@@ -145,7 +147,7 @@
   <string name="choose_a_color">Choose a color</string>
   <string name="random">Random</string>
   <string name="add">Add</string>
-  <string name="dynamic_color_key">dynamic_color_key</string>
+  <string name="dynamic_color">dynamic_color_key</string>
   <string name="not_implemented">Not implement yet!</string>
   <string name="extension_url_hint">input extension url</string>
   <string name="permission_denied">Permisson denied</string>
@@ -184,6 +186,26 @@
   <string name="is_not_supported">%1$s is not supported in %2$s Extension</string>
   <string name="invalid_extension">Invalid Extension</string>
   <string name="extension_requires">%1$s requires %2$s</string>
+  <string name="general_setting">General</string>
+  <string name="language">Language</string>
+  <string name="app_language">App Language</string>
+  <string name="disclaimer">Disclaimer</string>
+  <string name="dns_over_https">DNS over HTTPS</string>
+  <string name="github">Github</string>
+  <string name="options">Options</string>
+  <string name="required_field">%1$s is required.</string>
+  <string name="username">Username</string>
+  <string name="no_user_found">No user found!</string>
+  <string name="extension_login">%1$s Login</string>
+  <string name="username_password"><![CDATA[Username & Password]]></string>
+  <string name="webview">Webview</string>
+  <string name="manual">Manual</string>
+  <string name="password">Password</string>
+  <string name="downloads">Downloads</string>
+  <string name="select_an_account">Select an account</string>
+  <string name="add_account">Add Account</string>
+  <string name="last_watched_episode">Next: %s</string>
+
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>

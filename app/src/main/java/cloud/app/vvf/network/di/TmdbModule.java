@@ -24,8 +24,5 @@ public class TmdbModule {
         return tmdb.extendService();
     }
 
-    @Provides
-    AppTmdb provideSgTmdb(OkHttpClient okHttpClient, SharedPreferences sharedPreferences) {
-        return new AppTmdb(okHttpClient, sharedPreferences.getString("pref_tmdb_api_key", "4ef60b9d635f533695cbcaccb6603a57"));//"a913ee104db6b795d20852a9ed989036");
-    }
+
 }

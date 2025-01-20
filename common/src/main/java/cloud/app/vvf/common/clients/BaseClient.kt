@@ -16,6 +16,7 @@ import cloud.app.vvf.common.settings.Setting
 interface BaseClient {
   val defaultSettings: List<Setting>
   fun init(prefSettings: PrefSettings, httpHelper: HttpHelper)
+  fun onSettingsChanged(key: String, value: Any)
   suspend fun onExtensionSelected()
 }
 

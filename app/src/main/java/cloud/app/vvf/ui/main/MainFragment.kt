@@ -99,6 +99,4 @@ class MainFragment : Fragment() {
     fragments[id] = fragment
     return fragment
   }
-
-
 }

@@ -65,6 +65,8 @@ class MediaClickListener(
       is AVPMediaItem.StreamItem -> {
         fragment.createSnack(fragment.getString(R.string.not_implemented))
       }
+
+      is AVPMediaItem.TrailerItem -> TODO()
     }
   }
 

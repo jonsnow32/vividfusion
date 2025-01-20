@@ -12,9 +12,12 @@ import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.R
+import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.ImageHolder
 import cloud.app.vvf.databinding.DialogMediaItemBinding
 import cloud.app.vvf.databinding.ItemDialogButtonBinding
 import cloud.app.vvf.databinding.ItemDialogButtonLoadingBinding
+import cloud.app.vvf.datastore.helper.BookmarkItem
 import cloud.app.vvf.ui.detail.show.ShowFragment
 import cloud.app.vvf.ui.main.browse.BrowseFragment
 import cloud.app.vvf.ui.main.browse.BrowseViewModel
@@ -25,13 +28,8 @@ import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.shareItem
-import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
-import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.ImageHolder
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.BookmarkItem
 import cloud.app.vvf.utils.showBottomDialog
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -60,7 +58,7 @@ class ItemOptionDialog : DockingDialog() {
     return binding.root
   }
 
-  @SuppressLint("UseCompatLoadingForDrawables")
+  @SuppressLint("UseCo  mpatLoadingForDrawables")
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     binding.itemContainer.run {
       item.backdrop.loadWith(binding.imageView)
@@ -84,6 +82,25 @@ class ItemOptionDialog : DockingDialog() {
     }
   }
 
+  fun getBookmarkAction(item: AVPMediaItem) : ItemAction {
+    return ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.bookmarks) {val mainViewModel by activityViewModels<MainActivityViewModel>()
+    val status = mainViewModel.getBookmark(item)
+    val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
+      add("None")
+    }
+    val selectedIndex =
+      if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
+    SelectionDialog.single(
+      bookmarks,
+      selectedIndex,
+      getString(R.string.add_to_bookmark),
+      false,
+      {},
+      { selected ->
+        mainViewModel.addToBookmark(item, bookmarks.get(selected));
+      }).show(parentFragmentManager, null)
+      }
+  }
   private fun getActions(item: AVPMediaItem): List<ItemAction> = when (item) {
     is AVPMediaItem.ShowItem -> {
       listOfNotNull(
@@ -96,31 +113,14 @@ class ItemOptionDialog : DockingDialog() {
           requireActivity().navigate(
             movieFragment
           )
-        }, ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.bookmarks) {
-          val mainViewModel by activityViewModels<MainActivityViewModel>()
-          val status = mainViewModel.getBookmark(item)
-          val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
-            add("None")
-          }
-          val selectedIndex =
-            if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
-          requireActivity().showBottomDialog(
-            bookmarks,
-            selectedIndex,
-            getString(R.string.add_to_bookmark),
-            false,
-            {},
-            { selected ->
-              mainViewModel.addToBookmark(item, bookmarks.get(selected));
-            })
-        })
+        }, getBookmarkAction(item))
     }
 
     is AVPMediaItem.EpisodeItem,
     is AVPMediaItem.MovieItem -> {
       listOfNotNull(ItemAction.Resource(R.drawable.play_arrow_24dp, R.string.play_now) {
         //playerViewModel.play(clientId, item, 0)
-      })
+      },getBookmarkAction(item))
     }
 
     is AVPMediaItem.ActorItem -> {

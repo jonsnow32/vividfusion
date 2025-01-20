@@ -27,6 +27,7 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import cloud.app.vvf.R
+import cloud.app.vvf.common.models.AVPMediaItem
 import com.uwetrottmann.trakt5.TraktLink
 import org.threeten.bp.chrono.IsoChronology
 import org.threeten.bp.format.DateTimeFormatterBuilder
@@ -586,5 +587,9 @@ object Utils {
       Configuration.ORIENTATION_UNDEFINED -> "UNDEFINED"
       else -> "UNKNOWN"
     }
+  }
+  fun Context.getEpisodeShortTitle(episodeItem: AVPMediaItem.EpisodeItem?): String {
+    episodeItem ?: return ""
+    return getString(R.string.episode_short_format, episodeItem.seasonItem.season.number, episodeItem.episode.episodeNumber)
   }
 }

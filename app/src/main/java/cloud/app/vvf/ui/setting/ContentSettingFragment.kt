@@ -46,13 +46,13 @@ class ContentSettingFragment : BaseSettingsFragment() {
         }
       PreferenceCategory(context).apply {
         title = getString(R.string.shows)
-        key = getString(R.string.tv_show_settings_key)
+        key = getString(R.string.pref_tv_show_settings)
         isIconSpaceReserved = false
         layoutResource = R.layout.preference_category
         screen.addPreference(this)
 
         SwitchPreferenceCompat(context).apply {
-          key = getString(R.string.show_special_season_key)
+          key = getString(R.string.show_special_season)
           title = getString(R.string.show_special_season)
           layoutResource = R.layout.preference_switch
           isIconSpaceReserved = false
@@ -63,7 +63,7 @@ class ContentSettingFragment : BaseSettingsFragment() {
       }
 
       ListPreference(context).apply {
-        key = getString(R.string.region_key)
+        key = getString(R.string.pref_region)
         title = getString(R.string.region)
         layoutResource = R.layout.preference
         screen.addPreference(this)

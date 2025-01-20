@@ -81,6 +81,7 @@ dependencies {
   implementation(libs.material)
   implementation(libs.glide)
   ksp(libs.glide.compiler)
+  implementation(libs.nestedscrollwebview)
 
   //Worker
   implementation(libs.androidx.work.runtime)

@@ -5,10 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.FragmentShowBinding
@@ -26,6 +29,12 @@ import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Show
+import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.ui.stream.StreamFragment
+import cloud.app.vvf.ui.widget.DockingDialog
+import cloud.app.vvf.ui.widget.SelectionDialog
+import cloud.app.vvf.utils.Utils.getEpisodeShortTitle
+import cloud.app.vvf.utils.navigate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -36,6 +45,7 @@ import javax.inject.Inject
 class ShowFragment : Fragment() {
   private var binding by autoCleared<FragmentShowBinding>()
   private val viewModel by viewModels<ShowViewModel>()
+  private val mainViewModel by activityViewModels<MainActivityViewModel>()
 
   private val args by lazy { requireArguments() }
   private val clientId by lazy { args.getString("clientId")!! }
@@ -76,6 +86,50 @@ class ShowFragment : Fragment() {
         createSnack(getString(messageResId, shortItem.title))
       }
     }
+
+    binding.buttonShowTrailer.setOnClickListener {
+      val dialog = DockingDialog().show(parentFragmentManager, null)
+
+    }
+    binding.buttonMovieStreamingSearch.setOnClickListener {
+      viewModel.fullMediaItem.value?.let {
+        navigate(StreamFragment.newInstance(it))
+      }
+    }
+
+    binding.buttonShowShare.setOnClickListener {
+
+    }
+
+    binding.buttonBookmark.setOnClickListener {
+      val item = viewModel.fullMediaItem.value ?: shortItem
+
+      val status = mainViewModel.getBookmark(item)
+      val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
+        add("None")
+      }
+      val selectedIndex =
+        if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
+
+      SelectionDialog.single(
+        bookmarks, selectedIndex,
+        getString(R.string.add_to_bookmark),
+        false,
+        {},
+        { selected ->
+          mainViewModel.addToBookmark(item, bookmarks[selected]);
+
+          val bookmarkStatus = mainViewModel.getBookmark(item)
+          binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
+          if (bookmarkStatus != null) {
+            binding.buttonBookmark.icon =
+              ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
+          }
+
+        }).show(parentFragmentManager, null)
+    }
+
+
   }
 
   private fun setupObservers() {
@@ -93,6 +147,7 @@ class ShowFragment : Fragment() {
       setupActorAdapter(mediaItem)
       viewModel.loadRecommended()
     }
+
     observe(viewModel.recommendations) { paging ->
       paging?.let {
         binding.recommendedHolder.isGone = false
@@ -106,9 +161,10 @@ class ShowFragment : Fragment() {
         (binding.rvRecommendedMedia.adapter as MediaItemAdapter).submit(paging)
       }
     }
+
     observe(viewModel.lastWatchedEpisode) { lastWatchedEpisode ->
-      binding.btnResume.isGone = lastWatchedEpisode == null
-      binding.btnResume.setTextWithVisibility(lastWatchedEpisode?.item?.title)
+      binding.buttonLastWatchedEpisode.isGone = lastWatchedEpisode == null
+      binding.buttonLastWatchedEpisode.text = context?.getEpisodeShortTitle(lastWatchedEpisode?.getEpisode())
     }
 
     observe(viewModel.watchedSeasons) {
@@ -133,7 +189,7 @@ class ShowFragment : Fragment() {
     binding.seasonSortTxt.isGone = (seasons.size < 2)
 
     val key = preferences.getInt(
-      getString(R.string.season_sort_key),
+      getString(R.string.pref_season_sort),
       SortMode.ASCENDING.ordinal
     )
 
@@ -144,7 +200,7 @@ class ShowFragment : Fragment() {
 
     binding.seasonSortTxt.setOnClickListener {
       val sortMode = SortMode.entries[preferences.getInt(
-        getString(R.string.season_sort_key),
+        getString(R.string.pref_season_sort),
         SortMode.ASCENDING.ordinal
       )]
       val newSortMode = when (sortMode) {
@@ -153,7 +209,7 @@ class ShowFragment : Fragment() {
       }
       updateSortUI(newSortMode)
       displaySortedSeasons(seasons, newSortMode)
-      preferences.edit().putInt(getString(R.string.season_sort_key), newSortMode.ordinal).apply()
+      preferences.edit().putInt(getString(R.string.pref_season_sort), newSortMode.ordinal).apply()
     }
   }
 
@@ -229,6 +285,19 @@ class ShowFragment : Fragment() {
   fun bind(item: AVPMediaItem?) {
     if (item == null) return
     binding.header.bind(item)
+
+    binding.buttonShowComments.isGone = true
+    binding.buttonShowShare.isGone = true
+    binding.buttonShowWebSearch.isGone = true
+
+    viewModel.fullMediaItem.value?.let {
+      val bookmarkStatus = mainViewModel.getBookmark(it)
+      binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
+      if (bookmarkStatus != null) {
+        binding.buttonBookmark.icon =
+          ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
+      }
+    }
   }
 
 }

@@ -44,7 +44,7 @@ class VVFApplication : Application() {
 
     Thread.setDefaultUncaughtExceptionHandler { _, exception ->
       exception.printStackTrace()
-      ExceptionActivity.start(this, exception)
+      ExceptionActivity.start(this, exception, true)
       Runtime.getRuntime().exit(0)
     }
 
@@ -76,11 +76,11 @@ class VVFApplication : Application() {
     ) {
       var theme: String? = null
 
-      theme = newTheme ?: preferences.getString(getString(R.string.pref_theme_key), "system")
+      theme = newTheme ?: preferences.getString(getString(R.string.pref_theme), "system")
 
       val customColor =
-        if (!preferences.getBoolean(getString(R.string.enable_dynamic_color_key), false)) null
-        else newColor ?: preferences.getInt(getString(R.string.dynamic_color_key), -1)
+        if (!preferences.getBoolean(getString(R.string.enable_dynamic_color), false)) null
+        else newColor ?: preferences.getInt(getString(R.string.dynamic_color), -1)
           .takeIf { it != -1 }
 
       val builder = if (customColor != null) DynamicColorsOptions.Builder()

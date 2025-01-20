@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.fragment.app.commit
+import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.VVFApplication.Companion.restartApp
 import cloud.app.vvf.databinding.ActivityExceptionBinding
 import cloud.app.vvf.ui.exception.ExceptionFragment
@@ -30,9 +31,11 @@ class ExceptionActivity : AppCompatActivity() {
     enableEdgeToEdge()
     ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
       mainActivityViewModel.setSystemInsets(this, insets)
-      //binding.fabContainer.applyInsets(mainViewModel.systemInsets.value)
+      binding.fabContainer.applyInsets(mainActivityViewModel.systemInsets.value)
       insets
     }
+
+
     supportFragmentManager.commit {
       replace(
         R.id.exceptionFragmentContainer,
@@ -50,11 +53,11 @@ class ExceptionActivity : AppCompatActivity() {
   companion object {
     const val EXTRA_STACKTRACE = "stackTrace"
     const val EXTRA_TITLE = "title"
-    fun start(context: Context, exception: Throwable) {
+    fun start(context: Context, exception: Throwable, forceClose: Boolean = false) {
       val intent = Intent(context, ExceptionActivity::class.java).apply {
         putExtra(EXTRA_STACKTRACE, context.getDetails(exception))
         putExtra(EXTRA_TITLE, context.getTitle(exception))
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        if(forceClose) addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
       }
       context.startActivity(intent)
     }

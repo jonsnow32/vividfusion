@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_layout_key">app_layout_key</string>
-  <string name="pref_theme_key">pref_theme_key</string>
-  <string name="episode_sort_key">episode_sort_key</string>
-  <string name="season_sort_key">episode_sort_key</string>
-  <string name="pref_animations_key">pref_animations_key</string>
+
+  <!--  general -->
+  <string name="pref_app_language">pref_app_language</string>
+  <string name="pref_download_path">pref_download_path</string>
+  <string name="pref_dns">pref_dns</string>
+  <string name="pref_github">pref_github</string>
+
+  <!-- layout -->
+  <string name="pref_layout">pref_layout</string>
+  <string name="pref_theme">pref_theme</string>
+  <string name="pref_episode_sort">pref_episode_sort</string>
+  <string name="pref_season_sort">pref_season_sort</string>
+  <string name="pref_animations">pref_animations</string>
   <string name="pref_shared_element_animations_key">pref_shared_element_animations_key</string>
 
 
   <!--content-->
-  <string name="tv_show_settings_key">tv_show_settings_key</string>
-  <string name="show_special_season_key">show_special_season_key</string>
-  <string name="hide_none_english_key">hide_none_english_key</string>
-  <string name="hide_unaired_episodes_key">hide_unaired_episodes_key</string>
-  <string name="enable_dynamic_color_key">enable_dynamic_color_key</string>
-  <string name="region_key">region_key</string>
+  <string name="pref_tv_show_settings">pref_tv_show_settings</string>
+  <string name="pref_show_special_season">pref_show_special_season</string>
+  <string name="pref_hide_none_english">pref_hide_none_english</string>
+  <string name="pref_hide_unaired_episodes">pref_hide_unaired_episodes</string>
+  <string name="pref_enable_dynamic_color">pref_enable_dynamic_color</string>
+  <string name="pref_region">pref_region</string>
 </resources>
