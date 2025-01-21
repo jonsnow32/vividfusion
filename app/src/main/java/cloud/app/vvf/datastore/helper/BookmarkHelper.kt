@@ -66,9 +66,8 @@ sealed class BookmarkItem {
 }
 
 fun DataStore.getAllBookmarks(): List<BookmarkItem>? {
-  return getKeys<BookmarkItem>("$BOOKMARK_FOLDER/", null)
+  return getKeys<BookmarkItem>("$BOOKMARK_FOLDER/", null)?.sortedByDescending { it.lastUpdated }
 }
-
 
 fun DataStore.addToBookmark(data: BookmarkItem?) {
   if (data == null) return

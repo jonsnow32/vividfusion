@@ -10,10 +10,11 @@ import cloud.app.vvf.common.models.movie.Show
 import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.common.utils.getYear
 import cloud.app.vvf.common.utils.toLocalMonthYear
-import kotlinx.serialization.Serializable
 
+import kotlinx.serialization.Serializable
 @Serializable
 sealed class AVPMediaItem {
+
   @Serializable
   data class MovieItem(val movie: Movie) : AVPMediaItem() {
     fun getSlug(): String {
@@ -75,6 +76,8 @@ sealed class AVPMediaItem {
     fun toMediaItemsContainer(
       title: String, subtitle: String? = null, more: PagedData<AVPMediaItem>? = null
     ) = MediaItemsContainer.Category(title, subtitle, more)
+
+    fun List<AVPMediaItem>.toPaged() = PagedData.Single { this }
 
   }
 
@@ -194,4 +197,6 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.homepage
       else -> null
     }
+
+
 }

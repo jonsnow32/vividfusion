@@ -85,17 +85,17 @@
       <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Movies" />
+        tools:text="tab1" />
 
       <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Shows" />
+        tools:text="tab2" />
 
       <com.google.android.material.tabs.TabItem
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Casts" />
+        tools:text="tab3" />
     </com.google.android.material.tabs.TabLayout>
   </LinearLayout>
 

@@ -1,17 +1,18 @@
 package cloud.app.vvf.common.models.movie
 
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class Movie(
-  val ids: Ids,
-  val generalInfo: GeneralInfo,
-  var recommendations: List<Movie>? = null,
-  var position: Long = 0,
-  var updateTime : Long = System.currentTimeMillis(),
-
-) {
+  @SerialName("ids") val ids: Ids,
+  @SerialName("general_info") val generalInfo: GeneralInfo,
+  @SerialName("recommendations") var recommendations: List<Movie>? = null,
+  @SerialName("position") var position: Long = 0,
+  @SerialName("update_time") var updateTime: Long = System.currentTimeMillis()
+)
+{
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false

@@ -56,7 +56,7 @@ open class MxProContract(listener: PlayBackListener) : PlayerContract(listener) 
         intent.putExtra("title", input.avpMediaItem?.title)
 //        intent.putExtra("position", input.avpMediaItem?.getPosition()?.toInt())
         intent.putExtra("return_result", true)
-        intent.putExtra("subs", arrayOf(input.streamEntities[0].subtitles?.map { subtitle -> subtitle.subtitleUrl }))
+        intent.putExtra("subs", arrayOf(input.streamEntities[0].subtitles?.map { subtitle -> subtitle.url }))
         intent.putExtra("subs.name", arrayOf(input.streamEntities[0].subtitles?.map { subtitle -> subtitle.name }))
 
         val headers = mutableListOf<String>()

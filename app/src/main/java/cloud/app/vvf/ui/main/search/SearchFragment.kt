@@ -13,6 +13,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import cloud.app.vvf.MainActivityViewModel.Companion.applyContentInsets
+import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.vvf.databinding.FragmentSearchBinding
 import cloud.app.vvf.ui.media.MediaContainerAdapter
@@ -26,7 +28,7 @@ import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.QuickSearchItem
+import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.Tab
 import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,7 +40,6 @@ import kotlinx.coroutines.launch
 class SearchFragment : Fragment(), MediaItemAdapter.Listener {
   private val parent get() = parentFragment as Fragment
   private var binding by autoCleared<FragmentSearchBinding>()
-
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -50,6 +51,9 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
     applyInsetsMain(binding.searchBar, binding.recyclerView)
+    applyInsets {
+      binding.quickSearchViewHolder.applyContentInsets(it)
+    }
     val viewModel by parent.viewModels<SearchViewModel>()
 
 
@@ -67,6 +71,7 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
       override fun onTabUnselected(tab: TabLayout.Tab) = Unit
       override fun onTabReselected(tab: TabLayout.Tab) = Unit
     }
+
     binding.tabLayout.addOnTabSelectedListener(tabListener)
     viewModel.initialize()
 
@@ -97,6 +102,7 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
 
     observe(viewModel.feed) {
       binding.recyclerView.visibility = View.VISIBLE
+      binding.tabLayout.visibility = View.VISIBLE
       binding.searchLoading.visibility = View.GONE
       mediaContainerAdapter.submit(it)
     }
@@ -104,44 +110,26 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
 
 
     val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
-      override fun onClick(item: QuickSearchItem, transitionView: View) = when (item) {
-        is QuickSearchItem.SearchQueryItem -> {
-          binding.mainSearch.setQuery(item.query, true)
-        }
+      override fun onClick(item: SearchItem, transitionView: View) = binding.mainSearch.setQuery(item.query, true)
 
-        is QuickSearchItem.SearchMediaItem -> {
-//          val client = viewModel.extensionFlow.value?.metadata?.id
-//          mediaClickListener.onClick(client, item.mediaItem, transitionView)
-        }
+      override fun onLongClick(item: SearchItem, transitionView: View) = run {
+        onClick(item, transitionView)
+        true
       }
 
-      override fun onLongClick(item: QuickSearchItem, transitionView: View) = when (item) {
-        is QuickSearchItem.SearchQueryItem -> {
-          onClick(item, transitionView)
-          true
-        }
-
-        is QuickSearchItem.SearchMediaItem -> {
-          //         val client = viewModel.extensionFlow.value?.metadata?.id
-//          mediaClickListener.onLongClick(client, item.mediaItem, transitionView)
-          true
-        }
-      }
-
-      override fun onInsert(item: QuickSearchItem) {
-//        binding.quickSearchView.editText.run {
-//          setText(item.title)
-//          setSelection(length())
-//        }
+      override fun onDelete(item: SearchItem) {
+        viewModel.deleteHistory(item)
+        viewModel.getHistory()
       }
     })
 
     binding.quickSearchRecyclerView.adapter = quickSearchAdapter
 
-    observe(viewModel.quickFeed) {
+    observe(viewModel.historyQuery) {
       binding.apply {
         quickSearchViewHolder.visibility = View.VISIBLE
         recyclerView.visibility = View.GONE
+        tabLayout.visibility = View.GONE
       }
       quickSearchAdapter.submitList(it)
     }
@@ -166,20 +154,30 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
 
       setOnQueryTextListener(object : SearchView.OnQueryTextListener {
         override fun onQueryTextSubmit(query: String): Boolean {
-          viewModel.query = query
-          viewModel.refresh()
-          Utils.hideKeyboard(binding.mainSearch)
+
+          if (query.isNotEmpty()) {
+            viewModel.query = query
+            viewModel.refresh()
+            viewModel.saveHistory()
+            Utils.hideKeyboard(binding.mainSearch)
+          }
+
+
           return true
         }
 
         private var searchJob: Job? = null
         override fun onQueryTextChange(newText: String): Boolean {
-          viewModel.query = newText
+          if (newText.isNotEmpty()) {
+            viewModel.query = newText
 
-          searchJob?.cancel()
-          searchJob = lifecycleScope.launch {
-            delay(500) // Adjust the delay as needed
-            viewModel.refresh()
+            searchJob?.cancel()
+            searchJob = lifecycleScope.launch {
+              delay(300) // Adjust the delay as needed
+              viewModel.refresh()
+            }
+          } else {
+            viewModel.getHistory()
           }
           return true
         }
@@ -200,6 +198,7 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
   }
 
   override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
+
     TODO("Not yet implemented")
   }
 

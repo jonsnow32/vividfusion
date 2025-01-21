@@ -4,38 +4,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
-import cloud.app.vvf.common.models.QuickSearchItem
+import cloud.app.vvf.common.models.SearchItem
 
 class QuickSearchAdapter(val listener: Listener) :
-    ListAdapter<QuickSearchItem, QuickSearchViewHolder>(diff) {
+    ListAdapter<SearchItem, QuickSearchViewHolder>(diff) {
 
     interface Listener {
-        fun onClick(item: QuickSearchItem, transitionView: View)
-        fun onLongClick(item: QuickSearchItem, transitionView: View): Boolean
-        fun onInsert(item: QuickSearchItem)
+        fun onClick(item: SearchItem, transitionView: View)
+        fun onLongClick(item: SearchItem, transitionView: View): Boolean
+        fun onDelete(item: SearchItem)
     }
 
     companion object {
-        val diff = object : DiffUtil.ItemCallback<QuickSearchItem>() {
-            override fun areItemsTheSame(oldItem: QuickSearchItem, newItem: QuickSearchItem) =
+        val diff = object : DiffUtil.ItemCallback<SearchItem>() {
+            override fun areItemsTheSame(oldItem: SearchItem, newItem: SearchItem) =
                 oldItem.sameAs(newItem)
 
-            override fun areContentsTheSame(oldItem: QuickSearchItem, newItem: QuickSearchItem) =
+            override fun areContentsTheSame(oldItem: SearchItem, newItem: SearchItem) =
                 oldItem == newItem
 
         }
     }
 
-    override fun getItemViewType(position: Int) = when (getItem(position)) {
-        is QuickSearchItem.SearchQueryItem -> 0
-        is QuickSearchItem.SearchMediaItem -> 1
-    }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        0 -> QuickSearchViewHolder.Query.create(parent)
-        1 -> QuickSearchViewHolder.Media.create(parent)
-        else -> throw IllegalArgumentException("Unknown viewType: $viewType")
-    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = QuickSearchViewHolder.Query.create(parent)
 
     override fun onBindViewHolder(holder: QuickSearchViewHolder, position: Int) {
         val item = getItem(position) ?: return
@@ -46,8 +38,8 @@ class QuickSearchAdapter(val listener: Listener) :
         holder.itemView.setOnLongClickListener {
             listener.onLongClick(item, holder.transitionView)
         }
-        holder.insertView.setOnClickListener {
-            listener.onInsert(item)
+        holder.deleteView.setOnClickListener {
+            listener.onDelete(item)
         }
     }
 }

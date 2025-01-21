@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/homeHeader"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <androidx.viewpager2.widget.ViewPager2
+    android:id="@+id/previewViewpager"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+  </androidx.viewpager2.widget.ViewPager2>
+
+  <LinearLayout
+    android:id="@+id/homePreviewTitleHolder"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:layout_gravity="bottom"
+    android:gravity="start"
+    android:orientation="horizontal">
+
+    <TextView
+      android:id="@+id/homePreviewBookmark"
+      android:layout_width="70dp"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:layout_marginStart="25dp"
+      android:layout_marginEnd="25dp"
+      android:background="?android:attr/selectableItemBackgroundBorderless"
+      android:gravity="center"
+      android:text="@string/none"
+      app:drawableTint="?colorControlNormal"
+      app:drawableTopCompat="@drawable/ic_add_20dp" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/homePreviewPlay"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:backgroundTint="?colorControlNormal"
+      android:text="@string/play_now"
+      app:icon="@drawable/play_arrow_24dp" />
+
+    <TextView
+      android:id="@+id/homePreviewInfo"
+      android:layout_width="70dp"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:layout_marginStart="25dp"
+      android:layout_marginEnd="25dp"
+      android:background="?android:attr/selectableItemBackgroundBorderless"
+      android:gravity="center"
+      android:text="@string/more"
+      app:drawableTint="?colorControlNormal"
+      app:drawableTopCompat="@drawable/ic_info" />
+
+  </LinearLayout>
+
+</FrameLayout>

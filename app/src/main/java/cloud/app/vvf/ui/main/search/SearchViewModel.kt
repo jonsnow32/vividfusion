@@ -6,8 +6,11 @@ import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
-import cloud.app.vvf.common.models.QuickSearchItem
-import cloud.app.vvf.extension.get
+import cloud.app.vvf.common.models.SearchItem
+import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.helper.deleteHistorySearch
+import cloud.app.vvf.datastore.helper.getSearchHistory
+import cloud.app.vvf.datastore.helper.saveSearchHistory
 import cloud.app.vvf.ui.main.FeedViewModel
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,6 +25,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   override val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  val dataStore: DataStore
 ) : FeedViewModel(throwableFlow, databaseExtensionFlow) {
 
   var query: String? = ""
@@ -29,32 +33,30 @@ class SearchViewModel @Inject constructor(
     (client as? DatabaseClient)?.searchTabs(query)
 
   override fun getFeed(client: BaseClient): Flow<PagingData<MediaItemsContainer>>? {
-    if (query.isNullOrBlank()) return null
+    if (query.isNullOrBlank()) {
+      historyQuery.value = emptyList()
+      getHistory()
+      return null
+    }
     return (client as? DatabaseClient)?.searchFeed(query, tab)?.toFlow()
   }
 
-  val quickFeed = MutableStateFlow<List<QuickSearchItem>>(emptyList())
+  val historyQuery = MutableStateFlow<List<SearchItem>>(emptyList())
 
-  fun quickSearch(query: String) {
+  fun getHistory() {
     val extension = databaseExtensionFlow.value ?: return
     viewModelScope.launch(Dispatchers.IO) {
-      val list = extension.get<DatabaseClient, List<QuickSearchItem>>(throwableFlow) {
-        quickSearch(query)
-      } ?: emptyList()
-      quickFeed.value = list
+      val list = dataStore.getSearchHistory() ?: emptyList()
+      historyQuery.value = list
     }
   }
 
-  fun clearSearch() {
-    quickFeed.value = emptyList()
+  fun saveHistory() {
+    query?.let {
+      dataStore.saveSearchHistory(SearchItem(it, true, System.currentTimeMillis()))
+    }
   }
-
-  fun updateQuickFeed() {
-    quickFeed.value = listOf(QuickSearchItem.SearchQueryItem("Thor", false))
-  }
-
-
-  override fun onCleared() {
-    super.onCleared()
+  fun deleteHistory(item: SearchItem) {
+    dataStore.deleteHistorySearch(item)
   }
 }

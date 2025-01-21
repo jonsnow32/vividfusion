@@ -102,6 +102,7 @@ class MediaContainerAdapter(
     return when (item) {
       is MediaItemsContainer.Category -> 0
       is MediaItemsContainer.Item -> 1
+      is MediaItemsContainer.PageView -> 2
     }
   }
 
@@ -114,7 +115,12 @@ class MediaContainerAdapter(
         clientId,
         listener
     ) as ViewHolderState<MediaContainerViewHolder>
-
+    2 ->  MediaContainerViewHolder.PageView.create(
+      parent,
+      stateViewModel,
+      fragment,
+      listener
+    ) as ViewHolderState<MediaContainerViewHolder>
     else -> MediaContainerViewHolder.Media.create(parent, clientId, listener) as ViewHolderState<MediaContainerViewHolder>
   }
 }

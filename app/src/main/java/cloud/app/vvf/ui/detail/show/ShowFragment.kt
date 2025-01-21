@@ -30,6 +30,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Show
 import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.ui.detail.TrailerDialog
 import cloud.app.vvf.ui.stream.StreamFragment
 import cloud.app.vvf.ui.widget.DockingDialog
 import cloud.app.vvf.ui.widget.SelectionDialog
@@ -146,6 +147,7 @@ class ShowFragment : Fragment() {
       if (mediaItem == null) return@observe
       setupActorAdapter(mediaItem)
       viewModel.loadRecommended()
+      setupTrailerAdapter(mediaItem)
     }
 
     observe(viewModel.recommendations) { paging ->
@@ -171,6 +173,14 @@ class ShowFragment : Fragment() {
       setUpSeasons(it)
     }
   }
+
+  private fun setupTrailerAdapter(mediaItem: AVPMediaItem) {
+    binding.buttonShowTrailer.setOnClickListener {
+      val dialog = TrailerDialog.newInstance(mediaItem.generalInfo?.videos, clientId)
+      dialog.show(parentFragmentManager, "")
+    }
+  }
+
 
   fun List<AVPMediaItem>.toPagedList() = PagedData.Single { this }
 
@@ -298,6 +308,8 @@ class ShowFragment : Fragment() {
           ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
       }
     }
+
+    binding.buttonShowTrailer.isGone = item.generalInfo?.videos.isNullOrEmpty()
   }
 
 }

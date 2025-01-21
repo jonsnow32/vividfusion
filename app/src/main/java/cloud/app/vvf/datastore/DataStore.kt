@@ -11,9 +11,7 @@ import javax.inject.Inject
 
 const val PREFERENCES_NAME = "data_in_preference"
 
-class DataStore @Inject constructor(
-  val sharedPreferences: SharedPreferences,
-) {
+class DataStore(val sharedPreferences: SharedPreferences) {
 
   // Editor class for batch edits
   data class Editor(val editor: SharedPreferences.Editor) {
@@ -67,6 +65,7 @@ class DataStore @Inject constructor(
 
   inline fun <reified T> setKey(path: String, value: T) {
     try {
+      Timber.i("setKey $path ${T::class.java} value = ${ value.toJson()}")
       sharedPreferences.edit().putString(path, value.toJson()).apply()
     } catch (e: Exception) {
       Timber.e(e)
@@ -75,9 +74,8 @@ class DataStore @Inject constructor(
 
   inline fun <reified T> getKey(path: String, defVal: T? = null): T? {
     return try {
-      Timber.i("getKey $path ${T::class.java}")
       val data = sharedPreferences.getString(path, null)
-      Timber.i("data $data")
+      Timber.i("path = $path data $data")
       data?.toData<T>()
     } catch (e: Exception) {
       Timber.e(e)
@@ -88,7 +86,6 @@ class DataStore @Inject constructor(
   inline fun <reified T> getKeys(path: String, defVal: List<T>? = null): List<T>? {
     return try {
       val data = sharedPreferences.all.keys.filter { it.startsWith(path) }
-      Timber.i("data $data")
       data.mapNotNull {
         getKey<T>(it,null)
       }

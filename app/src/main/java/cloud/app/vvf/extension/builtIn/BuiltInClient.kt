@@ -1,9 +1,7 @@
 package cloud.app.vvf.extension.builtIn
 
-import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.clients.streams.StreamClient
-import cloud.app.vvf.common.clients.user.LoginClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.Page
 import cloud.app.vvf.common.helpers.PagedData
@@ -15,12 +13,10 @@ import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.MediaItemsContainer
-import cloud.app.vvf.common.models.QuickSearchItem
-import cloud.app.vvf.common.models.Request
+import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.SortBy
-import cloud.app.vvf.common.models.SubtitleData
+import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.common.models.Tab
-import cloud.app.vvf.common.models.User
 import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.common.models.movie.GeneralInfo
 import cloud.app.vvf.common.models.movie.Ids
@@ -52,6 +48,8 @@ import cloud.app.vvf.extension.builtIn.tvdb.AppTheTvdb
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
+import com.uwetrottmann.tmdb2.enumerations.MediaType
+import com.uwetrottmann.tmdb2.enumerations.TimeWindow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Date
@@ -97,12 +95,12 @@ class BuiltInClient : DatabaseClient, StreamClient {
       key = "",
       items = listOf(
         SettingTextInput(
-          "TMDB API Key",PREF_TMDB_API_KEY,
+          "TMDB API Key", PREF_TMDB_API_KEY,
           "Enter your TMDB API key to access movie and TV show data from The Movie Database.",
           defaultValue = null
         ),
         SettingTextInput(
-          "TVDB API Key",PREF_TVDB_API_KEY,
+          "TVDB API Key", PREF_TVDB_API_KEY,
           "Enter your TVDB API key to access data from The TV Database for TV shows.",
           defaultValue = null
         )
@@ -199,10 +197,11 @@ class BuiltInClient : DatabaseClient, StreamClient {
   }
 
   override fun onSettingsChanged(key: String, value: Any) {
-    when(key) {
+    when (key) {
       PREF_TVDB_API_KEY -> {
         tvdb.apiKey(value.toString())
       }
+
       PREF_TMDB_API_KEY -> {
         tmdb.apiKey(value.toString())
       }
@@ -221,7 +220,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
 
 
   override suspend fun getHomeTabs(): List<Tab> =
-    listOf("Movies", "TV Shows", "Networks", "Companies").map { Tab(it, it) }
+    listOf("Features", "Movies", "TV Shows", "Networks", "Companies").map { Tab(it, it) }
 
   override fun getHomeFeed(tab: Tab?) = PagedData.Continuous<MediaItemsContainer> {
     val page = it?.toInt() ?: 1
@@ -229,6 +228,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
       sortMapper[value]
     }
     val items = when (tab?.id) {
+      "Features" -> getFeatures(page, pageSize, sortBy)
       "Movies" -> getMoviesList(movieGenres, page, pageSize, sortBy)
       "TV Shows" -> getShowList(showGenres, page, pageSize, sortBy)
       "Networks" -> getNetworks(networks, page, pageSize, sortBy)
@@ -238,6 +238,36 @@ class BuiltInClient : DatabaseClient, StreamClient {
 
     val continuation = if (items.size < pageSize) null else (page + 1).toString()
     Page(items, continuation)
+  }
+
+  private suspend fun getFeatures(
+    page: Int,
+    pageSize: Int,
+    sortBy: com.uwetrottmann.tmdb2.enumerations.SortBy?
+  ): List<MediaItemsContainer> {
+    val result = mutableListOf<MediaItemsContainer>()
+    //get trending movie/show here
+    return withContext(Dispatchers.IO) {
+      val trendingResponse = tmdb.trendingService().trendingAll(TimeWindow.DAY).execute()
+      if (trendingResponse.isSuccessful) {
+        val list = trendingResponse.body()?.results?.mapNotNull {
+          when (it.media_type) {
+            MediaType.MOVIE -> it.movie.toMediaItem()
+            MediaType.TV -> it.tvShow.toMediaItem()
+            MediaType.PERSON -> it.person.toMediaItem()
+          }
+        }
+        result.add(
+          MediaItemsContainer.PageView(
+            "Trending",
+            items = list ?: listOf()
+          ) as MediaItemsContainer
+        )
+        result
+      } else {
+        result
+      }
+    }
   }
 
   override suspend fun getMediaDetail(avpMediaItem: AVPMediaItem): AVPMediaItem? {
@@ -522,11 +552,11 @@ class BuiltInClient : DatabaseClient, StreamClient {
   }.toList()
 
   //Searching
-  override suspend fun quickSearch(query: String): List<QuickSearchItem> {
-    val results = mutableListOf<QuickSearchItem>()
+  override suspend fun quickSearch(query: String): List<SearchItem> {
+    val results = mutableListOf<SearchItem>()
     val searchResult = SearchSuggestion.search(query)
     searchResult?.d?.forEach {
-      results.add(QuickSearchItem.SearchQueryItem(it.l, false))
+      results.add(SearchItem(it.l, false, System.currentTimeMillis()))
     }
     return results
   }

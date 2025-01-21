@@ -5,7 +5,7 @@ import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.streams.StreamClient
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.SubtitleData
+import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.extension.run
 import dagger.hilt.android.lifecycle.HiltViewModel

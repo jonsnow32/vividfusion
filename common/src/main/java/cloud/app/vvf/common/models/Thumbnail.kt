@@ -1,18 +1,19 @@
 package cloud.app.vvf.common.models
 
 
+import cloud.app.vvf.common.models.subtitle.SubtitleData
 import kotlinx.serialization.Serializable
 
 @Serializable
 open class Thumbnail(
-  open var id: Int?,
-  open val name: String,
-  open val url: String,
-  open val source: String,
-  open var type: MediaType?,
-  open var poster: ImageHolder?,
-  open val subtitles: List<SubtitleData> = listOf(),
-  open var quality: VideoQuality?
+    open var id: Int?,
+    open val name: String,
+    open val url: String,
+    open val source: String,
+    open var type: MediaType?,
+    open var poster: ImageHolder?,
+    open val subtitles: List<SubtitleData> = listOf(),
+    open var quality: VideoQuality?
 )
 
 

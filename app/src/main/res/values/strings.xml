@@ -205,6 +205,9 @@
   <string name="select_an_account">Select an account</string>
   <string name="add_account">Add Account</string>
   <string name="last_watched_episode">Next: %s</string>
+    <string name="account">Account</string>
+  <string name="none">None</string>
+  <string name="home_preview">Movie Image</string>
 
   <string-array name="themes">
     <item>Light</item>

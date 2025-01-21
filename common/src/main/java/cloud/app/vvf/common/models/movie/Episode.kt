@@ -1,16 +1,16 @@
 package cloud.app.vvf.common.models.movie
 
-
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class  Episode(
-  val ids: Ids,
-  val generalInfo: GeneralInfo,
-  var seasonNumber: Int,
-  var episodeNumber: Int,
-  var showIds: Ids,
-  var showOriginTitle: String,
-  var position : Long = 0,
-  var updateTime : Long = System.currentTimeMillis()
+data class Episode(
+  @SerialName("ids") val ids: Ids,
+  @SerialName("general_info") val generalInfo: GeneralInfo,
+  @SerialName("season_number") var seasonNumber: Int,
+  @SerialName("episode_number") var episodeNumber: Int,
+  @SerialName("show_ids") var showIds: Ids,
+  @SerialName("show_origin_title") var showOriginTitle: String,
+  @SerialName("position") var position: Long = 0,
+  @SerialName("update_time") var updateTime: Long = System.currentTimeMillis()
 )

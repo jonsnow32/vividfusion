@@ -55,7 +55,7 @@ class VLCContract(listener: PlayBackListener) : PlayerContract(listener) {
                 "org.videolan.vlc.gui.video.VideoPlayerActivity"
             )
         )
-        intent.putExtra("subtitles_location", input.streamEntities[0].subtitles?.firstOrNull()?.subtitleUrl)
+        intent.putExtra("subtitles_location", input.streamEntities[0].subtitles?.firstOrNull()?.url)
         intent.putExtra("title", input.avpMediaItem?.title)
 //        intent.putExtra("position", input.entityBase?.getPosition())
         return intent
