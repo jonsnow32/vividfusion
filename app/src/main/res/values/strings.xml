@@ -208,6 +208,12 @@
     <string name="account">Account</string>
   <string name="none">None</string>
   <string name="home_preview">Movie Image</string>
+  <string name="exit_confirm_msg">Are you sure you want to exit\?</string>
+  <string name="exit_confirm">Exit confirm</string>
+  <string name="yes">Yes</string>
+  <string name="no">No</string>
+  <string name="dont_show_again">Don\'t show again</string>
+  <string name="pref_show_exit_confirm">pref_show_exit_confirm</string>
 
   <string-array name="themes">
     <item>Light</item>

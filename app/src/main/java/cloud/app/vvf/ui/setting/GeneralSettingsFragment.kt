@@ -3,14 +3,20 @@ package cloud.app.vvf.ui.setting
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreference
+import androidx.preference.SwitchPreferenceCompat
+import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.applyUiChanges
 import cloud.app.vvf.utils.MaterialListPreference
 import cloud.app.vvf.utils.SubtitleHelper
 import cloud.app.vvf.utils.Utils
+import cloud.app.vvf.utils.setupTransition
+import com.google.android.material.materialswitch.MaterialSwitch
 import dagger.hilt.android.AndroidEntryPoint
 
 // Change local language settings in the app.
@@ -26,63 +32,63 @@ fun getCurrentLocale(context: Context): String {
 // https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes leave blank for auto
 val appLanguages = arrayListOf(
   /* begin language list */
-  Triple("", "Afrikaans", "af"),
-  Triple("", "عربي شامي", "ajp"),
-  Triple("", "አማርኛ", "am"),
-  Triple("", "العربية", "ar"),
-  Triple("", "اللهجة النجدية", "ars"),
-  Triple("", "অসমীয়া", "as"),
-  Triple("", "български", "bg"),
-  Triple("", "বাংলা", "bn"),
-  Triple("\uD83C\uDDE7\uD83C\uDDF7", "português brasileiro", "bp"),
-  Triple("", "čeština", "cs"),
-  Triple("", "Deutsch", "de"),
-  Triple("", "Ελληνικά", "el"),
+//  Triple("", "Afrikaans", "af"),
+//  Triple("", "عربي شامي", "ajp"),
+//  Triple("", "አማርኛ", "am"),
+//  Triple("", "العربية", "ar"),
+//  Triple("", "اللهجة النجدية", "ars"),
+//  Triple("", "অসমীয়া", "as"),
+//  Triple("", "български", "bg"),
+//  Triple("", "বাংলা", "bn"),
+//  Triple("\uD83C\uDDE7\uD83C\uDDF7", "português brasileiro", "bp"),
+//  Triple("", "čeština", "cs"),
+//  Triple("", "Deutsch", "de"),
+//  Triple("", "Ελληνικά", "el"),
   Triple("", "English", "en"),
-  Triple("", "Esperanto", "eo"),
-  Triple("", "español", "es"),
-  Triple("", "فارسی", "fa"),
-  Triple("", "fil", "fil"),
-  Triple("", "français", "fr"),
-  Triple("", "galego", "gl"),
-  Triple("", "हिन्दी", "hi"),
-  Triple("", "hrvatski", "hr"),
-  Triple("", "magyar", "hu"),
-  Triple("\uD83C\uDDEE\uD83C\uDDE9", "Bahasa Indonesia", "in"),
-  Triple("", "italiano", "it"),
-  Triple("\uD83C\uDDEE\uD83C\uDDF1", "עברית", "iw"),
-  Triple("", "日本語 (にほんご)", "ja"),
-  Triple("", "ಕನ್ನಡ", "kn"),
-  Triple("", "한국어", "ko"),
-  Triple("", "lietuvių kalba", "lt"),
-  Triple("", "latviešu valoda", "lv"),
-  Triple("", "македонски", "mk"),
-  Triple("", "മലയാളം", "ml"),
-  Triple("", "bahasa Melayu", "ms"),
-  Triple("", "Malti", "mt"),
-  Triple("", "ဗမာစာ", "my"),
-  Triple("", "नेपाली", "ne"),
-  Triple("", "Nederlands", "nl"),
-  Triple("", "norsk nynorsk", "nn"),
-  Triple("", "norsk bokmål", "no"),
-  Triple("", "ଓଡ଼ିଆ", "or"),
-  Triple("", "polski", "pl"),
-  Triple("\uD83C\uDDF5\uD83C\uDDF9", "português", "pt"),
-  Triple("\uD83E\uDD8D", "mmmm... monke", "qt"),
-  Triple("", "română", "ro"),
-  Triple("", "русский", "ru"),
-  Triple("", "slovenčina", "sk"),
-  Triple("", "Soomaaliga", "so"),
-  Triple("", "svenska", "sv"),
-  Triple("", "தமிழ்", "ta"),
-  Triple("", "ትግርኛ", "ti"),
-  Triple("", "Tagalog", "tl"),
-  Triple("", "Türkçe", "tr"),
-  Triple("", "українська", "uk"),
-  Triple("", "اردو", "ur"),
-  Triple("", "Tiếng Việt", "vi"),
-  Triple("", "中文", "zh"),
-  Triple("\uD83C\uDDF9\uD83C\uDDFC", "正體中文(臺灣)", "zh-rTW"),
+//  Triple("", "Esperanto", "eo"),
+//  Triple("", "español", "es"),
+//  Triple("", "فارسی", "fa"),
+//  Triple("", "fil", "fil"),
+//  Triple("", "français", "fr"),
+//  Triple("", "galego", "gl"),
+//  Triple("", "हिन्दी", "hi"),
+//  Triple("", "hrvatski", "hr"),
+//  Triple("", "magyar", "hu"),
+//  Triple("\uD83C\uDDEE\uD83C\uDDE9", "Bahasa Indonesia", "in"),
+//  Triple("", "italiano", "it"),
+//  Triple("\uD83C\uDDEE\uD83C\uDDF1", "עברית", "iw"),
+//  Triple("", "日本語 (にほんご)", "ja"),
+//  Triple("", "ಕನ್ನಡ", "kn"),
+//  Triple("", "한국어", "ko"),
+//  Triple("", "lietuvių kalba", "lt"),
+//  Triple("", "latviešu valoda", "lv"),
+//  Triple("", "македонски", "mk"),
+//  Triple("", "മലയാളം", "ml"),
+//  Triple("", "bahasa Melayu", "ms"),
+//  Triple("", "Malti", "mt"),
+//  Triple("", "ဗမာစာ", "my"),
+//  Triple("", "नेपाली", "ne"),
+//  Triple("", "Nederlands", "nl"),
+//  Triple("", "norsk nynorsk", "nn"),
+//  Triple("", "norsk bokmål", "no"),
+//  Triple("", "ଓଡ଼ିଆ", "or"),
+//  Triple("", "polski", "pl"),
+//  Triple("\uD83C\uDDF5\uD83C\uDDF9", "português", "pt"),
+//  Triple("\uD83E\uDD8D", "mmmm... monke", "qt"),
+//  Triple("", "română", "ro"),
+//  Triple("", "русский", "ru"),
+//  Triple("", "slovenčina", "sk"),
+//  Triple("", "Soomaaliga", "so"),
+//  Triple("", "svenska", "sv"),
+//  Triple("", "தமிழ்", "ta"),
+//  Triple("", "ትግርኛ", "ti"),
+//  Triple("", "Tagalog", "tl"),
+//  Triple("", "Türkçe", "tr"),
+//  Triple("", "українська", "uk"),
+//  Triple("", "اردو", "ur"),
+//  Triple("", "Tiếng Việt", "vi"),
+//  Triple("", "中文", "zh"),
+//  Triple("\uD83C\uDDF9\uD83C\uDDFC", "正體中文(臺灣)", "zh-rTW"),
   /* end language list */
 ).sortedBy { it.second.lowercase() } //ye, we go alphabetical, so ppl don't put their lang on top
 
@@ -92,6 +98,21 @@ class GeneralSettingsFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.general_setting)
   override val transitionName = "general_setting"
   override val creator  =  { GeneralPreference() }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    setupTransition(view)
+
+    applyInsets {
+      binding.appBarLayout.setPadding(0, it.top, 0, 0)
+      binding.fragmentContainer.setPadding(0, 0, 0, it.bottom)
+    }
+    setToolBarScrollFlags()
+    setUpToolbar(title)
+
+    childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
+      .commit()
+  }
+
   class GeneralPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
@@ -131,6 +152,14 @@ class GeneralSettingsFragment : BaseSettingsFragment() {
           )
         }
         icon = AppCompatResources.getDrawable(context, R.drawable.ic_baseline_public_24)
+        screen.addPreference(this)
+      }
+
+      SwitchPreferenceCompat(context).apply {
+        layoutResource = R.layout.preference_switch
+        key = getString(R.string.pref_show_exit_confirm)
+        title = getString(R.string.exit_confirm)
+        icon = AppCompatResources.getDrawable(context, R.drawable.ic_logout)
         screen.addPreference(this)
       }
     }

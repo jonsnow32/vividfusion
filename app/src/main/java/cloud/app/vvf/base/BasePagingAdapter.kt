@@ -12,7 +12,7 @@ import androidx.viewbinding.ViewBinding
 
 
 class StateViewModel : ViewModel() {
-  val layoutManagerStates = hashMapOf<Int, HashMap<Int, Any?>>()
+  val layoutManagerStates = hashMapOf<String, HashMap<Int, Any?>>()
 }
 
 
@@ -25,7 +25,8 @@ class StateViewModel : ViewModel() {
  *
  * @property viewBinding The ViewBinding associated with the ViewHolder.
  */
-open class ViewHolderState<T>(val viewBinding: ViewBinding) : RecyclerView.ViewHolder(viewBinding.root) {
+open class ViewHolderState<T>(val viewBinding: ViewBinding) :
+  RecyclerView.ViewHolder(viewBinding.root) {
   open fun save(): T? = null
   open fun restore(state: T) = Unit
   open fun onViewAttachedToWindow() = Unit
@@ -47,7 +48,7 @@ open class ViewHolderState<T>(val viewBinding: ViewBinding) : RecyclerView.ViewH
  */
 abstract class BasePagingAdapter<T : Any, S : Any>(
   rootFragment: Fragment,
-  val id: Int = 0,
+  val id: String? = null,
   diffCallback: DiffUtil.ItemCallback<T> = BaseDiffCallback()
 ) : PagingDataAdapter<T, ViewHolderState<S>>(
   diffCallback
@@ -107,7 +108,7 @@ abstract class BasePagingAdapter<T : Any, S : Any>(
     stateViewModel.layoutManagerStates[id]?.get(holder.absoluteAdapterPosition) as? S
 
   private fun setState(holder: ViewHolderState<S>) {
-    if (id == 0) return
+    if (id == null) return
 
     if (!stateViewModel.layoutManagerStates.contains(id)) {
       stateViewModel.layoutManagerStates[id] = HashMap()
@@ -137,7 +138,8 @@ abstract class BasePagingAdapter<T : Any, S : Any>(
   }
 }
 
-abstract class NoStateAdapter<T : Any>(fragment: Fragment) : BasePagingAdapter<T, Any>(fragment, 0)
+abstract class NoStateAdapter<T : Any>(fragment: Fragment) :
+  BasePagingAdapter<T, Any>(fragment, null)
 
 class BaseDiffCallback<T : Any>(
   val itemSame: (T, T) -> Boolean = { a, b -> a.hashCode() == b.hashCode() },

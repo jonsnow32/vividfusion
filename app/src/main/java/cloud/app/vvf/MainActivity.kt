@@ -19,6 +19,7 @@ import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.databinding.ActivityMainBinding
 import cloud.app.vvf.features.player.PlayerManager
+import cloud.app.vvf.ui.widget.ExitConfirmDialog
 import cloud.app.vvf.utils.Utils.isAndroidTV
 import cloud.app.vvf.utils.openItemFragmentFromUri
 import cloud.app.vvf.utils.tv.screenHeight
@@ -79,7 +80,11 @@ class MainActivity : AppCompatActivity() {
       object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
           if (!supportFragmentManager.popBackStackImmediate()) {
-            moveTaskToBack(true)
+            val canShowDialog = sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
+            if(canShowDialog)
+              ExitConfirmDialog().show(supportFragmentManager,"exit_confirm_dialog")
+            else
+              moveTaskToBack(true)
           }
           // if you want onBackPressed() to be called as normal afterwards
         }

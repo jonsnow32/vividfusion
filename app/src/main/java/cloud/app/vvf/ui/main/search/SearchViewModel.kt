@@ -34,8 +34,6 @@ class SearchViewModel @Inject constructor(
 
   override fun getFeed(client: BaseClient): Flow<PagingData<MediaItemsContainer>>? {
     if (query.isNullOrBlank()) {
-      historyQuery.value = emptyList()
-      getHistory()
       return null
     }
     return (client as? DatabaseClient)?.searchFeed(query, tab)?.toFlow()
@@ -44,10 +42,9 @@ class SearchViewModel @Inject constructor(
   val historyQuery = MutableStateFlow<List<SearchItem>>(emptyList())
 
   fun getHistory() {
-    val extension = databaseExtensionFlow.value ?: return
     viewModelScope.launch(Dispatchers.IO) {
       val list = dataStore.getSearchHistory() ?: emptyList()
-      historyQuery.value = list
+      historyQuery.emit(list)
     }
   }
 

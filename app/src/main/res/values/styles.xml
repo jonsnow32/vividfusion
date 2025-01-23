@@ -229,6 +229,7 @@
 
   <style name="RightMaterialDialogTheme" parent="ThemeOverlay.Material3.Dialog">
     <item name="android:windowNoTitle">true</item>
+    <item name="android:windowIsFloating">false</item>
     <item name="android:windowBackground">@android:color/transparent</item>
     <item name="android:layout_gravity">start</item>
     <item name="android:windowAnimationStyle">@style/RightMaterialDialogAnimation</item>
@@ -242,6 +243,7 @@
 
   <style name="BottomMaterialDialogTheme" parent="ThemeOverlay.Material3.Dialog">
     <item name="android:windowNoTitle">true</item>
+    <item name="android:navigationBarColor">?attr/appBackground</item>
     <item name="android:windowBackground">@android:color/transparent</item>
     <item name="android:layout_gravity">start</item>
     <item name="android:windowAnimationStyle">@style/BottomMaterialDialogAnimation</item>

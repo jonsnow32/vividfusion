@@ -3,25 +3,35 @@ package cloud.app.vvf.ui.media
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import cloud.app.vvf.base.BasePagingAdapter
 import cloud.app.vvf.base.ViewHolderState
+import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.models.MediaItemsContainer
+import cloud.app.vvf.utils.observe
+import kotlinx.coroutines.Job
 
 class MediaContainerAdapter(
+  val extension: Extension<*>,
   val fragment: Fragment,
-  id: Int,
+  id: String,
   val transition: String,
   val listener: Listener = getListener(fragment)
 ) : BasePagingAdapter<MediaItemsContainer, MediaContainerViewHolder>(fragment, id, DiffCallback) {
 
   interface Listener : MediaItemAdapter.Listener {
     fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View)
-    fun onLongClick( clientId: String?, container: MediaItemsContainer, transitionView: View): Boolean
+    fun onLongClick(
+      clientId: String?,
+      container: MediaItemsContainer,
+      transitionView: View
+    ): Boolean
   }
 
   companion object {
@@ -33,8 +43,6 @@ class MediaContainerAdapter(
       }
     }
   }
-
-  var clientId: String? = null
 
   fun withLoaders(): ConcatAdapter {
     val footer = MediaContainerLoadingAdapter(fragment) { retry() }
@@ -83,14 +91,13 @@ class MediaContainerAdapter(
     holder.bind(items)
     val clickView = holder.clickView
     clickView.setOnClickListener {
-      listener.onClick(clientId, items, holder.transitionView)
+      listener.onClick(extension.id, items, holder.transitionView)
     }
     clickView.setOnLongClickListener {
-      listener.onLongClick(clientId, items, holder.transitionView)
+      listener.onLongClick(extension.id, items, holder.transitionView)
       true
     }
   }
-
 
 
   suspend fun submit(pagingData: PagingData<MediaItemsContainer>?) {
@@ -109,19 +116,26 @@ class MediaContainerAdapter(
   private val sharedPool = RecycledViewPool()
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
     0 -> MediaContainerViewHolder.Category.create(
-        parent,
-        stateViewModel,
-        sharedPool,
-        clientId,
-        listener
+      parent,
+      stateViewModel,
+      sharedPool,
+      extension.id,
+      listener
     ) as ViewHolderState<MediaContainerViewHolder>
-    2 ->  MediaContainerViewHolder.PageView.create(
+
+    2 -> MediaContainerViewHolder.PageView.create(
+      extension.id,
       parent,
       stateViewModel,
       fragment,
       listener
     ) as ViewHolderState<MediaContainerViewHolder>
-    else -> MediaContainerViewHolder.Media.create(parent, clientId, listener) as ViewHolderState<MediaContainerViewHolder>
+
+    else -> MediaContainerViewHolder.Media.create(
+      parent,
+      extension.id,
+      listener
+    ) as ViewHolderState<MediaContainerViewHolder>
   }
 }
 

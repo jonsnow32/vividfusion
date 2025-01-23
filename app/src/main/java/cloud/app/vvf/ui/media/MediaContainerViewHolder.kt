@@ -2,16 +2,19 @@ package cloud.app.vvf.ui.media
 
 
 import android.content.res.Configuration
+import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
+import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.R
 import cloud.app.vvf.base.StateViewModel
 import cloud.app.vvf.base.ViewHolderState
@@ -21,9 +24,14 @@ import cloud.app.vvf.databinding.ContainerCategoryBinding
 import cloud.app.vvf.databinding.ContainerItemBinding
 import cloud.app.vvf.databinding.HomePreviewViewpagerBinding
 import cloud.app.vvf.databinding.PreviewItemBinding
+import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.ui.detail.movie.MovieFragment
 import cloud.app.vvf.ui.media.MediaItemViewHolder.Companion.placeHolder
 import cloud.app.vvf.ui.paging.toFlow
+import cloud.app.vvf.ui.widget.SelectionDialog
 import cloud.app.vvf.utils.loadInto
+import cloud.app.vvf.utils.navigate
+import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.setTextWithVisibility
 import cloud.app.vvf.utils.tv.FOCUS_SELF
 import cloud.app.vvf.utils.tv.setLinearListLayout
@@ -42,6 +50,7 @@ sealed class MediaContainerViewHolder(
   abstract val transitionView: View
 
   class PageView(
+    val clientId: String?,
     val binding: HomePreviewViewpagerBinding,
     val viewModel: StateViewModel,
     val fragment: Fragment,
@@ -55,20 +64,49 @@ sealed class MediaContainerViewHolder(
       val adapter = PreviewAdapter(items)
       binding.previewViewpager.adapter = adapter
       binding.previewViewpager.registerOnPageChangeCallback(previewCallback)
+
+      binding.homePreviewBookmark.setOnClickListener {
+        val mainViewModel by fragment.activityViewModels<MainActivityViewModel>()
+        val item = items[selectedPosition]
+        val status = mainViewModel.getBookmark(item)
+        val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
+          add("None")
+        }
+        val selectedIndex =
+          if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
+        SelectionDialog.single(
+          bookmarks,
+          selectedIndex,
+          fragment.getString(R.string.add_to_bookmark),
+          false,
+          {},
+          { selected ->
+            mainViewModel.addToBookmark(item, bookmarks.get(selected));
+          }).show(fragment.parentFragmentManager, null)
+      }
+
+      binding.homePreviewInfo.setOnClickListener {
+        val item = items[selectedPosition]
+        fragment.navigate(item, clientId)
+      }
+
     }
 
     override fun onViewAttachedToWindow() {
       binding.previewViewpager.registerOnPageChangeCallback(previewCallback)
     }
+
     override fun onViewDetachedFromWindow() {
       binding.previewViewpager.unregisterOnPageChangeCallback(previewCallback)
     }
 
+    var selectedPosition = 0
     private val previewCallback: ViewPager2.OnPageChangeCallback =
       object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
           super.onPageSelected(position)
           // Handle page change
+          selectedPosition = position
           println("Page selected: $position")
         }
       }
@@ -77,6 +115,7 @@ sealed class MediaContainerViewHolder(
 
     companion object {
       fun create(
+        clientId: String,
         parent: ViewGroup,
         viewModel: StateViewModel,
         fragment: Fragment,
@@ -84,6 +123,7 @@ sealed class MediaContainerViewHolder(
       ): MediaContainerViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return PageView(
+          clientId,
           HomePreviewViewpagerBinding.inflate(layoutInflater, parent, false),
           viewModel,
           fragment,
@@ -106,11 +146,12 @@ sealed class MediaContainerViewHolder(
       private val items: List<AVPMediaItem>,
     ) : RecyclerView.Adapter<PreviewAdapter.PreviewViewHolder>() {
 
-      inner class PreviewViewHolder(val viewBinding: ViewBinding) : RecyclerView.ViewHolder(viewBinding.root)
+      inner class PreviewViewHolder(val viewBinding: ViewBinding) :
+        RecyclerView.ViewHolder(viewBinding.root)
 
       override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PreviewViewHolder {
         val inflater = LayoutInflater.from(parent.context)
-        val binding =  PreviewItemBinding.inflate(inflater, parent, false)
+        val binding = PreviewItemBinding.inflate(inflater, parent, false)
         return PreviewViewHolder(binding)
       }
 

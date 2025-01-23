@@ -95,7 +95,7 @@ class MediaClickListener(
         container.more
       )
 
-      is MediaItemsContainer.PageView -> TODO()
+      is MediaItemsContainer.PageView -> fragment.createSnack("Coming soon")
     }
   }
 

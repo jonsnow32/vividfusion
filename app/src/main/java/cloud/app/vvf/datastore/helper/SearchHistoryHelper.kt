@@ -20,6 +20,5 @@ fun DataStore.clearHistorySearch(){
 }
 
 fun DataStore.saveSearchHistory(item: SearchItem){
-  Timber.i("saveSearchHistory ${item.id} ${item.searchedAt}")
   return setKey("$SEARCH_HISTORY_FOLDER/${item.id}", item)
 }

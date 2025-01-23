@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.vvf.R
+import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.databinding.FragmentHomeBinding
 import cloud.app.vvf.ui.main.configureFeedUI
 import cloud.app.vvf.ui.setting.SettingsFragment
@@ -33,7 +34,7 @@ class HomeFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
     applyInsetsMain(binding.appBarLayoutCustom, binding.recyclerView)
-    configureFeedUI(
+    configureFeedUI<DatabaseClient>(
       R.string.home,
       viewModel,
       binding.recyclerView,

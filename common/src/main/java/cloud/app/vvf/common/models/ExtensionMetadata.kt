@@ -18,4 +18,6 @@ data class ExtensionMetadata(
   var updateUrl: String? = null,
   var enabled: Boolean = true,
   var types: List<ExtensionType>? = null
-)
+) {
+  val id get() = className
+}

@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.vvf.R
+import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.databinding.FragmentLibraryBinding
 import cloud.app.vvf.ui.main.configureFeedUI
 import cloud.app.vvf.ui.setting.SettingsFragment
@@ -37,7 +38,7 @@ class LibraryFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
     applyInsetsMain(binding.appBarLayoutCustom, binding.recyclerView)
-    configureFeedUI(
+    configureFeedUI<DatabaseClient>(
       R.string.home,
       viewModel,
       binding.recyclerView,

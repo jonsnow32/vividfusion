@@ -5,15 +5,13 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:orientation="vertical"
+  android:background="?attr/colorSurfaceContainer"
   app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager">
 
   <androidx.cardview.widget.CardView
     android:id="@+id/itemContainer"
     android:layout_width="match_parent"
     android:layout_height="@dimen/media_cover_height"
-    android:layout_margin="1dp"
-    app:cardCornerRadius="28dp"
-    android:translationY="30dp"
     app:cardBackgroundColor="?attr/colorSurfaceContainer">
 
     <ImageView
@@ -31,9 +29,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:nestedScrollingEnabled="false"
-    android:paddingTop="35dp"
-    android:layout_margin="2dp"
-    android:background="?attr/colorSurfaceContainer"
+    android:layout_margin="@dimen/rounded_radius"
     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
     tools:listitem="@layout/item_dialog_button" />
 </LinearLayout>

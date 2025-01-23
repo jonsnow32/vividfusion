@@ -82,14 +82,24 @@ class BuiltInClient : DatabaseClient, StreamClient {
 
     const val PREF_TMDB_API_KEY = "pref_tmdb_api_key"
     const val PREF_TVDB_API_KEY = "pref_tvdb_api_key"
+    const val PREF_INCLUDE_ADULT = "pref_include_adult"
+    const val PREF_METADATA_LANGUAGE = "pref_metadata_language"
+    const val PREF_REGION = "pref_region"
+    const val PREF_SHOW_SPECIAL_SEASON = "pref_show_special_season_key"
+    const val PREF_SHOW_UNAIRD_EPISODE = "show_unaired_episode_key"
   }
+
+  private val includeAdult get() = prefSettings.getBoolean(PREF_INCLUDE_ADULT)
+  private val region get() = prefSettings.getString(PREF_REGION)
+  private val language get() = prefSettings.getString(PREF_METADATA_LANGUAGE)
+  private val showSpecialSeason get() = prefSettings.getBoolean(PREF_SHOW_SPECIAL_SEASON)
+  private val showUnairedEpisode get() = prefSettings.getBoolean(PREF_SHOW_UNAIRD_EPISODE)
 
 
   private lateinit var tmdb: AppTmdb
   private lateinit var tvdb: AppTheTvdb
   private lateinit var trakt: AppTrakt
   override val defaultSettings: List<Setting> = listOf(
-
     SettingCategory(
       title = "API Access",
       key = "",
@@ -118,32 +128,31 @@ class BuiltInClient : DatabaseClient, StreamClient {
 //        ),
         SettingSwitch(
           "Include Adult Content",
-          "include_adult_key",
+          PREF_INCLUDE_ADULT,
           "Include adult-rated movies and TV shows in your library.",
           false
         ),
         SettingSwitch(
           "Show Special Seasons",
-          "show_special_season_key",
+          PREF_SHOW_SPECIAL_SEASON,
           "Display special seasons for TV shows, such as behind-the-scenes or bonus episodes.",
           true
         ),
         SettingSwitch(
           "Show Unaired Episodes",
-          "show_unaired_episode_key",
+          PREF_SHOW_UNAIRD_EPISODE,
           "Include episodes that are scheduled to air but haven't been broadcast yet.",
           true
         ),
         SettingList(
           "Metadata Language",
-          "metadata_language_key",
+          PREF_METADATA_LANGUAGE,
           "Select the language for displaying movie and TV show metadata, such as titles, descriptions, and other details.",
           entryTitles = languageI3691Map.values.toList(),
           entryValues = languageI3691Map.keys.toList(),
           defaultEntryIndex = 0
         )
       )
-
     ),
 
     SettingCategory(
@@ -152,7 +161,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
       items = listOf(
         SettingList(
           "Region",
-          "region_key",
+          PREF_REGION,
           "Select the region to filter content availability based on your location.",
           entryTitles = popularCountriesIsoToEnglishName.values.toList(),
           entryValues = popularCountriesIsoToEnglishName.keys.toList(),
@@ -208,11 +217,6 @@ class BuiltInClient : DatabaseClient, StreamClient {
     }
   }
 
-  private val includeAdult get() = prefSettings.getBoolean("include_adult_key")
-  private val region get() = prefSettings.getString("region_key")
-  private val language get() = prefSettings.getString("language_key")
-  private val showSpecialSeason get() = prefSettings.getBoolean("show_special_season_key")
-  private val showUnairedEpisode get() = prefSettings.getBoolean("show_unaired_episode_key")
 
   override suspend fun onExtensionSelected() {
     TODO("TMDB EXTENSION Not yet implemented")
@@ -245,29 +249,102 @@ class BuiltInClient : DatabaseClient, StreamClient {
     pageSize: Int,
     sortBy: com.uwetrottmann.tmdb2.enumerations.SortBy?
   ): List<MediaItemsContainer> {
+    if(page != 1) return emptyList()
+
     val result = mutableListOf<MediaItemsContainer>()
     //get trending movie/show here
-    return withContext(Dispatchers.IO) {
-      val trendingResponse = tmdb.trendingService().trendingAll(TimeWindow.DAY).execute()
+    val trending = withContext(Dispatchers.IO) {
+      val trendingResponse = tmdb .trendingService().trendingAll(TimeWindow.DAY).execute()
       if (trendingResponse.isSuccessful) {
         val list = trendingResponse.body()?.results?.mapNotNull {
           when (it.media_type) {
-            MediaType.MOVIE -> it.movie.toMediaItem()
-            MediaType.TV -> it.tvShow.toMediaItem()
-            MediaType.PERSON -> it.person.toMediaItem()
+            MediaType.MOVIE -> it.movie?.toMediaItem()
+            MediaType.TV -> it.tvShow?.toMediaItem()
+            MediaType.PERSON -> it.person?.toMediaItem()
           }
         }
-        result.add(
-          MediaItemsContainer.PageView(
-            "Trending",
-            items = list ?: listOf()
-          ) as MediaItemsContainer
+        MediaItemsContainer.PageView(
+          "Trending",
+          items = list ?: listOf()
         )
-        result
-      } else {
-        result
-      }
+      } else null
     }
+    trending?.let { result.add(it) }
+
+    val popularMovies = withContext(Dispatchers.IO) {
+      val data = PagedData.Continuous<AVPMediaItem> {
+        val continuation = it?.toInt() ?: 1
+        val items = withContext(Dispatchers.IO) {
+          val builder = tmdb.discoverMovie()
+            .sort_by(sortBy)
+            .page(continuation)
+            .language(language)
+            .region(region)
+          if (includeAdult == true)
+            builder.includeAdult()
+          builder.build().execute().body()!!
+        }
+        Page(
+          items.toMediaItemsList(),
+          if (items.results.isNullOrEmpty()) null else (continuation + 1).toString()
+        )
+      }
+      data.loadFirst()
+      toMediaItemsContainer(
+        "Popular movies",
+        "Popular movies",
+        data
+      )
+    }
+    result.add(popularMovies)
+
+    val popularTvShows = withContext(Dispatchers.IO) {
+      val data = PagedData.Continuous<AVPMediaItem> {
+        val continuation = it?.toInt() ?: 1
+        val items = withContext(Dispatchers.IO) {
+          val builder = tmdb.discoverTv()
+            .sort_by(sortBy)
+            .page(continuation)
+            .language(language)
+          builder.build().execute().body()!!
+        }
+        Page(
+          items.toMediaItemsList(),
+          if (items.results.isNullOrEmpty()) null else (continuation + 1).toString()
+        )
+      }
+      data.loadFirst()
+      toMediaItemsContainer(
+        "Popular tvShows",
+        "Popular tvShows",
+        data
+      )
+    }
+    result.add(popularTvShows)
+
+
+    val popularActors = withContext(Dispatchers.IO) {
+      val data = PagedData.Continuous<AVPMediaItem> {
+        val continuation = it?.toInt() ?: 1
+        val items = withContext(Dispatchers.IO) {
+          tmdb.personService().popular(continuation).execute().body()!!
+        }
+        Page(
+          items.toMediaItemsList(),
+          if (items.results.isNullOrEmpty()) null else (continuation + 1).toString()
+        )
+      }
+      data.loadFirst()
+      toMediaItemsContainer(
+        "Popular Actors",
+        "Popular Actors",
+        data
+      )
+    }
+    result.add(popularActors)
+
+
+    return result
   }
 
   override suspend fun getMediaDetail(avpMediaItem: AVPMediaItem): AVPMediaItem? {
@@ -500,7 +577,6 @@ class BuiltInClient : DatabaseClient, StreamClient {
           .page(continuation)
           .language(language)
           .region(region)
-          .includeAdult()
 
 
         if (includeAdult == true)
@@ -646,7 +722,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
     val casts = mutableListOf<AVPMediaItem.ActorItem>()
     val mediaResultsPage =
       withContext(Dispatchers.IO) {
-        tmdb.searchService().multi(query, 1, "en", "en_US", true).execute().body()
+        tmdb.searchService().multi(query, 1, language, region, includeAdult).execute().body()
       }
     mediaResultsPage?.results?.forEach {
       it.movie?.let { movie ->
@@ -834,13 +910,15 @@ class BuiltInClient : DatabaseClient, StreamClient {
       val data = PagedData.Continuous<AVPMediaItem> {
         val continuation = it?.toInt() ?: 1
         val discover = withContext(Dispatchers.IO) {
-          tmdb.discoverMovie()
+          val builder = tmdb.discoverMovie()
             .with_companies(DiscoverFilter(company.key))
             .page(continuation)
             .language(language)
             .region(region)
-            .includeAdult()
-            .build()
+          if (includeAdult == true)
+            builder.includeAdult()
+
+          builder.build()
             .execute()
             .body()
         }
