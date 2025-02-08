@@ -48,7 +48,7 @@
   <string name="not_supported">%1$s is not supported in %2$s Extension!</string>
   <string name="media_type">Media Type</string>
   <string name="rating_7_8">7.39454588</string>
-  <string name="error_no_client">Error, no extension was selected</string>
+  <string name="error_no_client">No extension was selected</string>
   <string name="trailer">Trailer</string>
   <string name="filler">Filter</string>
   <string name="backdropDescription">Backdrop</string>
@@ -208,12 +208,15 @@
     <string name="account">Account</string>
   <string name="none">None</string>
   <string name="home_preview">Movie Image</string>
-  <string name="exit_confirm_msg">Are you sure you want to exit\?</string>
+  <string name="exit_confirm_msg">Are you sure you want to exit\ ?</string>
   <string name="exit_confirm">Exit confirm</string>
   <string name="yes">Yes</string>
   <string name="no">No</string>
   <string name="dont_show_again">Don\'t show again</string>
   <string name="pref_show_exit_confirm">pref_show_exit_confirm</string>
+  <string name="extension_uninstalled_fail">Can\'t delete extension</string>
+  <string name="enter_api_key">Enter Api key</string>
+  <string name="api_key_required">Api key required</string>
 
   <string-array name="themes">
     <item>Light</item>

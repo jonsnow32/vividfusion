@@ -1,9 +1,7 @@
 package cloud.app.vvf.ui.detail.movie
 
-import android.app.Dialog
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,8 +26,7 @@ import cloud.app.vvf.ui.media.MediaClickListener
 import cloud.app.vvf.ui.media.MediaItemAdapter
 import cloud.app.vvf.ui.paging.toFlow
 import cloud.app.vvf.ui.stream.StreamFragment
-import cloud.app.vvf.ui.widget.DockingDialog
-import cloud.app.vvf.ui.widget.SelectionDialog
+import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.navigate

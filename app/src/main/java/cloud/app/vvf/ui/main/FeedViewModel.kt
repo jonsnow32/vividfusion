@@ -2,6 +2,7 @@ package cloud.app.vvf.ui.main
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
@@ -9,25 +10,19 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.Tab
 import cloud.app.vvf.extension.run
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 
 abstract class FeedViewModel(
   throwableFlow: MutableSharedFlow<Throwable>,
-  open val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  val dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  val extListFlow: MutableStateFlow<List<Extension<*>>?>
 ) : CatchingViewModel(throwableFlow) {
 
   override fun onInitialize() {
-    viewModelScope.launch {
-      databaseExtensionFlow.collectLatest {
-        refresh(resetTab = true)
-      }
-    }
+    dbExtFlow
+      .onEach { refresh(resetTab = true) }
+      .launchIn(viewModelScope)
   }
 
   abstract suspend fun getTabs(client: BaseClient): List<Tab>?
@@ -42,30 +37,31 @@ abstract class FeedViewModel(
   var tab: Tab? = null
 
   private suspend fun loadTabs(extension: Extension<*>) {
-    loading.emit(true)
-    val list = extension.run(throwableFlow) { getTabs(this) } ?: emptyList()
-    loading.emit(false)
-    tab = list.find { it.id == tab?.id } ?: list.firstOrNull()
-    tabs.value = list
+    useLoading {
+      tabs.value = extension.run(throwableFlow) { getTabs(this) } ?: emptyList()
+      tab = tabs.value.find { it.id == tab?.id } ?: tabs.value.firstOrNull()
+    }
   }
 
-  private suspend fun loadFeed(extension: Extension<*>) = extension.run(throwableFlow) {
-    getFeed(this)?.collectTo(feed)
+  private suspend fun loadFeed(extension: Extension<*>) {
+    extension.run(throwableFlow) {
+      feed.value = getFeed(this)?.cachedIn(viewModelScope)?.first()
+    }
   }
 
   private var job: Job? = null
 
   fun refresh(resetTab: Boolean = false) {
-
     job?.cancel()
-    feed.value = null
-    val extension = databaseExtensionFlow.value ?: return
-
     job = viewModelScope.launch(Dispatchers.IO) {
-      if (resetTab) loadTabs(extension)
-      feed.value = null
-      loadFeed(extension)
+      if (resetTab) loadTabs(dbExtFlow.value ?: return@launch)
+      loadFeed(dbExtFlow.value ?: return@launch)
     }
   }
-}
 
+  private suspend inline fun useLoading(block: () -> Unit) {
+    loading.emit(true)
+    block()
+    loading.emit(false)
+  }
+}

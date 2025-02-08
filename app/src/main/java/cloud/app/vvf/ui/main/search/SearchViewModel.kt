@@ -24,9 +24,10 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  override val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-  val dataStore: DataStore
-) : FeedViewModel(throwableFlow, databaseExtensionFlow) {
+  dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  extListFlow: MutableStateFlow<List<Extension<*>>?>,
+  val dataStore: DataStore,
+) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow) {
 
   var query: String? = ""
   override suspend fun getTabs(client: BaseClient) =
@@ -53,6 +54,7 @@ class SearchViewModel @Inject constructor(
       dataStore.saveSearchHistory(SearchItem(it, true, System.currentTimeMillis()))
     }
   }
+
   fun deleteHistory(item: SearchItem) {
     dataStore.deleteHistorySearch(item)
   }

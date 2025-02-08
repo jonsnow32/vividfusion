@@ -92,7 +92,7 @@ class ExtensionLoader(
     val databaseExtension = extensions.firstOrNull {
       it.metadata.types?.contains(ExtensionType.DATABASE) == true
     }
-    currentDBExtFlow.value = databaseExtension as Extension<DatabaseClient>
+    //currentDBExtFlow.value = databaseExtension as Extension<DatabaseClient>
 
 
     val streamExtension = extensions.firstOrNull {

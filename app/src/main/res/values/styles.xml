@@ -75,7 +75,6 @@
   <style name="TabLayout">
     <item name="android:background">@android:color/transparent</item>
     <item name="android:clipToPadding">false</item>
-    <item name="android:paddingStart">16dp</item>
     <item name="android:paddingEnd">16dp</item>
     <item name="tabIndicator">@drawable/tab_indicator</item>
     <item name="tabGravity">start</item>
@@ -225,6 +224,7 @@
     <item name="android:paddingLeft">16dp</item>
     <item name="android:paddingRight">16dp</item>
     <item name="materialThemeOverlay">@style/Button.Outlined</item>
+    <item name="android:foreground">@drawable/ripple_item_container</item>
   </style>
 
   <style name="RightMaterialDialogTheme" parent="ThemeOverlay.Material3.Dialog">
@@ -265,5 +265,20 @@
     <item name="android:paddingEnd">24dp</item>
     <item name="android:textSize">16sp</item>
     <item name="iconPadding">24dp</item>
+  </style>
+
+  <style name="Button.Yes" parent="Widget.Material3.Button">
+    <item name="android:backgroundTint">#4CAF50</item> <!-- Green -->
+    <item name="android:textColor">#FFFFFF</item> <!-- White Text -->
+    <item name="cornerSize">16dp</item> <!-- Rounded Corners -->
+    <item name="android:foreground">@drawable/outline_drawable</item>
+
+  </style>
+
+  <style name="Button.No" parent="Widget.Material3.Button">
+    <item name="android:backgroundTint">#F44336</item> <!-- Red -->
+    <item name="android:textColor">#FFFFFF</item> <!-- White Text -->
+    <item name="cornerSize">16dp</item> <!-- Rounded Corners -->
+    <item name="android:foreground">@drawable/outline_drawable</item>
   </style>
 </resources>

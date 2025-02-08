@@ -1,20 +1,19 @@
 package cloud.app.vvf.ui.main
 
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import cloud.app.vvf.common.clients.Extension
+import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.ui.media.MediaContainerAdapter
 import cloud.app.vvf.utils.FastScrollerHelper
-import cloud.app.vvf.utils.applyAdapter
+import cloud.app.vvf.utils.applyExtAdapter
 import cloud.app.vvf.utils.collect
 import cloud.app.vvf.utils.configure
 import cloud.app.vvf.utils.observe
-import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.ui.main.home.ClientNotFoundAdapter
 import com.google.android.material.tabs.TabLayout
-import kotlinx.coroutines.Job
 
 suspend inline fun <reified T> Fragment.applyClient(
   recyclerView: RecyclerView,
@@ -23,17 +22,22 @@ suspend inline fun <reified T> Fragment.applyClient(
   extension: Extension<*>?
 ): MediaContainerAdapter? {
   swipeRefresh.isEnabled = extension != null
-  extension ?: return null
-  val parent = parentFragment as Fragment
-  val adapter = MediaContainerAdapter(
-    extension,
-    parent,
-    recyclerView.context.getString(id),
-    id.toString(),
-  )
-  val concatAdapter = adapter.withLoaders()
-  recyclerView.applyAdapter<T>(extension, id, concatAdapter)
-  return adapter
+
+  if(extension != null) {
+    val parent = parentFragment as Fragment
+    val adapter = MediaContainerAdapter(
+      extension,
+      parent,
+      recyclerView.context.getString(id),
+      id.toString(),
+    )
+    val concatAdapter = adapter.withLoaders()
+    recyclerView.applyExtAdapter<T>(extension, id, concatAdapter, parent)
+    return adapter
+  } else {
+    recyclerView.applyExtAdapter<T>(null, id, ClientNotFoundAdapter(parentFragment), parentFragment)
+    return null
+  }
 }
 
 inline fun <reified T> Fragment.configureFeedUI(
@@ -55,11 +59,13 @@ inline fun <reified T> Fragment.configureFeedUI(
 
   var mediaContainerAdapter: MediaContainerAdapter? = null
 
-  if (clientId == null) collect(viewModel.databaseExtensionFlow) {
+  if (clientId == null) collect(viewModel.dbExtFlow) {
     val adapter = applyClient<T>(recyclerView, swipeRefresh, id, it)
     mediaContainerAdapter = adapter
-  } else {
-    TODO("remake extension flow")
+  } else collect(viewModel.extListFlow){
+   val extension = viewModel.extListFlow.value?.find { it.id == clientId && it.type.contains(ExtensionType.DATABASE)}
+    val adapter = applyClient<T>(recyclerView, swipeRefresh, id, extension)
+    mediaContainerAdapter = adapter
   }
 
   val tabListener = object : TabLayout.OnTabSelectedListener {

@@ -38,7 +38,7 @@ open class Extension<T : BaseClient>(
 ) {
   val id : String get() = metadata.className
   val name : String get() = metadata.name
-
+  val icon : String? get() = metadata.iconUrl
   inline fun <reified R : BaseClient> asType(): Extension<R>? {
     return if (instance.value.getOrNull() is R) {
       @Suppress("UNCHECKED_CAST")

@@ -10,6 +10,7 @@
     android:id="@+id/previewViewpager"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:descendantFocusability="blocksDescendants"
     android:orientation="horizontal">
 
   </androidx.viewpager2.widget.ViewPager2>
@@ -22,6 +23,15 @@
     android:gravity="start"
     android:orientation="horizontal">
 
+
+    <View
+      android:id="@+id/prevFocus"
+      android:layout_width="1dp"
+      android:layout_height="1dp"
+      android:layout_gravity="center"
+      android:tag="@string/tv_no_focus_tag"
+      android:focusable="false" />
+
     <TextView
       android:id="@+id/homePreviewBookmark"
       android:layout_width="70dp"
@@ -32,7 +42,9 @@
       android:background="?android:attr/selectableItemBackgroundBorderless"
       android:gravity="center"
       android:text="@string/none"
+      android:padding="4dp"
       app:drawableTint="?colorControlNormal"
+      android:foreground="@drawable/outline_drawable"
       app:drawableTopCompat="@drawable/ic_add_20dp" />
 
     <com.google.android.material.button.MaterialButton
@@ -42,6 +54,9 @@
       android:layout_gravity="center"
       android:backgroundTint="?colorControlNormal"
       android:text="@string/play_now"
+      android:foreground="@drawable/ripple_item_container"
+      android:nextFocusLeft="@id/homePreviewBookmark"
+      android:nextFocusRight="@id/homePreviewInfo"
       app:icon="@drawable/play_arrow_24dp" />
 
     <TextView
@@ -54,9 +69,19 @@
       android:background="?android:attr/selectableItemBackgroundBorderless"
       android:gravity="center"
       android:text="@string/more"
+      android:padding="4dp"
+      android:nextFocusRight="@id/nextFocus"
+      android:foreground="@drawable/outline_drawable"
       app:drawableTint="?colorControlNormal"
       app:drawableTopCompat="@drawable/ic_info" />
 
+    <View
+      android:id="@+id/nextFocus"
+      android:layout_width="1dp"
+      android:layout_height="1dp"
+      android:layout_gravity="center"
+      android:tag="@string/tv_no_focus_tag"
+      android:focusable="false" />
   </LinearLayout>
 
 </FrameLayout>

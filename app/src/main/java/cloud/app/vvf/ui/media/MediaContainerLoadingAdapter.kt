@@ -15,6 +15,11 @@ import cloud.app.vvf.databinding.SkeletonItemContainerBinding
 import cloud.app.vvf.databinding.SkeletonItemMediaRecyclerGridBinding
 import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import cloud.app.vvf.common.exceptions.LoginRequiredException
+import cloud.app.vvf.common.exceptions.MissingApiKeyException
+import cloud.app.vvf.databinding.ItemApiKeyRequiredBinding
+import cloud.app.vvf.ui.setting.ExtensionSettingFragment
+import cloud.app.vvf.ui.setting.ManageExtensionsFragment
+import cloud.app.vvf.utils.navigate
 
 class MediaContainerLoadingAdapter(val listener: Listener? = null) :
   LoadStateAdapter<MediaContainerLoadingAdapter.LoadViewHolder>() {
@@ -23,6 +28,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
     fun onRetry()
     fun onError(view: View, error: Throwable)
     fun onLoginRequired(view: View, error: LoginRequiredException)
+    fun onApiKeyEnter(view: View, error: MissingApiKeyException)
   }
 
   class LoadViewHolder(val container: Container) : RecyclerView.ViewHolder(container.root)
@@ -42,7 +48,8 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
     }
 
 
-    data class GridLoading(val binding: SkeletonItemMediaRecyclerGridBinding) : Container(binding.root) {
+    data class GridLoading(val binding: SkeletonItemMediaRecyclerGridBinding) :
+      Container(binding.root) {
       override fun bind(loadState: LoadState) {}
     }
 
@@ -78,6 +85,21 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
       }
     }
 
+    data class ApiKeyRequired(val binding: ItemApiKeyRequiredBinding, val listener: Listener?) :
+      Container(binding.root) {
+      override fun bind(loadState: LoadState) {
+        val error =
+          (loadState as LoadState.Error).error as MissingApiKeyException
+        binding.error.run {
+          text = context.getTitle(loadState.error)
+        }
+        binding.enterApiKey.transitionName = error.hashCode().toString()
+        binding.enterApiKey.setOnClickListener {
+          listener?.onApiKeyEnter(it, error)
+        }
+      }
+    }
+
     abstract fun bind(loadState: LoadState)
   }
 
@@ -104,6 +126,10 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
           listener
         )
 
+        4 -> Container.ApiKeyRequired(
+          ItemApiKeyRequiredBinding.inflate(inflater, parent, false), listener
+        )
+
         else -> throw IllegalStateException()
       }
 
@@ -118,10 +144,10 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
       is LoadState.Error -> {
         when (loadState.error) {
           is LoginRequiredException -> 3
+          is MissingApiKeyException -> 4
           else -> 2
         }
       }
-
     }
   }
 
@@ -140,6 +166,13 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
 
     override fun onLoginRequired(view: View, error: LoginRequiredException) {
       ExceptionActivity.start(view.context, error)
+    }
+
+    override fun onApiKeyEnter(view: View, error: MissingApiKeyException) {
+      //fragment.navigate(ManageExtensionsFragment())
+      val extension =
+      fragment.navigate(ExtensionSettingFragment.newInstance(error.clientId, error.clientName), view)
+
     }
   })
 }

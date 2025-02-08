@@ -12,7 +12,7 @@ import cloud.app.vvf.databinding.DialogLoginUserBinding
 import cloud.app.vvf.databinding.ItemLoginUserBinding
 import cloud.app.vvf.datastore.helper.CurrentUser
 import cloud.app.vvf.ui.setting.SettingsFragment
-import cloud.app.vvf.ui.widget.DockingDialog
+import cloud.app.vvf.ui.widget.dialog.DockingDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.loadInto
 import cloud.app.vvf.utils.navigate

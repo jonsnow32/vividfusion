@@ -1,7 +1,6 @@
 package cloud.app.vvf.extension.builtIn.tmdb
 
 import com.uwetrottmann.tmdb2.Tmdb
-import com.uwetrottmann.tmdb2.TmdbAuthenticator
 import okhttp3.OkHttpClient
 
 /**

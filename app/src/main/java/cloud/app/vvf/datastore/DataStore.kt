@@ -25,7 +25,6 @@ class DataStore(val sharedPreferences: SharedPreferences) {
         is Long -> editor.putLong(path, value)
       }
     }
-
     fun apply() {
       editor.apply()
     }

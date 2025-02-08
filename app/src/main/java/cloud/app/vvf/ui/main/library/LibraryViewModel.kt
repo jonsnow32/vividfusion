@@ -2,6 +2,7 @@ package cloud.app.vvf.ui.main.library
 
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
+import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
@@ -28,11 +29,16 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  override val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  extListFlow: MutableStateFlow<List<Extension<*>>?>,
   val dataStore: DataStore,
-) : FeedViewModel(throwableFlow, databaseExtensionFlow) {
+) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow) {
 
-
+  override fun onInitialize() {
+    viewModelScope.launch {
+      refresh(resetTab = true)
+    }
+  }
 
   override suspend fun getTabs(client: BaseClient): List<Tab> {
     return withContext(Dispatchers.IO) {

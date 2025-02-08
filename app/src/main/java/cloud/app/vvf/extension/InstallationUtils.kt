@@ -98,7 +98,7 @@ suspend fun uninstallExtension(
   context: FragmentActivity, extension: Extension<*>
 ): Result<Boolean> = runCatching {
   when (extension.metadata.importType) {
-    ImportType.BuiltIn -> throw UnsupportedOperationException()
+    ImportType.BuiltIn -> throw Exception("Built-in extension cannot be uninstalled")
     ImportType.File -> {
       val file = File(extension.metadata.path)
       val viewModel by context.viewModels<ExtensionViewModel>()

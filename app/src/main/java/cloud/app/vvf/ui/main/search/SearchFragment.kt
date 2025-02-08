@@ -41,6 +41,8 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
   }
   private var searchJob: Job? = null
 
+  val clientId = arguments?.getString("clientId")
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -63,7 +65,7 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
 
     configureFeedUI<DatabaseClient>(
       R.string.home, viewModel, binding.recyclerView,
-      binding.swipeRefresh, binding.tabLayout
+      binding.swipeRefresh, binding.tabLayout, clientId
     )
 
     val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {

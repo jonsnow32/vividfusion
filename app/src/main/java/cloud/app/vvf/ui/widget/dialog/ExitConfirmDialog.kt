@@ -1,4 +1,4 @@
-package cloud.app.vvf.ui.widget
+package cloud.app.vvf.ui.widget.dialog
 
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -9,7 +9,6 @@ import androidx.fragment.app.DialogFragment
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.DialogConfirmExitBinding
 import cloud.app.vvf.utils.autoCleared
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -36,5 +35,6 @@ class ExitConfirmDialog: DialogFragment(){
     binding.checkboxDontShowAgain.setOnCheckedChangeListener { buttonView, isChecked ->
       sharedPreferences.edit().putBoolean(getString(R.string.pref_show_exit_confirm), !isChecked).apply()
     }
+    binding.noBtn.requestFocus()
   }
 }

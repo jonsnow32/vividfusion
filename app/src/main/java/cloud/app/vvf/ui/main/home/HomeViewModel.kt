@@ -4,6 +4,7 @@ import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.ui.main.FeedViewModel
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,8 +15,10 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  override val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-) : FeedViewModel(throwableFlow, databaseExtensionFlow) {
+  dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  extListFlow: MutableStateFlow<List<Extension<*>>?>,
+  val dataStore: DataStore,
+) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow) {
 
   init {
     initialize();

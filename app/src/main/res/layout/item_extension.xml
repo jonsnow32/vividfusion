@@ -1,74 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    style="@style/Selectable"
-    android:layout_width="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/rootExtItem"
+  style="@style/Selectable"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_margin="8dp"
+  android:descendantFocusability="beforeDescendants"
+  android:orientation="horizontal">
+
+  <FrameLayout
+    android:id="@+id/itemContainer"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:paddingHorizontal="8dp">
+
+    <ImageView
+      android:id="@+id/itemExtension"
+      android:layout_width="32dp"
+      android:layout_height="@dimen/collapsed_cover_size"
+      android:layout_marginHorizontal="8dp"
+      android:contentDescription="@string/extensions"
+      android:scaleType="fitCenter"
+      app:srcCompat="@drawable/ic_extension_24dp" />
+
+  </FrameLayout>
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/collapsed_cover_size"
+    android:baselineAligned="false"
+    android:gravity="center"
     android:orientation="horizontal">
 
-    <FrameLayout
-        android:id="@+id/itemContainer"
-        android:layout_width="wrap_content"
+    <LinearLayout
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:layout_weight="1"
+      android:baselineAligned="false"
+      android:gravity="center"
+      android:orientation="vertical">
+
+      <TextView
+        android:id="@+id/extensionName"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="8dp">
+        android:maxLines="1"
+        android:textStyle="bold"
+        tools:text="@tools:sample/full_names" />
 
-        <ImageView
-            android:id="@+id/itemExtension"
-            android:layout_width="32dp"
-            android:layout_height="@dimen/collapsed_cover_size"
-            android:layout_marginHorizontal="8dp"
-            android:contentDescription="@string/extensions"
-            android:scaleType="fitCenter"
-            app:srcCompat="@drawable/ic_extension_24dp" />
-
-    </FrameLayout>
+      <TextView
+        android:id="@+id/extensionVersion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        tools:text="@tools:sample/cities" />
+    </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/collapsed_cover_size"
-        android:baselineAligned="false"
-        android:gravity="center"
-        android:orientation="horizontal">
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:padding="8dp">
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:baselineAligned="false"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/extensionName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:textStyle="bold"
-                tools:text="@tools:sample/full_names" />
-
-            <TextView
-                android:id="@+id/extensionVersion"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                tools:text="@tools:sample/cities" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="8dp">
-
-            <cloud.app.vvf.ui.extension.widget.ExtensionStatusButton
-                android:id="@+id/extensionAddOrRemove"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:contentDescription="@string/close"
-                android:padding="8dp"
-                app:downloadStatus="NOT_STARTED"
-                tools:ignore="DuplicateClickableBoundsCheck" />
-        </LinearLayout>
+      <cloud.app.vvf.ui.extension.widget.ExtensionStatusButton
+        android:id="@+id/extensionAddOrRemove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:contentDescription="@string/close"
+        android:focusable="true"
+        android:foreground="@drawable/outline_drawable"
+        android:padding="8dp"
+        android:nextFocusLeft="@id/rootExtItem"
+        android:nextFocusRight="@id/rootExtItem"
+        app:downloadStatus="NOT_STARTED"
+        tools:ignore="DuplicateClickableBoundsCheck" />
     </LinearLayout>
+  </LinearLayout>
 </LinearLayout>

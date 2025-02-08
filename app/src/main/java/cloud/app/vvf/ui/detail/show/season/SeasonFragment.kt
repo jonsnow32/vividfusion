@@ -16,7 +16,7 @@ import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.databinding.FragmentSeasonBinding
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.detail.show.episode.EpisodeAdapter
-import cloud.app.vvf.ui.widget.SelectionDialog
+import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe

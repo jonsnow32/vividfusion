@@ -21,4 +21,3 @@ fun DataStore.createOrUpdateExtension(metadata: ExtensionMetadata) {
 fun DataStore.removeExtension(id: String) {
   return removeKey("$ExtensionFolder/${id}")
 }
-

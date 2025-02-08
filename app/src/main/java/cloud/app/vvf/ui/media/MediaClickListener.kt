@@ -11,7 +11,7 @@ import cloud.app.vvf.ui.main.browse.BrowseViewModel
 import cloud.app.vvf.ui.detail.movie.MovieFragment
 import cloud.app.vvf.ui.detail.show.ShowFragment
 import cloud.app.vvf.ui.detail.show.season.SeasonFragment
-import cloud.app.vvf.ui.widget.ItemOptionDialog
+import cloud.app.vvf.ui.widget.dialog.ItemOptionDialog
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.tryWith

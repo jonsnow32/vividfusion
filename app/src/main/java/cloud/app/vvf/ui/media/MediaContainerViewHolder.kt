@@ -2,11 +2,11 @@ package cloud.app.vvf.ui.media
 
 
 import android.content.res.Configuration
-import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -25,13 +25,12 @@ import cloud.app.vvf.databinding.ContainerItemBinding
 import cloud.app.vvf.databinding.HomePreviewViewpagerBinding
 import cloud.app.vvf.databinding.PreviewItemBinding
 import cloud.app.vvf.datastore.helper.BookmarkItem
-import cloud.app.vvf.ui.detail.movie.MovieFragment
+import cloud.app.vvf.datastore.helper.BookmarkItem.Companion.getStringIds
 import cloud.app.vvf.ui.media.MediaItemViewHolder.Companion.placeHolder
 import cloud.app.vvf.ui.paging.toFlow
-import cloud.app.vvf.ui.widget.SelectionDialog
+import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.loadInto
 import cloud.app.vvf.utils.navigate
-import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.setTextWithVisibility
 import cloud.app.vvf.utils.tv.FOCUS_SELF
 import cloud.app.vvf.utils.tv.setLinearListLayout
@@ -64,9 +63,10 @@ sealed class MediaContainerViewHolder(
       val adapter = PreviewAdapter(items)
       binding.previewViewpager.adapter = adapter
       binding.previewViewpager.registerOnPageChangeCallback(previewCallback)
+      val mainViewModel by fragment.activityViewModels<MainActivityViewModel>()
+
 
       binding.homePreviewBookmark.setOnClickListener {
-        val mainViewModel by fragment.activityViewModels<MainActivityViewModel>()
         val item = items[selectedPosition]
         val status = mainViewModel.getBookmark(item)
         val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
@@ -81,7 +81,19 @@ sealed class MediaContainerViewHolder(
           false,
           {},
           { selected ->
-            mainViewModel.addToBookmark(item, bookmarks.get(selected));
+            mainViewModel.addToBookmark(item, bookmarks[selected]);
+            val newValue = mainViewModel.getBookmark(item)
+            binding.homePreviewBookmark.setCompoundDrawablesWithIntrinsicBounds(
+              null,
+              ContextCompat.getDrawable(
+                binding.homePreviewBookmark.context,
+                if(newValue == null) R.drawable.ic_add_20dp else R.drawable.ic_bookmark_filled
+              ),
+              null,
+              null
+            )
+            binding.homePreviewBookmark.text = fragment.getString(getStringIds(newValue))
+
           }).show(fragment.parentFragmentManager, null)
       }
 
@@ -90,6 +102,31 @@ sealed class MediaContainerViewHolder(
         fragment.navigate(item, clientId)
       }
 
+
+      binding.homePreviewInfo.setOnFocusChangeListener { _, hasFocus ->
+        binding.nextFocus?.isFocusable = hasFocus
+      }
+
+      binding.homePreviewBookmark.setOnFocusChangeListener { _, hasFocus ->
+        binding.prevFocus?.isFocusable = hasFocus
+      }
+
+      binding.nextFocus?.setOnFocusChangeListener { _, hasFocus ->
+        if (!hasFocus) return@setOnFocusChangeListener
+        binding.previewViewpager.setCurrentItem(binding.previewViewpager.currentItem + 1, true)
+        binding.homePreviewInfo.requestFocus()
+      }
+
+      binding.prevFocus?.setOnFocusChangeListener { _, hasFocus ->
+        if (!hasFocus) return@setOnFocusChangeListener
+        if (binding.previewViewpager.currentItem <= 0) {
+          //Focus the Home item as the default focus will be the header item
+          //(fragment.activity as? MainActivity)?.binding?.navRailView?.findViewById<NavigationBarItemView>(R.id.navigation_home)?.requestFocus()
+        } else {
+          binding.previewViewpager.setCurrentItem(binding.previewViewpager.currentItem - 1, true)
+          binding.homePreviewBookmark.requestFocus()
+        }
+      }
     }
 
     override fun onViewAttachedToWindow() {
@@ -107,9 +144,28 @@ sealed class MediaContainerViewHolder(
           super.onPageSelected(position)
           // Handle page change
           selectedPosition = position
-          println("Page selected: $position")
+          onSelected(selectedPosition)
+
         }
       }
+
+    fun onSelected(position: Int) {
+      val previewAdapter = binding.previewViewpager.adapter as PreviewAdapter
+      val item = previewAdapter.getItemOrNull(position) ?: return
+      val mainViewModel by fragment.activityViewModels<MainActivityViewModel>()
+      val status = mainViewModel.getBookmark(item)
+      binding.homePreviewBookmark.setCompoundDrawablesWithIntrinsicBounds(
+        null,
+        ContextCompat.getDrawable(
+          binding.homePreviewBookmark.context,
+          if(status == null) R.drawable.ic_add_20dp else R.drawable.ic_bookmark_filled
+        ),
+        null,
+        null
+      )
+      binding.homePreviewBookmark.text = if(status == null) fragment.getString(R.string.none) else fragment.getString(getStringIds(status))
+    }
+
     override val clickView: View = binding.homePreviewPlay
     override val transitionView: View = binding.homePreviewPlay
 
@@ -153,6 +209,10 @@ sealed class MediaContainerViewHolder(
         val inflater = LayoutInflater.from(parent.context)
         val binding = PreviewItemBinding.inflate(inflater, parent, false)
         return PreviewViewHolder(binding)
+      }
+
+      fun getItemOrNull(position: Int): AVPMediaItem? {
+        return items.getOrNull(position)
       }
 
       override fun onBindViewHolder(holder: PreviewViewHolder, position: Int) {

@@ -22,7 +22,6 @@ import cloud.app.vvf.ui.paging.toFlow
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe
-import cloud.app.vvf.utils.setTextWithVisibility
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.vvf.common.helpers.PagedData
@@ -32,8 +31,8 @@ import cloud.app.vvf.common.models.movie.Show
 import cloud.app.vvf.datastore.helper.BookmarkItem
 import cloud.app.vvf.ui.detail.TrailerDialog
 import cloud.app.vvf.ui.stream.StreamFragment
-import cloud.app.vvf.ui.widget.DockingDialog
-import cloud.app.vvf.ui.widget.SelectionDialog
+import cloud.app.vvf.ui.widget.dialog.DockingDialog
+import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.Utils.getEpisodeShortTitle
 import cloud.app.vvf.utils.navigate
 import dagger.hilt.android.AndroidEntryPoint

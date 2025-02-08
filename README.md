@@ -25,10 +25,6 @@ This project was inspired by and draws some ideas from the [Echo](https://github
 2.  Open the project in Android Studio.
 3.  Build and run the application on an Android device or emulator.
 
-## License
-
-[Specify your project's license here, e.g., MIT, Apache 2.0]
-
 ## Contributing
 
 Contributions are welcome! If you'd like to contribute to this project, please:

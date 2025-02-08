@@ -1,4 +1,4 @@
-package cloud.app.vvf.ui.widget
+package cloud.app.vvf.ui.widget.dialog
 
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension

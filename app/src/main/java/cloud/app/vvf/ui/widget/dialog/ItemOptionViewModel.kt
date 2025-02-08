@@ -1,4 +1,4 @@
-package cloud.app.vvf.ui.widget
+package cloud.app.vvf.ui.widget.dialog
 
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.base.CatchingViewModel
@@ -7,10 +7,7 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.BookmarkItem
 import cloud.app.vvf.datastore.helper.addFavoritesData
-import cloud.app.vvf.datastore.helper.addToBookmark
-import cloud.app.vvf.datastore.helper.findBookmark
 import cloud.app.vvf.datastore.helper.getFavoritesData
 import cloud.app.vvf.datastore.helper.removeFavoritesData
 import cloud.app.vvf.extension.run

@@ -19,7 +19,7 @@ import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.databinding.ActivityMainBinding
 import cloud.app.vvf.features.player.PlayerManager
-import cloud.app.vvf.ui.widget.ExitConfirmDialog
+import cloud.app.vvf.ui.widget.dialog.ExitConfirmDialog
 import cloud.app.vvf.utils.Utils.isAndroidTV
 import cloud.app.vvf.utils.openItemFragmentFromUri
 import cloud.app.vvf.utils.tv.screenHeight
@@ -31,7 +31,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-  private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
+  val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
   @Inject lateinit var sharedPreferences: SharedPreferences
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -91,7 +91,12 @@ class MainActivity : AppCompatActivity() {
       }
     )
     if(hasController) {
+      val bottomButtons = listOf<Int>(R.id.homePreviewPlay, R.id.homePreviewBookmark, R.id.homePreviewInfo)
       binding.root.viewTreeObserver.addOnGlobalFocusChangeListener { _, view ->
+        if (bottomButtons.contains(view?.id)) {
+          bottomView(view)
+          return@addOnGlobalFocusChangeListener
+        }
         centerView(view)
       }
     }
@@ -126,8 +131,23 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
+  private fun bottomView(view: View?) {
+    if (view == null) return
+    try {
+      Timber.i("bottomView: $view")
+      val r = Rect(0, 0, 0, 0)
+      view.getDrawingRect(r)
+      val x = r.centerX()
+      val y = r.bottom // Move focus towards the bottom of the view
+      val dx = r.width() / 2
+      val dy = screenHeight - r.height() // Adjust positioning towards the bottom
+      val newRect = Rect(x - dx, y - dy, x + dx, y)
+      view.requestRectangleOnScreen(newRect, false)
+    } catch (_: Throwable) {
+    }
+  }
 
-  fun isControllerConnected(inputManager: InputManager, deviceIds: List<Int>): Boolean {
+  private fun isControllerConnected(inputManager: InputManager, deviceIds: List<Int>): Boolean {
     for (deviceId in deviceIds) {
       val device = inputManager.getInputDevice(deviceId)
       device?.let {

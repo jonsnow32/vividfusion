@@ -62,6 +62,16 @@ sealed class BookmarkItem {
         else -> R.string.type_none
       }
     }
+    fun getStringIds(type: String) : Int{
+      return when(type) {
+        "Watching" -> R.string.type_watching
+        "Completed" -> R.string.type_completed
+        "OnHold" -> R.string.type_on_hold
+        "Dropped" -> R.string.type_dropped
+        "PlanToWatch" -> R.string.type_plan_to_watch
+        else -> R.string.type_none
+      }
+    }
   }
 }
 

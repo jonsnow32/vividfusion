@@ -3,6 +3,7 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:background="?attr/colorSurfaceContainer"
   android:nextFocusDown="@id/nginx_text_input"
   android:orientation="vertical">
 
@@ -22,7 +23,7 @@
   <EditText
     android:id="@+id/nginx_text_input"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:layout_rowWeight="1"
     android:layout_marginHorizontal="10dp"
     android:layout_marginBottom="60dp"
@@ -30,9 +31,10 @@
     android:nextFocusLeft="@id/apply_btt"
     android:nextFocusRight="@id/cancel_btt"
     android:paddingTop="10dp"
+    android:gravity="bottom"
     android:requiresFadingEdge="vertical"
     tools:ignore="LabelFor"
-    tools:text="nginx.com" />
+    tools:text="@tools:sample/lorem/random" />
 
   <LinearLayout
     android:id="@+id/apply_btt_holder"

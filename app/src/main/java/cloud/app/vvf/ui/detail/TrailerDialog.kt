@@ -7,13 +7,12 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.databinding.DialogTrailersBinding
 import cloud.app.vvf.ui.media.MediaClickListener
 import cloud.app.vvf.ui.media.MediaItemAdapter
 import cloud.app.vvf.ui.paging.toFlow
-import cloud.app.vvf.ui.widget.DockingDialog
+import cloud.app.vvf.ui.widget.dialog.DockingDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.putSerialized

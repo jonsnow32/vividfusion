@@ -1,4 +1,4 @@
-package cloud.app.vvf.ui.widget
+package cloud.app.vvf.ui.widget.dialog
 
 import android.content.res.Configuration
 import android.os.Bundle

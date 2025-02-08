@@ -36,6 +36,7 @@ import cloud.app.vvf.ui.main.home.ClientLoadingAdapter
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -74,15 +75,18 @@ class ExtensionViewModel @Inject constructor(
     return result
   }
 
-  suspend fun uninstall(
+  fun uninstall(
     context: FragmentActivity, extension: Extension<*>, function: (Boolean) -> Unit
   ) {
-    val result = uninstallExtension(context, extension).getOrElse {
-      throwableFlow.emit(it)
-      false
+    viewModelScope.launch(Dispatchers.IO) {
+      val result = uninstallExtension(context, extension).getOrElse {
+        throwableFlow.emit(it)
+        false
+      }
+      if (result) messageFlow.emit(SnackBarViewModel.Message(context.getString(R.string.extension_uninstalled_successfully)))
+      function(result)
     }
-    if (result) messageFlow.emit(SnackBarViewModel.Message(context.getString(R.string.extension_uninstalled_successfully)))
-    function(result)
+
   }
 
   fun addFromLinkOrCode(context: FragmentActivity, link: String) {
@@ -172,8 +176,8 @@ class ExtensionViewModel @Inject constructor(
 
   }
 
-  fun downloadExtension(url: String) {
-    TODO("Not yet implemented")
+  fun deleteExtension(extension: Extension<*>) {
+
   }
 
   companion object {

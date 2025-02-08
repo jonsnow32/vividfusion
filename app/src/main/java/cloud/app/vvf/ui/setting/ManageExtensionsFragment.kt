@@ -26,7 +26,9 @@ import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.ui.widget.dialog.InputDialog
 import cloud.app.vvf.utils.showNginxTextInputDialog
+import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.Job
@@ -91,7 +93,11 @@ class ManageExtensionsFragment : Fragment() {
       }
 
       override fun onDelete(extension: Extension<*>) {
-        TODO("Not yet implemented")
+        viewModel.uninstall(requireActivity(), extension) {
+//          if (it) createSnack(getString(R.string.extension_uninstalled_successfully))
+//          else createSnack(getString(R.string.extension_uninstalled_fail))
+          if (it) viewModel.refresh()
+        }
       }
     })
 
@@ -123,15 +129,26 @@ class ManageExtensionsFragment : Fragment() {
 
     binding.fabAddExtensions.setOnClickListener {
       //ExtensionsAddListBottomSheet.LinkFile().show(parentFragmentManager, null)
-      activity?.showNginxTextInputDialog(
+
+      val inputDialog = InputDialog.newInstance(
         getString(R.string.add_extensions),
-        "https://github.com/jonsnow32/vivid-sample-extension/releases/download/1ba398f/plugins.json",
-        InputType.TYPE_TEXT_VARIATION_URI,
-        {}) { url ->
+        "https://github.com/jonsnow32/vivid-sample-extension/releases/download/1ba398f/plugins.json"
+      ) { url ->
         activity?.let {
           viewModel.addFromLinkOrCode(it, url);
         }
       }
+
+      inputDialog.show(parentFragmentManager, "add extension")
+//      activity?.showNginxTextInputDialog(
+//        getString(R.string.add_extensions),
+//        "https://github.com/jonsnow32/vivid-sample-extension/releases/download/1ba398f/plugins.json",
+//        InputType.TYPE_TEXT_VARIATION_URI,
+//        {}) { url ->
+//        activity?.let {
+//          viewModel.addFromLinkOrCode(it, url);
+//        }
+//      }
     }
   }
 }
