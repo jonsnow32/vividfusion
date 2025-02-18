@@ -9,6 +9,8 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.helper.setCurrentDBExtension
 import cloud.app.vvf.extension.run
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -16,12 +18,16 @@ import kotlinx.coroutines.flow.*
 abstract class FeedViewModel(
   throwableFlow: MutableSharedFlow<Throwable>,
   val dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-  val extListFlow: MutableStateFlow<List<Extension<*>>?>
+  val extListFlow: MutableStateFlow<List<Extension<*>>?>,
+  val dataStore: DataStore
 ) : CatchingViewModel(throwableFlow) {
 
   override fun onInitialize() {
     dbExtFlow
-      .onEach { refresh(resetTab = true) }
+      .onEach { extension ->
+        extension?.let { dataStore.setCurrentDBExtension(it.metadata) }
+        refresh(resetTab = true)
+      }
       .launchIn(viewModelScope)
   }
 

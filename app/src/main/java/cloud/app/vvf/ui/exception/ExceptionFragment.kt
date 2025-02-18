@@ -140,7 +140,7 @@ class ExceptionFragment : Fragment() {
       is AppException -> """
           Extension : ${throwable.extension.name}
           Id : ${throwable.extension.name}
-          Type : ${throwable.extension.type}
+          Type : ${throwable.extension.metadata.types?.joinToString(prefix = "[\"", postfix = "\"]", separator = "\", \"") { it.feature } ?: "[]"}
           Version : ${throwable.extension.metadata.version}
           App Version : ${appVersion()}
           ${getDetails(throwable.cause)}

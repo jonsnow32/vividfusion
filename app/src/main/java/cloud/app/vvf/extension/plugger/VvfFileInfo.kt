@@ -21,6 +21,9 @@ data class VvfFileInfo(
   val status: Int,
 ) {
   fun toExtensionMetadata(path: String): ExtensionMetadata {
+    val types = types?.map { type -> ExtensionType.entries.first { it.feature == type } }
+    if (types.isNullOrEmpty()) error("types not found in Metadata for vvf file ${path}")
+
     return ExtensionMetadata(
       className = className,
       path = path, // Pass the path as an argument
@@ -33,7 +36,7 @@ data class VvfFileInfo(
       iconUrl = iconUrl,
       repoUrl = repoUrl,
       updateUrl = repoUrl,
-      types = types?.map { type -> ExtensionType.entries.first { it.feature == type } }
+      types = types
     )
   }
 }

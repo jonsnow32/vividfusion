@@ -31,8 +31,8 @@ class LibraryViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
   extListFlow: MutableStateFlow<List<Extension<*>>?>,
-  val dataStore: DataStore,
-) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow) {
+  dataStore: DataStore,
+) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow, dataStore) {
 
   override fun onInitialize() {
     viewModelScope.launch {

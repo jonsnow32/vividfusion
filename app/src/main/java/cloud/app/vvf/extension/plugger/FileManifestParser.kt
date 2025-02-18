@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import cloud.app.vvf.common.helpers.ImportType
 import tel.jeelpa.plugger.ManifestParser
 import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.ExtensionType
 import com.google.gson.Gson
 import java.io.File
 import java.io.InputStreamReader
@@ -22,6 +23,13 @@ class FileManifestParser(
     fun get(key: String): String = info.metaData.getString(key)
       ?: error("$key not found in Metadata for ${file.path}")
 
+
+    val types = info.metaData.getString("types")?.split(",")
+      ?.map { type -> ExtensionType.entries.first { it.feature == type } }
+
+    if(types.isNullOrEmpty()) error("types not found in Metadata for ${info.packageName}")
+
+
     return ExtensionMetadata(
       path = file.path,
       className = get("class"),
@@ -34,7 +42,7 @@ class FileManifestParser(
       iconUrl = info.metaData.getString("icon_url"),
       repoUrl = info.metaData.getString("repo_url"),
       updateUrl = info.metaData.getString("update_url"),
-      enabled = info.metaData.getBoolean("enabled", true)
+      types = types
     )
   }
 

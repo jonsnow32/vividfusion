@@ -65,7 +65,7 @@ class LoginUserBottomSheet : DockingDialog() {
                 binding.login.setOnClickListener {
                     metadata?.run {
                         requireActivity().navigate(
-                            LoginFragment.newInstance(className, name, extensionData.type[0].name)
+                            LoginFragment.newInstance(this.className, name, extensionData.metadata.types[0].name)
                         )
                     }
                     dismiss()

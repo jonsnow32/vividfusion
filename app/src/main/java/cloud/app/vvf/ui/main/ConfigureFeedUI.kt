@@ -63,7 +63,7 @@ inline fun <reified T> Fragment.configureFeedUI(
     val adapter = applyClient<T>(recyclerView, swipeRefresh, id, it)
     mediaContainerAdapter = adapter
   } else collect(viewModel.extListFlow){
-   val extension = viewModel.extListFlow.value?.find { it.id == clientId && it.type.contains(ExtensionType.DATABASE)}
+   val extension = viewModel.extListFlow.value?.find { it.id == clientId && it.types.contains(ExtensionType.DATABASE)}
     val adapter = applyClient<T>(recyclerView, swipeRefresh, id, extension)
     mediaContainerAdapter = adapter
   }

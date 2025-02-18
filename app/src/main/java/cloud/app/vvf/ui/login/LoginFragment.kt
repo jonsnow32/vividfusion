@@ -21,6 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.MainActivityViewModel.Companion.applyContentInsets
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
+import cloud.app.vvf.VVFApplication.Companion.loginNotSupported
 import cloud.app.vvf.VVFApplication.Companion.noClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.user.LoginClient
@@ -31,7 +32,6 @@ import cloud.app.vvf.databinding.ItemInputBinding
 import cloud.app.vvf.extension.getExtension
 import cloud.app.vvf.extension.isClient
 import cloud.app.vvf.ui.exception.AppException
-import cloud.app.vvf.ui.extension.ExtensionViewModel.Companion.loginNotSupported
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.loadWith
 import cloud.app.vvf.utils.observe
@@ -60,7 +60,7 @@ class LoginFragment : Fragment() {
             }
 
         fun newInstance(error: AppException.LoginRequired) =
-            newInstance(error.extension.id, error.extension.name, error.extension.type[0].name)
+            newInstance(error.extension.id, error.extension.name, error.extension.metadata.types[0].name)
 
         const val USER_AGENT =
             "Mozilla/5.0 (Linux; Android 2; Jeff Bezos) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36"

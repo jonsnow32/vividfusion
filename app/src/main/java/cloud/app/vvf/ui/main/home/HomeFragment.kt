@@ -55,12 +55,12 @@ class HomeFragment : Fragment() {
 
     binding.selectedExtension.setOnClickListener { button ->
       val databaseExtensions =
-        viewModel.extListFlow.value?.filter { it.type.contains(ExtensionType.DATABASE) }
+        viewModel.extListFlow.value?.filter { it.types.contains(ExtensionType.DATABASE) }
       showDropdownMenu(button, databaseExtensions)
     }
 
     observe(viewModel.extListFlow) { list ->
-      val dbList = list?.filter { it.type.contains(ExtensionType.DATABASE) }
+      val dbList = list?.filter { it.types.contains(ExtensionType.DATABASE) }
       binding.selectedExtension.isGone = dbList.isNullOrEmpty()
     }
     observe(viewModel.dbExtFlow) {
@@ -92,8 +92,9 @@ class HomeFragment : Fragment() {
     popupWindow.elevation = 10f
 
     listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-      Toast.makeText(activity, "Selected: ${dropdownItems[position].text}", Toast.LENGTH_SHORT)
-        .show()
+//      Toast.makeText(activity, "Selected: ${dropdownItems[position].text}", Toast.LENGTH_SHORT)
+//        .show()
+      
       popupWindow.dismiss()
       viewModel.dbExtFlow.value = extensions[position].asType()
     }

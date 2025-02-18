@@ -11,18 +11,15 @@ import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.createOrUpdateExtension
-import cloud.app.vvf.datastore.helper.getExtension
+import cloud.app.vvf.datastore.helper.getCurrentDBExtension
+import cloud.app.vvf.datastore.helper.saveExtensions
+import cloud.app.vvf.extension.builtIn.BuiltInRepo
 import cloud.app.vvf.extension.plugger.FileChangeListener
 import cloud.app.vvf.extension.plugger.PackageChangeListener
-import cloud.app.vvf.extension.builtIn.BuiltInRepo
 import cloud.app.vvf.utils.catchWith
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +27,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.withContext
 
 class ExtensionLoader(
   private val context: Context,
@@ -81,7 +77,7 @@ class ExtensionLoader(
           val type =
             metadata.types?.map { type -> ExtensionType.entries.first { it.feature == type.feature } }
           if (type != null)
-            Extension(type, metadata, client)
+            Extension(metadata, client)
           else
             null
         }
@@ -89,31 +85,28 @@ class ExtensionLoader(
 
     extensionsFlow.value = extensions
 
-    val databaseExtension = extensions.firstOrNull {
-      it.metadata.types?.contains(ExtensionType.DATABASE) == true
+    val votingMap = mapOf<String, Int>(); //sort by voting api
+
+    dataStore.saveExtensions(extensions.map {
+      it.metadata.rating = votingMap[it.id] ?: 0
+      it.metadata
+    })
+
+    val currentDBMetadata = dataStore.getCurrentDBExtension();
+    if (currentDBMetadata == null) {
+      currentDBExtFlow.value = extensions.random().safeCast()
+    } else {
+      currentDBExtFlow.value =
+        extensions.firstOrNull { it.id == currentDBMetadata.className }?.safeCast()
     }
-    //currentDBExtFlow.value = databaseExtension as Extension<DatabaseClient>
-
-
-    val streamExtension = extensions.firstOrNull {
-      it.metadata.types?.contains(ExtensionType.STREAM) == true
-    }
-    currentStreamExtFlow.value = streamExtension as Extension<StreamClient>
-
 
     refresher.emit(false)
   }
 
-
-  private suspend fun List<Extension<*>>.saveExtensions() = coroutineScope {
-    map {
-      async {
-        val extension = dataStore.getExtension(it.id);
-        it.metadata.enabled = extension?.enabled ?: false
-        dataStore.createOrUpdateExtension(it.metadata)
-      }
-    }
+  private inline fun <reified T : BaseClient> Extension<*>.safeCast(): Extension<T>? {
+    return this as? Extension<T>
   }
+
 
   private suspend fun <T : BaseClient> ExtensionRepo<T>.getPlugins(): Flow<List<Pair<ExtensionMetadata, Lazy<Result<T>>>>> {
     val pluginFlow = getAllPlugins().catchWith(throwableFlow).map { list ->
@@ -126,16 +119,8 @@ class ExtensionLoader(
       }
     }
 
-    return pluginFlow.map { list ->
-      list.sortedBy { votingMap[it.first.className] }
-    }
+    return pluginFlow
   }
 
-  private val votingMap = mapOf<String, Int>(); //sort by voting api
 
-  private suspend fun isExtensionEnabled(type: ExtensionType, metadata: ExtensionMetadata) =
-    withContext(Dispatchers.IO) {
-      dataStore.getExtension(metadata.className)?.enabled
-        ?.let { metadata.copy(enabled = it) } ?: metadata
-    }
 }

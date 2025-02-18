@@ -22,7 +22,6 @@ import kotlinx.coroutines.plus
 import timber.log.Timber
 import javax.inject.Inject
 
-
 @HiltAndroidApp
 class VVFApplication : Application() {
   @Inject
@@ -120,9 +119,8 @@ class VVFApplication : Application() {
     fun Context.noClient() = SnackBarViewModel.Message(
       getString(R.string.error_no_client)
     )
-
-
+    fun Context.loginNotSupported(client: String) = SnackBarViewModel.Message(
+      getString(R.string.not_supported, getString(R.string.login), client)
+    )
   }
-
-
 }

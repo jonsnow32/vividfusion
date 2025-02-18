@@ -1,29 +1,22 @@
 package cloud.app.vvf.ui.extension
 
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
-import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.ExtensionOpenerActivity
 import cloud.app.vvf.ExtensionOpenerActivity.Companion.installExtension
 import cloud.app.vvf.R
 import cloud.app.vvf.base.CatchingViewModel
-import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
-import cloud.app.vvf.common.clients.streams.StreamClient
-import cloud.app.vvf.common.clients.subtitles.SubtitleClient
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.createOrUpdateExtension
 import cloud.app.vvf.datastore.helper.getExtension
+import cloud.app.vvf.datastore.helper.saveExtension
 import cloud.app.vvf.extension.ExtensionAssetResponse
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.extension.downloadUpdate
-import cloud.app.vvf.extension.getExtension
 import cloud.app.vvf.extension.getExtensionList
 import cloud.app.vvf.extension.getExtensions
 import cloud.app.vvf.extension.getUpdateFileUrl
@@ -31,15 +24,12 @@ import cloud.app.vvf.extension.installExtension
 import cloud.app.vvf.extension.uninstallExtension
 import cloud.app.vvf.extension.waitForResult
 import cloud.app.vvf.ui.extension.widget.InstallStatus
-import cloud.app.vvf.ui.main.ClientNotSupportedAdapter
-import cloud.app.vvf.ui.main.home.ClientLoadingAdapter
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -171,42 +161,8 @@ class ExtensionViewModel @Inject constructor(
   fun setExtensionEnabled(id: String, checked: Boolean) {
     val extension = dataStore.getExtension(id)
     extension?.enabled = checked
-    extension?.let { dataStore.createOrUpdateExtension(extension) }
+    extension?.let { dataStore.saveExtension(extension) }
     viewModelScope.launch { refresher.emit(true) }
-
   }
 
-  fun deleteExtension(extension: Extension<*>) {
-
-  }
-
-  companion object {
-    fun Context.noClient() = SnackBarViewModel.Message(
-      getString(R.string.error_no_client)
-    )
-
-    fun Context.searchNotSupported(client: String) = SnackBarViewModel.Message(
-      getString(R.string.not_supported, getString(R.string.search), client)
-    )
-
-    fun Context.loginNotSupported(client: String) = SnackBarViewModel.Message(
-      getString(R.string.not_supported, getString(R.string.login), client)
-    )
-
-    inline fun <reified T> RecyclerView.applyAdapter(
-      extension: BaseClient?,
-      name: Int,
-      adapter: RecyclerView.Adapter<out RecyclerView.ViewHolder>,
-      block: ((T?) -> Unit) = {}
-    ) {
-      block(extension as? T)
-      setAdapter(
-        if (extension == null)
-          ClientLoadingAdapter()
-        else if (extension !is T)
-          ClientNotSupportedAdapter(name, extension.toString())
-        else adapter
-      )
-    }
-  }
 }

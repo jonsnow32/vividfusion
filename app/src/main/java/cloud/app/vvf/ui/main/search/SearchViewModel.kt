@@ -26,8 +26,8 @@ class SearchViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
   extListFlow: MutableStateFlow<List<Extension<*>>?>,
-  val dataStore: DataStore,
-) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow) {
+  dataStore: DataStore,
+) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow, dataStore) {
 
   var query: String? = ""
   override suspend fun getTabs(client: BaseClient) =
