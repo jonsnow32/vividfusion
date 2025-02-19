@@ -235,17 +235,29 @@
     <item name="android:windowAnimationStyle">@style/RightMaterialDialogAnimation</item>
   </style>
 
-  <style name="RightMaterialDialogAnimation">
+  <style name="RightMaterialDialogAnimation" parent="MaterialAlertDialog.Material3">
+    <item name="android:windowFullscreen">true</item>
+    <!--<item name="android:background">@color/darkBackground</item>-->
+    <item name="android:textAllCaps">false</item>
+    <item name="colorControlActivated">?attr/colorPrimary</item>
+
+    <item name="android:windowMinWidthMajor">@dimen/abc_dialog_min_width_major</item>
+    <item name="android:windowMinWidthMinor">@dimen/abc_dialog_min_width_minor</item>
+    <item name="android:windowBackground">?backgroundColor</item>
     <item name="android:windowEnterAnimation">@anim/slide_in_right</item>
     <item name="android:windowExitAnimation">@anim/slide_out_right</item>
   </style>
 
 
-  <style name="BottomMaterialDialogTheme" parent="ThemeOverlay.Material3.Dialog">
-    <item name="android:windowNoTitle">true</item>
-    <item name="android:navigationBarColor">?attr/appBackground</item>
-    <item name="android:windowBackground">@android:color/transparent</item>
-    <item name="android:layout_gravity">start</item>
+  <style name="BottomMaterialDialogTheme" parent="MaterialAlertDialog.Material3">
+    <item name="android:windowFullscreen">true</item>
+    <!--<item name="android:background">@color/darkBackground</item>-->
+    <item name="android:textAllCaps">false</item>
+    <item name="colorControlActivated">?attr/colorPrimary</item>
+
+    <item name="android:windowMinWidthMajor">@dimen/abc_dialog_min_width_major</item>
+    <item name="android:windowMinWidthMinor">@dimen/abc_dialog_min_width_minor</item>
+    <item name="android:windowBackground">?backgroundColor</item>
     <item name="android:windowAnimationStyle">@style/BottomMaterialDialogAnimation</item>
   </style>
 

@@ -26,6 +26,7 @@ import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.scrollTo
 import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -69,10 +70,12 @@ class HomeFragment : Fragment() {
   }
 
   private fun showDropdownMenu(view: View, extensions: List<Extension<*>>?) {
+
     val activity = activity ?: return
+    val selectedExtension = viewModel.dbExtFlow.value ?: return
 
     val dropdownItems = extensions?.map {
-      DropdownItem(it.icon, it.name, it.id)
+      DropdownItem(it.icon, it.name, it.id, it.id == selectedExtension.id)
     } ?: return
 
     val layoutInflater = LayoutInflater.from(activity)
@@ -81,7 +84,6 @@ class HomeFragment : Fragment() {
 
     val adapter = ExtensionMenuAdapter(activity, dropdownItems)
     listView.adapter = adapter
-
 
     val popupWindow = PopupWindow(
       popupView,
@@ -94,7 +96,7 @@ class HomeFragment : Fragment() {
     listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
 //      Toast.makeText(activity, "Selected: ${dropdownItems[position].text}", Toast.LENGTH_SHORT)
 //        .show()
-      
+
       popupWindow.dismiss()
       viewModel.dbExtFlow.value = extensions[position].asType()
     }

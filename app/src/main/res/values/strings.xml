@@ -217,6 +217,8 @@
   <string name="extension_uninstalled_fail">Can\'t delete extension</string>
   <string name="enter_api_key">Enter Api key</string>
   <string name="api_key_required">Api key required</string>
+    <string name="vote">Vote</string>
+  <string name="select_type_you_vote">Select the type of extension you want to vote for.</string>
 
   <string-array name="themes">
     <item>Light</item>

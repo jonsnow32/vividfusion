@@ -10,6 +10,7 @@ import cloud.app.vvf.ExtensionOpenerActivity.Companion.installExtension
 import cloud.app.vvf.R
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
+import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.datastore.helper.getExtension
@@ -23,6 +24,7 @@ import cloud.app.vvf.extension.getUpdateFileUrl
 import cloud.app.vvf.extension.installExtension
 import cloud.app.vvf.extension.uninstallExtension
 import cloud.app.vvf.extension.waitForResult
+import cloud.app.vvf.network.api.voting.VotingService
 import cloud.app.vvf.ui.extension.widget.InstallStatus
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.viewmodels.SnackBarViewModel
@@ -32,6 +34,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
 import java.io.File
 import javax.inject.Inject
@@ -45,7 +49,8 @@ class ExtensionViewModel @Inject constructor(
   val refresher: MutableSharedFlow<Boolean>,
   val okHttpClient: OkHttpClient,
   val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
-  val dataStore: DataStore
+  val dataStore: DataStore,
+  val votingService: VotingService
 ) : CatchingViewModel(throwableFlow) {
 
   fun refresh() {
@@ -54,7 +59,7 @@ class ExtensionViewModel @Inject constructor(
     }
   }
 
-   fun getExtensionsByType(type: ExtensionType) = extensionListFlow.getExtensions(type)
+  fun getExtensionsByType(type: ExtensionType) = extensionListFlow.getExtensions(type)
 
   suspend fun install(context: FragmentActivity, file: File, installAsApk: Boolean): Boolean {
     val result = installExtension(context, file, installAsApk).getOrElse {
@@ -164,5 +169,24 @@ class ExtensionViewModel @Inject constructor(
     extension?.let { dataStore.saveExtension(extension) }
     viewModelScope.launch { refresher.emit(true) }
   }
+  private val voteMutex = Mutex()
 
+  fun vote(extensionMetadata: ExtensionMetadata, type: ExtensionType) {
+    viewModelScope.launch(Dispatchers.IO) {
+      val key = "${type.name}/${extensionMetadata.className}"
+      voteMutex.withLock {
+        val isVoted = dataStore.getKey<Boolean>(key) == true
+        if (!isVoted) {
+          val response = votingService.vote(type.name, extensionMetadata.className).execute()
+          if (response.isSuccessful) {
+            response.body()?.let {
+              dataStore.setKey(key, true)
+            }
+          }
+        } else {
+          messageFlow.emit(SnackBarViewModel.Message("You have already voted for this extension"))
+        }
+      }
+    }
+  }
 }

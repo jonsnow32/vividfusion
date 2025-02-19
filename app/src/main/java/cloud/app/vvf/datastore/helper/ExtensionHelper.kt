@@ -11,7 +11,7 @@ fun DataStore.getExtension(className: String): ExtensionMetadata? {
 }
 
 fun DataStore.getExtensions(): List<ExtensionMetadata>? {
-  return getKey<List<ExtensionMetadata>>("$ExtensionFolder/", null)
+  return getKeys<ExtensionMetadata>("$ExtensionFolder/", null)
 }
 
 fun DataStore.saveExtensions(extensions: List<ExtensionMetadata>) {
@@ -23,10 +23,6 @@ fun DataStore.saveExtensions(extensions: List<ExtensionMetadata>) {
 fun DataStore.saveExtension(extension: ExtensionMetadata) {
   extension.lastUpdated = System.currentTimeMillis()
   return setKey("$ExtensionFolder/${extension.className}", extension)
-}
-
-fun DataStore.removeExtension(className: String) {
-  return removeKey("$ExtensionFolder/${className}")
 }
 
 fun DataStore.getCurrentDBExtension(): ExtensionMetadata? {

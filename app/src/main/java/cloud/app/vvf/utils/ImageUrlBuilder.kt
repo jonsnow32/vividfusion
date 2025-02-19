@@ -7,7 +7,6 @@ object ImageUrlBuilder {
   const val BASE_URL = "https://image.tmdb.org/t/p"
 
   fun getUrl(path: String, width: Int): String {
-    return ""
     if (path.startsWith("http://") || path.startsWith("https://")) {
       return path
     }

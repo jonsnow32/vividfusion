@@ -47,6 +47,8 @@ import cloud.app.vvf.common.settings.SettingTextInput
 import cloud.app.vvf.extension.isClient
 import cloud.app.vvf.ui.login.LoginUserBottomSheet.Companion.bind
 import cloud.app.vvf.ui.login.LoginUserViewModel
+import cloud.app.vvf.ui.widget.dialog.SelectionDialog
+import cloud.app.vvf.utils.loadInto
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.launch
 
@@ -83,7 +85,7 @@ class ExtensionSettingFragment : Fragment() {
     setupTransition(view)
     applyInsets {
       binding.appBarLayout.setPadding(0, it.top, 0, 0)
-      binding.nestedScrollView.setPadding(0, 0, 0, it.bottom)
+      binding.nestedScrollView.setPadding(0, it.top, 0, it.bottom)
     }
 
     if (context?.isLayout(TV or EMULATOR) == true) {
@@ -124,21 +126,25 @@ class ExtensionSettingFragment : Fragment() {
       }
       setOnMenuItemClickListener {
         when (it.itemId) {
-          R.id.menu_refresh -> {
-            viewModel.refresh()
+          R.id.menu_like -> {
+            val listItems = extensionMetadata.types.map { it.name }
+            SelectionDialog.single(
+              listItems,
+              -1,
+              getString(R.string.select_type_you_vote),
+              false,
+              {}) { itemId ->
+              viewModel.vote(extensionMetadata, extensionMetadata.types.get(itemId))
+            }.show(parentFragmentManager, null)
             true
           }
-
           else -> false
         }
       }
     }
 
 
-    extensionMetadata.iconUrl?.toImageHolder()
-      .loadWith(binding.extensionIcon, R.drawable.ic_extension_24dp) {
-        binding.extensionIcon.setImageDrawable(it)
-      }
+    extensionMetadata.iconUrl?.toImageHolder().loadWith(binding.extensionIcon)
 
     binding.extensionDetails.text = getString(
       R.string.extension_title,

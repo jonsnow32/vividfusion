@@ -1,5 +1,6 @@
 package cloud.app.vvf.ui.widget.dialog
 
+import android.app.Dialog
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -17,6 +18,12 @@ class ExitConfirmDialog: DialogFragment(){
   @Inject
   lateinit var sharedPreferences: SharedPreferences
   var binding by autoCleared<DialogConfirmExitBinding>()
+
+  override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+    // Create the dialog with the specified theme
+    return Dialog(requireContext(), R.style.AlertDialogCustom)
+  }
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {

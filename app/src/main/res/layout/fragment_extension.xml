@@ -61,7 +61,7 @@
           android:orientation="horizontal">
           <ImageView
             android:id="@+id/extensionIcon"
-            android:layout_width="48dp"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
             android:contentDescription="@string/extensions"
             app:srcCompat="@drawable/ic_extension_24dp" />
