@@ -35,7 +35,7 @@
         <androidx.constraintlayout.helper.widget.Flow
           android:layout_width="0dp"
           android:layout_height="wrap_content"
-          app:constraint_referenced_ids="buttonMovieStreamingSearch,buttonBookmark,buttonMovieDownload,buttonShowTrailer,buttonShowSimilar,buttonShowShare,buttonShowComments,buttonShowShortcut,buttonShowWebSearch,buttonShowMetacritic"
+          app:constraint_referenced_ids="buttonMovieStreamingSearch,buttonBookmark,buttonShowTrailer,buttonShowShare,buttonShowComments,buttonShowWebSearch"
           app:flow_horizontalBias="0"
           app:flow_horizontalGap="4dp"
           app:flow_horizontalStyle="packed"
