@@ -4,10 +4,13 @@ import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.helper.BookmarkItem
 import cloud.app.vvf.datastore.helper.addFavoritesData
+import cloud.app.vvf.datastore.helper.findBookmark
 import cloud.app.vvf.datastore.helper.getFavoritesData
 import cloud.app.vvf.datastore.helper.removeFavoritesData
 import cloud.app.vvf.extension.run
@@ -22,21 +25,23 @@ import javax.inject.Inject
 @HiltViewModel
 class ItemOptionViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
   val dataStore: DataStore,
 ) : CatchingViewModel(throwableFlow) {
 
   var loading = MutableSharedFlow<Boolean>();
   var detailItem = MutableStateFlow<AVPMediaItem?>(null)
   val favoriteStatus = MutableStateFlow(false)
+  val bookmarkStatus = MutableStateFlow<BookmarkItem?>(null)
   val knowFors = MutableStateFlow<MediaItemsContainer.Category?>(null)
-
-  fun getItemDetails(shortItem: AVPMediaItem) {
+  var extension: MutableStateFlow<Extension<*>?> = MutableStateFlow(null)
+  fun getItemDetails(shortItem: AVPMediaItem, clientId: String) {
     viewModelScope.launch(Dispatchers.IO) {
       viewModelScope.launch(Dispatchers.IO) {
-        databaseExtensionFlow.collect { extension ->
+        extensionFlow.collect { extensions ->
+          extension.value = extensions?.find { it.id == clientId } ?: return@collect
           loading.emit(true)
-          val showDetail = extension?.run(throwableFlow) {
+          val showDetail = extension.value?.run<DatabaseClient, AVPMediaItem?>(throwableFlow) {
             getMediaDetail(shortItem)
           } ?: shortItem
           detailItem.value = showDetail
@@ -82,6 +87,7 @@ class ItemOptionViewModel @Inject constructor(
             }
           }
           favoriteStatus.value = favoriteDeferred.await()
+          bookmarkStatus.value = dataStore.findBookmark(shortItem)
 
           loading.emit(false)
         }
@@ -101,12 +107,10 @@ class ItemOptionViewModel @Inject constructor(
 
   fun getKnowFor(clientId: String, item: AVPMediaItem.ActorItem) {
     viewModelScope.launch {
-      databaseExtensionFlow.collect {
-        knowFors.value =
-          MediaItemsContainer.Category(
-            title = item.title,
-            more = it?.run(throwableFlow) { getKnowFor(item) })
-      }
+      knowFors.value =
+        MediaItemsContainer.Category(
+          title = item.title,
+          more = extension.value?.run<DatabaseClient, PagedData<AVPMediaItem>>(throwableFlow) { getKnowFor(item) })
     }
   }
 

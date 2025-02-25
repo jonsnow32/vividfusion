@@ -26,7 +26,9 @@ open class DockingDialog : DialogFragment() {
       R.style.RightMaterialDialogTheme
     else
       R.style.BottomMaterialDialogTheme
-    return Dialog(requireContext(), dialogStyle)
+    return Dialog(requireContext(), dialogStyle).apply {
+      setCanceledOnTouchOutside(true)
+    }
   }
 
   override fun onStart() {

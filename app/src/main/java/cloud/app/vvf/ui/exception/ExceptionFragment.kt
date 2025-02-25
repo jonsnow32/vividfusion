@@ -20,7 +20,6 @@ import cloud.app.vvf.extension.ExtensionLoadingException
 import cloud.app.vvf.extension.RequiredExtensionsException
 import cloud.app.vvf.utils.ContinuationCallback.Companion.await
 import cloud.app.vvf.utils.autoCleared
-import cloud.app.vvf.utils.getSerial
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.onAppBarChangeListener
 import cloud.app.vvf.utils.putSerialized
@@ -116,15 +115,15 @@ class ExceptionFragment : Fragment() {
       is AppException -> throwable.run {
         when (this) {
           is AppException.Unauthorized ->
-            getString(R.string.unauthorized, extension.name)
+            getString(R.string.unauthorized, clientID.name)
 
           is AppException.LoginRequired ->
-            getString(R.string.login_required, extension.name)
+            getString(R.string.login_required, clientID.name)
 
           is AppException.NotSupported ->
-            getString(R.string.is_not_supported, operation, extension.name)
+            getString(R.string.is_not_supported, operation, clientID.name)
 
-          is AppException.Other -> "${extension.name} : ${getTitle(cause)}"
+          is AppException.Other -> "${clientID.name} : ${getTitle(cause)}"
         }
       }
 
@@ -138,10 +137,10 @@ class ExceptionFragment : Fragment() {
           """.trimIndent()
 
       is AppException -> """
-          Extension : ${throwable.extension.name}
-          Id : ${throwable.extension.name}
-          Type : ${throwable.extension.metadata.types?.joinToString(prefix = "[\"", postfix = "\"]", separator = "\", \"") { it.feature } ?: "[]"}
-          Version : ${throwable.extension.metadata.version}
+          Extension : ${throwable.clientID.name}
+          Id : ${throwable.clientID.name}
+          Type : ${throwable.clientID.metadata.types?.joinToString(prefix = "[\"", postfix = "\"]", separator = "\", \"") { it.feature } ?: "[]"}
+          Version : ${throwable.clientID.metadata.version}
           App Version : ${appVersion()}
           ${getDetails(throwable.cause)}
           """.trimIndent()

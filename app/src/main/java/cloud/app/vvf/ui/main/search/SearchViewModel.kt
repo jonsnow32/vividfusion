@@ -24,10 +24,9 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-  extListFlow: MutableStateFlow<List<Extension<*>>?>,
+  extListFlow: MutableStateFlow<List<Extension<*>>>,
   dataStore: DataStore,
-) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow, dataStore) {
+) : FeedViewModel(throwableFlow,  extListFlow, dataStore) {
 
   var query: String? = ""
   override suspend fun getTabs(client: BaseClient) =
@@ -50,7 +49,7 @@ class SearchViewModel @Inject constructor(
   }
 
   fun saveHistory() {
-    query?.let {
+    query?.takeIf { it.isNotBlank() }?.let {
       dataStore.saveSearchHistory(SearchItem(it, true, System.currentTimeMillis()))
     }
   }

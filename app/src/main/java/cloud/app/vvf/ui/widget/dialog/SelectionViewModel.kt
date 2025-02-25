@@ -12,7 +12,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SelectionViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
   val dataStore: DataStore,
 ) : CatchingViewModel(throwableFlow) {
 }

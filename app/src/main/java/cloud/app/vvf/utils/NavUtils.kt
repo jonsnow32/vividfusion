@@ -9,9 +9,12 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.extension.getExtension
 import cloud.app.vvf.ui.detail.movie.MovieFragment
 import cloud.app.vvf.ui.detail.show.ShowFragment
 import cloud.app.vvf.ui.detail.show.season.SeasonFragment
+import cloud.app.vvf.ui.extension.ExtensionViewModel
+import cloud.app.vvf.ui.setting.ExtensionSettingFragment
 import cloud.app.vvf.ui.setting.ManageExtensionsFragment
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
@@ -48,9 +51,14 @@ fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
   }
   when (uri.host) {
     "extensions" -> {
-      this.navigate(ManageExtensionsFragment())
+      val path = uri.pathSegments
+      val id = path[0]
+      if(id.isNullOrEmpty())
+        this.navigate(ManageExtensionsFragment())
+      else {
+        this.navigate(ExtensionSettingFragment.newInstance(id, ""))
+      }
     }
-
     else -> {
       createSnack(R.string.something_went_wrong)
     }

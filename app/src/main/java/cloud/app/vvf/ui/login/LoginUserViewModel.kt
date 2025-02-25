@@ -23,8 +23,7 @@ import javax.inject.Inject
 class LoginUserViewModel @Inject constructor(
   userDao: DataStore,
   throwableFlow: MutableSharedFlow<Throwable>,
-  val extensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-  val extensionLoader: ExtensionLoader,
+  val extensionFlow: MutableStateFlow<List<Extension<*>?>>,
 ) : CatchingViewModel(throwableFlow) {
 
     val currentExtension = MutableStateFlow<Extension<*>?>(null)

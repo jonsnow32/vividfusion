@@ -107,7 +107,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
         SettingTextInput(
           "TMDB API Key", PREF_TMDB_API_KEY,
           "Enter your TMDB API key to access movie and TV show data from The Movie Database.",
-          defaultValue = null
+          defaultValue = "4ef60b9d635f533695cbcaccb6603a57"
         ),
         SettingTextInput(
           "TVDB API Key", PREF_TVDB_API_KEY,
@@ -190,7 +190,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
     this.prefSettings = prefSettings
     tmdb = AppTmdb(
       httpHelper.okHttpClient,
-      prefSettings.getString(PREF_TMDB_API_KEY) ?: ""
+      prefSettings.getString(PREF_TMDB_API_KEY) ?: "4ef60b9d635f533695cbcaccb6603a57"
     )
     tvdb = AppTheTvdb(
       httpHelper.okHttpClient,

@@ -7,34 +7,34 @@ sealed class AppException(
     override val cause: Throwable
 ) : Exception() {
 
-    abstract val extension: Extension<*>
+    abstract val clientID: Extension<*>
 
     open class LoginRequired(
         override val cause: Throwable,
-        override val extension: Extension<*>
+        override val clientID: Extension<*>
     ) : AppException(cause)
 
     data class Unauthorized(
-        override val cause: Throwable,
-        override val extension: Extension<*>,
-        val userId: String
-    ) : LoginRequired(cause, extension)
+      override val cause: Throwable,
+      override val clientID: Extension<*>,
+      val userId: String
+    ) : LoginRequired(cause, clientID)
 
     data class NotSupported(
-        override val cause: Throwable,
-        override val extension: Extension<*>,
-        val operation: String
+      override val cause: Throwable,
+      override val clientID: Extension<*>,
+      val operation: String
     ) : AppException(cause) {
         override val message: String
-            get() = "$operation is not supported in ${extension.name}"
+            get() = "$operation is not supported in ${clientID.name}"
     }
 
     data class Other(
         override val cause: Throwable,
-        override val extension: Extension<*>
+        override val clientID: Extension<*>
     ) : AppException(cause) {
         override val message: String
-            get() = "${cause.message} error in ${extension.name}"
+            get() = "${cause.message} error in ${clientID.name}"
     }
 
     companion object {

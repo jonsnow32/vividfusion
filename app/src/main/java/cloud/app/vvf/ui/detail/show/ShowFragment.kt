@@ -145,7 +145,7 @@ class ShowFragment : Fragment() {
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
       setupActorAdapter(mediaItem)
-      viewModel.loadRecommended()
+      viewModel.loadRecommended(clientId)
       setupTrailerAdapter(mediaItem)
     }
 
@@ -253,7 +253,7 @@ class ShowFragment : Fragment() {
   }
 
   private fun loadInitialData() {
-    viewModel.getItemDetails(shortItem)
+    viewModel.getItemDetails(shortItem, clientId)
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {

@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.PopupWindow
-import android.widget.Toast
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -26,7 +25,6 @@ import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.scrollTo
 import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
@@ -61,10 +59,11 @@ class HomeFragment : Fragment() {
     }
 
     observe(viewModel.extListFlow) { list ->
-      val dbList = list?.filter { it.types.contains(ExtensionType.DATABASE) }
+      val dbList = list.filter { it.types.contains(ExtensionType.DATABASE) }
       binding.selectedExtension.isGone = dbList.isNullOrEmpty()
     }
-    observe(viewModel.dbExtFlow) {
+
+    observe(viewModel.selectedExtension) {
       binding.selectedExtension.loadWith(it?.icon?.toImageHolder())
     }
   }
@@ -72,7 +71,7 @@ class HomeFragment : Fragment() {
   private fun showDropdownMenu(view: View, extensions: List<Extension<*>>?) {
 
     val activity = activity ?: return
-    val selectedExtension = viewModel.dbExtFlow.value ?: return
+    val selectedExtension = viewModel.selectedExtension.value ?: return
 
     val dropdownItems = extensions?.map {
       DropdownItem(it.icon, it.name, it.id, it.id == selectedExtension.id)
@@ -98,7 +97,8 @@ class HomeFragment : Fragment() {
 //        .show()
 
       popupWindow.dismiss()
-      viewModel.dbExtFlow.value = extensions[position].asType()
+      viewModel.selectDbExtension(extensions[position])
+
     }
 
     popupWindow.showAsDropDown(view)

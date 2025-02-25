@@ -175,7 +175,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
 
   private fun loadInitialData() {
     binding.episodeHolder.isGone = true;
-    viewModel.getItemDetails(shortItem)
+    viewModel.getItemDetails(shortItem, clientId)
   }
 
   fun bind(item: AVPMediaItem?) {

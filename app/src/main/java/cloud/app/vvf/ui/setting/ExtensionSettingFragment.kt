@@ -19,9 +19,9 @@ import androidx.preference.SwitchPreferenceCompat
 import cloud.app.vvf.VVFApplication.Companion.noClient
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
+import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.databinding.FragmentExtensionBinding
 import cloud.app.vvf.extension.getExtension
-import cloud.app.vvf.extension.run
 import cloud.app.vvf.ui.extension.ExtensionViewModel
 import cloud.app.vvf.utils.EMULATOR
 import cloud.app.vvf.utils.MaterialListPreference
@@ -36,7 +36,6 @@ import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.user.LoginClient
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
-import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingCategory
 import cloud.app.vvf.common.settings.SettingItem
@@ -45,10 +44,10 @@ import cloud.app.vvf.common.settings.SettingMultipleChoice
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.common.settings.SettingTextInput
 import cloud.app.vvf.extension.isClient
+import cloud.app.vvf.extension.runClient
 import cloud.app.vvf.ui.login.LoginUserBottomSheet.Companion.bind
 import cloud.app.vvf.ui.login.LoginUserViewModel
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
-import cloud.app.vvf.utils.loadInto
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.coroutines.launch
 
@@ -192,10 +191,8 @@ class ExtensionSettingFragment : Fragment() {
 
       val viewModel by activityViewModels<ExtensionViewModel>()
       viewModel.apply {
-        val client = viewModel.extensionListFlow.getExtension(extensionId)
-
         viewModelScope.launch {
-          client?.run(throwableFlow) {
+          viewModel.extensionListFlow.value.runClient<BaseClient, Unit>(extensionId,throwableFlow) {
             defaultSettings.forEach { setting ->
               setting.addPreferenceTo(screen)
             }

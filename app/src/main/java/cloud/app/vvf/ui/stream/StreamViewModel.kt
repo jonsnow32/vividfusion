@@ -20,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class StreamViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val currentStreamExtensionFlow: MutableStateFlow<Extension<StreamClient>?>,
+  val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
 ) :
   CatchingViewModel(throwableFlow) {
   private val _streams = MutableStateFlow<List<StreamData>>(emptyList())
@@ -31,26 +31,27 @@ class StreamViewModel @Inject constructor(
 
   var mediaItem: AVPMediaItem? = null
 
+  var extension: MutableStateFlow<StreamClient?> = MutableStateFlow(null)
   override fun onInitialize() {
     viewModelScope.launch(Dispatchers.IO) {
-      currentStreamExtensionFlow.collect { extension ->
-        if (extension == null) {
-          throwableFlow.emit(Throwable("No stream extension is selected"))
-        } else
-          loadStream(extension, mediaItem)
+      extensionFlow.collect { extensions ->
+        loadStream(extensions, mediaItem)
       }
     }
   }
 
-  fun loadStream(extension: Extension<StreamClient>, avpMediaItem: AVPMediaItem?) {
+  fun loadStream(extensions: List<Extension<*>>?, avpMediaItem: AVPMediaItem?) {
     val item = avpMediaItem ?: return
-    viewModelScope.launch(Dispatchers.IO) {
-      extension.run(throwableFlow) {
-        loadLinks(
-          item,
-          subtitleCallback = ::onSubtitleReceived,
-          callback = ::onLinkReceived
-        )
+
+    extensions?.forEach {
+      viewModelScope.launch(Dispatchers.IO) {
+        it.run<StreamClient, Boolean>(throwableFlow) {
+          loadLinks(
+            item,
+            subtitleCallback = ::onSubtitleReceived,
+            callback = ::onLinkReceived
+          )
+        }
       }
     }
   }

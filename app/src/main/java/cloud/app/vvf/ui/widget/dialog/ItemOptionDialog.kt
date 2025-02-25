@@ -18,6 +18,7 @@ import cloud.app.vvf.databinding.DialogMediaItemBinding
 import cloud.app.vvf.databinding.ItemDialogButtonBinding
 import cloud.app.vvf.databinding.ItemDialogButtonLoadingBinding
 import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.datastore.helper.BookmarkItem.Companion.getStringIds
 import cloud.app.vvf.ui.detail.show.ShowFragment
 import cloud.app.vvf.ui.main.browse.BrowseFragment
 import cloud.app.vvf.ui.main.browse.BrowseViewModel
@@ -61,16 +62,18 @@ class ItemOptionDialog : DockingDialog() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     binding.itemContainer.run {
       item.backdrop.loadWith(binding.imageView)
-      viewModel.getItemDetails(item)
+      viewModel.getItemDetails(item, clientId)
     }
     binding.recyclerView.adapter =
       ConcatAdapter(ActionAdapter(getActions(item)), LoadingAdapter())
 
-    observe(viewModel.detailItem) {
-      if (it != null) {
-        binding.recyclerView.adapter = ActionAdapter(getActions(it))
+
+    observe(viewModel.loading) {
+      if (!it && viewModel.detailItem.value != null) {
+        binding.recyclerView.adapter = ActionAdapter(getActions(viewModel.detailItem.value!!))
       }
     }
+
     observe(viewModel.knowFors) {
       if (it != null) {
         val browseViewModel by activityViewModels<BrowseViewModel>()
@@ -82,7 +85,8 @@ class ItemOptionDialog : DockingDialog() {
   }
 
   fun getBookmarkAction(item: AVPMediaItem) : ItemAction {
-    return ItemAction.Resource(R.drawable.ic_bookmark_outline, R.string.bookmarks) {
+    val bookmarkItem = viewModel.bookmarkStatus.value;
+    return ItemAction.Resource(if(bookmarkItem == null) R.drawable.ic_bookmark_outline else R.drawable.ic_bookmark_filled, getStringIds(bookmarkItem)) {
         val mainViewModel by activityViewModels<MainActivityViewModel>()
         val status = mainViewModel.getBookmark(item)
         val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
@@ -234,7 +238,16 @@ class ItemOptionDialog : DockingDialog() {
 
   class LoadingAdapter : RecyclerView.Adapter<LoadingAdapter.ViewHolder>() {
     inner class ViewHolder(val binding: ItemDialogButtonLoadingBinding) :
-      RecyclerView.ViewHolder(binding.root)
+      RecyclerView.ViewHolder(binding.root) {
+
+      fun bind() {
+        // Simulate a delay effect for the loading state
+        binding.progressBar.visibility = View.GONE // Initially hidden
+        binding.root.postDelayed({
+          binding.progressBar.visibility = View.VISIBLE // Show after delay
+        }, 500) // 500ms delay, adjust as needed
+      }
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
       val binding = ItemDialogButtonLoadingBinding.inflate(
@@ -244,6 +257,9 @@ class ItemOptionDialog : DockingDialog() {
     }
 
     override fun getItemCount() = 1
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {}
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+      holder.bind() // Trigger the delay effect on bind
+    }
   }
 }

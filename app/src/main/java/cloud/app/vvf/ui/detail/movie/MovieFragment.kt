@@ -154,7 +154,7 @@ class MovieFragment : Fragment() {
 
 
   private fun loadInitialData() {
-    viewModel.getItemDetails(shortItem)
+    viewModel.getItemDetails(shortItem, clientId)
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {

@@ -29,16 +29,15 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-  extListFlow: MutableStateFlow<List<Extension<*>>?>,
+  extListFlow: MutableStateFlow<List<Extension<*>>>,
   dataStore: DataStore,
-) : FeedViewModel(throwableFlow, dbExtFlow, extListFlow, dataStore) {
+) : FeedViewModel(throwableFlow,  extListFlow, dataStore) {
 
-  override fun onInitialize() {
-    viewModelScope.launch {
-      refresh(resetTab = true)
-    }
-  }
+//  override fun onInitialize() {
+//    viewModelScope.launch {
+//      refresh(resetTab = true)
+//    }
+//  }
 
   override suspend fun getTabs(client: BaseClient): List<Tab> {
     return withContext(Dispatchers.IO) {
@@ -72,6 +71,10 @@ class LibraryViewModel @Inject constructor(
 
       else -> null
     }
+  }
+
+  fun refreshDataStore() {
+    refresh(false)
   }
 }
 

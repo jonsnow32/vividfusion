@@ -39,9 +39,9 @@ class LoginUserBottomSheet : DockingDialog() {
             dismiss()
             //requireActivity().navigate(DownloadingFragment())
         }
-        val extension = viewModel.extensionFlow.value ?: return
-        viewModel.currentExtension.value =  extension
-        binding.userContainer.bind(this, ::dismiss)
+//        val extension = viewModel.extensionFlow.value ?: return
+//        viewModel.currentExtension.value =  extension
+//        binding.userContainer.bind(this, ::dismiss)
     }
 
     companion object {

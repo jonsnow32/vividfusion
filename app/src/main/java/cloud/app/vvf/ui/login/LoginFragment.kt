@@ -60,7 +60,7 @@ class LoginFragment : Fragment() {
             }
 
         fun newInstance(error: AppException.LoginRequired) =
-            newInstance(error.extension.id, error.extension.name, error.extension.metadata.types[0].name)
+            newInstance(error.clientID.id, error.clientID.name, error.clientID.metadata.types[0].name)
 
         const val USER_AGENT =
             "Mozilla/5.0 (Linux; Android 2; Jeff Bezos) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36"

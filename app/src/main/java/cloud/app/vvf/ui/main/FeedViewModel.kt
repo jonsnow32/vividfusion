@@ -10,25 +10,48 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.Tab
 import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.helper.getCurrentDBExtension
 import cloud.app.vvf.datastore.helper.setCurrentDBExtension
 import cloud.app.vvf.extension.run
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import timber.log.Timber
 
 abstract class FeedViewModel(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val dbExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-  val extListFlow: MutableStateFlow<List<Extension<*>>?>,
+  val extListFlow: MutableStateFlow<List<Extension<*>>>,
   val dataStore: DataStore
 ) : CatchingViewModel(throwableFlow) {
 
+  var selectedExtension: MutableStateFlow<Extension<*>?> = MutableStateFlow(null)
+
   override fun onInitialize() {
-    dbExtFlow
-      .onEach { extension ->
-        extension?.let { dataStore.setCurrentDBExtension(it.metadata) }
-        refresh(resetTab = true)
+    extListFlow
+      .onEach { extensions ->
+        if(extensions.isNotEmpty()) {
+          val currentExtension = dataStore.getCurrentDBExtension()
+          if(currentExtension != null) {
+            val extension = extensions.find { currentExtension.className == it.id } ?: return@onEach
+            selectedExtension.value = extension
+            //extension?.let { dataStore.setCurrentDBExtension(it.metadata) }
+            refresh(resetTab = true)
+          } else {
+            val extension = extensions.random()
+            selectedExtension.value = extension
+            //extension?.let { dataStore.setCurrentDBExtension(it.metadata) }
+            refresh(resetTab = true)
+          }
+        }
       }
       .launchIn(viewModelScope)
+    viewModelScope.launch {
+      selectedExtension.collectLatest { extension ->
+        Timber.i(extension?.name)
+        if(extension != null)
+          refresh(resetTab = true)
+      }
+    }
+
   }
 
   abstract suspend fun getTabs(client: BaseClient): List<Tab>?
@@ -44,13 +67,14 @@ abstract class FeedViewModel(
 
   private suspend fun loadTabs(extension: Extension<*>) {
     useLoading {
-      tabs.value = extension.run(throwableFlow) { getTabs(this) } ?: emptyList()
+      tabs.value =
+        extension.run<DatabaseClient, List<Tab>?>(throwableFlow) { getTabs(this) } ?: emptyList()
       tab = tabs.value.find { it.id == tab?.id } ?: tabs.value.firstOrNull()
     }
   }
 
   private suspend fun loadFeed(extension: Extension<*>) {
-    extension.run(throwableFlow) {
+    extension.run<DatabaseClient, Unit>(throwableFlow) {
       feed.value = getFeed(this)?.cachedIn(viewModelScope)?.first()
     }
   }
@@ -60,11 +84,11 @@ abstract class FeedViewModel(
   fun refresh(resetTab: Boolean = false) {
     job?.cancel()
     job = viewModelScope.launch(Dispatchers.IO) {
-      if (resetTab) loadTabs(dbExtFlow.value ?: return@launch)
-      loadFeed(dbExtFlow.value ?: return@launch)
+      feed.value = null
+      if (resetTab) loadTabs(selectedExtension.value ?: return@launch)
+      loadFeed(selectedExtension.value ?: return@launch)
     }
   }
-
   private suspend inline fun useLoading(block: () -> Unit) {
     loading.emit(true)
     block()

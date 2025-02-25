@@ -4,14 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
-import cloud.app.vvf.common.clients.streams.StreamClient
-import cloud.app.vvf.common.clients.subtitles.SubtitleClient
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.getCurrentDBExtension
 import cloud.app.vvf.datastore.helper.saveExtensions
 import cloud.app.vvf.extension.builtIn.BuiltInRepo
 import cloud.app.vvf.extension.plugger.FileChangeListener
@@ -35,10 +31,6 @@ class ExtensionLoader(
   private val throwableFlow: MutableSharedFlow<Throwable>,
   private val sharedPreferences: SharedPreferences,
 
-  private val currentDBExtFlow: MutableStateFlow<Extension<DatabaseClient>?>,
-  private val currentStreamExtFlow: MutableStateFlow<Extension<StreamClient>?>,
-  private val currentSubtitleExtFlow: MutableStateFlow<Extension<SubtitleClient>?>,
-
   private val extensionsFlow: MutableStateFlow<List<Extension<*>>>,
   private val refresher: MutableSharedFlow<Boolean>,
 
@@ -57,29 +49,24 @@ class ExtensionLoader(
 
   fun initialize() {
     scope.launch {
-      getAllPlugins(scope)
+      load(scope)
     }
 
     // Refresh Extensions
     scope.launch {
       refresher.collect {
         if (it) launch {
-          getAllPlugins(scope)
+          load(scope)
         }
       }
     }
   }
 
-  private suspend fun getAllPlugins(scope: CoroutineScope) {
+  private suspend fun load(scope: CoroutineScope) {
     val extensions = extensionRepo.getPlugins()
       .map { list ->
-        list.mapNotNull { (metadata, client) ->
-          val type =
-            metadata.types?.map { type -> ExtensionType.entries.first { it.feature == type.feature } }
-          if (type != null)
-            Extension(metadata, client)
-          else
-            null
+        list.map { (metadata, client) ->
+          Extension(metadata, client)
         }
       }.first()
 
@@ -92,19 +79,7 @@ class ExtensionLoader(
       it.metadata
     })
 
-    val currentDBMetadata = dataStore.getCurrentDBExtension();
-    if (currentDBMetadata == null) {
-      currentDBExtFlow.value = extensions.random().safeCast()
-    } else {
-      currentDBExtFlow.value =
-        extensions.firstOrNull { it.id == currentDBMetadata.className }?.safeCast()
-    }
-
     refresher.emit(false)
-  }
-
-  private inline fun <reified T : BaseClient> Extension<*>.safeCast(): Extension<T>? {
-    return this as? Extension<T>
   }
 
 
@@ -118,9 +93,6 @@ class ExtensionLoader(
         }
       }
     }
-
     return pluginFlow
   }
-
-
 }

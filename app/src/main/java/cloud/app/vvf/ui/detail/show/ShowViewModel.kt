@@ -5,6 +5,7 @@ import androidx.paging.PagingData
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.vvf.datastore.DataStore
@@ -15,7 +16,7 @@ import cloud.app.vvf.datastore.helper.addFavoritesData
 import cloud.app.vvf.datastore.helper.getFavoritesData
 import cloud.app.vvf.datastore.helper.getLatestPlaybackProgress
 import cloud.app.vvf.datastore.helper.removeFavoritesData
-import cloud.app.vvf.extension.run
+import cloud.app.vvf.extension.runClient
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ShowViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val databaseExtensionFlow: MutableStateFlow<Extension<DatabaseClient>?>,
+  val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
   val updateUIFlow: MutableStateFlow<AVPMediaItem?>,
   private val dataStore: DataStore,
 ) : CatchingViewModel(throwableFlow) {
@@ -43,12 +44,12 @@ class ShowViewModel @Inject constructor(
   val favoriteStatus = MutableStateFlow(false)
   val lastWatchedEpisode = MutableStateFlow<PlaybackProgress?>(null)
 
-  fun getItemDetails(shortItem: AVPMediaItem) {
-    viewModelScope.launch(Dispatchers.IO) {
-      databaseExtensionFlow.collect { extension ->
 
+  fun getItemDetails(shortItem: AVPMediaItem, clientId: String) {
+    viewModelScope.launch(Dispatchers.IO) {
+      extensionFlow.collect { extensions ->
         loading.emit(true)
-        val showDetail = extension?.run(throwableFlow) {
+        val showDetail = extensions?.runClient<DatabaseClient, AVPMediaItem?>(clientId, throwableFlow) {
           getMediaDetail(shortItem)
         } ?: shortItem
 
@@ -99,13 +100,11 @@ class ShowViewModel @Inject constructor(
     }
   }
 
-  fun loadRecommended() {
+  fun loadRecommended(clientId: String) {
     viewModelScope.launch(Dispatchers.IO) {
-      databaseExtensionFlow.collect { extension ->
-        extension?.run(throwableFlow) {
-          fullMediaItem.value?.let { getRecommended(it) }
-        }?.toFlow()?.collectTo(recommendations)
-      }
+      extensionFlow.value?.runClient<DatabaseClient, PagedData<AVPMediaItem>?>(clientId, throwableFlow) {
+        fullMediaItem.value?.let { getRecommended(it) }
+      }?.toFlow()?.collectTo(recommendations)
     }
   }
 

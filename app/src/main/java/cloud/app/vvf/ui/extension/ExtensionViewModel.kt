@@ -167,7 +167,7 @@ class ExtensionViewModel @Inject constructor(
     val extension = dataStore.getExtension(id)
     extension?.enabled = checked
     extension?.let { dataStore.saveExtension(extension) }
-    viewModelScope.launch { refresher.emit(true) }
+    //viewModelScope.launch { refresher.emit(true) }
   }
   private val voteMutex = Mutex()
 

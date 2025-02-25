@@ -8,7 +8,7 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.user.LoginClient
 import cloud.app.vvf.common.models.User
 import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.extension.get
+import cloud.app.vvf.extension.run
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +50,7 @@ class LoginViewModel @Inject constructor(
         cookie: String
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val users = extension.get<LoginClient.WebView, List<User>>(throwableFlow) {
+            val users = extension.run<LoginClient.WebView, List<User>>(throwableFlow) {
                 onLoginWebviewStop(url, cookie)
             } ?: return@launch
             afterLogin(extension, users)
@@ -63,7 +63,7 @@ class LoginViewModel @Inject constructor(
         password: String
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val users = extension.get<LoginClient.UsernamePassword, List<User>>(throwableFlow) {
+            val users = extension.run<LoginClient.UsernamePassword, List<User>>(throwableFlow) {
                 onLogin(username, password)
             } ?: return@launch
             afterLogin(extension, users)
@@ -75,7 +75,7 @@ class LoginViewModel @Inject constructor(
         extension: Extension<*>
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            val users = extension.get<LoginClient.CustomTextInput, List<User>?>(throwableFlow) {
+            val users = extension.run<LoginClient.CustomTextInput, List<User>?>(throwableFlow) {
                 onLogin(inputs)
             } ?: return@launch
             afterLogin(extension, users)

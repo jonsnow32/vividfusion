@@ -1,5 +1,6 @@
 package cloud.app.vvf.extension
 
+import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.ui.exception.AppException.Companion.toAppException
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
@@ -8,33 +9,43 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 
-suspend fun <T : BaseClient, R> Extension<T>.run(
+/**
+ * Checks if the client of this extension is of the specified type.
+ */
+inline fun <reified T> Extension<*>.isClient(): Boolean = instance.value.getOrNull() is T
+
+/**
+ * Finds an extension by its ID in the stored list.
+ */
+fun StateFlow<List<Extension<*>>?>.getExtension(id: String?): Extension<*>? =
+  value?.find { it.id == id }
+
+/**
+ * Filters extensions by type in the stored list.
+ */
+fun StateFlow<List<Extension<*>>?>.getExtensions(type: ExtensionType): List<Extension<*>>? =
+  value?.filter { it.metadata.types.contains(type) }
+
+
+suspend inline fun <reified T : BaseClient, R> Extension<*>.run(
   throwableFlow: MutableSharedFlow<Throwable>,
-  block: suspend T.() -> R
-): R? = runCatching {
-  block(instance.value.getOrThrow())
-}.getOrElse {
-  throwableFlow.emit(it.toAppException(this))
-  it.printStackTrace()
-  null
+  noinline block: suspend T.() -> R
+): R? {
+  return try {
+    val client = instance.value.getOrThrow() as T
+    block(client)
+  } catch (e: Throwable) {
+    throwableFlow.emit(e.toAppException(this))
+    if (BuildConfig.DEBUG) e.printStackTrace()
+    null
+  }
 }
 
-suspend inline fun <reified C, R> Extension<*>.get(
+suspend inline fun <reified T : BaseClient, R> List<Extension<*>>.runClient(
+  clientId: String,
   throwableFlow: MutableSharedFlow<Throwable>,
-  block: C.() -> R
-): R? = runCatching {
-  val client = instance.value.getOrThrow() as? C ?: return@runCatching null
-  block(client)
-}.getOrElse {
-  throwableFlow.emit(it.toAppException(this))
-  it.printStackTrace()
-  null
+  noinline block: suspend T.() -> R
+): R? {
+  val extension = find { it.id == clientId } ?: return null
+  return extension.run(throwableFlow, block)
 }
-
-inline fun <reified T> Extension<*>.isClient() = instance.value.getOrNull() is T
-
-fun StateFlow<List<Extension<*>>?>.getExtension(id: String?) =
-  value?.find { it.metadata.className == id }
-
-fun StateFlow<List<Extension<*>>?>.getExtensions(type: ExtensionType) =
-  value?.filter { it.metadata.types?.contains(type) == true}
