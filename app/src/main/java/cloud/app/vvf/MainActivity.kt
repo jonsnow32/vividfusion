@@ -15,6 +15,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.fragment.app.DialogFragment
 import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.databinding.ActivityMainBinding
@@ -103,6 +104,17 @@ class MainActivity : AppCompatActivity() {
 
     addOnNewIntentListener { onIntent(it) }
     onIntent(intent)
+
+    savedInstanceState?.let { //prevent Fragment dialog show again
+      val fm = supportFragmentManager
+      val fragments = fm.fragments
+      fragments.forEach { fragment ->
+        if (fragment is DialogFragment) {
+          fragment.dismissAllowingStateLoss()
+          fm.beginTransaction().remove(fragment).commitAllowingStateLoss()
+        }
+      }
+    }
   }
 
   private fun onIntent(intent: Intent?) {

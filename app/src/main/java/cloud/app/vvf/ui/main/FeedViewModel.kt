@@ -31,16 +31,17 @@ abstract class FeedViewModel(
         if(extensions.isNotEmpty()) {
           val currentExtension = dataStore.getCurrentDBExtension()
           if(currentExtension != null) {
-            val extension = extensions.find { currentExtension.className == it.id } ?: return@onEach
-            selectedExtension.value = extension
-            //extension?.let { dataStore.setCurrentDBExtension(it.metadata) }
-            refresh(resetTab = true)
-          } else {
-            val extension = extensions.random()
-            selectedExtension.value = extension
-            //extension?.let { dataStore.setCurrentDBExtension(it.metadata) }
-            refresh(resetTab = true)
+            val extension = extensions.find { currentExtension.className == it.id }
+            if(extension != null) {
+              selectedExtension.value = extension
+              refresh(resetTab = true)
+              return@onEach
+            }
           }
+
+          val extension = extensions.random()
+          selectedExtension.value = extension
+          refresh(resetTab = true)
         }
       }
       .launchIn(viewModelScope)

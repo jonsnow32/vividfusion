@@ -6,7 +6,6 @@ import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.datastore.helper.saveExtensions
 import cloud.app.vvf.extension.builtIn.BuiltInRepo
@@ -19,7 +18,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
@@ -35,6 +34,7 @@ class ExtensionLoader(
   private val refresher: MutableSharedFlow<Boolean>,
 
   ) {
+
   private val scope = MainScope() + CoroutineName("ExtensionLoader")
   private val appListener = PackageChangeListener(context)
   public val fileListener = FileChangeListener(scope)
@@ -61,25 +61,24 @@ class ExtensionLoader(
       }
     }
   }
-
   private suspend fun load(scope: CoroutineScope) {
-    val extensions = extensionRepo.getPlugins()
+     extensionRepo.getPlugins()
       .map { list ->
         list.map { (metadata, client) ->
           Extension(metadata, client)
         }
-      }.first()
+      }.collectLatest { extensions ->
+         extensionsFlow.value = extensions
 
-    extensionsFlow.value = extensions
+        val votingMap = mapOf<String, Int>(); //sort by voting api
 
-    val votingMap = mapOf<String, Int>(); //sort by voting api
+        dataStore.saveExtensions(extensions.map {
+          it.metadata.rating = votingMap[it.id] ?: 0
+          it.metadata
+        })
 
-    dataStore.saveExtensions(extensions.map {
-      it.metadata.rating = votingMap[it.id] ?: 0
-      it.metadata
-    })
-
-    refresher.emit(false)
+        refresher.emit(false)
+      }
   }
 
 

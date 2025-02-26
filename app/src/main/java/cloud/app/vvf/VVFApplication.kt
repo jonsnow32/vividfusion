@@ -93,6 +93,7 @@ class VVFApplication : Application() {
         "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
         else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
       }
+
       currentActivity?.recreate()
     }
 

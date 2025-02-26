@@ -18,6 +18,7 @@ import cloud.app.vvf.utils.Utils
 import cloud.app.vvf.utils.setupTransition
 import com.google.android.material.materialswitch.MaterialSwitch
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.math.max
 
 // Change local language settings in the app.
 fun getCurrentLocale(context: Context): String {
@@ -133,7 +134,7 @@ class GeneralSettingsFragment : BaseSettingsFragment() {
           val flag = emoji.ifBlank { SubtitleHelper.getFlagFromIso(iso) ?: "ERROR" }
           "$flag $name"
         }
-        val index = languageCodes.indexOf(current)
+        val index = max(languageCodes.indexOf(current), 0)
 
         key = getString(R.string.pref_app_language)
         title = getString(R.string.app_language)

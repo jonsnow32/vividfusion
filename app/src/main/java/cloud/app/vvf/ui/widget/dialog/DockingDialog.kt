@@ -56,4 +56,5 @@ open class DockingDialog : DialogFragment() {
       setGravity(gravity)
     }
   }
+
 }
