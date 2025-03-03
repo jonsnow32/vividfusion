@@ -8,9 +8,12 @@ import kotlinx.serialization.Serializable
 data class Movie(
   @SerialName("ids") val ids: Ids,
   @SerialName("general_info") val generalInfo: GeneralInfo,
+  @SerialName("tagline") var tagline: String? = null,
   @SerialName("recommendations") var recommendations: List<Movie>? = null,
   @SerialName("position") var position: Long = 0,
-  @SerialName("update_time") var updateTime: Long = System.currentTimeMillis()
+  @SerialName("update_time") var updateTime: Long = System.currentTimeMillis(),
+  @SerialName("status") var status: String? = null
+
 )
 {
   override fun equals(other: Any?): Boolean {

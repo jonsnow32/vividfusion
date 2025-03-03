@@ -14,21 +14,7 @@ import cloud.app.vvf.utils.setupTransition
 class AboutFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.about)
   override val transitionName = "about"
-  override val creator = { AboutPreference() }
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    setupTransition(view)
-
-    applyInsets {
-      binding.appBarLayout.setPadding(0, it.top, 0, 0)
-      binding.fragmentContainer.setPadding(0, 0, 0, it.bottom)
-    }
-    setToolBarScrollFlags()
-    setUpToolbar(title)
-
-    childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
-      .commit()
-  }
+  override val container = { AboutPreference() }
 
   class AboutPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {

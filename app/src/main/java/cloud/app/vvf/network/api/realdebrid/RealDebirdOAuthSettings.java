@@ -15,16 +15,16 @@ public class RealDebirdOAuthSettings {
     private static final String KEY_REFRESH_TOKEN = "realdebird.refresh_token";
     private static final String KEY_ACCESS_TOKEN_EXPIRY_DATE = "realdebird.access_token_expiry";
     private static final String SETTINGS_FILE = "realdebird-oauth-settings";
-    private static final String KEY_CLIENT_ID = "realdebird.clientid";
+    private static final String KEY_CLIENT_ID = "realdebird.extensionId";
     private static final String KEY_CLIENT_SECRET = "realdebird.clientsecret";
 
-    public static String getClientID(SharedPreferences prefs) {
+    public static String getextensionId(SharedPreferences prefs) {
         return prefs.getString(KEY_CLIENT_ID, null);
     }
 
-    public static boolean storeClientID(SharedPreferences prefs, String clientID) {
+    public static boolean storeextensionId(SharedPreferences prefs, String extensionId) {
         return prefs.edit()
-                .putString(KEY_CLIENT_ID, clientID)
+                .putString(KEY_CLIENT_ID, extensionId)
                 .commit();
     }
 

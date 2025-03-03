@@ -115,15 +115,15 @@ class ExceptionFragment : Fragment() {
       is AppException -> throwable.run {
         when (this) {
           is AppException.Unauthorized ->
-            getString(R.string.unauthorized, clientID.name)
+            getString(R.string.unauthorized, extensionId.name)
 
           is AppException.LoginRequired ->
-            getString(R.string.login_required, clientID.name)
+            getString(R.string.login_required, extensionId.name)
 
           is AppException.NotSupported ->
-            getString(R.string.is_not_supported, operation, clientID.name)
+            getString(R.string.is_not_supported, operation, extensionId.name)
 
-          is AppException.Other -> "${clientID.name} : ${getTitle(cause)}"
+          is AppException.Other -> "${extensionId.name} : ${getTitle(cause)}"
         }
       }
 
@@ -137,10 +137,10 @@ class ExceptionFragment : Fragment() {
           """.trimIndent()
 
       is AppException -> """
-          Extension : ${throwable.clientID.name}
-          Id : ${throwable.clientID.name}
-          Type : ${throwable.clientID.metadata.types?.joinToString(prefix = "[\"", postfix = "\"]", separator = "\", \"") { it.feature } ?: "[]"}
-          Version : ${throwable.clientID.metadata.version}
+          Extension : ${throwable.extensionId.name}
+          Id : ${throwable.extensionId.name}
+          Type : ${throwable.extensionId.metadata.types?.joinToString(prefix = "[\"", postfix = "\"]", separator = "\", \"") { it.feature } ?: "[]"}
+          Version : ${throwable.extensionId.metadata.version}
           App Version : ${appVersion()}
           ${getDetails(throwable.cause)}
           """.trimIndent()

@@ -10,8 +10,8 @@ import cloud.app.vvf.common.models.movie.Show
 import cloud.app.vvf.common.models.stream.StreamData
 import cloud.app.vvf.common.utils.getYear
 import cloud.app.vvf.common.utils.toLocalMonthYear
-
 import kotlinx.serialization.Serializable
+
 @Serializable
 sealed class AVPMediaItem {
 
@@ -175,7 +175,7 @@ sealed class AVPMediaItem {
       is MovieItem -> movie.generalInfo.overview ?: ""
       is ShowItem -> show.generalInfo.overview ?: ""
       is EpisodeItem -> episode.generalInfo.overview ?: ""
-      is SeasonItem -> season.overview ?: ""
+      is SeasonItem -> season.overview ?: "c"
       else -> ""
     }
 

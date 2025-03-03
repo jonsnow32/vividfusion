@@ -1,7 +1,6 @@
 package cloud.app.vvf.ui.setting
 
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
@@ -11,10 +10,10 @@ import androidx.preference.PreferenceViewHolder
 import cloud.app.vvf.R
 import cloud.app.vvf.utils.navigate
 
-class SettingsFragment : BaseSettingsFragment() {
+class SettingsRootFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.settings)
   override val transitionName = "settings"
-  override val creator = { SettingsPreference() }
+  override val container = { SettingsPreference() }
 
   class SettingsPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -88,7 +87,7 @@ class SettingsFragment : BaseSettingsFragment() {
       fragment ?: return false
 
       val view = listView.findViewById<View>(preference.key.hashCode())
-      parentFragment?.parentFragment?.navigate(fragment, view)
+      parentFragment?.navigate(fragment, view)
       return true
     }
   }

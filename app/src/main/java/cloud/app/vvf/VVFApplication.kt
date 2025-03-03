@@ -11,6 +11,7 @@ import androidx.core.os.LocaleListCompat
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import cloud.app.vvf.common.helpers.network.HttpHelper
+import cloud.app.vvf.utils.setLocale
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import dagger.hilt.android.HiltAndroidApp
@@ -47,7 +48,7 @@ class VVFApplication : Application() {
       Runtime.getRuntime().exit(0)
     }
 
-    if(BuildConfig.DEBUG){
+    if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
     }
 
@@ -94,6 +95,9 @@ class VVFApplication : Application() {
         else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
       }
 
+      val code = preferences.getString(getString(R.string.pref_locale), "en")
+      code?.let { setLocale(it) }
+
       currentActivity?.recreate()
     }
 
@@ -120,6 +124,7 @@ class VVFApplication : Application() {
     fun Context.noClient() = SnackBarViewModel.Message(
       getString(R.string.error_no_client)
     )
+
     fun Context.loginNotSupported(client: String) = SnackBarViewModel.Message(
       getString(R.string.not_supported, getString(R.string.login), client)
     )

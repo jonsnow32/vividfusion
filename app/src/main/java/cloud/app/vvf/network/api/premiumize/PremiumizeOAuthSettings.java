@@ -9,7 +9,7 @@ public class PremiumizeOAuthSettings {
 
     private static final String KEY_ACCESS_TOKEN_EXPIRY_DATE = "premiumize.access_token_expiry";
     private static final String SETTINGS_FILE = "premiumize-oauth-settings";
-    private static final String KEY_API_KEY = "premiumize.clientid";
+    private static final String KEY_API_KEY = "premiumize.extensionId";
 
     public static String getApiKey(SharedPreferences prefs) {
         return prefs.getString(KEY_API_KEY, null);

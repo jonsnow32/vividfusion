@@ -12,7 +12,7 @@ import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.databinding.FragmentLibraryBinding
 import cloud.app.vvf.ui.main.configureFeedUI
-import cloud.app.vvf.ui.setting.SettingsFragment
+import cloud.app.vvf.ui.setting.SettingsRootFragment
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.firstVisible
 import cloud.app.vvf.utils.navigate
@@ -51,7 +51,7 @@ class LibraryFragment : Fragment() {
     }
 
     binding.btnSettings.setOnClickListener {
-      navigate(SettingsFragment())
+      navigate(SettingsRootFragment())
     }
 
     binding.searchHome.setOnClickListener {

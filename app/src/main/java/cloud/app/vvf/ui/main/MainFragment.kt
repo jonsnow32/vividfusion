@@ -13,7 +13,7 @@ import cloud.app.vvf.databinding.FragmentMainBinding
 import cloud.app.vvf.ui.main.home.HomeFragment
 import cloud.app.vvf.ui.main.library.LibraryFragment
 import cloud.app.vvf.ui.main.search.SearchFragment
-import cloud.app.vvf.ui.setting.SettingsFragment
+import cloud.app.vvf.ui.setting.SettingsRootFragment
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.setupTransition
 import com.google.android.material.navigation.NavigationBarView
@@ -26,6 +26,8 @@ class MainFragment : Fragment() {
   private val mainActivityViewModel by activityViewModels<MainActivityViewModel>()
 
   private var selectedItemId: Int = R.id.homeFragment
+
+  private var navInsets: MainActivityViewModel.Insets = MainActivityViewModel.Insets(0, 0, 0, 0)
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -67,7 +69,8 @@ class MainFragment : Fragment() {
         else
           return@run MainActivityViewModel.Insets(start = height)
       }
-      mainActivityViewModel.setNavInsets(insets)
+      navInsets = insets;
+      mainActivityViewModel.setNavInsets(navInsets)
     }
     navView.requestFocus()
   }
@@ -91,7 +94,7 @@ class MainFragment : Fragment() {
       R.id.homeFragment -> HomeFragment()
       R.id.searchFragment -> SearchFragment()
       R.id.libraryFragment -> LibraryFragment()
-      R.id.settingsFragment -> SettingsFragment()
+      R.id.settingsFragment -> SettingsRootFragment()
       else -> {
         throw IllegalArgumentException("Invalid position")
       }
@@ -99,4 +102,13 @@ class MainFragment : Fragment() {
     fragments[id] = fragment
     return fragment
   }
+//
+//  override fun onHiddenChanged(hidden: Boolean) {
+//    if (hidden)
+//      mainActivityViewModel.setNavInsets(MainActivityViewModel.Insets(0, 0, 0, 0))
+//    else
+//      mainActivityViewModel.setNavInsets(navInsets)
+//    super.onHiddenChanged(hidden)
+//  }
+
 }

@@ -35,11 +35,11 @@ class ItemOptionViewModel @Inject constructor(
   val bookmarkStatus = MutableStateFlow<BookmarkItem?>(null)
   val knowFors = MutableStateFlow<MediaItemsContainer.Category?>(null)
   var extension: MutableStateFlow<Extension<*>?> = MutableStateFlow(null)
-  fun getItemDetails(shortItem: AVPMediaItem, clientId: String) {
+  fun getItemDetails(shortItem: AVPMediaItem, extensionId: String) {
     viewModelScope.launch(Dispatchers.IO) {
       viewModelScope.launch(Dispatchers.IO) {
         extensionFlow.collect { extensions ->
-          extension.value = extensions?.find { it.id == clientId } ?: return@collect
+          extension.value = extensions?.find { it.id == extensionId } ?: return@collect
           loading.emit(true)
           val showDetail = extension.value?.run<DatabaseClient, AVPMediaItem?>(throwableFlow) {
             getMediaDetail(shortItem)
@@ -105,7 +105,7 @@ class ItemOptionViewModel @Inject constructor(
     statusChangedCallback.invoke(favoriteStatus.value)
   }
 
-  fun getKnowFor(clientId: String, item: AVPMediaItem.ActorItem) {
+  fun getKnowFor(extensionId: String, item: AVPMediaItem.ActorItem) {
     viewModelScope.launch {
       knowFors.value =
         MediaItemsContainer.Category(

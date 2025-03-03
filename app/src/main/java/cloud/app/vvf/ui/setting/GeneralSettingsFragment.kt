@@ -1,22 +1,18 @@
 package cloud.app.vvf.ui.setting
 
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.SwitchPreference
 import androidx.preference.SwitchPreferenceCompat
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.applyUiChanges
 import cloud.app.vvf.utils.MaterialListPreference
 import cloud.app.vvf.utils.SubtitleHelper
-import cloud.app.vvf.utils.Utils
 import cloud.app.vvf.utils.setupTransition
-import com.google.android.material.materialswitch.MaterialSwitch
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.max
 
@@ -98,21 +94,7 @@ val appLanguages = arrayListOf(
 class GeneralSettingsFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.general_setting)
   override val transitionName = "general_setting"
-  override val creator  =  { GeneralPreference() }
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    setupTransition(view)
-
-    applyInsets {
-      binding.appBarLayout.setPadding(0, it.top, 0, 0)
-      binding.fragmentContainer.setPadding(0, 0, 0, it.bottom)
-    }
-    setToolBarScrollFlags()
-    setUpToolbar(title)
-
-    childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
-      .commit()
-  }
+  override val container  =  { GeneralPreference() }
 
   class GeneralPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -136,7 +118,7 @@ class GeneralSettingsFragment : BaseSettingsFragment() {
         }
         val index = max(languageCodes.indexOf(current), 0)
 
-        key = getString(R.string.pref_app_language)
+        key = getString(R.string.pref_locale)
         title = getString(R.string.app_language)
         summary = preferences.getString(key, languageNames[index])
         layoutResource = R.layout.preference

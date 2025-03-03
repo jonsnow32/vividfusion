@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -19,14 +18,12 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Show
 import cloud.app.vvf.databinding.FragmentMovieBinding
-import cloud.app.vvf.datastore.helper.BookmarkItem
 import cloud.app.vvf.ui.detail.TrailerDialog
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.media.MediaClickListener
 import cloud.app.vvf.ui.media.MediaItemAdapter
 import cloud.app.vvf.ui.paging.toFlow
 import cloud.app.vvf.ui.stream.StreamFragment
-import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.navigate
@@ -44,7 +41,7 @@ class MovieFragment : Fragment() {
   private val viewModel by viewModels<MovieViewModel>()
   private val mainViewModel by activityViewModels<MainActivityViewModel>()
   private val args by lazy { requireArguments() }
-  private val clientId by lazy { args.getString("clientId")!! }
+  private val extensionId by lazy { args.getString("extensionId")!! }
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.MovieItem>("mediaItem")!! }
 
   @Inject
@@ -60,8 +57,9 @@ class MovieFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(binding.header.imagePoster)
-    applyInsets { binding.header.topBar.setPadding(0, it.top, 0, 0) }
-
+    applyInsets {
+      binding.scrollView.setPadding(0, it.top, it.end, it.bottom)
+    }
     bind(shortItem)
 
     setupListeners()
@@ -75,7 +73,7 @@ class MovieFragment : Fragment() {
       parentFragmentManager.popBackStack()
     }
 
-    binding.header.showFavorite.setOnClickListener {
+    binding.header.imgBtnFavourite.setOnClickListener {
       viewModel.toggleFavoriteStatus {
         val messageResId = if (viewModel.favoriteStatus.value) {
           R.string.favorite_added
@@ -87,51 +85,24 @@ class MovieFragment : Fragment() {
     }
 
 
-    binding.buttonMovieStreamingSearch.setOnClickListener {
+    binding.header.buttonStreamingSearch.setOnClickListener {
       viewModel.fullMediaItem.value?.let {
         navigate(StreamFragment.newInstance(it))
       }
     }
-
-    binding.buttonBookmark.setOnClickListener {
-      val item = viewModel.fullMediaItem.value ?: shortItem
-
-      val status = mainViewModel.getBookmark(item)
-      val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
-        add("None")
-      }
-      val selectedIndex =
-        if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
-
-      SelectionDialog.single(
-        bookmarks, selectedIndex,
-        getString(R.string.add_to_bookmark),
-        false,
-        {},
-        { selected ->
-          mainViewModel.addToBookmark(item, bookmarks[selected]);
-
-          val bookmarkStatus = mainViewModel.getBookmark(item)
-          binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
-          if (bookmarkStatus != null) {
-            binding.buttonBookmark.icon =
-              ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
-          }
-
-        }).show(parentFragmentManager, null)
-    }
-
   }
 
   private fun setupObservers() {
     observe(viewModel.favoriteStatus) { isFavorite ->
-      val favoriteIconRes = if (isFavorite) {
-        R.drawable.favorite_24dp
-      } else {
-        R.drawable.favorite_border_24dp
+      var favoriteIconRes = R.drawable.favorite_24dp
+      var favoriteStringnRes = R.string.action_remove_from_favorites
+      if (!isFavorite)  {
+        favoriteIconRes = R.drawable.favorite_border_24dp
+        favoriteStringnRes = R.string.action_add_to_favorites
       }
-      binding.header.showFavorite.setImageResource(favoriteIconRes)
+      binding.header.imgBtnFavourite.setImageResource(favoriteIconRes)
     }
+
 
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
@@ -144,9 +115,9 @@ class MovieFragment : Fragment() {
   }
 
   private fun setupTrailerAdapter(mediaItem: AVPMediaItem) {
-    binding.buttonShowTrailer.setOnClickListener {
-      val dialog = TrailerDialog.newInstance(mediaItem.generalInfo?.videos, clientId)
-      dialog.show(parentFragmentManager, "")
+    binding.header.buttonShowTrailer.setOnClickListener {
+      val dialog = TrailerDialog.newInstance(mediaItem.generalInfo?.videos, extensionId)
+      dialog.show(parentFragmentManager)
     }
   }
 
@@ -154,11 +125,11 @@ class MovieFragment : Fragment() {
 
 
   private fun loadInitialData() {
-    viewModel.getItemDetails(shortItem, clientId)
+    viewModel.getItemDetails(shortItem, extensionId)
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {
-    val actorAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", clientId)
+    val actorAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", extensionId)
     binding.rvActors.adapter = actorAdapter
 
     val actorList = mediaItem.generalInfo?.actors?.map { AVPMediaItem.ActorItem(it) }
@@ -170,19 +141,19 @@ class MovieFragment : Fragment() {
   }
 
   private fun setupRecommendationAdapter(item: AVPMediaItem) {
-    val recommendations = item.recommendations?.map {
+    val recommendations = item.recommendations?.mapNotNull {
       when (it) {
         is Movie -> AVPMediaItem.MovieItem(it)
         is Show -> AVPMediaItem.ShowItem(it)
         else -> null
       }
-    }?.filterNotNull()
+    }
     binding.recommendedTitle.isGone = recommendations.isNullOrEmpty()
 
     recommendations?.let {
       val recommendationAdapter =
         MediaItemAdapter(
-          MediaClickListener(parentFragmentManager), "", clientId
+          MediaClickListener(parentFragmentManager), "", extensionId
         )
       binding.rvRecommendedMedia.adapter = recommendationAdapter
 
@@ -195,19 +166,7 @@ class MovieFragment : Fragment() {
 
   fun bind(item: AVPMediaItem?) {
     if (item == null) return
-    binding.header.bind(item)
-    binding.buttonShowComments.isGone = true
-    binding.buttonShowShare.isGone = true
-    binding.buttonShowWebSearch.isGone = true
-    viewModel.fullMediaItem.value?.let {
-      val bookmarkStatus = mainViewModel.getBookmark(it)
-      binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
-      if (bookmarkStatus != null) {
-        binding.buttonBookmark.icon =
-          ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
-      }
-    }
-    binding.buttonShowTrailer.isGone = item.generalInfo?.videos.isNullOrEmpty()
+    binding.header.bind(item, this)
   }
 
 }

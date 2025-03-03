@@ -5,6 +5,6 @@ data class RealDebridGetTokenResult(
     var expires_in: Long = 0,
     var refresh_token: String? = null,
     var token_type: String? = null,
-    var last_clientID: String? = null,
+    var last_extensionId: String? = null,
     var last_clientSecret: String? = null,
 )

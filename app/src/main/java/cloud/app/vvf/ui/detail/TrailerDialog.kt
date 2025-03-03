@@ -25,7 +25,7 @@ class TrailerDialog : DockingDialog() {
   var binding by autoCleared<DialogTrailersBinding>()
   private val args by lazy { requireArguments() }
   private val items by lazy { args.getSerialized<List<StreamData>>(ARG_VIDEO_ITEMS) ?: emptyList() }
-  private val clientID by lazy {
+  private val extensionId by lazy {
     args.getString(ARG_CLIENT_ID)
   }
 
@@ -38,7 +38,7 @@ class TrailerDialog : DockingDialog() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    val videoAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", clientID)
+    val videoAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", extensionId)
     binding.rvVideos.adapter = videoAdapter
     lifecycleScope.launch {
       val paged = items.map { AVPMediaItem.TrailerItem(it) }.toPaged()
@@ -50,10 +50,10 @@ class TrailerDialog : DockingDialog() {
     const val ARG_VIDEO_ITEMS = "ARG_VIDEO_ITEMS"
     const val ARG_CLIENT_ID = "ARG_CLIENT_ID"
     fun List<AVPMediaItem>.toPaged() = PagedData.Single { this }
-    fun newInstance(videos: List<StreamData>?, clientID: String) = TrailerDialog().apply {
+    fun newInstance(videos: List<StreamData>?, extensionId: String) = TrailerDialog().apply {
       arguments = Bundle().apply {
         putSerialized(ARG_VIDEO_ITEMS, ArrayList(videos))
-        putString(ARG_CLIENT_ID, clientID)
+        putString(ARG_CLIENT_ID, extensionId)
       }
     }
   }

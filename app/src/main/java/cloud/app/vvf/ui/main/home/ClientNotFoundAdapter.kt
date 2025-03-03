@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.databinding.ItemClientEmptyBinding
 import cloud.app.vvf.databinding.ItemClientLoadingBinding
 import cloud.app.vvf.ui.setting.ManageExtensionsFragment
-import cloud.app.vvf.ui.setting.SettingsFragment
 import cloud.app.vvf.utils.navigate
 
 class ClientNotFoundAdapter(val fragment: Fragment?) :

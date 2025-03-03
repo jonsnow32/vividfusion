@@ -15,6 +15,7 @@ import cloud.app.vvf.ui.exception.ExceptionFragment
 import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getDetails
 import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint
@@ -31,7 +32,6 @@ class ExceptionActivity : AppCompatActivity() {
     enableEdgeToEdge()
     ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
       mainActivityViewModel.setSystemInsets(this, insets)
-      binding.fabContainer.applyInsets(mainActivityViewModel.systemInsets.value)
       insets
     }
 

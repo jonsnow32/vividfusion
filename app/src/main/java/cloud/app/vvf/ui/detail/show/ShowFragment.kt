@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
@@ -35,6 +36,7 @@ import cloud.app.vvf.ui.widget.dialog.DockingDialog
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.Utils.getEpisodeShortTitle
 import cloud.app.vvf.utils.navigate
+import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -48,7 +50,7 @@ class ShowFragment : Fragment() {
   private val mainViewModel by activityViewModels<MainActivityViewModel>()
 
   private val args by lazy { requireArguments() }
-  private val clientId by lazy { args.getString("clientId")!! }
+  private val extensionId by lazy { args.getString("extensionId")!! }
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.ShowItem>("mediaItem")!! }
 
   @Inject
@@ -64,7 +66,9 @@ class ShowFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(binding.header.imagePoster)
-    applyInsets { binding.header.topBar.setPadding(0, it.top, 0, 0) }
+    applyInsets {
+      binding.scrollView.setPadding(0, it.top, it.end, it.bottom)
+    }
     bind(shortItem)
     setupListeners()
     setupObservers()
@@ -76,7 +80,7 @@ class ShowFragment : Fragment() {
       parentFragmentManager.popBackStack()
     }
 
-    binding.header.showFavorite.setOnClickListener {
+    binding.header.imgBtnFavourite.setOnClickListener {
       viewModel.toggleFavoriteStatus {
         val messageResId = if (viewModel.favoriteStatus.value) {
           R.string.favorite_added
@@ -87,46 +91,18 @@ class ShowFragment : Fragment() {
       }
     }
 
-    binding.buttonShowTrailer.setOnClickListener {
-      val dialog = DockingDialog().show(parentFragmentManager, null)
+    binding.header.buttonShowTrailer.setOnClickListener {
+      val dialog = DockingDialog().show(parentFragmentManager)
 
     }
-    binding.buttonMovieStreamingSearch.setOnClickListener {
+    binding.header.buttonStreamingSearch.setOnClickListener {
       viewModel.fullMediaItem.value?.let {
         navigate(StreamFragment.newInstance(it))
       }
     }
 
-    binding.buttonShowShare.setOnClickListener {
+    binding.header.imgBtnShare?.setOnClickListener {
 
-    }
-
-    binding.buttonBookmark.setOnClickListener {
-      val item = viewModel.fullMediaItem.value ?: shortItem
-
-      val status = mainViewModel.getBookmark(item)
-      val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
-        add("None")
-      }
-      val selectedIndex =
-        if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
-
-      SelectionDialog.single(
-        bookmarks, selectedIndex,
-        getString(R.string.add_to_bookmark),
-        false,
-        {},
-        { selected ->
-          mainViewModel.addToBookmark(item, bookmarks[selected]);
-
-          val bookmarkStatus = mainViewModel.getBookmark(item)
-          binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
-          if (bookmarkStatus != null) {
-            binding.buttonBookmark.icon =
-              ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
-          }
-
-        }).show(parentFragmentManager, "ShowBookmark")
     }
 
 
@@ -134,19 +110,21 @@ class ShowFragment : Fragment() {
 
   private fun setupObservers() {
     observe(viewModel.favoriteStatus) { isFavorite ->
-      val favoriteIconRes = if (isFavorite) {
-        R.drawable.favorite_24dp
-      } else {
-        R.drawable.favorite_border_24dp
+      var favoriteIconRes = R.drawable.favorite_24dp
+      var favoriteStringnRes = R.string.action_remove_from_favorites
+      if (!isFavorite)  {
+        favoriteIconRes = R.drawable.favorite_border_24dp
+        favoriteStringnRes = R.string.action_add_to_favorites
       }
-      binding.header.showFavorite.setImageResource(favoriteIconRes)
+      binding.header.imgBtnFavourite.setImageResource(favoriteIconRes)
     }
 
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
       setupActorAdapter(mediaItem)
-      viewModel.loadRecommended(clientId)
+      viewModel.loadRecommended(extensionId)
       setupTrailerAdapter(mediaItem)
+      bind(mediaItem)
     }
 
     observe(viewModel.recommendations) { paging ->
@@ -155,7 +133,7 @@ class ShowFragment : Fragment() {
         if (binding.rvRecommendedMedia.adapter == null) {
           val recommendationAdapter =
             MediaItemAdapter(
-              MediaClickListener(fragmentManager = parentFragmentManager), "", clientId
+              MediaClickListener(fragmentManager = parentFragmentManager), "", extensionId
             )
           binding.rvRecommendedMedia.adapter = recommendationAdapter
         }
@@ -164,8 +142,9 @@ class ShowFragment : Fragment() {
     }
 
     observe(viewModel.lastWatchedEpisode) { lastWatchedEpisode ->
-      binding.buttonLastWatchedEpisode.isGone = lastWatchedEpisode == null
-      binding.buttonLastWatchedEpisode.text = context?.getEpisodeShortTitle(lastWatchedEpisode?.getEpisode())
+      binding.header.buttonLastWatchedEpisode.isGone = lastWatchedEpisode == null
+      binding.header.buttonLastWatchedEpisode.text =
+        context?.getEpisodeShortTitle(lastWatchedEpisode?.getEpisode())
     }
 
     observe(viewModel.watchedSeasons) {
@@ -174,9 +153,9 @@ class ShowFragment : Fragment() {
   }
 
   private fun setupTrailerAdapter(mediaItem: AVPMediaItem) {
-    binding.buttonShowTrailer.setOnClickListener {
-      val dialog = TrailerDialog.newInstance(mediaItem.generalInfo?.videos, clientId)
-      dialog.show(parentFragmentManager, "")
+    binding.header.buttonShowTrailer.setOnClickListener {
+      val dialog = TrailerDialog.newInstance(mediaItem.generalInfo?.videos, extensionId)
+      dialog.show(parentFragmentManager)
     }
   }
 
@@ -187,7 +166,11 @@ class ShowFragment : Fragment() {
     binding.seasonHolder.isGone = seasons.isNullOrEmpty()
     seasons?.let {
       binding.rvSeason.adapter =
-        MediaItemAdapter(MediaClickListener(fragmentManager = parentFragmentManager), "", clientId)
+        MediaItemAdapter(
+          MediaClickListener(fragmentManager = parentFragmentManager),
+          "",
+          extensionId
+        )
       setupSortOptions(seasons)
     }
   }
@@ -253,11 +236,11 @@ class ShowFragment : Fragment() {
   }
 
   private fun loadInitialData() {
-    viewModel.getItemDetails(shortItem, clientId)
+    viewModel.getItemDetails(shortItem, extensionId)
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {
-    val actorAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", clientId)
+    val actorAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", extensionId)
     binding.rvActors.adapter = actorAdapter
 
     val actorList = mediaItem.generalInfo?.actors?.map { AVPMediaItem.ActorItem(it) }
@@ -281,7 +264,7 @@ class ShowFragment : Fragment() {
     recommendations?.let {
       val recommendationAdapter =
         MediaItemAdapter(
-          MediaClickListener(fragmentManager = parentFragmentManager), "", clientId
+          MediaClickListener(fragmentManager = parentFragmentManager), "", extensionId
         )
       binding.rvRecommendedMedia.adapter = recommendationAdapter
 
@@ -293,22 +276,7 @@ class ShowFragment : Fragment() {
 
   fun bind(item: AVPMediaItem?) {
     if (item == null) return
-    binding.header.bind(item)
-
-    binding.buttonShowComments.isGone = true
-    binding.buttonShowShare.isGone = true
-    binding.buttonShowWebSearch.isGone = true
-
-    viewModel.fullMediaItem.value?.let {
-      val bookmarkStatus = mainViewModel.getBookmark(it)
-      binding.buttonBookmark.setText(BookmarkItem.getStringIds(bookmarkStatus))
-      if (bookmarkStatus != null) {
-        binding.buttonBookmark.icon =
-          ContextCompat.getDrawable(requireActivity(), R.drawable.ic_bookmark_filled)
-      }
-    }
-
-    binding.buttonShowTrailer.isGone = item.generalInfo?.videos.isNullOrEmpty()
+    binding.header.bind(item, this)
   }
 
 }

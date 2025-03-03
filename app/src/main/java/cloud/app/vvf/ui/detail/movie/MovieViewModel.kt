@@ -29,14 +29,15 @@ class MovieViewModel @Inject constructor(
   var fullMediaItem = MutableStateFlow<AVPMediaItem?>(null)
   val favoriteStatus = MutableStateFlow(false)
 
-  fun getItemDetails(shortItem: AVPMediaItem, clientId: String) {
+  fun getItemDetails(shortItem: AVPMediaItem, extensionId: String) {
     viewModelScope.launch(Dispatchers.IO) {
       extensionFlow.collect { extensions ->
         loading.value = true
-        val showDetail = extensions.runClient<DatabaseClient, AVPMediaItem?>(clientId, throwableFlow) {
+        val movieDetails = extensions.runClient<DatabaseClient, AVPMediaItem?>(extensionId, throwableFlow) {
           getMediaDetail(shortItem)
         } ?: shortItem
-        fullMediaItem.value = showDetail
+
+        fullMediaItem.value = movieDetails
         val favoriteDeferred =
           async { dataStore.getFavoritesData<AVPMediaItem.MovieItem>(fullMediaItem.value?.id?.toString()) }
         favoriteStatus.value = favoriteDeferred.await()

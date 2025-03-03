@@ -12,7 +12,8 @@ data class Show(
   @SerialName("seasons") var seasons: List<Season>? = null,
   @SerialName("update_time") var updateTime: Long = System.currentTimeMillis(),
   @SerialName("tag_line") var tagLine: String? = null,
-  @SerialName("status") var status: String = "continue" // continue, end
+  @SerialName("status") var status: String? = "continue", // continue, end
+  @SerialName("content_rating") var contentRating: String? = null
 )
  {
   override fun equals(other: Any?): Boolean {
@@ -27,7 +28,5 @@ data class Show(
     result = 31 * result + generalInfo.hashCode()
     return result
   }
-
-
 }
 

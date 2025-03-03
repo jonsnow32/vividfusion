@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="wrap_content"
-  xmlns:tools="http://schemas.android.com/tools">
-
+  android:layout_height="wrap_content">
 
   <FrameLayout
     android:id="@+id/topBar"
@@ -35,7 +34,7 @@
         android:contentDescription="@string/back"
         android:focusable="true"
         android:nextFocusRight="@id/toolbarHolder"
-        android:src="@drawable/ic_back"/>
+        android:src="@drawable/ic_back" />
 
     </LinearLayout>
 
@@ -50,19 +49,6 @@
       android:gravity="end"
       android:paddingHorizontal="10dp">
 
-      <ImageView
-        android:id="@+id/homeButton"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="end|center_vertical"
-        android:layout_margin="5dp"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:elevation="10dp"
-        android:focusable="true"
-        android:src="@drawable/anim_home"
-        android:visibility="gone"
-        tools:visibility="visible" />
 
       <androidx.mediarouter.app.MediaRouteButton
         android:id="@+id/mediaRouteButton"
@@ -73,24 +59,39 @@
         android:visibility="gone" />
 
 
-
-
-      <ImageView
-        android:id="@+id/showNotify"
+      <ImageButton
+        android:id="@+id/imgBtnHome"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_gravity="end|center_vertical"
         android:layout_margin="5dp"
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:clickable="true"
+        android:contentDescription="@string/notify_me"
+        android:elevation="10dp"
+        android:focusable="true"
+        android:src="@drawable/anim_home"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+
+      <ImageButton
+        android:id="@+id/imgBtnShowNotify"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_gravity="end|center_vertical"
+        android:layout_margin="5dp"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/notify_me"
         android:elevation="10dp"
         android:focusable="true"
         android:src="@drawable/notify_24dp"
         android:visibility="gone"
         tools:visibility="visible" />
 
-      <ImageView
-        android:id="@+id/showFavorite"
+      <ImageButton
+        android:id="@+id/imgBtnFavourite"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_gravity="end|center_vertical"
@@ -98,15 +99,13 @@
         android:background="?android:attr/selectableItemBackgroundBorderless"
 
         android:clickable="true"
+        android:contentDescription="@string/back"
         android:elevation="10dp"
         android:focusable="true"
-        android:nextFocusLeft="@id/showNotify"
-        android:nextFocusRight="@id/showShare"
-        android:nextFocusUp="@id/backBtn"
-        android:src="@drawable/favorite_24dp"/>
+        android:src="@drawable/favorite_24dp" />
 
-      <ImageView
-        android:id="@+id/showShare"
+      <ImageButton
+        android:id="@+id/imgBtnShare"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_gravity="end|center_vertical"
@@ -118,8 +117,8 @@
         android:focusable="true"
         android:src="@drawable/share_24dp" />
 
-      <ImageView
-        android:id="@+id/showOpenInBrowser"
+      <ImageButton
+        android:id="@+id/imgBtnHomepage"
         android:layout_width="25dp"
         android:layout_height="25dp"
         android:layout_gravity="end|center_vertical"
@@ -148,11 +147,11 @@
     android:id="@+id/imagePoster"
     android:layout_width="100dp"
     android:layout_height="150dp"
-    android:layout_marginTop="16dp"
     android:layout_marginStart="16dp"
+    android:layout_marginTop="16dp"
     android:scaleType="centerCrop"
-    app:layout_constraintTop_toBottomOf="@id/imageBackdrop"
     app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/imageBackdrop"
     app:srcCompat="@drawable/rounded_rectangle" />
 
   <!-- Title Text -->
@@ -162,12 +161,12 @@
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
-    tools:text="Title"
     android:textSize="18sp"
     android:textStyle="bold"
+    app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toEndOf="@id/imagePoster"
     app:layout_constraintTop_toTopOf="@id/imagePoster"
-    app:layout_constraintEnd_toEndOf="parent" />
+    tools:text="Title" />
 
   <!-- Subtitle Text -->
   <TextView
@@ -175,13 +174,14 @@
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
-    android:layout_marginTop="4dp"
     android:alpha="0.66"
+    android:gravity="start|center"
     android:text="@string/subtitle"
     android:textSize="14sp"
-    app:layout_constraintStart_toEndOf="@id/imagePoster"
-    app:layout_constraintTop_toBottomOf="@id/textTitle"
-    app:layout_constraintEnd_toEndOf="parent" />
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toEndOf="@+id/imagePoster"
+    app:layout_constraintTop_toBottomOf="@+id/textTitle" />
+
 
   <!-- Overview Text -->
   <TextView
@@ -189,38 +189,177 @@
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginStart="8dp"
-    android:layout_marginTop="4dp"
     android:ellipsize="end"
     android:maxLines="5"
-    android:textSize="14sp"
     android:padding="2dp"
+    android:textSize="14sp"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toEndOf="@id/imagePoster"
-    app:layout_constraintTop_toBottomOf="@id/textSubtitle"
+    app:layout_constraintTop_toBottomOf="@+id/textSubtitle"
     tools:text="Overview" />
-
-  <!-- Release Year Text -->
-  <TextView
-    android:id="@+id/textReleaseYear"
-    android:layout_width="wrap_content"
+  <LinearLayout
+    android:id="@+id/linearLayout2"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginStart="30dp"
     android:layout_marginTop="8dp"
-    android:layout_marginStart="8dp"
-    tools:text="Mar 2024"
-    android:textSize="14sp"
-    app:layout_constraintTop_toBottomOf="@id/imagePoster"
-    app:layout_constraintStart_toStartOf="@id/imagePoster" />
+    android:gravity="bottom|start"
+    android:orientation="horizontal"
+    app:layout_constraintEnd_toEndOf="@+id/imagePoster"
+    app:layout_constraintStart_toStartOf="@+id/imagePoster"
+    app:layout_constraintTop_toBottomOf="@+id/imagePoster">
 
-  <!-- Rating Text -->
-  <TextView
-    android:id="@+id/textRating"
-    android:layout_width="wrap_content"
+    <TextView
+      android:id="@+id/textRating"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="bottom"
+      android:paddingBottom="0dp"
+      android:textAlignment="gravity"
+      android:textSize="22sp"
+      android:textStyle="bold"
+      tools:text="7.8" />
+
+    <TextView
+      android:id="@+id/textRatingCount"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="bottom"
+      android:textStyle="bold"
+      tools:text="/1000" />
+
+    <TextView
+      android:id="@+id/dot"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="bottom"
+      android:paddingHorizontal="4dp"
+      android:text="@string/dot"
+      android:textSize="15sp" />
+
+    <!-- Release Year Text -->
+    <TextView
+      android:id="@+id/textReleaseYear"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="14sp"
+      tools:text="Mar 2024" />
+
+    <!-- Rating Text -->
+    <TextView
+      android:id="@+id/dot2"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="bottom"
+      android:paddingHorizontal="4dp"
+      android:text="@string/dot"
+      android:textSize="15sp" />
+
+    <!-- Release Year Text -->
+    <TextView
+      android:id="@+id/runTime"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="14sp"
+      tools:text="1h3m" />
+
+    <!-- Rating Text -->
+    <TextView
+      android:id="@+id/dot3"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="bottom"
+      android:paddingHorizontal="4dp"
+      android:text="@string/dot"
+      android:textSize="15sp" />
+
+    <!-- Release Year Text -->
+    <TextView
+      android:id="@+id/contentRating"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="14sp"
+      tools:text="PG" />
+  </LinearLayout>
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/mediaActionHolder"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
-    android:layout_marginEnd="8dp"
-    tools:text="7.8"
-    android:textSize="14sp"
-    app:layout_constraintTop_toBottomOf="@id/imagePoster"
-    app:layout_constraintEnd_toEndOf="parent" />
+    app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+    android:layout_margin="16dp"
+    tools:layout_editor_absoluteX="8dp">
+
+    <androidx.constraintlayout.helper.widget.Flow
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      app:constraint_referenced_ids="buttonLastWatchedEpisode,buttonBookmark,buttonShowTrailer,buttonShowComments,buttonCollections,buttonStreamingSearch"
+      app:flow_horizontalBias="0"
+      app:flow_horizontalGap="4dp"
+      app:flow_horizontalStyle="packed"
+      app:flow_wrapMode="chain"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/buttonShowTrailer"
+      style="@style/Button.Outlined.Icon"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/trailer"
+      app:icon="@drawable/movie_24dp"
+      app:iconGravity="start" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/buttonBookmark"
+      style="@style/Button.Outlined.Icon"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/add_to_bookmark"
+      app:icon="@drawable/ic_bookmark_outline"
+      app:iconGravity="start" />
+
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/buttonShowComments"
+      style="@style/Button.Outlined.Icon"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/comments"
+      app:icon="@drawable/forum_24dp"
+      app:iconGravity="start" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/buttonCollections"
+      style="@style/Button.Outlined.Icon"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      app:icon="@drawable/ic_search_outline"
+      app:iconGravity="start"
+      tools:text="name of collections" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/buttonStreamingSearch"
+      style="@style/Button.Outlined.Icon"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:contentDescription="@string/action_stream"
+      android:text="@string/action_stream"
+      app:icon="@drawable/playlist_play_24dp" />
+
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/buttonLastWatchedEpisode"
+      style="@style/Button.Outlined.Icon"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/last_watched_episode"
+      app:icon="@drawable/play_arrow_24dp"
+      app:iconGravity="start" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

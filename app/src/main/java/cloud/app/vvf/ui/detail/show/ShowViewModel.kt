@@ -45,11 +45,11 @@ class ShowViewModel @Inject constructor(
   val lastWatchedEpisode = MutableStateFlow<PlaybackProgress?>(null)
 
 
-  fun getItemDetails(shortItem: AVPMediaItem, clientId: String) {
+  fun getItemDetails(shortItem: AVPMediaItem, extensionId: String) {
     viewModelScope.launch(Dispatchers.IO) {
       extensionFlow.collect { extensions ->
         loading.emit(true)
-        val showDetail = extensions?.runClient<DatabaseClient, AVPMediaItem?>(clientId, throwableFlow) {
+        val showDetail = extensions?.runClient<DatabaseClient, AVPMediaItem?>(extensionId, throwableFlow) {
           getMediaDetail(shortItem)
         } ?: shortItem
 
@@ -100,9 +100,9 @@ class ShowViewModel @Inject constructor(
     }
   }
 
-  fun loadRecommended(clientId: String) {
+  fun loadRecommended(extensionId: String) {
     viewModelScope.launch(Dispatchers.IO) {
-      extensionFlow.value?.runClient<DatabaseClient, PagedData<AVPMediaItem>?>(clientId, throwableFlow) {
+      extensionFlow.value?.runClient<DatabaseClient, PagedData<AVPMediaItem>?>(extensionId, throwableFlow) {
         fullMediaItem.value?.let { getRecommended(it) }
       }?.toFlow()?.collectTo(recommendations)
     }

@@ -9,32 +9,39 @@ import android.hardware.input.InputManager
 import android.os.Bundle
 import android.view.InputDevice
 import android.view.View
+import android.widget.CheckBox
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
-import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
 import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.databinding.ActivityMainBinding
 import cloud.app.vvf.features.player.PlayerManager
-import cloud.app.vvf.ui.widget.dialog.ExitConfirmDialog
+import cloud.app.vvf.utils.TV
 import cloud.app.vvf.utils.Utils.isAndroidTV
+import cloud.app.vvf.utils.isLayout
 import cloud.app.vvf.utils.openItemFragmentFromUri
+import cloud.app.vvf.utils.setDefaultFocus
+import cloud.app.vvf.utils.setLocale
 import cloud.app.vvf.utils.tv.screenHeight
 import cloud.app.vvf.utils.updateTv
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.configureSnackBar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.system.exitProcess
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
   val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
-  @Inject lateinit var sharedPreferences: SharedPreferences
+  @Inject
+  lateinit var sharedPreferences: SharedPreferences
   override fun onCreate(savedInstanceState: Bundle?) {
 
     PlayerManager.getInstance().setActivityResultRegistry(activityResultRegistry)
@@ -80,19 +87,37 @@ class MainActivity : AppCompatActivity() {
       this,
       object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-          if (!supportFragmentManager.popBackStackImmediate()) {
-            val canShowDialog = sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
-            if(canShowDialog)
-              ExitConfirmDialog().show(supportFragmentManager,"exit_confirm_dialog")
-            else
-              moveTaskToBack(true)
+          var hasPoppedChild = false
+
+          // Loop through all fragments and pop child fragments first
+          for (fragment in supportFragmentManager.fragments) {
+            if (fragment.isVisible && fragment.childFragmentManager.backStackEntryCount > 0) {
+              fragment.childFragmentManager.popBackStack()
+              hasPoppedChild = true
+              break // Stop after popping one set of child fragments
+            }
           }
-          // if you want onBackPressed() to be called as normal afterwards
+
+          if (!hasPoppedChild) {
+            if (!supportFragmentManager.popBackStackImmediate()) {
+              // If no fragments left, show exit confirmation
+              val canShowDialog =
+                sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
+              if (canShowDialog) {
+                showConfirmExitDialog(sharedPreferences)
+              } else {
+                moveTaskToBack(true) // Move app to background
+              }
+            }
+          }
         }
       }
     )
-    if(hasController) {
-      val bottomButtons = listOf<Int>(R.id.homePreviewPlay, R.id.homePreviewBookmark, R.id.homePreviewInfo)
+
+
+    if (hasController) {
+      val bottomButtons =
+        listOf<Int>(R.id.homePreviewPlay, R.id.homePreviewBookmark, R.id.homePreviewInfo)
       binding.root.viewTreeObserver.addOnGlobalFocusChangeListener { _, view ->
         if (bottomButtons.contains(view?.id)) {
           bottomView(view)
@@ -105,18 +130,10 @@ class MainActivity : AppCompatActivity() {
     addOnNewIntentListener { onIntent(it) }
     onIntent(intent)
 
-    savedInstanceState?.let { //prevent Fragment dialog show again
-      val fm = supportFragmentManager
-      val fragments = fm.fragments
-      fragments.forEach { fragment ->
-        if (fragment is DialogFragment) {
-          fragment.dismissAllowingStateLoss()
-          fm.beginTransaction().remove(fragment).commitAllowingStateLoss()
-        }
-      }
-    }
-  }
+    val localeCode = sharedPreferences.getString(getString(R.string.pref_locale), "en")
+    setLocale(localeCode)
 
+  }
   private fun onIntent(intent: Intent?) {
     this.intent = null
     intent ?: return
@@ -126,6 +143,7 @@ class MainActivity : AppCompatActivity() {
       "file" -> openExtensionInstaller(uri)
     }
   }
+
   private fun centerView(view: View?) {
     if (view == null) return
     try {
@@ -172,4 +190,22 @@ class MainActivity : AppCompatActivity() {
     }
     return false
   }
+
+  private fun showConfirmExitDialog(settingsManager: SharedPreferences) {
+
+    val dialogView = layoutInflater.inflate(R.layout.confirm_exit_dialog, null)
+    val dontShowAgainCheck: CheckBox = dialogView.findViewById(R.id.checkboxDontShowAgain)
+    MaterialAlertDialogBuilder(this)
+      .setView(dialogView)
+      .setTitle(R.string.exit_confirm_msg)
+      .setNegativeButton(R.string.no) { _, _ -> /*NO-OP*/ }
+      .setPositiveButton(R.string.yes) { _, _ ->
+        if (dontShowAgainCheck.isChecked) {
+          settingsManager.edit().putBoolean(getString(R.string.pref_show_exit_confirm), true)
+            .commit()
+        }
+        if (isLayout(TV)) exitProcess(0) else finish()
+      }.show().setDefaultFocus()
+  }
+
 }

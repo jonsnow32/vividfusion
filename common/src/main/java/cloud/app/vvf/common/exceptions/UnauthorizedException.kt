@@ -4,10 +4,10 @@ import cloud.app.vvf.common.models.ExtensionType
 
 class UnauthorizedException(
     val userId: String,
-    override val clientId: String,
+    override val extensionId: String,
     override val clientName: String,
     override val clientType: ExtensionType
-) : LoginRequiredException(clientId, clientName, clientType) {
+) : LoginRequiredException(extensionId, clientName, clientType) {
     override val message: String
-        get() = "Unauthorized ($userId : $clientId : $clientName)"
+        get() = "Unauthorized ($userId : $extensionId : $clientName)"
 }

@@ -41,9 +41,7 @@ class SelectionDialog : DockingDialog() {
       items: List<String>,
       selectedIndex: Int,
       name: String,
-      showApply: Boolean,
-      dismissCallback: () -> Unit,
-      callback: (Int) -> Unit
+      showApply: Boolean
     ): SelectionDialog {
       return newInstance(
         items,
@@ -52,23 +50,15 @@ class SelectionDialog : DockingDialog() {
         showApply,
         false,
         R.layout.sort_bottom_single_choice
-      ).apply {
-        dismissCallbackSetter = dismissCallback
-        callbackSetter = { if (it.isNotEmpty()) callback(it.first()) }
-      }
+      )
     }
 
     fun multiple(
       items: List<String>,
       selectedIndex: List<Int>,
-      name: String,
-      dismissCallback: () -> Unit,
-      callback: (List<Int>) -> Unit
+      name: String
     ): SelectionDialog {
-      return newInstance(items, selectedIndex, name, true, true, R.layout.sort_bottom_single_choice).apply {
-        dismissCallbackSetter = dismissCallback
-        callbackSetter = callback
-      }
+      return newInstance(items, selectedIndex, name, true, true, R.layout.sort_bottom_single_choice)
     }
 
     private fun newInstance(
@@ -90,8 +80,6 @@ class SelectionDialog : DockingDialog() {
     }
   }
 
-  private var dismissCallbackSetter: (() -> Unit)? = null
-  private var callbackSetter: ((List<Int>) -> Unit)? = null
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -129,15 +117,12 @@ class SelectionDialog : DockingDialog() {
         listview1.setSelection(it)
       }
 
-      dialog?.setOnDismissListener {
-        dismissCallbackSetter?.invoke()
-      }
 
       listview1.setOnItemClickListener { _, _, which, _ ->
         if (realShowApply) {
           if (!isMultiSelect) listview1.setItemChecked(which, true)
         } else {
-          callbackSetter?.invoke(listOf(which))
+          updateSelectedItems(listOf(which))
           dialog?.dismissSafe(activity)
         }
       }
@@ -147,7 +132,7 @@ class SelectionDialog : DockingDialog() {
           val selectedItems = (0 until listview1.count).filter {
             listview1.checkedItemPositions[it]
           }
-          callbackSetter?.invoke(selectedItems)
+          updateSelectedItems(selectedItems)
           dialog?.dismissSafe(activity)
         }
 
@@ -158,9 +143,18 @@ class SelectionDialog : DockingDialog() {
     }
   }
 
-  override fun onConfigurationChanged(newConfig: Configuration) {
-    super.onConfigurationChanged(newConfig)
-    // Dismiss the dialog when a configuration change (e.g., rotation) is detected
-    dialog?.dismissSafe(activity)
+  private var selectedItems = emptyList<Int>()
+  private fun updateSelectedItems(items: List<Int>) {
+    selectedItems = items
+  }
+
+  override fun getResultBundle(): Bundle? {
+    return if (selectedItems.isNotEmpty()) {
+      Bundle().apply {
+        putIntegerArrayList("selected_items", ArrayList(selectedItems))
+      }
+    } else {
+      null
+    }
   }
 }

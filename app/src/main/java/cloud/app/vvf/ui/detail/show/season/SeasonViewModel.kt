@@ -33,10 +33,10 @@ class SeasonViewModel @Inject constructor(
   var loading = MutableStateFlow(false);
   var fullMediaItem = MutableStateFlow<AVPMediaItem.SeasonItem?>(null)
   val favoriteStatus = MutableStateFlow(false)
-  fun getItemDetails(shortItem: AVPMediaItem, clientId: String) {
+  fun getItemDetails(shortItem: AVPMediaItem, extensionId: String) {
     viewModelScope.launch(Dispatchers.IO) {
       extensionFlow.collect { extensions ->
-        val detail = extensions.runClient<DatabaseClient,AVPMediaItem?>(clientId, throwableFlow) {
+        val detail = extensions.runClient<DatabaseClient,AVPMediaItem?>(extensionId, throwableFlow) {
           getMediaDetail(shortItem)
         }  ?: shortItem
 

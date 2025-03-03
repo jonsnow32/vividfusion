@@ -16,21 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class ContentSettingFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.contents)
   override val transitionName = "content_settings"
-  override val creator = { ContentPreference() }
-
-  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    setupTransition(view)
-
-    applyInsets {
-      binding.appBarLayout.setPadding(0, it.top, 0, 0)
-      binding.fragmentContainer.setPadding(0, 0, 0, it.bottom)
-    }
-    setToolBarScrollFlags()
-    setUpToolbar(title)
-
-    childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
-      .commit()
-  }
+  override val container = { ContentPreference() }
 
   class ContentPreference : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {

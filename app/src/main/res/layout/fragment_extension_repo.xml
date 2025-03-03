@@ -47,7 +47,6 @@
       android:layout_height="match_parent"
       android:clipToPadding="false"
       android:contentDescription="@string/home"
-      android:nextFocusUp="@id/extTabLayout"
       android:orientation="vertical"
       android:paddingVertical="8dp"
       app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"

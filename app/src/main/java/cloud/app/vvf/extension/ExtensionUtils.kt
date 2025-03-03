@@ -42,10 +42,10 @@ suspend inline fun <reified T : BaseClient, R> Extension<*>.run(
 }
 
 suspend inline fun <reified T : BaseClient, R> List<Extension<*>>.runClient(
-  clientId: String,
+  extensionId: String,
   throwableFlow: MutableSharedFlow<Throwable>,
   noinline block: suspend T.() -> R
 ): R? {
-  val extension = find { it.id == clientId } ?: return null
+  val extension = find { it.id == extensionId } ?: return null
   return extension.run(throwableFlow, block)
 }

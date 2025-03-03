@@ -50,17 +50,17 @@ import kotlin.coroutines.suspendCoroutine
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
     companion object {
-        fun newInstance(clientId: String, clientName: String, extensionType: String) =
+        fun newInstance(extensionId: String, clientName: String, extensionType: String) =
             LoginFragment().apply {
                 arguments = Bundle().apply {
-                    putString("clientId", clientId)
+                    putString("extensionId", extensionId)
                     putString("clientName", clientName)
                     putString("extensionType", extensionType)
                 }
             }
 
         fun newInstance(error: AppException.LoginRequired) =
-            newInstance(error.clientID.id, error.clientID.name, error.clientID.metadata.types[0].name)
+            newInstance(error.extensionId.id, error.extensionId.name, error.extensionId.metadata.types[0].name)
 
         const val USER_AGENT =
             "Mozilla/5.0 (Linux; Android 2; Jeff Bezos) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.158 Mobile Safari/537.36"
@@ -71,7 +71,7 @@ class LoginFragment : Fragment() {
         val type = requireArguments().getString("extensionType")!!
         ExtensionType.valueOf(type)
     }
-    private val clientId by lazy { requireArguments().getString("clientId")!! }
+    private val extensionId by lazy { requireArguments().getString("extensionId")!! }
     private val clientName by lazy { requireArguments().getString("clientName")!! }
     private val loginViewModel by viewModels<LoginViewModel>()
 
@@ -107,7 +107,7 @@ class LoginFragment : Fragment() {
         }
         binding.toolbar.title = getString(R.string.extension_login, clientName)
 
-        val extension = loginViewModel.extensionList.getExtension(clientId)
+        val extension = loginViewModel.extensionList.getExtension(extensionId)
 
         if (extension == null) {
             createSnack(requireContext().noClient())

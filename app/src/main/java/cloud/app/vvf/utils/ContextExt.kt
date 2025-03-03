@@ -3,9 +3,12 @@ package cloud.app.vvf.utils
 import android.app.UiModeManager
 import android.content.Context
 import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.Build
+import android.os.LocaleList
 import androidx.preference.PreferenceManager
 import cloud.app.vvf.R
+import java.util.Locale
 
 const val PHONE: Int = 0b001
 const val TV: Int = 0b010
@@ -53,3 +56,23 @@ fun Context.isLayout(flags: Int): Boolean {
 }
 
 
+/**
+ * Not all languages can be fetched from locale with a code.
+ * This map allows sidestepping the default Locale(languageCode)
+ * when setting the app language.
+ **/
+val appLanguageExceptions = hashMapOf(
+  "zh-rTW" to Locale.TRADITIONAL_CHINESE
+)
+
+fun Context.setLocale(languageCode: String?) {
+  if (languageCode == null) return
+  val locale = appLanguageExceptions[languageCode] ?: Locale(languageCode)
+  val resources: Resources = resources
+  val config = resources.configuration
+  Locale.setDefault(locale)
+  config.setLocale(locale)
+  createConfigurationContext(config)
+  @Suppress("DEPRECATION")
+  resources.updateConfiguration(config, resources.displayMetrics)
+}

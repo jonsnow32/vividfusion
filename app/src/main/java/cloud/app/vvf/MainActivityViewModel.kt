@@ -30,13 +30,13 @@ class MainActivityViewModel @Inject constructor(
 ) : ViewModel() {
 
   private val navInsets = MutableStateFlow(Insets())
-  val systemInsets = MutableStateFlow(Insets())
+  private val systemInsets = MutableStateFlow(Insets())
   private val bannerAdInsets = MutableStateFlow(Insets())
 
-  private val combineInsets = systemInsets.combine(navInsets) { system, nav ->
+  val contentInsets = systemInsets.combine(navInsets) { system, nav ->
     system.add(nav)
-  }.combine(bannerAdInsets) { system, ad ->
-    system.add(ad)
+  }.combine(bannerAdInsets) { insets, ad ->
+    insets.add(ad)
   }
 
   fun setNavInsets(insets: Insets) {
@@ -69,7 +69,7 @@ class MainActivityViewModel @Inject constructor(
 
     fun Fragment.applyInsets(block: MainActivityViewModel.(Insets) -> Unit) {
       val mainActivityViewModel by activityViewModels<MainActivityViewModel>()
-      observe(mainActivityViewModel.combineInsets) { mainActivityViewModel.block(it) }
+      observe(mainActivityViewModel.contentInsets) { mainActivityViewModel.block(it) }
     }
 
     fun Fragment.applyInsetsMain(
@@ -78,7 +78,7 @@ class MainActivityViewModel @Inject constructor(
       block: MainActivityViewModel.(Insets) -> Unit = {}
     ) {
       val mainActivityViewModel by activityViewModels<MainActivityViewModel>()
-      observe(mainActivityViewModel.combineInsets) { insets ->
+      observe(mainActivityViewModel.contentInsets) { insets ->
         child.applyContentInsets(insets)
         appBar.updatePaddingRelative(
           top = insets.top,

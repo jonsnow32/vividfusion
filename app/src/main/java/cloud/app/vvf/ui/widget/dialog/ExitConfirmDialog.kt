@@ -21,7 +21,7 @@ class ExitConfirmDialog: DialogFragment(){
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     // Create the dialog with the specified theme
-    return Dialog(requireContext(), R.style.AlertDialogCustom)
+    return Dialog(requireContext(), com.google.android.material.R.style.Theme_Material3_DayNight_Dialog)
   }
 
   override fun onCreateView(
@@ -43,5 +43,13 @@ class ExitConfirmDialog: DialogFragment(){
       sharedPreferences.edit().putBoolean(getString(R.string.pref_show_exit_confirm), !isChecked).apply()
     }
     binding.noBtn.requestFocus()
+  }
+
+  override fun onStart() {
+    super.onStart()
+    dialog?.window?.setLayout(
+      ViewGroup.LayoutParams.WRAP_CONTENT,
+      ViewGroup.LayoutParams.WRAP_CONTENT
+    )
   }
 }

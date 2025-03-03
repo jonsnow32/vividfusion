@@ -38,6 +38,7 @@ fun Fragment.navigate(dest: Fragment, transitionView: View? = null) {
   }
 }
 
+
 fun FragmentActivity.navigate(newFragment: Fragment, view: View? = null) {
   val oldFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment)!!
   oldFragment.navigate(newFragment, view)
@@ -65,9 +66,9 @@ fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
   }
 }
 
-fun Fragment.navigate(item: AVPMediaItem, clientId: String? = null, transitionView: View? = null) {
+fun Fragment.navigate(item: AVPMediaItem, extensionId: String? = null, transitionView: View? = null) {
   val bundle = Bundle()
-  bundle.putString("clientId", clientId)
+  bundle.putString("extensionId", extensionId)
   bundle.putSerialized("mediaItem", item)
 
   when (item) {

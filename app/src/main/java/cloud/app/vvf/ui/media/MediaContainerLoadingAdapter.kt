@@ -171,7 +171,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
     override fun onApiKeyEnter(view: View, error: MissingApiKeyException) {
       //fragment.navigate(ManageExtensionsFragment())
       val extension = fragment.navigate(
-        ExtensionSettingFragment.newInstance(error.clientId, error.clientName),
+        ExtensionSettingFragment.newInstance(error.extensionId, error.clientName),
         view
       )
 

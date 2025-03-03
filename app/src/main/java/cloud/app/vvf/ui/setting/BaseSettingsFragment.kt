@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
@@ -20,7 +21,7 @@ abstract class BaseSettingsFragment : Fragment() {
 
   abstract val title: String?
   abstract val transitionName: String?
-  abstract val creator: () -> Fragment
+  abstract val container: () -> Fragment
 
   protected var binding: FragmentSettingsBinding by autoCleared()
 
@@ -34,13 +35,20 @@ abstract class BaseSettingsFragment : Fragment() {
 
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    setupTransition(view)
+    setupTransition(binding.fragmentContainer)
     applyInsetsMain(binding.appBarLayout, binding.fragmentContainer)
     setToolBarScrollFlags()
     setUpToolbar(title ?: resources.getString(R.string.settings))
 
-    childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, creator())
+    childFragmentManager.beginTransaction().replace(R.id.fragmentContainer, container())
       .commit()
+
+//    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+//      override fun handleOnBackPressed() {
+//        // Handle the back button press in your fragment
+//        parentFragmentManager.popBackStack() // or custom behavior
+//      }
+//    })
   }
 
   protected fun setToolBarScrollFlags() {
@@ -53,10 +61,10 @@ abstract class BaseSettingsFragment : Fragment() {
   protected fun setUpToolbar(title: String) {
     binding.toolbar.apply {
       setTitle(title)
-      if (this@BaseSettingsFragment !is SettingsFragment) {
+      if (this@BaseSettingsFragment !is SettingsRootFragment) {
         setNavigationIcon(R.drawable.ic_back)
         setNavigationOnClickListener {
-          activity?.onBackPressedDispatcher?.onBackPressed()
+          parentFragment?.childFragmentManager?.popBackStack()
         }
       }
     }

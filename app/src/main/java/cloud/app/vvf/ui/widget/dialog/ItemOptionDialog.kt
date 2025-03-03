@@ -37,15 +37,15 @@ class ItemOptionDialog : DockingDialog() {
   private var binding by autoCleared<DialogMediaItemBinding>()
   private val viewModel by viewModels<ItemOptionViewModel>()
   private val args by lazy { requireArguments() }
-  private val clientId by lazy { args.getString("clientId")!! }
+  private val extensionId by lazy { args.getString("extensionId")!! }
   private val item by lazy { args.getSerialized<AVPMediaItem>("item")!! }
 
   companion object {
     fun newInstance(
-      clientId: String, item: AVPMediaItem
+      extensionId: String, item: AVPMediaItem
     ) = ItemOptionDialog().apply {
       arguments = Bundle().apply {
-        putString("clientId", clientId)
+        putString("extensionId", extensionId)
         putSerialized("item", item)
       }
     }
@@ -58,11 +58,11 @@ class ItemOptionDialog : DockingDialog() {
     return binding.root
   }
 
-  @SuppressLint("UseCo  mpatLoadingForDrawables")
+  @SuppressLint("UseCompatLoadingForDrawables")
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     binding.itemContainer.run {
       item.backdrop.loadWith(binding.imageView)
-      viewModel.getItemDetails(item, clientId)
+      viewModel.getItemDetails(item, extensionId)
     }
     binding.recyclerView.adapter =
       ConcatAdapter(ActionAdapter(getActions(item)), LoadingAdapter())
@@ -84,52 +84,60 @@ class ItemOptionDialog : DockingDialog() {
     }
   }
 
-  fun getBookmarkAction(item: AVPMediaItem) : ItemAction {
+  fun getBookmarkAction(item: AVPMediaItem): ItemAction {
     val bookmarkItem = viewModel.bookmarkStatus.value;
-    return ItemAction.Resource(if(bookmarkItem == null) R.drawable.ic_bookmark_outline else R.drawable.ic_bookmark_filled, getStringIds(bookmarkItem)) {
-        val mainViewModel by activityViewModels<MainActivityViewModel>()
-        val status = mainViewModel.getBookmark(item)
-        val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
-            add("None")
+    return ItemAction.Resource(
+      if (bookmarkItem == null) R.drawable.ic_bookmark_outline else R.drawable.ic_bookmark_filled,
+      getStringIds(bookmarkItem)
+    ) {
+      val mainViewModel by activityViewModels<MainActivityViewModel>()
+      val status = mainViewModel.getBookmark(item)
+      val bookmarks = BookmarkItem.getBookmarkItemSubclasses().toMutableList().apply {
+        add("None")
+      }
+      val selectedIndex =
+        if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
+      SelectionDialog.single(
+        bookmarks,
+        selectedIndex,
+        getString(R.string.add_to_bookmark), false
+      ).show(parentFragmentManager)
+      { result ->
+        result?.let {
+          result.getIntegerArrayList("selected_items")?.get(0)?.let {
+            mainViewModel.addToBookmark(item, bookmarks[it])
+          }
         }
-        val selectedIndex =
-            if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
-        SelectionDialog.single(
-            bookmarks,
-            selectedIndex,
-            getString(R.string.add_to_bookmark),
-            false,
-            {},
-            { selected ->
-                mainViewModel.addToBookmark(item, bookmarks.get(selected));
-            }).show(parentFragmentManager, null)
+      }
     }
   }
+
   private fun getActions(item: AVPMediaItem): List<ItemAction> = when (item) {
     is AVPMediaItem.ShowItem -> {
       listOfNotNull(
-          ItemAction.Resource(R.drawable.ic_more_horiz, R.string.action_show_details) {
-              val movieFragment = ShowFragment();
-              val bundle = Bundle()
-              bundle.putString("clientId", clientId)
-              bundle.putSerialized("mediaItem", item)
-              movieFragment.arguments = bundle
-              requireActivity().navigate(
-                  movieFragment
-              )
-          }, getBookmarkAction(item))
+        ItemAction.Resource(R.drawable.ic_more_horiz, R.string.action_show_details) {
+          val movieFragment = ShowFragment();
+          val bundle = Bundle()
+          bundle.putString("extensionId", extensionId)
+          bundle.putSerialized("mediaItem", item)
+          movieFragment.arguments = bundle
+          requireActivity().navigate(
+            movieFragment
+          )
+        }, getBookmarkAction(item)
+      )
     }
 
     is AVPMediaItem.EpisodeItem,
     is AVPMediaItem.MovieItem -> {
       listOfNotNull(ItemAction.Resource(R.drawable.play_arrow_24dp, R.string.play_now) {
-          //playerViewModel.play(clientId, item, 0)
-      },getBookmarkAction(item))
+        //playerViewModel.play(extensionId, item, 0)
+      }, getBookmarkAction(item))
     }
 
     is AVPMediaItem.ActorItem -> {
       listOfNotNull(ItemAction.Resource(R.drawable.playlist_play_24dp, R.string.known_for) {
-          viewModel.getKnowFor(clientId, item)
+        viewModel.getKnowFor(extensionId, item)
       })
     }
 
@@ -138,40 +146,40 @@ class ItemOptionDialog : DockingDialog() {
 
     else -> listOf()
   } + listOfNotNull(
-      ItemAction.Resource(
-          R.drawable.share_24dp,
-          R.string.share
-      ) {
-          requireActivity().shareItem(item)
-      },
+    ItemAction.Resource(
+      R.drawable.share_24dp,
+      R.string.share
+    ) {
+      requireActivity().shareItem(item)
+    },
 
     if (!viewModel.favoriteStatus.value)
-        ItemAction.Resource(
-            R.drawable.favorite_border_24dp,
-            R.string.action_add_to_favorites
-        ) {
-            viewModel.toggleFavoriteStatus {
-                val messageResId = if (viewModel.favoriteStatus.value) {
-                    R.string.favorite_added
-                } else {
-                    R.string.favorite_removed
-                }
-                createSnack(getString(messageResId, item.title))
-            }
-        } else
-        ItemAction.Resource(
-            R.drawable.favorite_24dp,
-            R.string.action_remove_from_favorites
-        ) {
-            viewModel.toggleFavoriteStatus {
-                val messageResId = if (viewModel.favoriteStatus.value) {
-                    R.string.favorite_added
-                } else {
-                    R.string.favorite_removed
-                }
-                createSnack(getString(messageResId, item.title))
-            }
+      ItemAction.Resource(
+        R.drawable.favorite_border_24dp,
+        R.string.action_add_to_favorites
+      ) {
+        viewModel.toggleFavoriteStatus {
+          val messageResId = if (viewModel.favoriteStatus.value) {
+            R.string.favorite_added
+          } else {
+            R.string.favorite_removed
+          }
+          createSnack(getString(messageResId, item.title))
         }
+      } else
+      ItemAction.Resource(
+        R.drawable.favorite_24dp,
+        R.string.action_remove_from_favorites
+      ) {
+        viewModel.toggleFavoriteStatus {
+          val messageResId = if (viewModel.favoriteStatus.value) {
+            R.string.favorite_added
+          } else {
+            R.string.favorite_removed
+          }
+          createSnack(getString(messageResId, item.title))
+        }
+      }
   )
 
   sealed class ItemAction {

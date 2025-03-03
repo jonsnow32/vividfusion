@@ -26,9 +26,9 @@ class MediaContainerAdapter(
 ) : BasePagingAdapter<MediaItemsContainer, MediaContainerViewHolder>(fragment, id, DiffCallback) {
 
   interface Listener : MediaItemAdapter.Listener {
-    fun onClick(clientId: String?, container: MediaItemsContainer, transitionView: View)
+    fun onClick(extensionId: String?, container: MediaItemsContainer, transitionView: View)
     fun onLongClick(
-      clientId: String?,
+      extensionId: String?,
       container: MediaItemsContainer,
       transitionView: View
     ): Boolean

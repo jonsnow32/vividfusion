@@ -448,8 +448,10 @@ class BuiltInClient : DatabaseClient, StreamClient {
                   overview = episode.overview,
                   releaseDateMsUTC = episode.air_date?.time,
                   originalTitle = episode.name ?: "",
-                  homepage = null
-
+                  homepage = null,
+                    voteCount = episode.vote_count,
+                  voteAverage = episode.vote_average,
+                  rating = episode.rating?.toDouble()
                 ),
                 seasonNumber = episode.season_number ?: 0,
                 episodeNumber = episode.episode_number ?: 0,
@@ -482,7 +484,8 @@ class BuiltInClient : DatabaseClient, StreamClient {
           AppendToResponseItem.TV_CREDITS,
           AppendToResponseItem.COMBINED_CREDITS,
           AppendToResponseItem.IMAGES,
-          AppendToResponseItem.EXTERNAL_IDS
+          AppendToResponseItem.EXTERNAL_IDS,
+          AppendToResponseItem.CONTENT_RATINGS
         )
       ).execute().body()
     }
@@ -517,7 +520,8 @@ class BuiltInClient : DatabaseClient, StreamClient {
           AppendToResponseItem.IMAGES,
           AppendToResponseItem.RECOMMENDATIONS,
           AppendToResponseItem.VIDEOS,
-          AppendToResponseItem.REVIEWS
+          AppendToResponseItem.REVIEWS,
+          AppendToResponseItem.CONTENT_RATINGS
         )
       ).execute()
     }
@@ -549,7 +553,8 @@ class BuiltInClient : DatabaseClient, StreamClient {
           AppendToResponseItem.IMAGES,
           AppendToResponseItem.RECOMMENDATIONS,
           AppendToResponseItem.VIDEOS,
-          AppendToResponseItem.REVIEWS
+          AppendToResponseItem.REVIEWS,
+          AppendToResponseItem.CONTENT_RATINGS
         )
       ).execute()
     }
@@ -777,7 +782,10 @@ class BuiltInClient : DatabaseClient, StreamClient {
                   overview = episode.overview,
                   releaseDateMsUTC = episode.firstAired?.iso8601ToMillis(),
                   originalTitle = episodeTitle,
-                  homepage = null
+                  homepage = null,
+                  voteCount = episode.siteRatingCount,
+                  voteAverage = episode.siteRating,
+                  rating =  episode.siteRating
                 ),
                 seasonNumber = episode.airedSeason ?: 0,
                 episodeNumber = episode.airedEpisodeNumber ?: 0,

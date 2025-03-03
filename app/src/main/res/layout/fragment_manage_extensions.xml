@@ -5,67 +5,11 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-  <com.google.android.material.appbar.AppBarLayout
-    android:id="@+id/appBarLayout"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:touchscreenBlocksFocus="false"
-    android:background="?attr/colorSurfaceContainer">
-
-    <com.google.android.material.appbar.MaterialToolbar
-      android:id="@+id/toolbar"
-      android:layout_width="match_parent"
-      android:layout_height="?actionBarSize"
-      android:touchscreenBlocksFocus="false"
-      app:layout_scrollFlags="scroll|enterAlways"
-      app:menu="@menu/manage_extensions_menu"
-      app:title="@string/extensions" />
-
-    <com.google.android.material.tabs.TabLayout
-      android:id="@+id/extTabLayout"
-      style="@style/TabLayout"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content">
-
-      <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/mv_source" />
-
-      <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/streams" />
-
-      <com.google.android.material.tabs.TabItem
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/subtitle" />
-
-    </com.google.android.material.tabs.TabLayout>
-
-    <View
-      android:id="@+id/appBarOutline"
-      style="@style/AppBarOutline"
-      app:layout_anchor="@id/appBarLayout"
-      app:layout_anchorGravity="bottom" />
-
-    <View
-      android:id="@+id/toolbarOutline"
-      android:layout_width="match_parent"
-      android:layout_height="1dp"
-      android:layout_marginTop="-1dp"
-      android:background="?attr/colorOutline"
-      android:translationZ="1dp"
-      app:layout_anchor="@id/appBarLayout" />
-  </com.google.android.material.appbar.AppBarLayout>
-
 
   <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     android:id="@+id/swipeRefresh"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    android:layout_height="match_parent">
 
     <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/recyclerView"
@@ -73,9 +17,7 @@
       android:layout_height="match_parent"
       android:clipToPadding="false"
       android:contentDescription="@string/home"
-      android:nextFocusUp="@id/extTabLayout"
       android:orientation="vertical"
-      android:paddingVertical="8dp"
       app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
       tools:listitem="@layout/item_extension" />
 
@@ -100,6 +42,4 @@
 
   </FrameLayout>
 
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

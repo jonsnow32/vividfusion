@@ -7,6 +7,7 @@ import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 object TimeUtils {
   private val TIME_PATTERN: String = getDefaultDatePattern()
@@ -52,7 +53,7 @@ object TimeUtils {
   fun Long.toLocalMonthYear(): String {
     val instant = Instant.ofEpochMilli(this)
     val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-    val month = localDateTime.month.name.lowercase().capitalize()
+    val month = localDateTime.month.name.lowercase().capitalize(Locale.ROOT)
     val year = localDateTime.year
     return "$month $year"
   }

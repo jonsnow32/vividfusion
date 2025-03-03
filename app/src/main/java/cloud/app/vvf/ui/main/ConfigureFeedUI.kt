@@ -46,7 +46,7 @@ inline fun <reified T> Fragment.configureFeedUI(
   recyclerView: RecyclerView,
   swipeRefresh: SwipeRefreshLayout,
   tabLayout: TabLayout,
-  clientId: String? = null,
+  extensionId: String? = null,
 )  {
 
   val parent = parentFragment as Fragment
@@ -59,11 +59,11 @@ inline fun <reified T> Fragment.configureFeedUI(
 
   var mediaContainerAdapter: MediaContainerAdapter? = null
 
-  if (clientId == null) collect(viewModel.extListFlow) {
+  if (extensionId == null) collect(viewModel.extListFlow) {
     val adapter = applyClient<T>(recyclerView, swipeRefresh, id, it.firstOrNull())
     mediaContainerAdapter = adapter
   } else collect(viewModel.extListFlow){
-   val extension = viewModel.extListFlow.value.find { it.id == clientId && it.types.contains(ExtensionType.DATABASE)}
+   val extension = viewModel.extListFlow.value.find { it.id == extensionId && it.types.contains(ExtensionType.DATABASE)}
     val adapter = applyClient<T>(recyclerView, swipeRefresh, id, extension)
     mediaContainerAdapter = adapter
   }

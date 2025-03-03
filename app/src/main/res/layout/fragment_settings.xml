@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  android:orientation="vertical"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  android:orientation="vertical">
 
   <com.google.android.material.appbar.AppBarLayout
     android:id="@+id/appBarLayout"
     android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:background="?attr/colorSurfaceContainer"
-    android:layout_height="wrap_content">
+    android:touchscreenBlocksFocus="false">
 
     <com.google.android.material.appbar.MaterialToolbar
       android:id="@+id/toolbar"
@@ -18,21 +19,21 @@
       android:touchscreenBlocksFocus="false"
       app:layout_scrollFlags="scroll|enterAlways"
       app:title="@string/settings" />
+
     <View
       android:id="@+id/toolbarOutline"
       style="@style/AppBarOutline"
-      app:layout_anchor="@id/appBarLayout"/>
+      app:layout_anchor="@id/appBarLayout" />
   </com.google.android.material.appbar.AppBarLayout>
-
 
 
   <androidx.fragment.app.FragmentContainerView
     android:id="@+id/fragmentContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:nextFocusUp="@id/toolbar"
+    android:layout_marginTop="4dp"
     android:nextFocusLeft="@id/toolbar"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    android:layout_marginTop="4dp"/>
+    android:nextFocusUp="@id/toolbar"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

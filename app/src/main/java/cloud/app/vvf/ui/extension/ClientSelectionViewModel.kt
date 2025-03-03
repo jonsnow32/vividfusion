@@ -11,5 +11,5 @@ abstract class ClientSelectionViewModel(
 
     abstract val metadataFlow: StateFlow<List<Metadata>?>
     abstract val currentFlow : StateFlow<Extension<*>?>
-    abstract fun onClientSelected(clientId: String)
+    abstract fun onClientSelected(extensionId: String)
 }

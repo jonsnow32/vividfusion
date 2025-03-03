@@ -76,14 +76,14 @@ class RealdebirdModule {
         val realDebridOauthApi: RealDebridOauthApi
     ) : Authenticator {
         override fun authenticate(route: Route?, response: Response): Request? {
-            val clientId = RealDebirdOAuthSettings.getClientID(pref);
+            val extensionId = RealDebirdOAuthSettings.getextensionId(pref);
             val clientSecret = RealDebirdOAuthSettings.getClientSecret(pref);
             val refresh_token = RealDebirdOAuthSettings.getRefreshToken(pref);
-            if (clientId.isNullOrEmpty())
+            if (extensionId.isNullOrEmpty())
                 throw Exception("Please check your RealDebrid subscription first!\nGoto: Setting/Premium accounts/Real debrid")
             val body = mapOf(
                 "user_agent" to USER_AGENT,
-                "client_id" to clientId,
+                "client_id" to extensionId,
                 "client_secret" to clientSecret,
                 "code" to refresh_token,
                 "grant_type" to "http://oauth.net/grant_type/device/1.0"

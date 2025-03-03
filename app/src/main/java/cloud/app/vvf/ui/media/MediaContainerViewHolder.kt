@@ -49,7 +49,7 @@ sealed class MediaContainerViewHolder(
   abstract val transitionView: View
 
   class PageView(
-    val clientId: String?,
+    val extensionId: String?,
     val binding: HomePreviewViewpagerBinding,
     val viewModel: StateViewModel,
     val fragment: Fragment,
@@ -78,28 +78,32 @@ sealed class MediaContainerViewHolder(
           bookmarks,
           selectedIndex,
           fragment.getString(R.string.add_to_bookmark),
-          false,
-          {},
-          { selected ->
-            mainViewModel.addToBookmark(item, bookmarks[selected]);
-            val newValue = mainViewModel.getBookmark(item)
-            binding.homePreviewBookmark.setCompoundDrawablesWithIntrinsicBounds(
-              null,
-              ContextCompat.getDrawable(
-                binding.homePreviewBookmark.context,
-                if(newValue == null) R.drawable.ic_add_20dp else R.drawable.ic_bookmark_filled
-              ),
-              null,
-              null
-            )
-            binding.homePreviewBookmark.text = fragment.getString(getStringIds(newValue))
+          false
+        ).show(fragment.parentFragmentManager) { result ->
+          result?.let {
+            val selected = it.getIntegerArrayList("selected_items")?.get(0)
+            if (selected != null) {
+              mainViewModel.addToBookmark(item, bookmarks[selected]);
+              val newValue = mainViewModel.getBookmark(item)
+              binding.homePreviewBookmark.setCompoundDrawablesWithIntrinsicBounds(
+                null,
+                ContextCompat.getDrawable(
+                  binding.homePreviewBookmark.context,
+                  if (newValue == null) R.drawable.ic_add_20dp else R.drawable.ic_bookmark_filled
+                ),
+                null,
+                null
+              )
+              binding.homePreviewBookmark.text = fragment.getString(getStringIds(newValue))
+            }
 
-          }).show(fragment.parentFragmentManager, null)
+          }
+        }
       }
 
       binding.homePreviewInfo.setOnClickListener {
         val item = items[selectedPosition]
-        fragment.navigate(item, clientId)
+        fragment.navigate(item, extensionId)
       }
 
 
@@ -158,12 +162,15 @@ sealed class MediaContainerViewHolder(
         null,
         ContextCompat.getDrawable(
           binding.homePreviewBookmark.context,
-          if(status == null) R.drawable.ic_add_20dp else R.drawable.ic_bookmark_filled
+          if (status == null) R.drawable.ic_add_20dp else R.drawable.ic_bookmark_filled
         ),
         null,
         null
       )
-      binding.homePreviewBookmark.text = if(status == null) fragment.getString(R.string.none) else fragment.getString(getStringIds(status))
+      binding.homePreviewBookmark.text =
+        if (status == null) fragment.getString(R.string.none) else fragment.getString(
+          getStringIds(status)
+        )
     }
 
     override val clickView: View = binding.homePreviewPlay
@@ -171,7 +178,7 @@ sealed class MediaContainerViewHolder(
 
     companion object {
       fun create(
-        clientId: String,
+        extensionId: String,
         parent: ViewGroup,
         viewModel: StateViewModel,
         fragment: Fragment,
@@ -179,7 +186,7 @@ sealed class MediaContainerViewHolder(
       ): MediaContainerViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return PageView(
-          clientId,
+          extensionId,
           HomePreviewViewpagerBinding.inflate(layoutInflater, parent, false),
           viewModel,
           fragment,
@@ -244,7 +251,7 @@ sealed class MediaContainerViewHolder(
     val binding: ContainerCategoryBinding,
     val viewModel: StateViewModel,
     private val sharedPool: RecyclerView.RecycledViewPool,
-    private val clientId: String?,
+    private val extensionId: String?,
     val listener: MediaItemAdapter.Listener,
   ) : MediaContainerViewHolder(binding) {
 
@@ -263,7 +270,7 @@ sealed class MediaContainerViewHolder(
       val adapter = MediaItemAdapter(
         listener,
         transitionView.transitionName + category.id,
-        clientId,
+        extensionId,
       )
       binding.recyclerView.adapter = adapter
       binding.recyclerView.setLinearListLayout(
@@ -290,7 +297,7 @@ sealed class MediaContainerViewHolder(
         parent: ViewGroup,
         viewModel: StateViewModel,
         sharedPool: RecyclerView.RecycledViewPool,
-        clientId: String?,
+        extensionId: String?,
         listener: MediaItemAdapter.Listener,
       ): MediaContainerViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
@@ -298,7 +305,7 @@ sealed class MediaContainerViewHolder(
           ContainerCategoryBinding.inflate(layoutInflater, parent, false),
           viewModel,
           sharedPool,
-          clientId,
+          extensionId,
           listener
         )
       }
@@ -307,13 +314,13 @@ sealed class MediaContainerViewHolder(
 
   class Media(
     val binding: ContainerItemBinding,
-    private val clientId: String?,
+    private val extensionId: String?,
     val listener: MediaItemAdapter.Listener,
   ) : MediaContainerViewHolder(binding) {
     override fun bind(container: MediaItemsContainer) {
       val item = (container as? MediaItemsContainer.Item)?.media ?: return
       binding.bind(item)
-      binding.more.setOnClickListener { listener.onLongClick(clientId, item, transitionView) }
+      binding.more.setOnClickListener { listener.onLongClick(extensionId, item, transitionView) }
     }
 
     override val transitionView: View = binding.imageView
@@ -321,13 +328,13 @@ sealed class MediaContainerViewHolder(
     companion object {
       fun create(
         parent: ViewGroup,
-        clientId: String?,
+        extensionId: String?,
         listener: MediaItemAdapter.Listener
       ): MediaContainerViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return Media(
           ContainerItemBinding.inflate(layoutInflater, parent, false),
-          clientId,
+          extensionId,
           listener,
         )
       }

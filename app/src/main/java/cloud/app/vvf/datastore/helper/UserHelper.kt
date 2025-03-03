@@ -5,7 +5,7 @@ import cloud.app.vvf.datastore.DataStore
 
 
 data class CurrentUser(
-  val clientId: String,
+  val extensionId: String,
   val id: String?
 )
 

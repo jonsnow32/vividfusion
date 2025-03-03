@@ -11,7 +11,7 @@ import cloud.app.vvf.R
 import cloud.app.vvf.databinding.DialogLoginUserBinding
 import cloud.app.vvf.databinding.ItemLoginUserBinding
 import cloud.app.vvf.datastore.helper.CurrentUser
-import cloud.app.vvf.ui.setting.SettingsFragment
+import cloud.app.vvf.ui.setting.SettingsRootFragment
 import cloud.app.vvf.ui.widget.dialog.DockingDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.loadInto
@@ -33,7 +33,7 @@ class LoginUserBottomSheet : DockingDialog() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.settings.setOnClickListener {
             dismiss()
-            requireActivity().navigate(SettingsFragment())
+            requireActivity().navigate(SettingsRootFragment())
         }
         binding.downloads.setOnClickListener {
             dismiss()
@@ -52,7 +52,7 @@ class LoginUserBottomSheet : DockingDialog() {
 
             binding.switchAccount.setOnClickListener {
                 dismiss()
-                LoginUserListBottomSheet().show(parentFragmentManager, null)
+                LoginUserListBottomSheet().show(parentFragmentManager)
             }
             observe(viewModel.currentUser) { (extensionData, user) ->
                 binding.login.isVisible = user == null

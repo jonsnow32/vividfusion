@@ -48,7 +48,9 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
       backdrop = baseMovie.backdrop_path,
       rating = baseMovie.vote_average,
       genres = getGenre(this),
-      homepage = null
+      homepage = null,
+      voteCount = baseMovie.vote_count,
+      voteAverage = baseMovie.vote_average,
       //to be continued
     )
   )
@@ -58,8 +60,10 @@ fun BaseMovie.toMediaItem(): AVPMediaItem.MovieItem {
     movie.ids.imdbId = this.external_ids?.imdb_id
 
     movie.recommendations = this.recommendations?.results?.map { toMovie(it) }
-    movie.generalInfo.runtime = this.runtime
+    movie.generalInfo.runtime = (this.runtime ?: 0) * 60
     movie.generalInfo.homepage = this.homepage
+    movie.status = this.status?.value
+    movie.tagline = this.tagline;
     movie.generalInfo.actors = this.credits?.cast?.map {
       Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id)
     }
@@ -84,7 +88,9 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
       backdrop = baseShow.backdrop_path,
       rating = baseShow.vote_average,
       genres = baseShow.genre_ids?.map { showGenres[it] ?: "" },
-      homepage = null
+      homepage = null,
+      voteCount = baseShow.vote_count,
+      voteAverage = baseShow.vote_average
       //to be continued
     ),
   )
@@ -94,9 +100,9 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
     show.ids.tvdbId = this.external_ids?.tvdb_id
     show.ids.imdbId = this.external_ids?.imdb_id
     show.recommendations = this.recommendations?.results?.map { toShow(it) }
-    show.generalInfo.contentRating = this.content_ratings?.results.orEmpty().firstOrNull()?.rating
     show.generalInfo.genres = this.genres?.map { it.name ?: "unknown" }
-    show.status = this.status?.toString() ?: "";
+    show.status = this.status
+    show.contentRating = this.content_ratings?.results?.firstOrNull { it.iso_3166_1 == "US" }?.rating
     show.generalInfo.actors = this.credits?.cast?.map {
       Actor(name = it.name ?: "No name", image = it.profile_path?.toImageHolder(), id = it.id)
     }

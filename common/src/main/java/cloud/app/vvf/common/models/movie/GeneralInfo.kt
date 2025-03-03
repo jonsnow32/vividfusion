@@ -17,8 +17,9 @@ data class GeneralInfo(
   @SerialName("logo") var logo: String? = null,
   @SerialName("runtime") var runtime: Int? = null,
   @SerialName("genres") var genres: List<String>? = null,
-  @SerialName("content_rating") var contentRating: String? = null,
   @SerialName("rating") var rating: Double? = null,
+  @SerialName("vote_average") var voteAverage: Double? = null,
+  @SerialName("vote_count") var voteCount: Int? = null,
   @SerialName("actors") var actors: List<Actor>? = null,
   @SerialName("homepage") var homepage: String? = null,
   @SerialName("videos") var videos: List<StreamData>? = null

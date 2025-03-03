@@ -41,7 +41,7 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
   }
   private var searchJob: Job? = null
 
-  val clientId = arguments?.getString("clientId")
+  val extensionId = arguments?.getString("extensionId")
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -65,7 +65,7 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
 
     configureFeedUI<DatabaseClient>(
       R.string.home, viewModel, binding.recyclerView,
-      binding.swipeRefresh, binding.tabLayout, clientId
+      binding.swipeRefresh, binding.tabLayout, extensionId
     )
 
     val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
@@ -166,16 +166,16 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     super.onStop()
   }
 
-  override fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?) {
+  override fun onClick(extensionId: String?, item: AVPMediaItem, transitionView: View?) {
     // TODO: Handle media item click
   }
 
-  override fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
+  override fun onLongClick(extensionId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
     // TODO: Handle media item long click
     return false
   }
 
-  override fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean) {
+  override fun onFocusChange(extensionId: String?, item: AVPMediaItem, hasFocus: Boolean) {
     // TODO: Handle focus change
   }
 }

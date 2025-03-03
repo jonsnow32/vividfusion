@@ -5,7 +5,7 @@
     <item name="collapsingToolbarLayoutStyle">@style/CollapsingBar</item>
     <item name="alertDialogTheme">@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog</item>
     <item name="android:fontFamily">@font/google_sans</item>
-
+    <item name="snackbarStyle">@style/Widget.App.Snackbar</item>
 <!--    <item name="iconColor">?android:textColor</item>-->
 <!--    <item name="secondIconColor">?android:textColorSecondary</item>-->
 <!--    <item name="textColor">?android:textColor</item>-->

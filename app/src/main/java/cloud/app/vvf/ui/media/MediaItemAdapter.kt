@@ -15,15 +15,15 @@ import cloud.app.vvf.common.models.AVPMediaItem
 class MediaItemAdapter(
   private val listener: Listener,
   private val transition: String,
-  private val clientId: String?,
+  private val extensionId: String?,
   private val itemWidth: Int? = null,
   private val itemHeight: Int? = null
 ) : PagingDataAdapter<AVPMediaItem, MediaItemViewHolder>(DiffCallback) {
 
   interface Listener {
-    fun onClick(clientId: String?, item: AVPMediaItem, transitionView: View?)
-    fun onLongClick(clientId: String?, item: AVPMediaItem, transitionView: View?): Boolean
-    fun onFocusChange(clientId: String?, item: AVPMediaItem, hasFocus: Boolean);
+    fun onClick(extensionId: String?, item: AVPMediaItem, transitionView: View?)
+    fun onLongClick(extensionId: String?, item: AVPMediaItem, transitionView: View?): Boolean
+    fun onFocusChange(extensionId: String?, item: AVPMediaItem, hasFocus: Boolean);
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
@@ -74,13 +74,13 @@ class MediaItemAdapter(
     holder.transitionView.transitionName = (transition + item.id).hashCode().toString()
     holder.bind(item)
     holder.itemView.setOnClickListener {
-      listener.onClick(clientId, item, holder.transitionView)
+      listener.onClick(extensionId, item, holder.transitionView)
     }
     holder.itemView.setOnLongClickListener {
-      listener.onLongClick(clientId, item, holder.transitionView)
+      listener.onLongClick(extensionId, item, holder.transitionView)
     }
     holder.itemView.setOnFocusChangeListener { v, hasFocus ->
-      listener.onFocusChange(clientId, item, hasFocus)
+      listener.onFocusChange(extensionId, item, hasFocus)
     }
   }
 

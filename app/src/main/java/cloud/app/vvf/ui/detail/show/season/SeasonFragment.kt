@@ -5,15 +5,20 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.databinding.FragmentSeasonBinding
+import cloud.app.vvf.datastore.helper.BookmarkItem
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.detail.show.episode.EpisodeAdapter
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
@@ -22,16 +27,18 @@ import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
+import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlin.getValue
 
 @AndroidEntryPoint
 class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   private var binding by autoCleared<FragmentSeasonBinding>()
   private val viewModel by viewModels<SeasonViewModel>()
-
+  private val mainViewModel by activityViewModels<MainActivityViewModel>()
   private val args by lazy { requireArguments() }
-  private val clientId by lazy { args.getString("clientId")!! }
+  private val extensionId by lazy { args.getString("extensionId")!! }
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.SeasonItem>("mediaItem")!! }
   @Inject
   lateinit var preferences: SharedPreferences
@@ -46,8 +53,9 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(binding.header.imagePoster)
-    applyInsets { binding.header.topBar.setPadding(0, it.top, 0, 0) }
-
+    applyInsets {
+      binding.scrollView.setPadding(0, it.top, it.end, it.bottom)
+    }
     bind(shortItem)
     setupListeners()
     setupObservers()
@@ -59,7 +67,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
       parentFragmentManager.popBackStack()
     }
 
-    binding.header.showFavorite.setOnClickListener {
+    binding.header.imgBtnFavourite.setOnClickListener {
       viewModel.toggleFavoriteStatus {
         val messageResId = if (viewModel.favoriteStatus.value) {
           R.string.favorite_added
@@ -73,13 +81,15 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
 
   private fun setupObservers() {
     observe(viewModel.favoriteStatus) { isFavorite ->
-      val favoriteIconRes = if (isFavorite) {
-        R.drawable.favorite_24dp
-      } else {
-        R.drawable.favorite_border_24dp
+      var favoriteIconRes = R.drawable.favorite_24dp
+      var favoriteStringnRes = R.string.action_remove_from_favorites
+      if (!isFavorite)  {
+        favoriteIconRes = R.drawable.favorite_border_24dp
+        favoriteStringnRes = R.string.action_add_to_favorites
       }
-      binding.header.showFavorite.setImageResource(favoriteIconRes)
+      binding.header.imgBtnFavourite.setImageResource(favoriteIconRes)
     }
+
 
     observe(viewModel.fullMediaItem) { mediaItem ->
       if (mediaItem == null) return@observe
@@ -118,12 +128,14 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
           listItems,
           currentSelectedRangeIndex,
           getString(R.string.select_episode_range),
-          false,
-          {}) { itemId ->
-          currentSelectedRangeIndex = itemId
-          binding.episodeSelectRange.text = episodeRanges[currentSelectedRangeIndex].rangeLabel
-          displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, getCurrentSort())
-        }.show(parentFragmentManager, null)
+          false).show(parentFragmentManager) { result ->
+            result?.let{
+              currentSelectedRangeIndex = it.getIntegerArrayList("selected_items")?.get(0) ?: 0
+              binding.episodeSelectRange.text = episodeRanges[currentSelectedRangeIndex].rangeLabel
+              displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, getCurrentSort())
+            }
+
+        }
       }
     }
 
@@ -175,12 +187,13 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
 
   private fun loadInitialData() {
     binding.episodeHolder.isGone = true;
-    viewModel.getItemDetails(shortItem, clientId)
+    viewModel.getItemDetails(shortItem, extensionId)
   }
 
   fun bind(item: AVPMediaItem?) {
     if (item == null) return
-    binding.header.bind(item)
+    binding.header.bind(item, this)
+
   }
 
   private fun divideEpisodesIntoRanges(episodes: List<Episode>, rangeSize: Int): List<EpisodeRange> {
@@ -197,6 +210,6 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   )
 
   override fun onClick(episode: Episode) {
-    viewModel.saveHistory(episode.toMediaItem(shortItem as AVPMediaItem.SeasonItem))
+    viewModel.saveHistory(episode.toMediaItem(shortItem))
   }
 }
