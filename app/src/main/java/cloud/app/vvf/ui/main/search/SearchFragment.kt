@@ -23,13 +23,18 @@ import cloud.app.vvf.ui.media.MediaItemAdapter
 import cloud.app.vvf.utils.*
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.SearchItem
+import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.helper.getCurrentDBExtension
+import cloud.app.vvf.ui.detail.loadWith
 import cloud.app.vvf.ui.main.configureFeedUI
 import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class SearchFragment : Fragment(), MediaItemAdapter.Listener {
@@ -40,9 +45,6 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     parent.viewModels<SearchViewModel>().value
   }
   private var searchJob: Job? = null
-
-  val extensionId = arguments?.getString("extensionId")
-
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -52,7 +54,6 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-
     setupUI()
     setupObservers()
     configureSearchView()
@@ -65,7 +66,7 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
 
     configureFeedUI<DatabaseClient>(
       R.string.home, viewModel, binding.recyclerView,
-      binding.swipeRefresh, binding.tabLayout, extensionId
+      binding.swipeRefresh, binding.tabLayout, viewModel.selectedExtension.value?.id
     )
 
     val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
@@ -96,12 +97,18 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     }
 
     observe(viewModel.feed) {
+      viewModel.saveHistory()
       binding.searchLoading.isGone = true
     }
 
     observe(viewModel.historyQuery) { history ->
       (binding.quickSearchRecyclerView.adapter as? QuickSearchAdapter)?.submitList(history)
     }
+
+    observe(viewModel.selectedExtension) { extension ->
+      binding.searchExtension.loadWith(extension?.metadata?.iconUrl?.toImageHolder())
+    }
+
   }
 
   private fun configureSearchView() {
@@ -170,7 +177,11 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     // TODO: Handle media item click
   }
 
-  override fun onLongClick(extensionId: String?, item: AVPMediaItem, transitionView: View?): Boolean {
+  override fun onLongClick(
+    extensionId: String?,
+    item: AVPMediaItem,
+    transitionView: View?
+  ): Boolean {
     // TODO: Handle media item long click
     return false
   }

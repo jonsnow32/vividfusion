@@ -87,6 +87,7 @@ class MainActivity : AppCompatActivity() {
       this,
       object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
+
           var hasPoppedChild = false
 
           // Loop through all fragments and pop child fragments first

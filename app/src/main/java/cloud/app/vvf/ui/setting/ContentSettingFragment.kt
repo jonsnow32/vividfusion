@@ -22,7 +22,6 @@ class ContentSettingFragment : BaseSettingsFragment() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
       val screen = preferenceManager.createPreferenceScreen(context)
-      val preferences = preferenceManager.sharedPreferences ?: return
       preferenceScreen = screen
 
       fun uiListener(block: (Any) -> Unit = {}) =

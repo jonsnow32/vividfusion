@@ -19,7 +19,7 @@ import cloud.app.vvf.ui.setting.ManageExtensionsFragment
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 
-fun Fragment.navigate(dest: Fragment, transitionView: View? = null) {
+fun Fragment.navigate(dest: Fragment, transitionView: View? = null, replace: Boolean = false) {
   parentFragmentManager.commit {
     if (transitionView != null) {
       addSharedElement(transitionView, transitionView.transitionName)
@@ -32,16 +32,20 @@ fun Fragment.navigate(dest: Fragment, transitionView: View? = null) {
     setCustomAnimations(0, 0)
     setReorderingAllowed(true)
     val oldFragment = this@navigate
-    add(oldFragment.id, dest)
-    hide(oldFragment)
+    if (replace) {
+      replace(oldFragment.id, dest)
+    } else {
+      add(oldFragment.id, dest)
+      hide(oldFragment)
+    }
     addToBackStack(null)
   }
 }
 
 
-fun FragmentActivity.navigate(newFragment: Fragment, view: View? = null) {
+fun FragmentActivity.navigate(newFragment: Fragment, view: View? = null, replace: Boolean = false) {
   val oldFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment)!!
-  oldFragment.navigate(newFragment, view)
+  oldFragment.navigate(newFragment, view, replace)
 }
 
 fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
@@ -54,19 +58,24 @@ fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
     "extensions" -> {
       val path = uri.pathSegments
       val id = path[0]
-      if(id.isNullOrEmpty())
+      if (id.isNullOrEmpty())
         this.navigate(ManageExtensionsFragment())
       else {
-        this.navigate(ExtensionSettingFragment.newInstance(id, ""))
+        //this.navigate(ExtensionSettingFragment.newInstance(id, ""), null, true)
       }
     }
+
     else -> {
       createSnack(R.string.something_went_wrong)
     }
   }
 }
 
-fun Fragment.navigate(item: AVPMediaItem, extensionId: String? = null, transitionView: View? = null) {
+fun Fragment.navigate(
+  item: AVPMediaItem,
+  extensionId: String? = null,
+  transitionView: View? = null
+) {
   val bundle = Bundle()
   bundle.putString("extensionId", extensionId)
   bundle.putSerialized("mediaItem", item)

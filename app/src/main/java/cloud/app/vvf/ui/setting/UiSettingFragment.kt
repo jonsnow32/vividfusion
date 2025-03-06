@@ -50,7 +50,7 @@ class UiSettingFragment : BaseSettingsFragment() {
       }
 
       SwitchPreferenceCompat(context).apply {
-        key = getString(R.string.enable_dynamic_color)
+        key = getString(R.string.pref_enable_dynamic_color)
         title = getString(R.string.enable_dynamic_color)
         summary = getString(R.string.dynamic_color_summary)
         layoutResource = R.layout.preference_switch

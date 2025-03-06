@@ -102,7 +102,7 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.title
       is EpisodeItem -> episode.generalInfo.title
       is StreamItem -> streamData.fileName
-      is SeasonItem -> season.title ?: "S${season.number}"
+      is SeasonItem -> if(season.generalInfo.title.isEmpty()) season.generalInfo.title else "S${season.number}"
       is TrailerItem -> streamData.originalUrl
     }
 
@@ -130,6 +130,7 @@ sealed class AVPMediaItem {
       is MovieItem -> movie.generalInfo
       is ShowItem -> show.generalInfo
       is EpisodeItem -> episode.generalInfo
+      is SeasonItem -> season.generalInfo
       else -> null
     }
 
@@ -146,7 +147,7 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.poster?.toImageHolder()
       is EpisodeItem -> episode.generalInfo.poster?.toImageHolder()
       is StreamItem -> streamData.streamQuality.toImageHolder()
-      is SeasonItem -> season.posterPath?.toImageHolder()
+      is SeasonItem -> season.generalInfo.poster?.toImageHolder()
       else -> null
     }
 
@@ -156,7 +157,7 @@ sealed class AVPMediaItem {
       is MovieItem -> movie.generalInfo.backdrop?.toImageHolder()
       is ShowItem -> show.generalInfo.backdrop?.toImageHolder()
       is EpisodeItem -> episode.generalInfo.backdrop?.toImageHolder()
-      is SeasonItem -> season.posterPath?.toImageHolder()
+      is SeasonItem -> season.generalInfo.backdrop?.toImageHolder()
       else -> null
     }
 
@@ -175,7 +176,7 @@ sealed class AVPMediaItem {
       is MovieItem -> movie.generalInfo.overview ?: ""
       is ShowItem -> show.generalInfo.overview ?: ""
       is EpisodeItem -> episode.generalInfo.overview ?: ""
-      is SeasonItem -> season.overview ?: "c"
+      is SeasonItem -> season.generalInfo.overview ?: "c"
       else -> ""
     }
 

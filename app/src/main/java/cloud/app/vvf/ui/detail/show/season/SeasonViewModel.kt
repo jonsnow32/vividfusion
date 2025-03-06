@@ -54,7 +54,7 @@ class SeasonViewModel @Inject constructor(
           when (item) {
             is AVPMediaItem.EpisodeItem -> {
               if (item.seasonItem.id == fullMediaItem.value?.id) {
-                fullMediaItem.value = item.seasonItem
+                fullMediaItem.value = item.seasonItem.copy()
               }
             }
             else -> {}
@@ -77,6 +77,8 @@ class SeasonViewModel @Inject constructor(
   fun saveHistory(episode: AVPMediaItem.EpisodeItem) {
     viewModelScope.launch(Dispatchers.IO) {
       dataStore.savePlaybackProgress(PlaybackProgress(episode, 1000003, 39843984, System.currentTimeMillis()))
+      episode.seasonItem.watchedEpisodeNumber =
+        dataStore.getKeys("$PlaybackProgressFolder/${episode.seasonItem.id}").count()
       updateUIFlow.emit(episode)
     }
   }

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import cloud.app.vvf.MainActivityViewModel.Companion.applyFabInsets
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.Extension
@@ -15,6 +16,7 @@ import cloud.app.vvf.ui.extension.ExtensionViewModel
 import cloud.app.vvf.ui.extension.adapter.ExtensionAdapter
 import cloud.app.vvf.ui.widget.dialog.InputDialog
 import cloud.app.vvf.utils.autoCleared
+import cloud.app.vvf.utils.configure
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
@@ -43,9 +45,12 @@ class ManageExtensionsFragment : BaseSettingsFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
       setupTransition(view)
       applyInsets {
-        //binding.fabContainer.applyFabInsets(it, systemInsets.value)
+        binding.fabContainer.applyInsets(it)
       }
 
+      binding.swipeRefresh.configure {
+        viewModel.refresh()
+      }
 
       val extensionAdapter = ExtensionAdapter(object : ExtensionAdapter.Listener {
         override fun onClick(extension: Extension<*>, view: View) {

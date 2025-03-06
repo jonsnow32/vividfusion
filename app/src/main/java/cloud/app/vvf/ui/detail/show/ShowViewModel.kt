@@ -84,7 +84,7 @@ class ShowViewModel @Inject constructor(
                 watchedSeasons.value =
                   item.seasonItem.showItem.show.seasons?.map { it.toMediaItem(item.seasonItem.showItem) }
                     ?.map {
-                      it.watchedEpisodeNumber = dataStore.getKeys("$BOOKMARK_FOLDER/watching/${it.id}").count() + dataStore.getKeys("$BOOKMARK_FOLDER/watched/${it.id}").count()
+                      it.watchedEpisodeNumber = dataStore.getKeys("$PlaybackProgressFolder/${it.id}").count()
                       it
                     }
                 lastWatchedEpisode.value = dataStore.getLatestPlaybackProgress(item.seasonItem.showItem)

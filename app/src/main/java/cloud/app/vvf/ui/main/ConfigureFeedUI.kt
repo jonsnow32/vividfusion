@@ -59,7 +59,7 @@ inline fun <reified T> Fragment.configureFeedUI(
 
   var mediaContainerAdapter: MediaContainerAdapter? = null
 
-  if (extensionId == null) collect(viewModel.extListFlow) {
+  if (extensionId.isNullOrEmpty()) collect(viewModel.extListFlow) {
     val adapter = applyClient<T>(recyclerView, swipeRefresh, id, it.firstOrNull())
     mediaContainerAdapter = adapter
   } else collect(viewModel.extListFlow){

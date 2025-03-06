@@ -42,6 +42,7 @@ import cloud.app.vvf.extension.runClient
 import cloud.app.vvf.ui.login.LoginUserBottomSheet.Companion.bind
 import cloud.app.vvf.ui.login.LoginUserViewModel
 import cloud.app.vvf.ui.setting.ManageExtensionsFragment.ExtensionListFragment
+import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import kotlinx.coroutines.launch
 import kotlin.lazy
 
@@ -55,6 +56,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
   private val args by lazy { requireArguments() }
   private val extensionId by lazy { args.getString("extensionId")!! }
   private val extensionName by lazy { args.getString("extensionName") }
+  private val viewModel by activityViewModels<ExtensionViewModel>()
 
   companion object {
     fun newInstance(extensionId: String, extensionName: String? = null) =
@@ -65,6 +67,34 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
         }
       }
   }
+
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+
+    val extensionMetadata =
+      viewModel.extensionListFlow.getExtension(extensionId)?.metadata ?: return
+    setMenuToolbar(R.menu.extension_menu) {
+      when (it.itemId) {
+        R.id.menu_like -> {
+          val listItems = extensionMetadata.types.map { it.name }
+          SelectionDialog.single(
+            listItems,
+            -1,
+            getString(R.string.select_type_you_vote),
+            false
+          ).show(parentFragmentManager) {
+            val itemId = it?.getIntegerArrayList("selected_items")?.get(0)
+            itemId?.let {
+              viewModel.vote(extensionMetadata, extensionMetadata.types.get(itemId))
+            }
+          }
+          true
+        }
+        else -> false
+      }
+    }
+  }
+
 
   class ExtensionDetail : Fragment() {
     companion object {
@@ -121,30 +151,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
         binding.enabledCont.setOnClickListener { toggle() }
       }
 
-//      binding.toolbar.apply {
-//        title = extensionMetadata.name
-//        setNavigationIcon(R.drawable.ic_back)
-//        setNavigationOnClickListener {
-//          activity?.onBackPressedDispatcher?.onBackPressed()
-//        }
-//        setOnMenuItemClickListener {
-//          when (it.itemId) {
-//            R.id.menu_like -> {
-//              val listItems = extensionMetadata.types.map { it.name }
-//              SelectionDialog.single(
-//                listItems,
-//                -1,
-//                getString(R.string.select_type_you_vote),
-//                false,
-//                {}) { itemId ->
-//                viewModel.vote(extensionMetadata, extensionMetadata.types.get(itemId))
-//              }.show(parentFragmentManager, null)
-//              true
-//            }
-//            else -> false
-//          }
-//        }
-//      }
+
 
 
       extensionMetadata.iconUrl?.toImageHolder().loadWith(binding.extensionIcon)

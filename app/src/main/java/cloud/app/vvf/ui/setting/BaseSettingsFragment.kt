@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
@@ -35,7 +36,7 @@ abstract class BaseSettingsFragment : Fragment() {
 
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    setupTransition(binding.fragmentContainer)
+    setupTransition(view)
     applyInsetsMain(binding.appBarLayout, binding.fragmentContainer)
     setToolBarScrollFlags()
     setUpToolbar(title ?: resources.getString(R.string.settings))
@@ -58,17 +59,30 @@ abstract class BaseSettingsFragment : Fragment() {
       }
     }
   }
+
   protected fun setUpToolbar(title: String) {
     binding.toolbar.apply {
       setTitle(title)
-      if (this@BaseSettingsFragment !is SettingsRootFragment) {
+      val canNavigateBack = (parentFragment?.childFragmentManager?.backStackEntryCount ?: 0) > 0
+      if (canNavigateBack) {
         setNavigationIcon(R.drawable.ic_back)
         setNavigationOnClickListener {
           parentFragment?.childFragmentManager?.popBackStack()
         }
+      } else {
+        navigationIcon = null
       }
     }
   }
 
+  protected fun setMenuToolbar(menuID: Int, onMenuItemClickListener: Toolbar.OnMenuItemClickListener) {
+    binding.toolbar.apply {
+      menu.clear() // Clear existing menu items to prevent duplicates
+      if (menuID != 0) {
+        inflateMenu(menuID) // Inflate the provided menu resource
+        setOnMenuItemClickListener(onMenuItemClickListener) // Set click listener
+      }
+    }
+  }
 
 }

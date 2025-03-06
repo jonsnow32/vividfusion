@@ -87,12 +87,15 @@ sealed class MediaItemViewHolder(itemView: View) :
 
     override fun bind(item: AVPMediaItem) {
       val season = (item as AVPMediaItem.SeasonItem).season
-      binding.seasonTitle.text = season.title ?: "Season ${season.number}"
-      binding.watchProgress.text = "${season.episodes?.size ?: 0}/${season.episodeCount} episodes"
-      binding.seasonProgress.progress =
-        ((season.episodes?.size?.toFloat() ?: 0f / season.episodeCount) * 100).toInt()
-      binding.seasonOverview.setTextWithVisibility(season.overview)
-      season.posterPath?.toImageHolder().loadInto(binding.seasonPoster)
+      binding.seasonTitle.text = season.generalInfo.title
+      binding.watchProgress.text = binding.root.context.resources.getString(
+        R.string.season_progress_format,
+        item.watchedEpisodeNumber ?: 0,
+        season.episodeCount
+      )
+      binding.seasonProgress.progress = ((item.watchedEpisodeNumber ?: 0)* 100 / season.episodeCount)
+      binding.seasonOverview.setTextWithVisibility(season.generalInfo.overview)
+      season.generalInfo.poster?.toImageHolder().loadInto(binding.seasonPoster)
     }
 
     companion object {
@@ -113,14 +116,14 @@ sealed class MediaItemViewHolder(itemView: View) :
 
     override fun bind(item: AVPMediaItem) {
       val season = (item as AVPMediaItem.SeasonItem).season
-      binding.seasonTitle.text = season.title ?: "Season ${season.number}"
+      binding.seasonTitle.text = season.generalInfo.title
       binding.watchProgress.text = binding.root.context.resources.getString(
         R.string.season_progress_format,
         item.watchedEpisodeNumber ?: 0,
         season.episodeCount
       )
-      binding.seasonProgress.progress =
-        (((season.episodes?.size?.toFloat() ?: (0f / season.episodeCount)) * 100)).toInt()
+      binding.seasonProgress.progress = ((item.watchedEpisodeNumber ?: 0)* 100 / season.episodeCount)
+
     }
 
     companion object {

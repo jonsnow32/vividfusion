@@ -42,7 +42,7 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, fragment: Fragment, e
   val context = fragment.context ?: return
 
   when (mediaItem) {
-    is AVPMediaItem.SeasonItem -> imageBackdrop.loadWith(mediaItem.season.backdrop?.toImageHolder())
+    is AVPMediaItem.SeasonItem -> imageBackdrop.loadWith(mediaItem.season.generalInfo.backdrop?.toImageHolder())
     else -> imageBackdrop.loadWith(mediaItem.backdrop)
   }
 

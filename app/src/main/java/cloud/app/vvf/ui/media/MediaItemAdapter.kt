@@ -27,7 +27,7 @@ class MediaItemAdapter(
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
-    val holder =  when (viewType) {
+    val holder = when (viewType) {
       0 -> MediaItemViewHolder.Movie.create(parent)
       1 -> MediaItemViewHolder.Show.create(parent)
       2 -> MediaItemViewHolder.Episode.create(parent)
@@ -35,6 +35,7 @@ class MediaItemAdapter(
       4 -> MediaItemViewHolder.Stream.create(parent)
       5 -> MediaItemViewHolder.Season.create(parent)
       6 -> MediaItemViewHolder.Trailer.create(parent)
+      7 -> MediaItemViewHolder.SeasonLarge.create(parent)
       else -> throw IllegalArgumentException("Invalid view type")
     }
     return holder
@@ -48,7 +49,7 @@ class MediaItemAdapter(
       is AVPMediaItem.EpisodeItem -> 2
       is AVPMediaItem.ActorItem -> 3
       is AVPMediaItem.StreamItem -> 4
-      is AVPMediaItem.SeasonItem -> 5
+      is AVPMediaItem.SeasonItem -> if (item.season.generalInfo.poster.isNullOrEmpty()) 5 else 7
       is AVPMediaItem.TrailerItem -> 6
     }
   }
@@ -57,7 +58,7 @@ class MediaItemAdapter(
   override fun onBindViewHolder(holder: MediaItemViewHolder, position: Int) {
     val item = getItem(position) ?: return
 
-    if(itemWidth != null && itemHeight != null) {
+    if (itemWidth != null && itemHeight != null) {
       val layoutParams = holder.itemView.layoutParams
       // Change width and height dynamically, for example:
       layoutParams.width = itemWidth
@@ -65,10 +66,10 @@ class MediaItemAdapter(
       // Apply new layout parameters
       holder.itemView.layoutParams = layoutParams
 
-      var cover = holder.itemView.findViewById<CardView>(R.id.cover)
-      cover.layoutParams.width = itemWidth
-      cover.layoutParams.height = itemWidth * 3 /2
-      cover.layoutParams = cover.layoutParams
+      var cover = holder.itemView.findViewById<CardView?>(R.id.cover)
+      cover?.layoutParams?.width = itemWidth
+      cover?.layoutParams?.height = itemWidth * 3 / 2
+
     }
 
     holder.transitionView.transitionName = (transition + item.id).hashCode().toString()

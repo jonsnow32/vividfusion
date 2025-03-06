@@ -31,7 +31,6 @@
     android:id="@+id/fragmentContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="4dp"
     android:nextFocusLeft="@id/toolbar"
     android:nextFocusUp="@id/toolbar"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" />

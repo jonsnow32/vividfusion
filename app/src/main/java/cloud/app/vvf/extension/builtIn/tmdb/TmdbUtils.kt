@@ -109,14 +109,19 @@ fun BaseTvShow.toMediaItem(): AVPMediaItem.ShowItem {
     show.generalInfo.homepage = this.homepage
     show.seasons = this.seasons?.map { tvSeason ->
       Season(
-        title = tvSeason.name,
+        generalInfo = GeneralInfo(
+          poster = tvSeason.poster_path,
+          backdrop = show.generalInfo.backdrop,
+          releaseDateMsUTC = tvSeason.air_date?.time,
+          overview = tvSeason.overview,
+          title = tvSeason.name ?: "Season ${tvSeason.season_number}",
+          originalTitle = tvSeason.name ?: "Season ${tvSeason.season_number}"
+        ),
+
         number = tvSeason.season_number ?: 0,
-        overview = tvSeason.overview,
         episodeCount = tvSeason.episode_count ?: 0,
-        posterPath = tvSeason.poster_path,
         showIds = show.ids,
         showOriginTitle = show.generalInfo.originalTitle,
-        backdrop = show.generalInfo.backdrop,
         releaseDateMsUTC = tvSeason.air_date?.time
       )
     }

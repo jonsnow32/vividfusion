@@ -87,7 +87,7 @@ class SettingsRootFragment : BaseSettingsFragment() {
       fragment ?: return false
 
       val view = listView.findViewById<View>(preference.key.hashCode())
-      parentFragment?.navigate(fragment, view)
+      parentFragment?.navigate(fragment, view, true)
       return true
     }
   }

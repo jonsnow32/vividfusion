@@ -18,7 +18,6 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import cloud.app.vvf.MainActivityViewModel.Companion.applyContentInsets
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.loginNotSupported
@@ -95,8 +94,8 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupTransition(view)
         applyInsets {
-            binding.loginContainer.applyContentInsets(it)
-            binding.loadingContainer.root.applyContentInsets(it)
+            //binding.loginContainer.applyContentInsets(it)
+            //binding.loadingContainer.root.applyContentInsets(it)
         }
         //applyBackPressCallback()
         binding.appBarLayout.onAppBarChangeListener { offset ->

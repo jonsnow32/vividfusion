@@ -427,11 +427,18 @@ class BuiltInClient : DatabaseClient, StreamClient {
       response?.let {
         AVPMediaItem.SeasonItem(
           season = Season(
-            title = it.name,
+            generalInfo = GeneralInfo(
+              title = it.name,
+              overview = it.overview,
+              poster =  it.poster_path,
+              backdrop = "",
+              originalTitle = "",
+              homepage = "",
+              releaseDateMsUTC = it.air_date?.time
+          ),
+
             number = it.season_number ?: -1,
-            overview = it.overview,
             episodeCount = it.episodes?.size ?: 0,
-            posterPath = it.poster_path,
             episodes = it.episodes?.filter { episode ->
               if (showUnairedEpisode == true) {
                 true
@@ -461,7 +468,6 @@ class BuiltInClient : DatabaseClient, StreamClient {
             },
             showIds = season.showIds,
             showOriginTitle = season.showOriginTitle,
-            backdrop = season.backdrop,
             releaseDateMsUTC = it.air_date?.time
           ),
           showItem = seasonItem.showItem
@@ -803,55 +809,60 @@ class BuiltInClient : DatabaseClient, StreamClient {
     return list
   }
 
-  suspend fun getSeason(show: Show): List<Season> {
-    val list = mutableListOf<Season>()
-    if (show.ids.tmdbId != null) {
-      val response =
-        withContext(Dispatchers.IO) { tmdb.tvService().tv(show.ids.tmdbId!!, language).execute() }
-      if (response.isSuccessful) {
-        val tvShow = response.body();
-        tvShow?.seasons?.sortedBy { season -> season.season_number }?.forEach { season ->
-          if (season?.season_number != null) {
-            list.add(
-              Season(
-                season.name,
-                season.season_number ?: 0,
-                season.overview,
-                season.episode_count ?: 0,
-                season.poster_path,
-                show.generalInfo.backdrop,
-                null,
-                show.ids,
-                show.generalInfo.originalTitle,
-                season.air_date?.time
-              )
-            )
-          }
-        }
-      }
-
-    } else if (show.ids.tvdbId != null) {
-      val episodes = getTvdbEpisodes(show, 1)
-      val seasons = episodes.groupBy { it.seasonNumber }
-        .map {
-          Season(
-            null,
-            it.key,
-            null,
-            it.value.size,
-            show.generalInfo.backdrop,
-            null,
-            it.value,
-            show.ids,
-            show.generalInfo.originalTitle,
-            null
-          )
-        }
-      list.addAll(seasons);
-    } else
-      throw Exception("No ids found")
-    return list
-  }
+//  suspend fun getSeason(show: Show): List<Season> {
+//    val list = mutableListOf<Season>()
+//    if (show.ids.tmdbId != null) {
+//      val response =
+//        withContext(Dispatchers.IO) { tmdb.tvService().tv(show.ids.tmdbId!!, language).execute() }
+//      if (response.isSuccessful) {
+//        val tvShow = response.body();
+//        tvShow?.seasons?.sortedBy { season -> season.season_number }?.forEach { season ->
+//          if (season?.season_number != null) {
+//            list.add(
+//              Season(
+//                generalInfo = GeneralInfo(
+//                  title = season.name,
+//                  originalTitle = season.name,
+//                  overview = season.overview,
+//                  releaseDateMsUTC = season.air_date?.time,
+//                  poster = season.poster_path,
+//                  backdrop = show.generalInfo.backdrop,
+//                ),
+//
+//                number = season.season_number ?: 0,
+//                episodeCount = season.episode_count ?: 0,
+//                showIds = show.ids,
+//                releaseDateMsUTC = season.air_date?.time,
+//                episodes = null,
+//                showOriginTitle = show.generalInfo.originalTitle
+//              )
+//            )
+//          }
+//        }
+//      }
+//
+//    } else if (show.ids.tvdbId != null) {
+//      val episodes = getTvdbEpisodes(show, 1)
+//      val seasons = episodes.groupBy { it.seasonNumber }
+//        .map {
+//          Season(
+//            null,
+//            it.key,
+//            null,
+//            it.value.size,
+//            show.generalInfo.backdrop,
+//            null,
+//            it.value,
+//            show.ids,
+//            show.generalInfo.originalTitle,
+//            null
+//          )
+//        }
+//      list.addAll(seasons);
+//    } else
+//      throw Exception("No ids found")
+//    return list
+//  }
 
   private suspend fun getKnowFor(
     actor: AVPMediaItem.ActorItem,

@@ -79,8 +79,8 @@ class VVFApplication : Application() {
       theme = newTheme ?: preferences.getString(getString(R.string.pref_theme), "system")
 
       val customColor =
-        if (!preferences.getBoolean(getString(R.string.enable_dynamic_color), false)) null
-        else newColor ?: preferences.getInt(getString(R.string.dynamic_color), -1)
+        if (!preferences.getBoolean(getString(R.string.pref_enable_dynamic_color), false)) null
+        else newColor ?: preferences.getInt( getString(R.string.dynamic_color), -1)
           .takeIf { it != -1 }
 
       val builder = if (customColor != null) DynamicColorsOptions.Builder()
