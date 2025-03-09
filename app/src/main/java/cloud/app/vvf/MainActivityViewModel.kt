@@ -12,10 +12,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.BookmarkItem
-import cloud.app.vvf.datastore.helper.addToBookmark
-import cloud.app.vvf.datastore.helper.findBookmark
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.BookmarkItem
+import cloud.app.vvf.datastore.app.helper.addToBookmark
+import cloud.app.vvf.datastore.app.helper.findBookmark
 import cloud.app.vvf.utils.toPx
 import cloud.app.vvf.utils.observe
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,8 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainActivityViewModel @Inject constructor(
-  private val settings: SharedPreferences,
-  private val dataStore: DataStore
+  private val  dataFlow: MutableStateFlow<AppDataStore>
 ) : ViewModel() {
 
   private val navInsets = MutableStateFlow(Insets())
@@ -138,10 +137,10 @@ class MainActivityViewModel @Inject constructor(
 
 
   fun addToBookmark(item: AVPMediaItem, type: String) {
-    dataStore.addToBookmark(item, type)
+    dataFlow.value.addToBookmark(item, type)
   }
 
   fun getBookmark(item: AVPMediaItem) : BookmarkItem?{
-    return dataStore.findBookmark(item)
+    return dataFlow.value.findBookmark(item)
   }
 }

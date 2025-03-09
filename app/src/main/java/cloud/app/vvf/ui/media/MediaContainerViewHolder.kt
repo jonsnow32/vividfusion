@@ -24,8 +24,8 @@ import cloud.app.vvf.databinding.ContainerCategoryBinding
 import cloud.app.vvf.databinding.ContainerItemBinding
 import cloud.app.vvf.databinding.HomePreviewViewpagerBinding
 import cloud.app.vvf.databinding.PreviewItemBinding
-import cloud.app.vvf.datastore.helper.BookmarkItem
-import cloud.app.vvf.datastore.helper.BookmarkItem.Companion.getStringIds
+import cloud.app.vvf.datastore.app.helper.BookmarkItem
+import cloud.app.vvf.datastore.app.helper.BookmarkItem.Companion.getStringIds
 import cloud.app.vvf.ui.media.MediaItemViewHolder.Companion.placeHolder
 import cloud.app.vvf.ui.paging.toFlow
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog

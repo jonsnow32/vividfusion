@@ -22,7 +22,7 @@ class MediaContainerAdapter(
   val fragment: Fragment,
   id: String,
   val transition: String,
-  val listener: Listener = getListener(fragment)
+  val listener: Listener = MediaClickListener(fragment.parentFragmentManager)
 ) : BasePagingAdapter<MediaItemsContainer, MediaContainerViewHolder>(fragment, id, DiffCallback) {
 
   interface Listener : MediaItemAdapter.Listener {
@@ -32,16 +32,6 @@ class MediaContainerAdapter(
       container: MediaItemsContainer,
       transitionView: View
     ): Boolean
-  }
-
-  companion object {
-    fun getListener(fragment: Fragment): Listener {
-      val type = fragment.arguments?.getString("itemListener")
-      return when (type) {
-        "search" -> TODO("not implemented")
-        else -> MediaClickListener(fragment.parentFragmentManager)
-      }
-    }
   }
 
   fun withLoaders(): ConcatAdapter {

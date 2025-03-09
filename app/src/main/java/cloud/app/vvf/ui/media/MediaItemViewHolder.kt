@@ -93,7 +93,8 @@ sealed class MediaItemViewHolder(itemView: View) :
         item.watchedEpisodeNumber ?: 0,
         season.episodeCount
       )
-      binding.seasonProgress.progress = ((item.watchedEpisodeNumber ?: 0)* 100 / season.episodeCount)
+      binding.seasonProgress.progress = if (season.episodeCount > 0) ((item.watchedEpisodeNumber
+        ?: 0) * 100 / season.episodeCount) else 0
       binding.seasonOverview.setTextWithVisibility(season.generalInfo.overview)
       season.generalInfo.poster?.toImageHolder().loadInto(binding.seasonPoster)
     }
@@ -122,7 +123,8 @@ sealed class MediaItemViewHolder(itemView: View) :
         item.watchedEpisodeNumber ?: 0,
         season.episodeCount
       )
-      binding.seasonProgress.progress = ((item.watchedEpisodeNumber ?: 0)* 100 / season.episodeCount)
+      binding.seasonProgress.progress = if(season.episodeCount > 0)
+        ((item.watchedEpisodeNumber ?: 0) * 100 / season.episodeCount) else 0
 
     }
 

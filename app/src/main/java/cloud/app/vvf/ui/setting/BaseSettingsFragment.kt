@@ -1,5 +1,6 @@
 package cloud.app.vvf.ui.setting
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +9,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.FragmentSettingsBinding
@@ -17,6 +19,7 @@ import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.isLayout
 import cloud.app.vvf.utils.setupTransition
 import com.google.android.material.appbar.AppBarLayout
+import java.util.prefs.Preferences
 
 abstract class BaseSettingsFragment : Fragment() {
 
@@ -63,7 +66,7 @@ abstract class BaseSettingsFragment : Fragment() {
   protected fun setUpToolbar(title: String) {
     binding.toolbar.apply {
       setTitle(title)
-      val canNavigateBack = (parentFragment?.childFragmentManager?.backStackEntryCount ?: 0) > 0
+      val canNavigateBack = (this@BaseSettingsFragment !is SettingsRootFragment) && (parentFragment?.childFragmentManager?.backStackEntryCount ?: 0) > 0
       if (canNavigateBack) {
         setNavigationIcon(R.drawable.ic_back)
         setNavigationOnClickListener {

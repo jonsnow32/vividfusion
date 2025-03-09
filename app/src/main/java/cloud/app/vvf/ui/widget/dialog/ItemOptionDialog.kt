@@ -17,8 +17,8 @@ import cloud.app.vvf.common.models.ImageHolder
 import cloud.app.vvf.databinding.DialogMediaItemBinding
 import cloud.app.vvf.databinding.ItemDialogButtonBinding
 import cloud.app.vvf.databinding.ItemDialogButtonLoadingBinding
-import cloud.app.vvf.datastore.helper.BookmarkItem
-import cloud.app.vvf.datastore.helper.BookmarkItem.Companion.getStringIds
+import cloud.app.vvf.datastore.app.helper.BookmarkItem
+import cloud.app.vvf.datastore.app.helper.BookmarkItem.Companion.getStringIds
 import cloud.app.vvf.ui.detail.show.ShowFragment
 import cloud.app.vvf.ui.main.browse.BrowseFragment
 import cloud.app.vvf.ui.main.browse.BrowseViewModel

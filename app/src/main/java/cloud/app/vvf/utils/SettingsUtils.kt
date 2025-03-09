@@ -6,9 +6,10 @@ import androidx.core.content.edit
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.settings.PrefSettings
+import cloud.app.vvf.datastore.account.Account
 
-fun getSettings(context: Context, metadata: ExtensionMetadata): PrefSettings {
-  val name = metadata.className
+fun getSettings(account: Account, context: Context, metadata: ExtensionMetadata): PrefSettings {
+  val name = "${metadata.className}.${account.getSlug()}"
   val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
   return toSettings(prefs)
 }

@@ -18,6 +18,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Show
 import cloud.app.vvf.databinding.FragmentMovieBinding
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.ui.detail.TrailerDialog
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.media.MediaClickListener
@@ -44,8 +45,6 @@ class MovieFragment : Fragment() {
   private val extensionId by lazy { args.getString("extensionId")!! }
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.MovieItem>("mediaItem")!! }
 
-  @Inject
-  lateinit var preferences: SharedPreferences
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?

@@ -1,7 +1,7 @@
-package cloud.app.vvf.datastore.helper
+package cloud.app.vvf.datastore.app.helper
 
-import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.datastore.app.AppDataStore
 import kotlinx.serialization.Serializable
 
 const val PlaybackProgressFolder = "progress"
@@ -19,7 +19,7 @@ data class PlaybackProgress(
 }
 
 
-fun DataStore.savePlaybackProgress(data: PlaybackProgress): Boolean {
+fun AppDataStore.savePlaybackProgress(data: PlaybackProgress): Boolean {
   if (data.item is AVPMediaItem.EpisodeItem || data.item is AVPMediaItem.MovieItem) {
     setKey("$PlaybackProgressFolder/${data.item.id}", data)
     return true
@@ -27,14 +27,14 @@ fun DataStore.savePlaybackProgress(data: PlaybackProgress): Boolean {
   return false
 }
 
-fun DataStore.getPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgress? {
+fun AppDataStore.getPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgress? {
   if (mediaItem is AVPMediaItem.EpisodeItem || mediaItem is AVPMediaItem.MovieItem) {
     return getKey<PlaybackProgress>("$PlaybackProgressFolder/${mediaItem.id}", null)
   }
   return null
 }
 
-fun DataStore.getLatestPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgress? = when (mediaItem) {
+fun AppDataStore.getLatestPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgress? = when (mediaItem) {
   is AVPMediaItem.SeasonItem,
   is AVPMediaItem.ShowItem -> getKeys("$PlaybackProgressFolder/${mediaItem.id}").mapNotNull {
     getKey<PlaybackProgress>(

@@ -3,12 +3,14 @@ package cloud.app.vvf.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.PREFERENCES_NAME
+import cloud.app.vvf.datastore.account.Account
+import cloud.app.vvf.datastore.account.AccountDataStore
+import cloud.app.vvf.datastore.app.AppDataStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
@@ -18,23 +20,22 @@ class DataStoreModule {
 
   @Singleton
   @Provides
-  fun provideSharedPreferences(context: Context): SharedPreferences {
-    return PreferenceManager.getDefaultSharedPreferences(context)
-  }
-
-  @Singleton
-  @Provides
   fun provideJson() = Json {
     ignoreUnknownKeys = true
   }
 
   @Singleton
   @Provides
-  fun provideDataStore(
-    context: Context,
-  ): DataStore {
-    return DataStore(
-      context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE),
-    )
-  }
+  fun provideAccountDataStore(context: Context) =
+    MutableStateFlow<AccountDataStore>(AccountDataStore(context))
+
+  @Singleton
+  @Provides
+  fun provideAccountFlow(dataStore: MutableStateFlow<AccountDataStore>) =
+    MutableStateFlow<Account>(dataStore.value.getActiveAccount())
+
+  @Singleton
+  @Provides
+  fun provideAppDataStore(context: Context, accountFlow: MutableStateFlow<Account>) =
+    MutableStateFlow<AppDataStore>(AppDataStore(context, accountFlow.value))
 }

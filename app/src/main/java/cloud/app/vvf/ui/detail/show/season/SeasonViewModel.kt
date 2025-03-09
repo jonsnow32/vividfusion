@@ -5,13 +5,13 @@ import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.PlaybackProgress
-import cloud.app.vvf.datastore.helper.PlaybackProgressFolder
-import cloud.app.vvf.datastore.helper.addFavoritesData
-import cloud.app.vvf.datastore.helper.getFavoritesData
-import cloud.app.vvf.datastore.helper.removeFavoritesData
-import cloud.app.vvf.datastore.helper.savePlaybackProgress
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.PlaybackProgress
+import cloud.app.vvf.datastore.app.helper.PlaybackProgressFolder
+import cloud.app.vvf.datastore.app.helper.addFavoritesData
+import cloud.app.vvf.datastore.app.helper.getFavoritesData
+import cloud.app.vvf.datastore.app.helper.removeFavoritesData
+import cloud.app.vvf.datastore.app.helper.savePlaybackProgress
 import cloud.app.vvf.extension.runClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +27,7 @@ class SeasonViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionFlow: MutableStateFlow<List<Extension<*>>>,
   val updateUIFlow: MutableStateFlow<AVPMediaItem?>,
-  val dataStore: DataStore,
+  val dataFlow: MutableStateFlow<AppDataStore>,
 ) : CatchingViewModel(throwableFlow) {
 
   var loading = MutableStateFlow(false);
@@ -42,11 +42,11 @@ class SeasonViewModel @Inject constructor(
 
         loading.value = true
         (detail as AVPMediaItem.SeasonItem).watchedEpisodeNumber =
-          dataStore.getKeys("$PlaybackProgressFolder/${detail.id}").count()
+          dataFlow.value.getKeys("$PlaybackProgressFolder/${detail.id}").count()
         fullMediaItem.value = detail
 
         val favoriteDeferred =
-          async { dataStore.getFavoritesData<AVPMediaItem.SeasonItem>(fullMediaItem.value?.id?.toString()) }
+          async { dataFlow.value.getFavoritesData<AVPMediaItem.SeasonItem>(fullMediaItem.value?.id?.toString()) }
         favoriteStatus.value = favoriteDeferred.await()
         loading.value = false
 
@@ -66,9 +66,9 @@ class SeasonViewModel @Inject constructor(
 
   fun toggleFavoriteStatus(statusChangedCallback: (Boolean?) -> Unit) {
     if (!favoriteStatus.value) {
-      dataStore.addFavoritesData(fullMediaItem.value)
+      dataFlow.value.addFavoritesData(fullMediaItem.value)
     } else {
-      dataStore.removeFavoritesData(fullMediaItem.value)
+      dataFlow.value.removeFavoritesData(fullMediaItem.value)
     }
     favoriteStatus.value = !favoriteStatus.value
     statusChangedCallback.invoke(favoriteStatus.value)
@@ -76,9 +76,9 @@ class SeasonViewModel @Inject constructor(
 
   fun saveHistory(episode: AVPMediaItem.EpisodeItem) {
     viewModelScope.launch(Dispatchers.IO) {
-      dataStore.savePlaybackProgress(PlaybackProgress(episode, 1000003, 39843984, System.currentTimeMillis()))
+      dataFlow.value.savePlaybackProgress(PlaybackProgress(episode, 1000003, 39843984, System.currentTimeMillis()))
       episode.seasonItem.watchedEpisodeNumber =
-        dataStore.getKeys("$PlaybackProgressFolder/${episode.seasonItem.id}").count()
+        dataFlow.value.getKeys("$PlaybackProgressFolder/${episode.seasonItem.id}").count()
       updateUIFlow.emit(episode)
     }
   }

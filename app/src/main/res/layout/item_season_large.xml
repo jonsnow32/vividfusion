@@ -47,18 +47,18 @@
 
         <ImageView
           android:id="@+id/episode_play_icon"
-          android:layout_width="36dp"
-          android:layout_height="36dp"
-          android:layout_gravity="center"
+          android:layout_width="24dp"
+          android:layout_height="24dp"
+          android:layout_gravity="end|bottom"
           android:contentDescription="@string/play_episode"
-          android:src="@drawable/play_button"
+          android:src="@drawable/playlist_play_24dp"
           tools:visibility="invisible" />
         <ImageView
           android:id="@+id/episode_upcoming_icon"
-          android:layout_width="36dp"
-          android:layout_height="36dp"
-          android:layout_gravity="center"
-          android:src="@drawable/play_button"
+          android:layout_width="24dp"
+          android:layout_height="24dp"
+          android:layout_gravity="end|bottom"
+          android:src="@drawable/playlist_play_24dp"
           android:visibility="gone"
           tools:visibility="visible" />
       </androidx.cardview.widget.CardView>

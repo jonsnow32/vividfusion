@@ -7,7 +7,7 @@ import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.user.LoginClient
 import cloud.app.vvf.common.models.User
-import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.run
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +22,7 @@ class LoginViewModel @Inject constructor(
     val extensionList: MutableStateFlow<List<Extension<*>>?>,
     private val context: Application,
     val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
-    database: DataStore,
+    val dataFlow: MutableStateFlow<AppDataStore>,
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
 

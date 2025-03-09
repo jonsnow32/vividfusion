@@ -280,6 +280,26 @@
       android:layout_height="wrap_content"
       android:textSize="14sp"
       tools:text="PG" />
+
+    <!-- Rating Text -->
+    <TextView
+      android:id="@+id/dot4"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:gravity="bottom"
+      android:paddingHorizontal="4dp"
+      android:text="@string/dot"
+      android:visibility="gone"
+      android:textSize="15sp" />
+
+    <!-- Release Year Text -->
+    <TextView
+      android:id="@+id/status"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textSize="14sp"
+      android:visibility="gone"
+      tools:text="onGoing" />
   </LinearLayout>
 
   <androidx.constraintlayout.widget.ConstraintLayout

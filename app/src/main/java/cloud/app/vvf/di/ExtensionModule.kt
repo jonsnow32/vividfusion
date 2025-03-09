@@ -3,11 +3,8 @@ package cloud.app.vvf.di
 import android.app.Application
 import android.content.SharedPreferences
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
-import cloud.app.vvf.common.clients.streams.StreamClient
-import cloud.app.vvf.common.clients.subtitles.SubtitleClient
 import cloud.app.vvf.common.helpers.network.HttpHelper
-import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.ExtensionLoader
 import dagger.Module
 import dagger.Provides
@@ -33,9 +30,8 @@ class ExtensionModule {
   @Singleton
   fun provideExtensionLoader(
     context: Application,
-    dataStore: DataStore,
+    dataStore: MutableStateFlow<AppDataStore>,
     httpHelper: HttpHelper,
-    sharedPreferences: SharedPreferences,
     throwableFlow: MutableSharedFlow<Throwable>,
     extensionsFlow: MutableStateFlow<List<Extension<*>>>,
     refresher: MutableSharedFlow<Boolean>
@@ -44,7 +40,6 @@ class ExtensionModule {
     dataStore,
     httpHelper,
     throwableFlow,
-    sharedPreferences,
     extensionsFlow,
     refresher
   )

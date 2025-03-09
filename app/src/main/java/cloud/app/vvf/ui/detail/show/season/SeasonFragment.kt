@@ -1,12 +1,9 @@
 package cloud.app.vvf.ui.detail.show.season
 
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -18,7 +15,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.databinding.FragmentSeasonBinding
-import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.detail.show.episode.EpisodeAdapter
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
@@ -27,8 +24,8 @@ import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
-import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 import kotlin.getValue
 
@@ -40,9 +37,9 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   private val args by lazy { requireArguments() }
   private val extensionId by lazy { args.getString("extensionId")!! }
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.SeasonItem>("mediaItem")!! }
-  @Inject
-  lateinit var preferences: SharedPreferences
 
+  @Inject
+  lateinit var dataFlow: MutableStateFlow<AppDataStore>
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -104,7 +101,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   private var currentSelectedRangeIndex = 0;
   private fun setupEpisodes(episodes: List<Episode>?) {
     fun getCurrentSort(): SortMode {
-      val key = preferences.getInt(
+      val key = dataFlow.value.sharedPreferences.getInt(
         getString(R.string.pref_episode_sort),
         SortMode.ASCENDING.ordinal
       )
@@ -158,7 +155,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
       }
       updateSortUI(newSortMode)
       displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, newSortMode)
-      preferences.edit().putInt(getString(R.string.pref_episode_sort), newSortMode.ordinal).apply()
+      dataFlow.value.sharedPreferences.edit().putInt(getString(R.string.pref_episode_sort), newSortMode.ordinal).apply()
     }
   }
 
@@ -193,7 +190,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   fun bind(item: AVPMediaItem?) {
     if (item == null) return
     binding.header.bind(item, this)
-
+    binding.header.buttonBookmark.isGone = true;
   }
 
   private fun divideEpisodesIntoRanges(episodes: List<Episode>, rangeSize: Int): List<EpisodeRange> {

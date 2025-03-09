@@ -25,10 +25,8 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.ImageHolder
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.utils.secondsToReadable
-import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.datastore.app.helper.BookmarkItem
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
-import cloud.app.vvf.utils.TV
-import cloud.app.vvf.utils.isLayout
 
 
 fun ImageView.loadWith(imageHolder: ImageHolder?) {
@@ -166,6 +164,13 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, fragment: Fragment, e
     buttonBookmark.icon =
       ContextCompat.getDrawable(context, R.drawable.ic_bookmark_filled)
   }
+
+
+ if(mediaItem is AVPMediaItem.ShowItem) {
+   dot4.isGone = mediaItem.show.status.isNullOrEmpty()
+   status.setTextWithVisibility(mediaItem.show.status)
+ }
+
   imgBtnShowNotify.isGone = true
   buttonShowComments.isGone = true
   buttonCollections.isGone = true

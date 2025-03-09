@@ -222,6 +222,15 @@
   <string name="no_overview_metada">The metadata may not be available for selected language</string>
   <string name="home_page">Homepage</string>
   <string name="notify_me">Notify me</string>
+    <string name="pin">PIN</string>
+  <string name="enter_pin">Enter pin</string>
+    <string name="default_account">Default</string>
+  <string name="use_pin_code">Use Pin Code</string>
+  <string name="create_account">Create Account</string>
+  <string name="avatar">Avatar</string>
+  <string name="edit_account">Edit account</string>
+    <string name="pin_wrong">Pin is wrong</string>
+  <string name="create_account_failed">The %s account already exists.</string>
 
 
   <string-array name="themes">

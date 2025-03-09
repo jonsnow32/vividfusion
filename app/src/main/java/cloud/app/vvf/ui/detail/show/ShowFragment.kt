@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -29,16 +27,15 @@ import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Show
-import cloud.app.vvf.datastore.helper.BookmarkItem
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.ui.detail.TrailerDialog
 import cloud.app.vvf.ui.stream.StreamFragment
 import cloud.app.vvf.ui.widget.dialog.DockingDialog
-import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.Utils.getEpisodeShortTitle
 import cloud.app.vvf.utils.navigate
-import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -54,8 +51,7 @@ class ShowFragment : Fragment() {
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.ShowItem>("mediaItem")!! }
 
   @Inject
-  lateinit var preferences: SharedPreferences
-
+  lateinit var dataFlow: MutableStateFlow<AppDataStore>
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -112,7 +108,7 @@ class ShowFragment : Fragment() {
     observe(viewModel.favoriteStatus) { isFavorite ->
       var favoriteIconRes = R.drawable.favorite_24dp
       var favoriteStringnRes = R.string.action_remove_from_favorites
-      if (!isFavorite)  {
+      if (!isFavorite) {
         favoriteIconRes = R.drawable.favorite_border_24dp
         favoriteStringnRes = R.string.action_add_to_favorites
       }
@@ -180,7 +176,7 @@ class ShowFragment : Fragment() {
   private fun setupSortOptions(seasons: List<AVPMediaItem.SeasonItem>) {
     binding.seasonSortTxt.isGone = (seasons.size < 2)
 
-    val key = preferences.getInt(
+    val key = dataFlow.value.sharedPreferences.getInt(
       getString(R.string.pref_season_sort),
       SortMode.ASCENDING.ordinal
     )
@@ -191,7 +187,7 @@ class ShowFragment : Fragment() {
     displaySortedSeasons(seasons, currentSortMode)
 
     binding.seasonSortTxt.setOnClickListener {
-      val sortMode = SortMode.entries[preferences.getInt(
+      val sortMode = SortMode.entries[dataFlow.value.sharedPreferences.getInt(
         getString(R.string.pref_season_sort),
         SortMode.ASCENDING.ordinal
       )]
@@ -201,7 +197,8 @@ class ShowFragment : Fragment() {
       }
       updateSortUI(newSortMode)
       displaySortedSeasons(seasons, newSortMode)
-      preferences.edit().putInt(getString(R.string.pref_season_sort), newSortMode.ordinal).apply()
+      dataFlow.value.sharedPreferences.edit()
+        .putInt(getString(R.string.pref_season_sort), newSortMode.ordinal).apply()
     }
   }
 

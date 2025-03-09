@@ -3,13 +3,11 @@ package cloud.app.vvf.ui.login
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.User
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.CurrentUser
-import cloud.app.vvf.datastore.helper.getAllUsers
-import cloud.app.vvf.datastore.helper.getCurrentUser
-import cloud.app.vvf.extension.ExtensionLoader
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.CurrentUser
+import cloud.app.vvf.datastore.app.helper.getAllUsers
+import cloud.app.vvf.datastore.app.helper.getCurrentUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -21,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginUserViewModel @Inject constructor(
-  userDao: DataStore,
+  dataFlow: MutableStateFlow<AppDataStore>,
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionFlow: MutableStateFlow<List<Extension<*>?>>,
 ) : CatchingViewModel(throwableFlow) {
@@ -32,12 +30,12 @@ class LoginUserViewModel @Inject constructor(
     init {
         suspend fun update() {
             val currentExt = currentExtension.value
-            val user = userDao.getCurrentUser(currentExt?.id)
+            val user = dataFlow.value.getCurrentUser(currentExt?.id)
             currentUser.value = currentExt to user
         }
         viewModelScope.launch {
             launch { currentExtension.collect { update() } }
-            //userDao.observeCurrentUser().collect { update() }
+            //dataFlow.value.observeCurrentUser().collect { update() }
         }
     }
 
@@ -45,7 +43,7 @@ class LoginUserViewModel @Inject constructor(
         val metadata = extensionData?.metadata
         withContext(Dispatchers.IO) {
             metadata to metadata?.className?.let { id ->
-                userDao.getAllUsers(id)?.map { it }
+                dataFlow.value.getAllUsers(id)?.map { it }
             }
         }
 
@@ -54,7 +52,7 @@ class LoginUserViewModel @Inject constructor(
     fun logout(client: String?, user: String?) {
         if (client == null || user == null) return
         viewModelScope.launch(Dispatchers.IO) {
-            //userDao.deleteUser(user, client)
+            //dataFlow.value.deleteUser(user, client)
         }
     }
 
@@ -66,7 +64,7 @@ class LoginUserViewModel @Inject constructor(
 
     fun setLoginUser(currentUser: CurrentUser) {
         viewModelScope.launch(Dispatchers.IO) {
-            //userDao.setCurrentUser(currentUser)
+            //dataFlow.value.setCurrentUser(currentUser)
         }
     }
 

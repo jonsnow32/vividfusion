@@ -7,12 +7,12 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.BookmarkItem
-import cloud.app.vvf.datastore.helper.addFavoritesData
-import cloud.app.vvf.datastore.helper.findBookmark
-import cloud.app.vvf.datastore.helper.getFavoritesData
-import cloud.app.vvf.datastore.helper.removeFavoritesData
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.BookmarkItem
+import cloud.app.vvf.datastore.app.helper.addFavoritesData
+import cloud.app.vvf.datastore.app.helper.findBookmark
+import cloud.app.vvf.datastore.app.helper.getFavoritesData
+import cloud.app.vvf.datastore.app.helper.removeFavoritesData
 import cloud.app.vvf.extension.run
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class ItemOptionViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
-  val dataStore: DataStore,
+  val dataFlow: MutableStateFlow<AppDataStore>,
 ) : CatchingViewModel(throwableFlow) {
 
   var loading = MutableSharedFlow<Boolean>();
@@ -47,37 +47,37 @@ class ItemOptionViewModel @Inject constructor(
           detailItem.value = showDetail
           val favoriteDeferred = when (shortItem) {
             is AVPMediaItem.MovieItem -> async {
-              dataStore.getFavoritesData<AVPMediaItem.MovieItem>(
+              dataFlow.value.getFavoritesData<AVPMediaItem.MovieItem>(
                 detailItem.value?.id?.toString()
               )
             }
 
             is AVPMediaItem.ActorItem -> async {
-              dataStore.getFavoritesData<AVPMediaItem.ActorItem>(
+              dataFlow.value.getFavoritesData<AVPMediaItem.ActorItem>(
                 detailItem.value?.id?.toString()
               )
             }
 
             is AVPMediaItem.EpisodeItem -> async {
-              dataStore.getFavoritesData<AVPMediaItem.EpisodeItem>(
+              dataFlow.value.getFavoritesData<AVPMediaItem.EpisodeItem>(
                 detailItem.value?.id?.toString()
               )
             }
 
             is AVPMediaItem.SeasonItem -> async {
-              dataStore.getFavoritesData<AVPMediaItem.SeasonItem>(
+              dataFlow.value.getFavoritesData<AVPMediaItem.SeasonItem>(
                 detailItem.value?.id?.toString()
               )
             }
 
             is AVPMediaItem.ShowItem -> async {
-              dataStore.getFavoritesData<AVPMediaItem.ShowItem>(
+              dataFlow.value.getFavoritesData<AVPMediaItem.ShowItem>(
                 detailItem.value?.id?.toString()
               )
             }
 
             is AVPMediaItem.StreamItem -> async {
-              dataStore.getFavoritesData<AVPMediaItem.StreamItem>(
+              dataFlow.value.getFavoritesData<AVPMediaItem.StreamItem>(
                 detailItem.value?.id?.toString()
               )
             }
@@ -87,7 +87,7 @@ class ItemOptionViewModel @Inject constructor(
             }
           }
           favoriteStatus.value = favoriteDeferred.await()
-          bookmarkStatus.value = dataStore.findBookmark(shortItem)
+          bookmarkStatus.value = dataFlow.value.findBookmark(shortItem)
 
           loading.emit(false)
         }
@@ -97,9 +97,9 @@ class ItemOptionViewModel @Inject constructor(
 
   fun toggleFavoriteStatus(statusChangedCallback: (Boolean?) -> Unit) {
     if (!favoriteStatus.value) {
-      dataStore.addFavoritesData(detailItem.value)
+      dataFlow.value.addFavoritesData(detailItem.value)
     } else {
-      dataStore.removeFavoritesData(detailItem.value)
+      dataFlow.value.removeFavoritesData(detailItem.value)
     }
     favoriteStatus.value = !favoriteStatus.value
     statusChangedCallback.invoke(favoriteStatus.value)

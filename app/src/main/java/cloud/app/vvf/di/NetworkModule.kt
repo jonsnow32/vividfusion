@@ -13,6 +13,7 @@ import cloud.app.vvf.network.Interceptors.addGoogleDns
 import cloud.app.vvf.network.Interceptors.addQuad9Dns
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.helpers.network.ignoreAllSSLErrors
+import cloud.app.vvf.datastore.app.AppDataStore
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
@@ -21,6 +22,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.MutableStateFlow
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -46,10 +48,10 @@ class NetworkModule {
     loggingInterceptor: HttpLoggingInterceptor,
     cache: Cache,
     cookiePersistor: PersistentCookieJar,
-    sharedPreferences: SharedPreferences,
+    dataFlow: MutableStateFlow<AppDataStore>,
     context: Context,
   ): OkHttpClient {
-    val dns = sharedPreferences.getInt(context.getString(R.string.dns_pref), 0)
+    val dns = dataFlow.value.sharedPreferences.getInt(context.getString(R.string.dns_pref), 0)
     return OkHttpClient.Builder()
       .followRedirects(true)
       .followSslRedirects(true)

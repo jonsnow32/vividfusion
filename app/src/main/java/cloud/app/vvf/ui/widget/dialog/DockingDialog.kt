@@ -6,6 +6,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import cloud.app.vvf.MainActivityViewModel.Companion.isRTL
@@ -54,6 +55,7 @@ open class DockingDialog : DialogFragment() {
 
   override fun onStart() {
     super.onStart()
+    dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
     updateWindowAttributes()
   }
 

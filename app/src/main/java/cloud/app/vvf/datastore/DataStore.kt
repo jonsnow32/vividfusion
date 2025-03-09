@@ -4,36 +4,10 @@ import android.content.Context
 import android.content.SharedPreferences
 import cloud.app.vvf.utils.toData
 import cloud.app.vvf.utils.toJson
-import kotlinx.serialization.json.Json
 import timber.log.Timber
 import java.io.File
-import javax.inject.Inject
 
-const val PREFERENCES_NAME = "data_in_preference"
-
-class DataStore(val sharedPreferences: SharedPreferences) {
-
-  // Editor class for batch edits
-  data class Editor(val editor: SharedPreferences.Editor) {
-    fun <T> setKeyRaw(path: String, value: T) {
-      when (value) {
-        is Set<*> -> if (value.all { it is String }) editor.putStringSet(path, value as Set<String>)
-        is Boolean -> editor.putBoolean(path, value)
-        is Int -> editor.putInt(path, value)
-        is String -> editor.putString(path, value)
-        is Float -> editor.putFloat(path, value)
-        is Long -> editor.putLong(path, value)
-      }
-    }
-    fun apply() {
-      editor.apply()
-    }
-  }
-
-  // Functions for DataStore
-  fun editor(): Editor {
-    return Editor(sharedPreferences.edit())
-  }
+abstract class DataStore(val sharedPreferences: SharedPreferences) {
 
   fun getKeys(folder: String): List<String> {
     Timber.i(folder)
@@ -64,7 +38,7 @@ class DataStore(val sharedPreferences: SharedPreferences) {
 
   inline fun <reified T> setKey(path: String, value: T) {
     try {
-      Timber.i("setKey $path ${T::class.java} value = ${ value.toJson()}")
+      Timber.i("setKey $path ${T::class.java} value = ${value.toJson()}")
       sharedPreferences.edit().putString(path, value.toJson()).apply()
     } catch (e: Exception) {
       Timber.e(e)
@@ -83,17 +57,18 @@ class DataStore(val sharedPreferences: SharedPreferences) {
   }
 
   inline fun <reified T> getKeys(path: String, defVal: List<T>? = null): List<T>? {
+    Timber.i("$path ${T::class.java}")
     return try {
       val data = sharedPreferences.all.keys.filter { it.startsWith(path) }
+      if (data.isEmpty()) return null
       data.mapNotNull {
-        getKey<T>(it,null)
+        getKey<T>(it, null)
       }
     } catch (e: Exception) {
       Timber.e(e)
       defVal
     }
   }
-
 
 
   companion object {
@@ -104,3 +79,4 @@ class DataStore(val sharedPreferences: SharedPreferences) {
   }
 
 }
+

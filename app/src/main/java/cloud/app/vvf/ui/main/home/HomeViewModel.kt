@@ -4,8 +4,8 @@ import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.Tab
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.setCurrentDBExtension
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.setCurrentDBExtension
 import cloud.app.vvf.ui.main.FeedViewModel
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,8 +17,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   extListFlow: MutableStateFlow<List<Extension<*>>>,
-  dataStore: DataStore,
-) : FeedViewModel(throwableFlow, extListFlow, dataStore) {
+  dataFlow: MutableStateFlow<AppDataStore>,
+) : FeedViewModel(throwableFlow, extListFlow, dataFlow) {
 
   init {
     initialize();
@@ -28,7 +28,7 @@ class HomeViewModel @Inject constructor(
   override fun getFeed(client: BaseClient) = (client as? DatabaseClient)?.getHomeFeed(tab)?.toFlow()
   fun selectDbExtension(extension: Extension<*>) {
     selectedExtension.value = extension
-    dataStore.setCurrentDBExtension(extension.metadata)
+    dataFlow.value.setCurrentDBExtension(extension.metadata)
   }
 }
 

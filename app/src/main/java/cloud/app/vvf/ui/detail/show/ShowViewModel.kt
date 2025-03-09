@@ -8,14 +8,13 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.BOOKMARK_FOLDER
-import cloud.app.vvf.datastore.helper.PlaybackProgress
-import cloud.app.vvf.datastore.helper.PlaybackProgressFolder
-import cloud.app.vvf.datastore.helper.addFavoritesData
-import cloud.app.vvf.datastore.helper.getFavoritesData
-import cloud.app.vvf.datastore.helper.getLatestPlaybackProgress
-import cloud.app.vvf.datastore.helper.removeFavoritesData
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.PlaybackProgress
+import cloud.app.vvf.datastore.app.helper.PlaybackProgressFolder
+import cloud.app.vvf.datastore.app.helper.addFavoritesData
+import cloud.app.vvf.datastore.app.helper.getFavoritesData
+import cloud.app.vvf.datastore.app.helper.getLatestPlaybackProgress
+import cloud.app.vvf.datastore.app.helper.removeFavoritesData
 import cloud.app.vvf.extension.runClient
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,7 +31,7 @@ class ShowViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
   val updateUIFlow: MutableStateFlow<AVPMediaItem?>,
-  private val dataStore: DataStore,
+  private val dataFlow: MutableStateFlow<AppDataStore>,
 ) : CatchingViewModel(throwableFlow) {
 
   var loading = MutableSharedFlow<Boolean>();
@@ -58,14 +57,14 @@ class ShowViewModel @Inject constructor(
         watchedSeasons.value =
           (showDetail as AVPMediaItem.ShowItem).show.seasons?.map { it.toMediaItem(showDetail) }
             ?.map {
-              it.watchedEpisodeNumber = dataStore.getKeys("$PlaybackProgressFolder/${it.id}").count()
+              it.watchedEpisodeNumber = dataFlow.value.getKeys("$PlaybackProgressFolder/${it.id}").count()
               it
             }
 
         fullMediaItem.value = showDetail
         val favoriteDeferred =
-          async { dataStore.getFavoritesData<AVPMediaItem.ShowItem>(fullMediaItem.value?.id?.toString()) }
-        val lastWatchedDeferred = async { dataStore.getLatestPlaybackProgress(shortItem) }
+          async { dataFlow.value.getFavoritesData<AVPMediaItem.ShowItem>(fullMediaItem.value?.id?.toString()) }
+        val lastWatchedDeferred = async { dataFlow.value.getLatestPlaybackProgress(shortItem) }
 
         favoriteStatus.value = favoriteDeferred.await()
         lastWatchedEpisode.value = lastWatchedDeferred.await()
@@ -84,10 +83,10 @@ class ShowViewModel @Inject constructor(
                 watchedSeasons.value =
                   item.seasonItem.showItem.show.seasons?.map { it.toMediaItem(item.seasonItem.showItem) }
                     ?.map {
-                      it.watchedEpisodeNumber = dataStore.getKeys("$PlaybackProgressFolder/${it.id}").count()
+                      it.watchedEpisodeNumber = dataFlow.value.getKeys("$PlaybackProgressFolder/${it.id}").count()
                       it
                     }
-                lastWatchedEpisode.value = dataStore.getLatestPlaybackProgress(item.seasonItem.showItem)
+                lastWatchedEpisode.value = dataFlow.value.getLatestPlaybackProgress(item.seasonItem.showItem)
               }
             }
 
@@ -110,9 +109,9 @@ class ShowViewModel @Inject constructor(
 
   fun toggleFavoriteStatus(statusChangedCallback: (Boolean?) -> Unit) {
     if (!favoriteStatus.value) {
-      dataStore.addFavoritesData(fullMediaItem.value)
+      dataFlow.value.addFavoritesData(fullMediaItem.value)
     } else {
-      dataStore.removeFavoritesData(fullMediaItem.value)
+      dataFlow.value.removeFavoritesData(fullMediaItem.value)
     }
     favoriteStatus.value = !favoriteStatus.value
     statusChangedCallback.invoke(favoriteStatus.value)

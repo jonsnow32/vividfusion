@@ -1,28 +1,35 @@
 package cloud.app.vvf.ui.setting
 
+import android.content.Context
 import android.os.Bundle
-import android.view.View
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import cloud.app.vvf.VVFApplication.Companion.applyUiChanges
-import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
+import cloud.app.vvf.VVFApplication.Companion.isDynamicColorSupported
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.utils.ColorListPreference
 import cloud.app.vvf.utils.MaterialListPreference
-import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
-@AndroidEntryPoint
+
 class UiSettingFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.ui)
   override val transitionName = "ui_settings"
   override val container = { UiPreference() }
 
+  @AndroidEntryPoint
   class UiPreference : PreferenceFragmentCompat() {
+
+    @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
+      preferenceManager.sharedPreferencesName = dataFlow.value.account.getSlug()
+      preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val screen = preferenceManager.createPreferenceScreen(context)
       val preferences = preferenceManager.sharedPreferences ?: return
       preferenceScreen = screen
@@ -31,7 +38,6 @@ class UiSettingFragment : BaseSettingsFragment() {
           block(new)
           true
         }
-
 
       MaterialListPreference(context).apply {
         key = getString(R.string.pref_theme)
@@ -57,9 +63,10 @@ class UiSettingFragment : BaseSettingsFragment() {
         isIconSpaceReserved = false
         setDefaultValue(false)
         onPreferenceChangeListener = uiListener {
-          activity?.application?.applyUiChanges(preferences, currentActivity = activity)
+          if(it == false) activity?.application?.applyUiChanges(preferences, currentActivity = activity)
           screen.findPreference<Preference>(getString(R.string.dynamic_color))?.isEnabled = it as Boolean
         }
+        isVisible = isDynamicColorSupported()
         screen.addPreference(this)
       }
 
@@ -70,6 +77,7 @@ class UiSettingFragment : BaseSettingsFragment() {
           val themeColor = preferences.getString(getString(R.string.pref_theme), "system")
           activity?.application?.applyUiChanges(preferences, themeColor, it, currentActivity = activity)
         }
+        isVisible = isDynamicColorSupported()
         screen.addPreference(this)
       }
       PreferenceCategory(context).apply {

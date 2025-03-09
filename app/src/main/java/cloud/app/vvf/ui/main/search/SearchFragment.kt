@@ -5,6 +5,7 @@ import android.app.SearchManager
 import android.content.Context
 import android.database.Cursor
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,19 +26,16 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.SearchItem
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.getCurrentDBExtension
 import cloud.app.vvf.ui.detail.loadWith
 import cloud.app.vvf.ui.main.configureFeedUI
-import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import timber.log.Timber
 
 @AndroidEntryPoint
-class SearchFragment : Fragment(), MediaItemAdapter.Listener {
+class SearchFragment : Fragment(){
 
   private val parent get() = parentFragment as Fragment
   private var binding by autoCleared<FragmentSearchBinding>()
@@ -97,7 +95,6 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     }
 
     observe(viewModel.feed) {
-      viewModel.saveHistory()
       binding.searchLoading.isGone = true
     }
 
@@ -173,20 +170,15 @@ class SearchFragment : Fragment(), MediaItemAdapter.Listener {
     super.onStop()
   }
 
-  override fun onClick(extensionId: String?, item: AVPMediaItem, transitionView: View?) {
-    // TODO: Handle media item click
-  }
-
-  override fun onLongClick(
-    extensionId: String?,
-    item: AVPMediaItem,
-    transitionView: View?
-  ): Boolean {
-    // TODO: Handle media item long click
-    return false
-  }
-
-  override fun onFocusChange(extensionId: String?, item: AVPMediaItem, hasFocus: Boolean) {
-    // TODO: Handle focus change
+  override fun onHiddenChanged(hidden: Boolean) {
+    super.onHiddenChanged(hidden)
+    if (hidden) {
+      // Fragment is hidden
+      viewModel.saveHistory()
+      Timber.d("Fragment ${this::class.java.simpleName} is hidden")
+    } else {
+      // Fragment is shown again
+      Timber.d("Fragment ${this::class.java.simpleName} is visible")
+    }
   }
 }

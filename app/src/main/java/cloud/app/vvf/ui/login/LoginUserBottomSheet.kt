@@ -10,7 +10,7 @@ import androidx.fragment.app.activityViewModels
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.DialogLoginUserBinding
 import cloud.app.vvf.databinding.ItemLoginUserBinding
-import cloud.app.vvf.datastore.helper.CurrentUser
+import cloud.app.vvf.datastore.app.helper.CurrentUser
 import cloud.app.vvf.ui.setting.SettingsRootFragment
 import cloud.app.vvf.ui.widget.dialog.DockingDialog
 import cloud.app.vvf.utils.autoCleared

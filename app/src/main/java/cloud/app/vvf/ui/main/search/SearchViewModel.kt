@@ -7,10 +7,10 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.SearchItem
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.deleteHistorySearch
-import cloud.app.vvf.datastore.helper.getSearchHistory
-import cloud.app.vvf.datastore.helper.saveSearchHistory
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.deleteHistorySearch
+import cloud.app.vvf.datastore.app.helper.getSearchHistory
+import cloud.app.vvf.datastore.app.helper.saveSearchHistory
 import cloud.app.vvf.ui.main.FeedViewModel
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,8 +25,8 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   extListFlow: MutableStateFlow<List<Extension<*>>>,
-  dataStore: DataStore,
-) : FeedViewModel(throwableFlow,  extListFlow, dataStore) {
+  dataFlow: MutableStateFlow<AppDataStore>,
+) : FeedViewModel(throwableFlow,  extListFlow, dataFlow) {
 
   var query: String? = ""
   override suspend fun getTabs(client: BaseClient) =
@@ -43,18 +43,18 @@ class SearchViewModel @Inject constructor(
 
   fun getHistory() {
     viewModelScope.launch(Dispatchers.IO) {
-      val list = dataStore.getSearchHistory() ?: emptyList()
+      val list = dataFlow.value.getSearchHistory() ?: emptyList()
       historyQuery.emit(list)
     }
   }
 
   fun saveHistory() {
     query?.takeIf { it.isNotBlank() }?.let {
-      dataStore.saveSearchHistory(SearchItem(it, true, System.currentTimeMillis()))
+      dataFlow.value.saveSearchHistory(SearchItem(it, true, System.currentTimeMillis()))
     }
   }
 
   fun deleteHistory(item: SearchItem) {
-    dataStore.deleteHistorySearch(item)
+    dataFlow.value.deleteHistorySearch(item)
   }
 }

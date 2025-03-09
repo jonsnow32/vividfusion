@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+
+  android:orientation="vertical">
+
+  <TextView
+    android:layout_width="match_parent"
+    android:layout_height="?actionBarSize"
+    android:text="@string/account"
+    android:gravity="center"
+    android:background="?navBackground"
+    android:textSize="30sp" />
+
+  <View
+    style="@style/AppBarOutline"/>
+
+  <androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/account_list"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_rowWeight="1"
+    android:layout_weight="1"
+    android:focusable="true"
+    android:background="?appBackground"
+    app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+    app:spanCount="3"
+    tools:itemCount="4"
+    tools:listitem="@layout/account_item" />
+
+  <Button
+    android:id="@+id/addAccount"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/add_account">
+
+    <requestFocus />
+  </Button>
+</LinearLayout>

@@ -5,10 +5,10 @@ import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.addFavoritesData
-import cloud.app.vvf.datastore.helper.getFavoritesData
-import cloud.app.vvf.datastore.helper.removeFavoritesData
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.addFavoritesData
+import cloud.app.vvf.datastore.app.helper.getFavoritesData
+import cloud.app.vvf.datastore.app.helper.removeFavoritesData
 import cloud.app.vvf.extension.runClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +22,7 @@ import javax.inject.Inject
 class MovieViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionFlow: MutableStateFlow<List<Extension<*>>>,
-  val dataStore: DataStore,
+  val dataFlow: MutableStateFlow<AppDataStore>,
 ) : CatchingViewModel(throwableFlow) {
 
   var loading = MutableStateFlow(false);
@@ -39,7 +39,7 @@ class MovieViewModel @Inject constructor(
 
         fullMediaItem.value = movieDetails
         val favoriteDeferred =
-          async { dataStore.getFavoritesData<AVPMediaItem.MovieItem>(fullMediaItem.value?.id?.toString()) }
+          async { dataFlow.value.getFavoritesData<AVPMediaItem.MovieItem>(fullMediaItem.value?.id?.toString()) }
         favoriteStatus.value = favoriteDeferred.await()
         loading.value = false
       }
@@ -48,9 +48,9 @@ class MovieViewModel @Inject constructor(
 
   fun toggleFavoriteStatus(statusChangedCallback: (Boolean?) -> Unit) {
     if (!favoriteStatus.value) {
-      dataStore.addFavoritesData(fullMediaItem.value)
+      dataFlow.value.addFavoritesData(fullMediaItem.value)
     } else {
-      dataStore.removeFavoritesData(fullMediaItem.value)
+      dataFlow.value.removeFavoritesData(fullMediaItem.value)
     }
     favoriteStatus.value = !favoriteStatus.value
     statusChangedCallback.invoke(favoriteStatus.value)

@@ -25,7 +25,7 @@ class InputDialog : DockingDialog() {
   }
 
   companion object {
-    fun newInstance(title: String,textInput: String, callback: (String) -> Unit): InputDialog {
+    fun newInstance(title: String, textInput: String, callback: (String) -> Unit): InputDialog {
       val args = Bundle()
       args.putString("inputText", textInput)
       args.putString("title", title)

@@ -6,8 +6,8 @@ import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.saveExtensions
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.saveExtensions
 import cloud.app.vvf.extension.builtIn.BuiltInRepo
 import cloud.app.vvf.extension.plugger.FileChangeListener
 import cloud.app.vvf.extension.plugger.PackageChangeListener
@@ -25,11 +25,9 @@ import kotlinx.coroutines.plus
 
 class ExtensionLoader(
   private val context: Context,
-  private val dataStore: DataStore,
+  private val dataFlow: MutableStateFlow<AppDataStore>,
   private val httpHelper: HttpHelper,
   private val throwableFlow: MutableSharedFlow<Throwable>,
-  private val sharedPreferences: SharedPreferences,
-
   private val extensionsFlow: MutableStateFlow<List<Extension<*>>>,
   private val refresher: MutableSharedFlow<Boolean>,
 
@@ -41,6 +39,7 @@ class ExtensionLoader(
 
   private val extensionRepo = ExtensionRepo(
     context,
+    dataFlow.value.account,
     httpHelper,
     appListener,
     fileListener,
@@ -72,7 +71,7 @@ class ExtensionLoader(
 
         val votingMap = mapOf<String, Int>(); //sort by voting api
 
-        dataStore.saveExtensions(extensions.map {
+        dataFlow.value.saveExtensions(extensions.map {
           it.metadata.rating = votingMap[it.id] ?: 0
           it.metadata
         })

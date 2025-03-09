@@ -6,11 +6,14 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.os.Build
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import cloud.app.vvf.common.helpers.network.HttpHelper
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.utils.setLocale
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
@@ -18,13 +21,15 @@ import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class VVFApplication : Application() {
+class VVFApplication : Application() , Application.ActivityLifecycleCallbacks{
   @Inject
   lateinit var throwableFlow: MutableSharedFlow<Throwable>
 
@@ -32,16 +37,16 @@ class VVFApplication : Application() {
   lateinit var extensionLoader: ExtensionLoader
 
   @Inject
-  lateinit var sharedPreferences: SharedPreferences
+  lateinit var dataFlow: MutableStateFlow<AppDataStore>
 
   @Inject
   lateinit var httpHelper: HttpHelper
 
   private val scope = MainScope() + CoroutineName("Application")
-
+  private var currentActivity: Activity? = null
   override fun onCreate() {
     super.onCreate()
-
+    registerActivityLifecycleCallbacks(this)
     Thread.setDefaultUncaughtExceptionHandler { _, exception ->
       exception.printStackTrace()
       ExceptionActivity.start(this, exception, true)
@@ -52,28 +57,56 @@ class VVFApplication : Application() {
       Timber.plant(Timber.DebugTree())
     }
 
-    applyUiChanges(
-      sharedPreferences
-    )
-
     scope.launch {
       throwableFlow.collect {
         it.printStackTrace()
+      }
+    }
+    scope.launch {
+      dataFlow.collectLatest { value ->
+        applyUiChanges(value.sharedPreferences, currentActivity = currentActivity)
       }
     }
 
     extensionLoader.initialize()
   }
 
+
+  override fun onActivityResumed(activity: Activity) {
+    currentActivity = activity
+  }
+
+  override fun onActivityPaused(activity: Activity) {
+    if (currentActivity == activity) currentActivity = null
+  }
+
+  override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+  override fun onActivityStarted(activity: Activity) {}
+  override fun onActivityStopped(activity: Activity) {}
+  override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+  override fun onActivityDestroyed(activity: Activity) {
+    if (currentActivity == activity) currentActivity = null
+  }
+
   companion object {
 
-    @SuppressLint("RestrictedApi")
+    fun isDynamicColorSupported(): Boolean {
+      return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12 (API 31)
+        DynamicColors.isDynamicColorAvailable()
+      } else {
+        false // Below Android 12, Dynamic Colors are not supported
+      }
+    }
+
     fun Application.applyUiChanges(
       preferences: SharedPreferences,
       newTheme: String? = null,
       newColor: Int? = null,
       currentActivity: Activity? = null
     ) {
+
+      if(!isDynamicColorSupported()) return;
+
       var theme: String? = null
 
       theme = newTheme ?: preferences.getString(getString(R.string.pref_theme), "system")
@@ -98,7 +131,9 @@ class VVFApplication : Application() {
       val code = preferences.getString(getString(R.string.pref_locale), "en")
       code?.let { setLocale(it) }
 
-      currentActivity?.recreate()
+      (this as VVFApplication).currentActivity?.recreate()
+// 🔹 Force Activity Restart Properly
+//      currentActivity?.recreate()
     }
 
 

@@ -12,9 +12,9 @@ import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
-import cloud.app.vvf.datastore.DataStore
-import cloud.app.vvf.datastore.helper.getExtension
-import cloud.app.vvf.datastore.helper.saveExtension
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.datastore.app.helper.getExtension
+import cloud.app.vvf.datastore.app.helper.saveExtension
 import cloud.app.vvf.extension.ExtensionAssetResponse
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.extension.downloadUpdate
@@ -44,12 +44,12 @@ import javax.inject.Inject
 class ExtensionViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionLoader: ExtensionLoader,
-  val settings: SharedPreferences,
+  val appDataStore: MutableStateFlow<AppDataStore>,
   val extensionListFlow: MutableStateFlow<List<Extension<*>>>,
   val refresher: MutableSharedFlow<Boolean>,
   val okHttpClient: OkHttpClient,
   val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
-  val dataStore: DataStore,
+  val dataFlow: MutableStateFlow<AppDataStore>,
   val votingService: VotingService
 ) : CatchingViewModel(throwableFlow) {
 
@@ -164,9 +164,9 @@ class ExtensionViewModel @Inject constructor(
   }
 
   fun setExtensionEnabled(id: String, checked: Boolean) {
-    val extension = dataStore.getExtension(id)
+    val extension = dataFlow.value.getExtension(id)
     extension?.enabled = checked
-    extension?.let { dataStore.saveExtension(extension) }
+    extension?.let { dataFlow.value.saveExtension(extension) }
     //viewModelScope.launch { refresher.emit(true) }
   }
   private val voteMutex = Mutex()
@@ -175,12 +175,12 @@ class ExtensionViewModel @Inject constructor(
     viewModelScope.launch(Dispatchers.IO) {
       val key = "${type.name}/${extensionMetadata.className}"
       voteMutex.withLock {
-        val isVoted = dataStore.getKey<Boolean>(key) == true
+        val isVoted = dataFlow.value.getKey<Boolean>(key) == true
         if (!isVoted) {
           val response = votingService.vote(type.name, extensionMetadata.className).execute()
           if (response.isSuccessful) {
             response.body()?.let {
-              dataStore.setKey(key, true)
+              dataFlow.value.setKey(key, true)
             }
           }
         } else {

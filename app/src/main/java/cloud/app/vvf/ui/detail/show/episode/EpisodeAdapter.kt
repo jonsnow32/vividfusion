@@ -57,7 +57,7 @@ class EpisodeAdapter(private val listener: Listener) :
     override fun areContentsTheSame(
       oldItem: Episode,
       newItem: Episode
-    ): Boolean = oldItem == newItem
+    ): Boolean = oldItem.ids.equals(newItem)
   }
 
   class ViewHolderLarge(private val binding: EpisodeItemLargeBinding) :
@@ -69,7 +69,7 @@ class EpisodeAdapter(private val listener: Listener) :
       val isUpcoming = unixTimeMS < (item.generalInfo.releaseDateMsUTC ?: 0L)
 
       binding.episodeText.text = "${item.episodeNumber}. ${item.generalInfo.title}"
-      item.generalInfo.backdrop?.let { it.toImageHolder().loadInto(binding.episodePoster) }
+      item.generalInfo.backdrop?.toImageHolder()?.loadInto(binding.episodePoster)
 
       binding.episodeDescript.setTextWithVisibility(item.generalInfo.overview)
       binding.episodeRating.setTextWithVisibility(

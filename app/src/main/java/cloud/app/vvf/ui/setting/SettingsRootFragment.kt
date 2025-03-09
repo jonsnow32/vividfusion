@@ -8,17 +8,40 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import cloud.app.vvf.R
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.ui.widget.dialog.account.AccountDialog
 import cloud.app.vvf.utils.navigate
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
 class SettingsRootFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.settings)
   override val transitionName = "settings"
   override val container = { SettingsPreference() }
 
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
+
+    setMenuToolbar(R.menu.settings_root_menu) {
+      when (it.itemId) {
+        R.id.menu_account -> {
+          AccountDialog.newInstance(getString(R.string.account)) {
+
+          }.show(parentFragmentManager)
+          true
+        }
+        else -> false
+      }
+    }
+  }
+
+  @AndroidEntryPoint
   class SettingsPreference : PreferenceFragmentCompat() {
+    @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
-      preferenceManager.sharedPreferencesName = context.packageName
+      preferenceManager.sharedPreferencesName = dataFlow.value.account.getSlug()
       preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val screen = preferenceManager.createPreferenceScreen(context)
       preferenceScreen = screen

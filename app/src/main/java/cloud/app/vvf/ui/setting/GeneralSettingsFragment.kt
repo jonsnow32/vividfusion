@@ -2,18 +2,18 @@ package cloud.app.vvf.ui.setting
 
 import android.content.Context
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
-import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.applyUiChanges
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.utils.MaterialListPreference
 import cloud.app.vvf.utils.SubtitleHelper
-import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 import kotlin.math.max
 
 // Change local language settings in the app.
@@ -90,15 +90,19 @@ val appLanguages = arrayListOf(
 ).sortedBy { it.second.lowercase() } //ye, we go alphabetical, so ppl don't put their lang on top
 
 
-@AndroidEntryPoint
+
 class GeneralSettingsFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.general_setting)
   override val transitionName = "general_setting"
   override val container  =  { GeneralPreference() }
 
+  @AndroidEntryPoint
   class GeneralPreference : PreferenceFragmentCompat() {
+    @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
+      preferenceManager.sharedPreferencesName = dataFlow.value.account.getSlug()
+      preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val screen = preferenceManager.createPreferenceScreen(context)
       val preferences = preferenceManager.sharedPreferences ?: return
       preferenceScreen = screen

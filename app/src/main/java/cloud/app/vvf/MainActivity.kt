@@ -8,18 +8,19 @@ import android.graphics.Rect
 import android.hardware.input.InputManager
 import android.os.Bundle
 import android.view.InputDevice
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.CheckBox
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
-import androidx.fragment.app.FragmentManager
 import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.databinding.ActivityMainBinding
+import cloud.app.vvf.databinding.ConfirmExitDialogBinding
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.features.player.PlayerManager
 import cloud.app.vvf.utils.TV
 import cloud.app.vvf.utils.Utils.isAndroidTV
@@ -32,6 +33,7 @@ import cloud.app.vvf.utils.updateTv
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.system.exitProcess
@@ -41,7 +43,7 @@ class MainActivity : AppCompatActivity() {
   val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
   @Inject
-  lateinit var sharedPreferences: SharedPreferences
+  lateinit var dataFlow: MutableStateFlow<AppDataStore>
   override fun onCreate(savedInstanceState: Bundle?) {
 
     PlayerManager.getInstance().setActivityResultRegistry(activityResultRegistry)
@@ -49,7 +51,7 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     PlayerManager.getInstance()
       .inject(
-        sharedPreferences,
+        dataFlow.value.sharedPreferences,
         this
       ) // call after activity injected
 
@@ -103,9 +105,9 @@ class MainActivity : AppCompatActivity() {
             if (!supportFragmentManager.popBackStackImmediate()) {
               // If no fragments left, show exit confirmation
               val canShowDialog =
-                sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
+                dataFlow.value.sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
               if (canShowDialog) {
-                showConfirmExitDialog(sharedPreferences)
+                showConfirmExitDialog(dataFlow.value.sharedPreferences)
               } else {
                 moveTaskToBack(true) // Move app to background
               }
@@ -131,7 +133,7 @@ class MainActivity : AppCompatActivity() {
     addOnNewIntentListener { onIntent(it) }
     onIntent(intent)
 
-    val localeCode = sharedPreferences.getString(getString(R.string.pref_locale), "en")
+    val localeCode = dataFlow.value.sharedPreferences.getString(getString(R.string.pref_locale), "en")
     setLocale(localeCode)
 
   }
@@ -193,20 +195,19 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun showConfirmExitDialog(settingsManager: SharedPreferences) {
-
-    val dialogView = layoutInflater.inflate(R.layout.confirm_exit_dialog, null)
-    val dontShowAgainCheck: CheckBox = dialogView.findViewById(R.id.checkboxDontShowAgain)
+    val binding = ConfirmExitDialogBinding.inflate(LayoutInflater.from(this))
     MaterialAlertDialogBuilder(this)
-      .setView(dialogView)
+      .setView(binding.root)
       .setTitle(R.string.exit_confirm_msg)
       .setNegativeButton(R.string.no) { _, _ -> /*NO-OP*/ }
       .setPositiveButton(R.string.yes) { _, _ ->
-        if (dontShowAgainCheck.isChecked) {
+        if (binding.checkboxDontShowAgain.isChecked) {
           settingsManager.edit().putBoolean(getString(R.string.pref_show_exit_confirm), true)
-            .commit()
+            .apply()
         }
         if (isLayout(TV)) exitProcess(0) else finish()
       }.show().setDefaultFocus()
   }
+
 
 }

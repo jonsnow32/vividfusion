@@ -15,19 +15,9 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceGroup
 import androidx.preference.SwitchPreferenceCompat
-import cloud.app.vvf.VVFApplication.Companion.noClient
 import cloud.app.vvf.R
+import cloud.app.vvf.VVFApplication.Companion.noClient
 import cloud.app.vvf.common.clients.BaseClient
-import cloud.app.vvf.databinding.FragmentExtensionBinding
-import cloud.app.vvf.extension.getExtension
-import cloud.app.vvf.ui.extension.ExtensionViewModel
-import cloud.app.vvf.utils.MaterialListPreference
-import cloud.app.vvf.utils.MaterialMultipleChoicePreference
-import cloud.app.vvf.utils.MaterialTextInputPreference
-import cloud.app.vvf.utils.autoCleared
-import cloud.app.vvf.utils.loadWith
-import cloud.app.vvf.utils.setupTransition
-import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.vvf.common.clients.user.LoginClient
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.settings.Setting
@@ -37,14 +27,26 @@ import cloud.app.vvf.common.settings.SettingList
 import cloud.app.vvf.common.settings.SettingMultipleChoice
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.common.settings.SettingTextInput
+import cloud.app.vvf.databinding.FragmentExtensionBinding
+import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.extension.getExtension
 import cloud.app.vvf.extension.isClient
 import cloud.app.vvf.extension.runClient
+import cloud.app.vvf.ui.extension.ExtensionViewModel
 import cloud.app.vvf.ui.login.LoginUserBottomSheet.Companion.bind
 import cloud.app.vvf.ui.login.LoginUserViewModel
-import cloud.app.vvf.ui.setting.ManageExtensionsFragment.ExtensionListFragment
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
+import cloud.app.vvf.utils.MaterialListPreference
+import cloud.app.vvf.utils.MaterialMultipleChoicePreference
+import cloud.app.vvf.utils.MaterialTextInputPreference
+import cloud.app.vvf.utils.autoCleared
+import cloud.app.vvf.utils.loadWith
+import cloud.app.vvf.utils.setupTransition
+import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlin.lazy
+import javax.inject.Inject
 
 class ExtensionSettingFragment : BaseSettingsFragment() {
 
@@ -180,15 +182,18 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
 
     val creator = { ExtensionPreference.newInstance(extensionId) }
 
+    @AndroidEntryPoint
     class ExtensionPreference : PreferenceFragmentCompat() {
       private val args by lazy { requireArguments() }
       private val extensionId by lazy { args.getString("extensionId")!! }
 
+      @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
       override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
-        preferenceManager.sharedPreferencesName = extensionId
+        preferenceManager.sharedPreferencesName = "${extensionId}-${dataFlow.value.account.getSlug()}"
         preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
         val screen = preferenceManager.createPreferenceScreen(context)
+        val preferences = preferenceManager.sharedPreferences ?: return
         preferenceScreen = screen
 
         val viewModel by activityViewModels<ExtensionViewModel>()

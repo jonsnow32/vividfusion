@@ -2,24 +2,28 @@ package cloud.app.vvf.ui.setting
 
 import android.content.Context
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
+import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.utils.Utils
-import cloud.app.vvf.utils.setupTransition
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
-class AboutFragment : BaseSettingsFragment() {
+
+class AboutFragment  : BaseSettingsFragment() {
   override val title get() = getString(R.string.about)
   override val transitionName = "about"
   override val container = { AboutPreference() }
 
+  @AndroidEntryPoint
   class AboutPreference : PreferenceFragmentCompat() {
+    @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
-      preferenceManager.sharedPreferencesName = context.packageName
+      preferenceManager.sharedPreferencesName = dataFlow.value.account.getSlug()
       preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val preferences = preferenceManager.sharedPreferences ?: return
 

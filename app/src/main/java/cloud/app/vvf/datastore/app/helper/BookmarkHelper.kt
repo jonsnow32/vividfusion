@@ -1,11 +1,8 @@
-package cloud.app.vvf.datastore.helper
+package cloud.app.vvf.datastore.app.helper
 
-import android.provider.ContactsContract.Data
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import cloud.app.vvf.R
-import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.datastore.app.AppDataStore
 import kotlinx.serialization.Serializable
 
 const val BOOKMARK_FOLDER = "bookmarks"
@@ -75,16 +72,16 @@ sealed class BookmarkItem {
   }
 }
 
-fun DataStore.getAllBookmarks(): List<BookmarkItem>? {
+fun AppDataStore.getAllBookmarks(): List<BookmarkItem>? {
   return getKeys<BookmarkItem>("$BOOKMARK_FOLDER/", null)?.sortedByDescending { it.lastUpdated }
 }
 
-fun DataStore.addToBookmark(data: BookmarkItem?) {
+fun AppDataStore.addToBookmark(data: BookmarkItem?) {
   if (data == null) return
   setKey("$BOOKMARK_FOLDER/${data.item.id}", data)
 }
 
-fun DataStore.addToBookmark(avpMediaItem: AVPMediaItem?, type: String) {
+fun AppDataStore.addToBookmark(avpMediaItem: AVPMediaItem?, type: String) {
   if (avpMediaItem == null) return
   when(type) {
     "Watching" -> addToBookmark( BookmarkItem.Watching(0, null, avpMediaItem))
@@ -96,11 +93,11 @@ fun DataStore.addToBookmark(avpMediaItem: AVPMediaItem?, type: String) {
   }
 }
 
-fun DataStore.findBookmark(avpMediaItem: AVPMediaItem?): BookmarkItem? {
+fun AppDataStore.findBookmark(avpMediaItem: AVPMediaItem?): BookmarkItem? {
   return getKey<BookmarkItem>("$BOOKMARK_FOLDER/${avpMediaItem?.id}", null)
 }
 
-fun DataStore.removeBookmark(avpMediaItem: AVPMediaItem?) {
+fun AppDataStore.removeBookmark(avpMediaItem: AVPMediaItem?) {
   if (avpMediaItem == null) return
   removeKey(
     "$BOOKMARK_FOLDER/${avpMediaItem.id}"

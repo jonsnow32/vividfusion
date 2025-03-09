@@ -1,7 +1,7 @@
-package cloud.app.vvf.datastore.helper
+package cloud.app.vvf.datastore.app.helper
 
 import cloud.app.vvf.common.models.User
-import cloud.app.vvf.datastore.DataStore
+import cloud.app.vvf.datastore.app.AppDataStore
 
 
 data class CurrentUser(
@@ -10,9 +10,9 @@ data class CurrentUser(
 )
 
 const val USERS_FOLDER = "users"
-fun DataStore.getCurrentUser(id: String?): User? {
+fun AppDataStore.getCurrentUser(id: String?): User? {
   return getKey<User>("$USERS_FOLDER/${id}", null)
 }
-fun DataStore.getAllUsers(id: String?): List<User>? {
+fun AppDataStore.getAllUsers(id: String?): List<User>? {
   return getKeys<User>("$USERS_FOLDER/", null)
 }
