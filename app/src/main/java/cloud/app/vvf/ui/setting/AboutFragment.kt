@@ -13,17 +13,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 
-class AboutFragment  : BaseSettingsFragment() {
+class AboutFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.about)
   override val transitionName = "about"
   override val container = { AboutPreference() }
 
-  @AndroidEntryPoint
   class AboutPreference : PreferenceFragmentCompat() {
-    @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
-      preferenceManager.sharedPreferencesName = dataFlow.value.account.getSlug()
+      preferenceManager.sharedPreferencesName = context.packageName
       preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val preferences = preferenceManager.sharedPreferences ?: return
 
@@ -36,7 +34,7 @@ class AboutFragment  : BaseSettingsFragment() {
           .versionName
         title = getString(R.string.version)
         summary = version
-        layoutResource = R.layout.custom_preference
+        layoutResource = R.layout.preference
         isSelectable = false
         screen.addPreference(this)
       }

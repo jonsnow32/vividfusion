@@ -28,7 +28,6 @@ import cloud.app.vvf.common.settings.SettingMultipleChoice
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.common.settings.SettingTextInput
 import cloud.app.vvf.databinding.FragmentExtensionBinding
-import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.getExtension
 import cloud.app.vvf.extension.isClient
 import cloud.app.vvf.extension.runClient
@@ -43,10 +42,7 @@ import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.loadWith
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 class ExtensionSettingFragment : BaseSettingsFragment() {
 
@@ -74,7 +70,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
     super.onViewCreated(view, savedInstanceState)
 
     val extensionMetadata =
-      viewModel.extensionListFlow.getExtension(extensionId)?.metadata ?: return
+      viewModel.extListFlow.getExtension(extensionId)?.metadata ?: return
     setMenuToolbar(R.menu.extension_menu) {
       when (it.itemId) {
         R.id.menu_like -> {
@@ -118,7 +114,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
 
     private val args by lazy { requireArguments() }
     private val extensionId by lazy { args.getString("extensionId")!! }
-    private val extension by lazy { viewModel.extensionListFlow.getExtension(extensionId) }
+    private val extension by lazy { viewModel.extListFlow.getExtension(extensionId) }
     override fun onCreateView(
       inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -182,15 +178,13 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
 
     val creator = { ExtensionPreference.newInstance(extensionId) }
 
-    @AndroidEntryPoint
     class ExtensionPreference : PreferenceFragmentCompat() {
       private val args by lazy { requireArguments() }
       private val extensionId by lazy { args.getString("extensionId")!! }
 
-      @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
       override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
-        preferenceManager.sharedPreferencesName = "${extensionId}-${dataFlow.value.account.getSlug()}"
+        preferenceManager.sharedPreferencesName = context.packageName
         preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
         val screen = preferenceManager.createPreferenceScreen(context)
         val preferences = preferenceManager.sharedPreferences ?: return
@@ -199,7 +193,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
         val viewModel by activityViewModels<ExtensionViewModel>()
         viewModel.apply {
           viewModelScope.launch {
-            viewModel.extensionListFlow.value.runClient<BaseClient, Unit>(
+            viewModel.extListFlow.value?.runClient<BaseClient, Unit>(
               extensionId,
               throwableFlow
             ) {
@@ -217,7 +211,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
       private fun onSettingChanged() =
         Preference.OnPreferenceChangeListener { pref, new ->
           val viewModel by activityViewModels<ExtensionViewModel>()
-          val client = viewModel.extensionListFlow.getExtension(extensionId)
+          val client = viewModel.extListFlow.getExtension(extensionId)
           client?.instance?.value?.getOrNull()?.onSettingsChanged(pref.key, new)
           true
         }

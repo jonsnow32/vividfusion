@@ -18,11 +18,9 @@ import cloud.app.vvf.common.exceptions.LoginRequiredException
 import cloud.app.vvf.common.exceptions.MissingApiKeyException
 import cloud.app.vvf.databinding.ItemApiKeyRequiredBinding
 import cloud.app.vvf.ui.setting.ExtensionSettingFragment
-import cloud.app.vvf.ui.setting.ManageExtensionsFragment
 import cloud.app.vvf.utils.navigate
 
-class MediaContainerLoadingAdapter(val listener: Listener? = null) :
-  LoadStateAdapter<MediaContainerLoadingAdapter.LoadViewHolder>() {
+class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForContainer: Boolean) : LoadStateAdapter<MediaLoadStateAdapter.LoadStateViewHolder>() {
 
   interface Listener {
     fun onRetry()
@@ -31,11 +29,11 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
     fun onApiKeyEnter(view: View, error: MissingApiKeyException)
   }
 
-  class LoadViewHolder(val container: Container) : RecyclerView.ViewHolder(container.root)
+  class LoadStateViewHolder(val mediaLoadStateView: MediaLoadStateView) : RecyclerView.ViewHolder(mediaLoadStateView.root)
 
-  sealed class Container(val root: View) {
-    data class NotLoading(val binding: ItemNotLoadingBinding, val listener: Listener?) :
-      Container(binding.root) {
+  sealed class MediaLoadStateView(val root: View) {
+    data class NotLoadingView(val binding: ItemNotLoadingBinding, val listener: Listener?) :
+      MediaLoadStateView(binding.root) {
       override fun bind(loadState: LoadState) {
         binding.retry.setOnClickListener {
           listener?.onRetry()
@@ -43,18 +41,17 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
       }
     }
 
-    data class Loading(val binding: SkeletonItemContainerBinding) : Container(binding.root) {
+    data class ContainerLoadingView(val binding: SkeletonItemContainerBinding) : MediaLoadStateView(binding.root) {
       override fun bind(loadState: LoadState) {}
     }
 
-
-    data class GridLoading(val binding: SkeletonItemMediaRecyclerGridBinding) :
-      Container(binding.root) {
+    data class GridItemsLoadingView(val binding: SkeletonItemMediaRecyclerGridBinding) :
+      MediaLoadStateView(binding.root) {
       override fun bind(loadState: LoadState) {}
     }
 
-    data class Error(val binding: ItemErrorBinding, val listener: Listener?) :
-      Container(binding.root) {
+    data class ErrorView(val binding: ItemErrorBinding, val listener: Listener?) :
+      MediaLoadStateView(binding.root) {
       override fun bind(loadState: LoadState) {
         loadState as LoadState.Error
         binding.error.run {
@@ -70,8 +67,8 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
       }
     }
 
-    data class LoginRequired(val binding: ItemLoginRequiredBinding, val listener: Listener?) :
-      Container(binding.root) {
+    data class LoginRequiredView(val binding: ItemLoginRequiredBinding, val listener: Listener?) :
+      MediaLoadStateView(binding.root) {
       override fun bind(loadState: LoadState) {
         val error =
           (loadState as LoadState.Error).error as LoginRequiredException
@@ -85,8 +82,8 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
       }
     }
 
-    data class ApiKeyRequired(val binding: ItemApiKeyRequiredBinding, val listener: Listener?) :
-      Container(binding.root) {
+    data class ApiKeyRequiredView(val binding: ItemApiKeyRequiredBinding, val listener: Listener?) :
+      MediaLoadStateView(binding.root) {
       override fun bind(loadState: LoadState) {
         val error =
           (loadState as LoadState.Error).error as MissingApiKeyException
@@ -103,33 +100,36 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
     abstract fun bind(loadState: LoadState)
   }
 
-  override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): LoadViewHolder {
+  override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): LoadStateViewHolder {
     val inflater = LayoutInflater.from(parent.context)
-    return LoadViewHolder(
+    return LoadStateViewHolder(
       when (getStateViewType(loadState)) {
 
-        0 -> Container.Loading(
+        0 -> MediaLoadStateView.ContainerLoadingView(
           SkeletonItemContainerBinding.inflate(inflater, parent, false)
         )
 
-        1 -> Container.NotLoading(
+        1 -> MediaLoadStateView.NotLoadingView(
           ItemNotLoadingBinding.inflate(inflater, parent, false), listener
         )
 
-        2 -> Container.Error(
+        2 -> MediaLoadStateView.ErrorView(
           ItemErrorBinding.inflate(inflater, parent, false),
           listener
         )
 
-        3 -> Container.LoginRequired(
+        3 -> MediaLoadStateView.LoginRequiredView(
           ItemLoginRequiredBinding.inflate(inflater, parent, false),
           listener
         )
 
-        4 -> Container.ApiKeyRequired(
+        4 -> MediaLoadStateView.ApiKeyRequiredView(
           ItemApiKeyRequiredBinding.inflate(inflater, parent, false), listener
         )
 
+        5 -> MediaLoadStateView.GridItemsLoadingView( // Handle GridLoadingView
+          SkeletonItemMediaRecyclerGridBinding.inflate(inflater, parent, false)
+        )
         else -> throw IllegalStateException()
       }
 
@@ -139,7 +139,7 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
 
   override fun getStateViewType(loadState: LoadState): Int {
     return when (loadState) {
-      is LoadState.Loading -> 0
+      is LoadState.Loading -> if(isAdapterForContainer) 0 else 5
       is LoadState.NotLoading -> 1
       is LoadState.Error -> {
         when (loadState.error) {
@@ -151,11 +151,11 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
     }
   }
 
-  override fun onBindViewHolder(holder: LoadViewHolder, loadState: LoadState) {
-    holder.container.bind(loadState)
+  override fun onBindViewHolder(holder: LoadStateViewHolder, loadState: LoadState) {
+    holder.mediaLoadStateView.bind(loadState)
   }
 
-  constructor (fragment: Fragment, retry: () -> Unit) : this(object : Listener {
+  constructor (fragment: Fragment, isContainerAdapter: Boolean = true,  retry: () -> Unit, ) : this(object : Listener {
     override fun onRetry() {
       retry()
     }
@@ -174,7 +174,6 @@ class MediaContainerLoadingAdapter(val listener: Listener? = null) :
         ExtensionSettingFragment.newInstance(error.extensionId, error.clientName),
         view
       )
-
     }
-  })
+  }, isContainerAdapter)
 }

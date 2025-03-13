@@ -1,3 +1,5 @@
-<resources>
-  <style name="AppTheme" parent="@style/BaseTheme"/>
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <style name="AppTheme" parent="@style/BaseTheme">
+    <item name="android:windowSplashScreenBackground" tools:targetApi="s">?appBackground</item>
+  </style>
 </resources>

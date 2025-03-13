@@ -42,8 +42,10 @@ import kotlin.system.exitProcess
 class MainActivity : AppCompatActivity() {
   val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
+
   @Inject
-  lateinit var dataFlow: MutableStateFlow<AppDataStore>
+  lateinit var sharedPreferences: SharedPreferences
+
   override fun onCreate(savedInstanceState: Bundle?) {
 
     PlayerManager.getInstance().setActivityResultRegistry(activityResultRegistry)
@@ -51,7 +53,7 @@ class MainActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     PlayerManager.getInstance()
       .inject(
-        dataFlow.value.sharedPreferences,
+        sharedPreferences,
         this
       ) // call after activity injected
 
@@ -105,9 +107,9 @@ class MainActivity : AppCompatActivity() {
             if (!supportFragmentManager.popBackStackImmediate()) {
               // If no fragments left, show exit confirmation
               val canShowDialog =
-                dataFlow.value.sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
+                sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
               if (canShowDialog) {
-                showConfirmExitDialog(dataFlow.value.sharedPreferences)
+                showConfirmExitDialog(sharedPreferences)
               } else {
                 moveTaskToBack(true) // Move app to background
               }
@@ -133,7 +135,7 @@ class MainActivity : AppCompatActivity() {
     addOnNewIntentListener { onIntent(it) }
     onIntent(intent)
 
-    val localeCode = dataFlow.value.sharedPreferences.getString(getString(R.string.pref_locale), "en")
+    val localeCode = sharedPreferences.getString(getString(R.string.pref_locale), "en")
     setLocale(localeCode)
 
   }

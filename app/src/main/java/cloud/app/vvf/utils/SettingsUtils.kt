@@ -8,8 +8,8 @@ import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.datastore.account.Account
 
-fun getSettings(account: Account, context: Context, metadata: ExtensionMetadata): PrefSettings {
-  val name = "${metadata.className}.${account.getSlug()}"
+fun getSettings(context: Context, metadata: ExtensionMetadata): PrefSettings {
+  val name = "${context.packageName}${metadata.className}"
   val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
   return toSettings(prefs)
 }

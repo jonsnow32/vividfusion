@@ -1,6 +1,7 @@
 package cloud.app.vvf.extension
 
 import android.content.Context
+import android.content.SharedPreferences
 import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.extension.plugger.AndroidPluginLoader
 import cloud.app.vvf.extension.plugger.FileManifestParser
@@ -23,12 +24,12 @@ import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.utils.getSettings
+import kotlinx.coroutines.delay
 import tel.jeelpa.plugger.utils.mapState
 import java.io.File
 
 class ExtensionRepo<T : BaseClient>(
   private val context: Context,
-  private val account: Account,
   private val httpHelper: HttpHelper,
   private val listener: PackageChangeListener,
   private val fileChangeListener: FileChangeListener,
@@ -57,7 +58,7 @@ class ExtensionRepo<T : BaseClient>(
         val (metadata, resultLazy) = plugin
         metadata to catchLazy {
           val instance = resultLazy.value.getOrThrow()
-          instance.init(getSettings(account, context, metadata), httpHelper)
+          instance.init(getSettings(context, metadata), httpHelper)
           instance
         }
       }

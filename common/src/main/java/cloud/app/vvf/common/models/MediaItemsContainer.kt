@@ -14,7 +14,6 @@ sealed class MediaItemsContainer {
     val media: AVPMediaItem
   ) : MediaItemsContainer()
 
-
   data class PageView(
     val title: String,
     val subtitle: String? = null,

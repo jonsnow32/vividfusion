@@ -24,6 +24,12 @@ class DataStoreModule {
     ignoreUnknownKeys = true
   }
 
+
+  @Singleton
+  @Provides
+  fun provideDefaultSharePreferences(context: Context): SharedPreferences = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
+
+
   @Singleton
   @Provides
   fun provideAccountDataStore(context: Context) =

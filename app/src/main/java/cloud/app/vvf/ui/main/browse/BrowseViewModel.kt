@@ -20,11 +20,16 @@ class BrowseViewModel @Inject constructor(
   var title: String? = null
   val flow = MutableStateFlow<PagingData<AVPMediaItem>?>(null)
   val loading = MutableSharedFlow<Boolean>()
-  override fun onInitialize() {
+
+  fun setDataFlow(dataFlow: PagedData<AVPMediaItem>) {
+    this.moreFlow = dataFlow
     viewModelScope.launch {
+      loading.emit(true)
       moreFlow?.toFlow()?.collectTo(flow)
+      loading.emit(false)
     }
   }
+
   fun refresh() {
     viewModelScope.launch {
       loading.emit(true)

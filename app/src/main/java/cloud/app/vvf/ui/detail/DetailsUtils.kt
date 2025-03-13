@@ -39,11 +39,7 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, fragment: Fragment, e
   val mainViewModel by fragment.activityViewModels<MainActivityViewModel>()
   val context = fragment.context ?: return
 
-  when (mediaItem) {
-    is AVPMediaItem.SeasonItem -> imageBackdrop.loadWith(mediaItem.season.generalInfo.backdrop?.toImageHolder())
-    else -> imageBackdrop.loadWith(mediaItem.backdrop)
-  }
-
+  imageBackdrop.loadWith(mediaItem.backdrop)
   imagePoster.loadWith(mediaItem.poster)
 
   textTitle.setTextWithVisibility(mediaItem.title)

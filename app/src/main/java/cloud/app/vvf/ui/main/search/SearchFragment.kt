@@ -13,6 +13,7 @@ import android.widget.ImageView
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.MainActivityViewModel.Companion.applyContentInsets
@@ -27,6 +28,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.ui.detail.loadWith
+import cloud.app.vvf.ui.extension.ExtensionViewModel
 import cloud.app.vvf.ui.main.configureFeedUI
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
@@ -42,6 +44,8 @@ class SearchFragment : Fragment(){
   private val viewModel: SearchViewModel by lazy {
     parent.viewModels<SearchViewModel>().value
   }
+  private val extensionViewModel by activityViewModels<ExtensionViewModel>()
+
   private var searchJob: Job? = null
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -64,7 +68,7 @@ class SearchFragment : Fragment(){
 
     configureFeedUI<DatabaseClient>(
       R.string.home, viewModel, binding.recyclerView,
-      binding.swipeRefresh, binding.tabLayout, viewModel.selectedExtension.value?.id
+      binding.swipeRefresh, binding.tabLayout
     )
 
     val quickSearchAdapter = QuickSearchAdapter(object : QuickSearchAdapter.Listener {
@@ -84,7 +88,6 @@ class SearchFragment : Fragment(){
     })
 
     binding.quickSearchRecyclerView.adapter = quickSearchAdapter
-    viewModel.initialize()
   }
 
   private fun setupObservers() {
@@ -102,7 +105,7 @@ class SearchFragment : Fragment(){
       (binding.quickSearchRecyclerView.adapter as? QuickSearchAdapter)?.submitList(history)
     }
 
-    observe(viewModel.selectedExtension) { extension ->
+    observe(extensionViewModel.selectedExtension) { extension ->
       binding.searchExtension.loadWith(extension?.metadata?.iconUrl?.toImageHolder())
     }
 
@@ -145,7 +148,7 @@ class SearchFragment : Fragment(){
       viewModel.query = newText.trim()
       searchJob = lifecycleScope.launch {
         delay(300) // Debounce delay
-        viewModel.refresh()
+        viewModel.refresh(extensionViewModel.selectedExtension.value)
         toggleQuickSearchVisibility(false)
       }
     } else {

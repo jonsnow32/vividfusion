@@ -1,23 +1,22 @@
-package cloud.app.vvf.ui.main.home
+package cloud.app.vvf.ui.extension.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
-import cloud.app.vvf.databinding.ItemClientEmptyBinding
-import cloud.app.vvf.databinding.ItemClientLoadingBinding
+import cloud.app.vvf.databinding.ItemExtensionEmptyBinding
 import cloud.app.vvf.ui.setting.ManageExtensionsFragment
 import cloud.app.vvf.utils.navigate
 
-class ClientNotFoundAdapter(val fragment: Fragment?) :
-  RecyclerView.Adapter<ClientNotFoundAdapter.ViewHolder>() {
+class ExtensionEmptyAdapter(val fragment: Fragment?) :
+  RecyclerView.Adapter<ExtensionEmptyAdapter.ViewHolder>() {
 
   override fun getItemCount() = 1
 
-  class ViewHolder(val binding: ItemClientEmptyBinding) : RecyclerView.ViewHolder(binding.root)
+  class ViewHolder(val binding: ItemExtensionEmptyBinding) : RecyclerView.ViewHolder(binding.root)
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-    ItemClientEmptyBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+    ItemExtensionEmptyBinding.inflate(LayoutInflater.from(parent.context), parent, false)
   )
 
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {

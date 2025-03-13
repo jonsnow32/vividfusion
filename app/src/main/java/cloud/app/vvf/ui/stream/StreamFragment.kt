@@ -62,7 +62,6 @@ class StreamFragment : Fragment(), StreamAdapter.ItemClickListener {
       adapter.submitList(stream)
     }
 
-    viewModel.initialize()
   }
 
   override fun onStreamItemClick(streamData: StreamData) {

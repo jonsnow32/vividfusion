@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.ItemExtensionBinding
-import cloud.app.vvf.ui.media.MediaContainerEmptyAdapter
+import cloud.app.vvf.ui.media.MediaEmptyAdapter
 import cloud.app.vvf.utils.loadWith
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
@@ -36,7 +36,7 @@ class ExtensionAdapter(
       oldItem.id == newItem.id && oldItem.metadata == newItem.metadata
   }
 
-  private val empty = MediaContainerEmptyAdapter()
+  private val empty = MediaEmptyAdapter()
   fun withEmptyAdapter() = ConcatAdapter(empty, this)
 
   class ViewHolder(val binding: ItemExtensionBinding, val listener: Listener) :

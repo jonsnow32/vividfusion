@@ -30,54 +30,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-      <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvActors"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:descendantFocusability="afterDescendants"
-        android:nestedScrollingEnabled="false"
-        android:orientation="horizontal"
-        android:paddingTop="10dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:itemCount="5"
-        tools:listitem="@layout/item_actor"
-        tools:visibility="visible" />
-
-      <LinearLayout
-        android:id="@+id/recommendedHolder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical">
-
-        <TextView
-          android:id="@+id/recommendedTitle"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:ellipsize="end"
-          android:maxLines="1"
-          android:paddingHorizontal="16dp"
-          android:text="@string/recommended"
-          android:textSize="@dimen/content_header_text_size"
-          tools:ignore="TextSizeCheck" />
-
-        <androidx.recyclerview.widget.RecyclerView
-          android:id="@+id/rvRecommendedMedia"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:descendantFocusability="afterDescendants"
-          android:nestedScrollingEnabled="false"
-          android:orientation="horizontal"
-          android:paddingHorizontal="16dp"
-          android:paddingTop="5dp"
-          android:clipToPadding="false"
-          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-          tools:itemCount="3"
-          tools:listitem="@layout/item_media"/>
-
-
-      </LinearLayout>
 
       <LinearLayout
         android:id="@+id/seasonHolder"
@@ -136,6 +88,55 @@
           android:padding="10dp"
           tools:listitem="@layout/item_season"
           tools:visibility="visible" />
+      </LinearLayout>
+
+      <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvActors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:descendantFocusability="afterDescendants"
+        android:nestedScrollingEnabled="false"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:itemCount="5"
+        tools:listitem="@layout/item_actor"
+        tools:visibility="visible" />
+
+      <LinearLayout
+        android:id="@+id/recommendedHolder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+          android:id="@+id/recommendedTitle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:ellipsize="end"
+          android:maxLines="1"
+          android:paddingHorizontal="16dp"
+          android:text="@string/recommended"
+          android:textSize="@dimen/content_header_text_size"
+          tools:ignore="TextSizeCheck" />
+
+        <androidx.recyclerview.widget.RecyclerView
+          android:id="@+id/rvRecommendedMedia"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:descendantFocusability="afterDescendants"
+          android:nestedScrollingEnabled="false"
+          android:orientation="horizontal"
+          android:paddingHorizontal="16dp"
+          android:paddingTop="5dp"
+          android:clipToPadding="false"
+          app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+          tools:itemCount="3"
+          tools:listitem="@layout/item_media"/>
+
+
       </LinearLayout>
 
     </LinearLayout>

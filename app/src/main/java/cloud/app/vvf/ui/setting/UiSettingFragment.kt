@@ -22,13 +22,10 @@ class UiSettingFragment : BaseSettingsFragment() {
   override val transitionName = "ui_settings"
   override val container = { UiPreference() }
 
-  @AndroidEntryPoint
   class UiPreference : PreferenceFragmentCompat() {
-
-    @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
-      preferenceManager.sharedPreferencesName = dataFlow.value.account.getSlug()
+      preferenceManager.sharedPreferencesName = context.packageName
       preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val screen = preferenceManager.createPreferenceScreen(context)
       val preferences = preferenceManager.sharedPreferences ?: return

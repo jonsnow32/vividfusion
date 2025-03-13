@@ -1,12 +1,12 @@
-package cloud.app.vvf.ui.main.home
+package cloud.app.vvf.ui.extension.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.databinding.ItemClientLoadingBinding
 
-class ClientLoadingAdapter :
-    RecyclerView.Adapter<ClientLoadingAdapter.ViewHolder>() {
+class ExtensionLoadingAdapter :
+    RecyclerView.Adapter<ExtensionLoadingAdapter.ViewHolder>() {
 
     override fun getItemCount() = 1
 

@@ -5,9 +5,7 @@ import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.models.User
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.datastore.app.helper.CurrentUser
-import cloud.app.vvf.datastore.app.helper.getAllUsers
-import cloud.app.vvf.datastore.app.helper.getCurrentUser
+import cloud.app.vvf.datastore.app.helper.CurrentUserItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -62,7 +60,7 @@ class LoginUserViewModel @Inject constructor(
 //        setLoginUser(currentUser)
     }
 
-    fun setLoginUser(currentUser: CurrentUser) {
+    fun setLoginUser(currentUser: CurrentUserItem) {
         viewModelScope.launch(Dispatchers.IO) {
             //dataFlow.value.setCurrentUser(currentUser)
         }

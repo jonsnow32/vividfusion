@@ -57,7 +57,6 @@ class LibraryFragment : Fragment() {
     binding.searchHome.setOnClickListener {
       //findNavController().navigate(R.id.action_mainFragment_to_searchFragment)
     }
-    viewModel.initialize()
   }
   override fun onStop() {
     val viewModel by parent.viewModels<LibraryViewModel>()

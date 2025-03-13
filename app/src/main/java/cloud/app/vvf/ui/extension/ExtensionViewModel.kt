@@ -1,7 +1,6 @@
 package cloud.app.vvf.ui.extension
 
 import android.content.Intent
-import android.content.SharedPreferences
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewModelScope
@@ -10,11 +9,11 @@ import cloud.app.vvf.ExtensionOpenerActivity.Companion.installExtension
 import cloud.app.vvf.R
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
+import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.datastore.account.AccountDataStore
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.datastore.app.helper.getExtension
-import cloud.app.vvf.datastore.app.helper.saveExtension
 import cloud.app.vvf.extension.ExtensionAssetResponse
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.extension.downloadUpdate
@@ -32,6 +31,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -39,27 +40,55 @@ import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
 import java.io.File
 import javax.inject.Inject
+import kotlin.collections.find
+import kotlin.collections.firstOrNull
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionLoader: ExtensionLoader,
-  val appDataStore: MutableStateFlow<AppDataStore>,
-  val extensionListFlow: MutableStateFlow<List<Extension<*>>>,
+  val accountDataStoreFlow: MutableStateFlow<AccountDataStore>,
+  val extListFlow: MutableStateFlow<List<Extension<*>>?>,
   val refresher: MutableSharedFlow<Boolean>,
   val okHttpClient: OkHttpClient,
   val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
   val dataFlow: MutableStateFlow<AppDataStore>,
-  val votingService: VotingService
+  val votingService: VotingService,
+  val selectedExtension: MutableStateFlow<Extension<DatabaseClient>?>
 ) : CatchingViewModel(throwableFlow) {
 
+
+  override fun onInitialize() {
+    viewModelScope.launch {
+      combine(extListFlow, dataFlow) { extensions, value ->
+        val metadata = value.getCurrentDBExtension()
+        metadata?.let { extensions?.find { it.id == metadata.className } }
+          ?: extensions?.firstOrNull()
+      }.collectLatest {
+        selectedExtension.value = it as Extension<DatabaseClient>?
+      }
+    }
+
+  }
   fun refresh() {
     viewModelScope.launch {
       refresher.emit(true)
     }
+
+    viewModelScope.launch {
+      extListFlow.collectLatest { extensions ->
+        extensions ?: return@collectLatest
+        val votingMap = mapOf<String, Int>(); //sort by voting api
+
+        dataFlow.value.saveExtensions(extensions.map {
+          it.metadata.rating = votingMap[it.id] ?: 0
+          it.metadata
+        })
+      }
+    }
   }
 
-  fun getExtensionsByType(type: ExtensionType) = extensionListFlow.getExtensions(type)
+  fun getExtensionsByType(type: ExtensionType) = extListFlow.getExtensions(type)
 
   suspend fun install(context: FragmentActivity, file: File, installAsApk: Boolean): Boolean {
     val result = installExtension(context, file, installAsApk).getOrElse {
@@ -169,18 +198,24 @@ class ExtensionViewModel @Inject constructor(
     extension?.let { dataFlow.value.saveExtension(extension) }
     //viewModelScope.launch { refresher.emit(true) }
   }
+
+  fun selectDbExtension(extension: Extension<*>) {
+    selectedExtension.value = extension as Extension<DatabaseClient>?
+    dataFlow.value.setCurrentDBExtension(extension.metadata)
+  }
+
   private val voteMutex = Mutex()
 
   fun vote(extensionMetadata: ExtensionMetadata, type: ExtensionType) {
     viewModelScope.launch(Dispatchers.IO) {
-      val key = "${type.name}/${extensionMetadata.className}"
+//      val key = "${type.name}/${extensionMetadata.className}"
       voteMutex.withLock {
-        val isVoted = dataFlow.value.getKey<Boolean>(key) == true
+        val isVoted = accountDataStoreFlow.value.checkVoted(extensionMetadata, type)
         if (!isVoted) {
           val response = votingService.vote(type.name, extensionMetadata.className).execute()
           if (response.isSuccessful) {
             response.body()?.let {
-              dataFlow.value.setKey(key, true)
+              accountDataStoreFlow.value.setVotedExtension(extensionMetadata, type)
             }
           }
         } else {

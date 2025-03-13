@@ -1,4 +1,4 @@
-package cloud.app.vvf.ui.widget.dialog
+package cloud.app.vvf.ui.widget.dialog.itemOption
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
@@ -22,6 +22,8 @@ import cloud.app.vvf.datastore.app.helper.BookmarkItem.Companion.getStringIds
 import cloud.app.vvf.ui.detail.show.ShowFragment
 import cloud.app.vvf.ui.main.browse.BrowseFragment
 import cloud.app.vvf.ui.main.browse.BrowseViewModel
+import cloud.app.vvf.ui.widget.dialog.DockingDialog
+import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.loadWith
@@ -79,7 +81,13 @@ class ItemOptionDialog : DockingDialog() {
         val browseViewModel by activityViewModels<BrowseViewModel>()
         browseViewModel.moreFlow = it.more
         browseViewModel.title = it.title
-        requireActivity().navigate(BrowseFragment())
+
+        val bundle = Bundle()
+        bundle.putString("extensionId", extensionId)
+
+        val browseFragment = BrowseFragment();
+        browseFragment.arguments = bundle
+        requireActivity().navigate(browseFragment)
       }
     }
   }
@@ -97,7 +105,7 @@ class ItemOptionDialog : DockingDialog() {
       }
       val selectedIndex =
         if (status == null) (bookmarks.size - 1) else bookmarks.indexOf(status.javaClass.simpleName);
-      SelectionDialog.single(
+      SelectionDialog.Companion.single(
         bookmarks,
         selectedIndex,
         getString(R.string.add_to_bookmark), false
@@ -128,7 +136,21 @@ class ItemOptionDialog : DockingDialog() {
       )
     }
 
-    is AVPMediaItem.EpisodeItem,
+    is AVPMediaItem.EpisodeItem -> {
+      listOfNotNull(ItemAction.Resource(R.drawable.play_arrow_24dp, R.string.play_now) {
+        //playerViewModel.play(extensionId, item, 0)
+      }, ItemAction.Resource(R.drawable.ic_more_horiz, R.string.action_goto_show) {
+        val movieFragment = ShowFragment();
+        val bundle = Bundle()
+        bundle.putString("extensionId", extensionId)
+        bundle.putSerialized("mediaItem", item.seasonItem.showItem)
+        movieFragment.arguments = bundle
+        requireActivity().navigate(
+          movieFragment
+        )
+      }, getBookmarkAction(item))
+    }
+
     is AVPMediaItem.MovieItem -> {
       listOfNotNull(ItemAction.Resource(R.drawable.play_arrow_24dp, R.string.play_now) {
         //playerViewModel.play(extensionId, item, 0)
@@ -151,36 +173,41 @@ class ItemOptionDialog : DockingDialog() {
       R.string.share
     ) {
       requireActivity().shareItem(item)
-    },
-
-    if (!viewModel.favoriteStatus.value)
-      ItemAction.Resource(
-        R.drawable.favorite_border_24dp,
-        R.string.action_add_to_favorites
-      ) {
-        viewModel.toggleFavoriteStatus {
-          val messageResId = if (viewModel.favoriteStatus.value) {
-            R.string.favorite_added
-          } else {
-            R.string.favorite_removed
-          }
-          createSnack(getString(messageResId, item.title))
-        }
-      } else
-      ItemAction.Resource(
-        R.drawable.favorite_24dp,
-        R.string.action_remove_from_favorites
-      ) {
-        viewModel.toggleFavoriteStatus {
-          val messageResId = if (viewModel.favoriteStatus.value) {
-            R.string.favorite_added
-          } else {
-            R.string.favorite_removed
-          }
-          createSnack(getString(messageResId, item.title))
-        }
-      }
+    }, getFavoritesAction(item)
   )
+
+  fun getFavoritesAction(item: AVPMediaItem): ItemAction? {
+    return if (item is AVPMediaItem.MovieItem || item is AVPMediaItem.ShowItem || item is AVPMediaItem.ActorItem) {
+      if (!viewModel.favoriteStatus.value)
+        ItemAction.Resource(
+          R.drawable.favorite_border_24dp,
+          R.string.action_add_to_favorites
+        ) {
+          viewModel.toggleFavoriteStatus {
+            val messageResId = if (viewModel.favoriteStatus.value) {
+              R.string.favorite_added
+            } else {
+              R.string.favorite_removed
+            }
+            createSnack(getString(messageResId, item.title))
+          }
+        } else
+        ItemAction.Resource(
+          R.drawable.favorite_24dp,
+          R.string.action_remove_from_favorites
+        ) {
+          viewModel.toggleFavoriteStatus {
+            val messageResId = if (viewModel.favoriteStatus.value) {
+              R.string.favorite_added
+            } else {
+              R.string.favorite_removed
+            }
+            createSnack(getString(messageResId, item.title))
+          }
+        }
+    } else
+      null
+  }
 
   sealed class ItemAction {
     abstract val action: () -> Unit

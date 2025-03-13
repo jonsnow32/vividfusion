@@ -3,6 +3,7 @@ package cloud.app.vvf.di
 import android.app.Application
 import android.content.SharedPreferences
 import cloud.app.vvf.common.clients.Extension
+import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.ExtensionLoader
@@ -20,7 +21,11 @@ class ExtensionModule {
 
   @Provides
   @Singleton
-  fun provideExtensionList() = MutableStateFlow<List<Extension<*>>>(emptyList())
+  fun provideSelectedDbExtension() = MutableStateFlow<Extension<DatabaseClient>?>(null)
+
+  @Provides
+  @Singleton
+  fun provideExtensionList() = MutableStateFlow<List<Extension<*>>?>(null)
 
   @Provides
   @Singleton
@@ -30,14 +35,12 @@ class ExtensionModule {
   @Singleton
   fun provideExtensionLoader(
     context: Application,
-    dataStore: MutableStateFlow<AppDataStore>,
     httpHelper: HttpHelper,
     throwableFlow: MutableSharedFlow<Throwable>,
     extensionsFlow: MutableStateFlow<List<Extension<*>>>,
     refresher: MutableSharedFlow<Boolean>
   ) = ExtensionLoader(
     context,
-    dataStore,
     httpHelper,
     throwableFlow,
     extensionsFlow,

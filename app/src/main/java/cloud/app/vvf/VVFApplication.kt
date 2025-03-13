@@ -1,6 +1,5 @@
 package cloud.app.vvf
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.content.Context
@@ -13,7 +12,6 @@ import androidx.core.os.LocaleListCompat
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import cloud.app.vvf.common.helpers.network.HttpHelper
-import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.utils.setLocale
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
@@ -21,15 +19,13 @@ import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class VVFApplication : Application() , Application.ActivityLifecycleCallbacks{
+class VVFApplication : Application(), Application.ActivityLifecycleCallbacks {
   @Inject
   lateinit var throwableFlow: MutableSharedFlow<Throwable>
 
@@ -37,7 +33,7 @@ class VVFApplication : Application() , Application.ActivityLifecycleCallbacks{
   lateinit var extensionLoader: ExtensionLoader
 
   @Inject
-  lateinit var dataFlow: MutableStateFlow<AppDataStore>
+  lateinit var sharedPreferences: SharedPreferences
 
   @Inject
   lateinit var httpHelper: HttpHelper
@@ -62,12 +58,7 @@ class VVFApplication : Application() , Application.ActivityLifecycleCallbacks{
         it.printStackTrace()
       }
     }
-    scope.launch {
-      dataFlow.collectLatest { value ->
-        applyUiChanges(value.sharedPreferences, currentActivity = currentActivity)
-      }
-    }
-
+    applyUiChanges(sharedPreferences, currentActivity = currentActivity)
     extensionLoader.initialize()
   }
 
@@ -105,7 +96,6 @@ class VVFApplication : Application() , Application.ActivityLifecycleCallbacks{
       currentActivity: Activity? = null
     ) {
 
-      if(!isDynamicColorSupported()) return;
 
       var theme: String? = null
 
@@ -113,7 +103,7 @@ class VVFApplication : Application() , Application.ActivityLifecycleCallbacks{
 
       val customColor =
         if (!preferences.getBoolean(getString(R.string.pref_enable_dynamic_color), false)) null
-        else newColor ?: preferences.getInt( getString(R.string.dynamic_color), -1)
+        else newColor ?: preferences.getInt(getString(R.string.dynamic_color), -1)
           .takeIf { it != -1 }
 
       val builder = if (customColor != null) DynamicColorsOptions.Builder()
@@ -157,7 +147,7 @@ class VVFApplication : Application() , Application.ActivityLifecycleCallbacks{
     }
 
     fun Context.noClient() = SnackBarViewModel.Message(
-      getString(R.string.error_no_client)
+      getString(R.string.extension_empty)
     )
 
     fun Context.loginNotSupported(client: String) = SnackBarViewModel.Message(

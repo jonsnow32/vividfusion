@@ -2,6 +2,8 @@ package cloud.app.vvf.datastore.account
 
 import android.content.Context
 import cloud.app.vvf.R
+import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.datastore.DataStore
 import kotlinx.serialization.Serializable
 
@@ -24,7 +26,8 @@ data class Account(
   }
 }
 
-class AccountDataStore(val context: Context) : DataStore( context.getSharedPreferences("accounts_preference", Context.MODE_PRIVATE)) {
+class AccountDataStore(val context: Context) :
+  DataStore(context.getSharedPreferences("accounts_preference", Context.MODE_PRIVATE)) {
   fun removeAccount(slug: String) {
     return removeKey("$ACCOUNTS_FOLDER/${slug}")
   }
@@ -48,7 +51,10 @@ class AccountDataStore(val context: Context) : DataStore( context.getSharedPrefe
   }
 
   fun getActiveAccount(): Account {
-    return getKeys<Account>("$ACCOUNTS_FOLDER/", null)?.first { account -> account.isActive == true }
+    return getKeys<Account>(
+      "$ACCOUNTS_FOLDER/",
+      null
+    )?.first { account -> account.isActive == true }
       ?: createDefaultAccount()
   }
 
@@ -64,9 +70,19 @@ class AccountDataStore(val context: Context) : DataStore( context.getSharedPrefe
       isActive = true
     )
 
-    return getKey<Account>("$ACCOUNTS_FOLDER/${defaultAccount.getSlug()}", null) ?: defaultAccount.also {
-      saveAccount(it)
-    }
+    return getKey<Account>("$ACCOUNTS_FOLDER/${defaultAccount.getSlug()}", null)
+      ?: defaultAccount.also {
+        saveAccount(it)
+      }
   }
 
+  fun setVotedExtension(metadata: ExtensionMetadata, type: ExtensionType) {
+    val key = "${type.name}/${metadata.className}"
+    setKey(key, true)
+  }
+
+  fun checkVoted(metadata: ExtensionMetadata, type: ExtensionType): Boolean {
+    val key = "${type.name}/${metadata.className}"
+    return getKey<Boolean>(key) == true
+  }
 }

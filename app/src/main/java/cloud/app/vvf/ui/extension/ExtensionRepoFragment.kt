@@ -79,7 +79,8 @@ class ExtensionRepoFragment : Fragment(), ExtensionsRepoAdapter.Listener {
     fun load() {
       val extensionViewModel by activityViewModels<ExtensionViewModel>()
       lifecycleScope.launch {
-        val installed = extensionViewModel.extensionListFlow.value.map { it.id }
+        val extensions = extensionViewModel.extListFlow.value ?: return@launch
+        val installed = extensions.map { it.id }
         val extensionListAdapter = ExtensionsRepoAdapter(list.map {
           val isInstalled = it.className in installed
           ExtensionsRepoAdapter.Item(

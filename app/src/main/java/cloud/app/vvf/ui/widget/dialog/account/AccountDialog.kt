@@ -67,6 +67,8 @@ class AccountDialog : DockingDialog(), AccountAdapter.AccountClickListener {
     if (account.lockPin.isNullOrEmpty()) {
       viewmodel.setActiveAccount(context, account) {
         dialog.dismissSafe(activity)
+        Toast.makeText(context, getString(R.string.switch_account_to, account.name),
+          Toast.LENGTH_SHORT).show()
       }
     } else {
       val context = context ?: return;
@@ -74,6 +76,7 @@ class AccountDialog : DockingDialog(), AccountAdapter.AccountClickListener {
         if (account.lockPin == pin) {
           viewmodel.setActiveAccount(context, account) {
             dialog.dismissSafe(activity)
+            Toast.makeText(context, getString(R.string.switch_account_to, account.name), Toast.LENGTH_SHORT).show()
           }
         }
       }
@@ -102,6 +105,7 @@ class AccountDialog : DockingDialog(), AccountAdapter.AccountClickListener {
       dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
         if (account.lockPin == binding.pinEditText.text.toString()) {
           callback(binding.pinEditText.text.toString())
+          dialog.dismiss()
         } else {
           binding.pinEditTextError.visibility = View.VISIBLE
           binding.pinEditTextError.text = context.getString(R.string.pin_wrong)

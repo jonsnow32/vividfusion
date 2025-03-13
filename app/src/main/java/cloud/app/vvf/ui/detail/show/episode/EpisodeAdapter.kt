@@ -22,6 +22,7 @@ class EpisodeAdapter(private val listener: Listener) :
 
   interface Listener {
     fun onClick(episode: Episode)
+    fun onLongClick(episode: Episode) : Boolean
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -45,6 +46,10 @@ class EpisodeAdapter(private val listener: Listener) :
     }
     holder.itemView.setOnClickListener {
       listener.onClick(item)
+    }
+
+    holder.itemView.setOnLongClickListener {
+      listener.onLongClick(item)
     }
   }
 

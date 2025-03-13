@@ -48,7 +48,8 @@
   <string name="not_supported">%1$s is not supported in %2$s Extension!</string>
   <string name="media_type">Media Type</string>
   <string name="rating_7_8">7.39454588</string>
-  <string name="error_no_client">No extension was selected</string>
+  <string name="extension_unselected">No extension selected</string>
+  <string name="extension_empty">Empty extension</string>
   <string name="trailer">Trailer</string>
   <string name="filler">Filter</string>
   <string name="backdropDescription">Backdrop</string>
@@ -64,6 +65,7 @@
   <string name="cancel">Cancel</string>
   <string name="logout">Log out</string>
   <string name="switch_account">Switch Account</string>
+  <string name="switch_account_to">Switch Account to %s</string>
   <string name="not_logged_in">Not logged in</string>
   <string name="extension_settings">Extension Settings</string>
   <string name="close">Close</string>
@@ -231,6 +233,7 @@
   <string name="edit_account">Edit account</string>
     <string name="pin_wrong">Pin is wrong</string>
   <string name="create_account_failed">The %s account already exists.</string>
+  <string name="action_goto_show">TV Show Info</string>
 
 
   <string-array name="themes">

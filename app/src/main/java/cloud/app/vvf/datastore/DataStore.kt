@@ -7,7 +7,7 @@ import cloud.app.vvf.utils.toJson
 import timber.log.Timber
 import java.io.File
 
-abstract class DataStore(val sharedPreferences: SharedPreferences) {
+abstract class DataStore(protected val sharedPreferences: SharedPreferences) {
 
   fun getKeys(folder: String): List<String> {
     Timber.i(folder)
@@ -36,7 +36,7 @@ abstract class DataStore(val sharedPreferences: SharedPreferences) {
     return keys.size
   }
 
-  inline fun <reified T> setKey(path: String, value: T) {
+  protected inline fun <reified T> setKey(path: String, value: T) {
     try {
       Timber.i("setKey $path ${T::class.java} value = ${value.toJson()}")
       sharedPreferences.edit().putString(path, value.toJson()).apply()
@@ -45,7 +45,7 @@ abstract class DataStore(val sharedPreferences: SharedPreferences) {
     }
   }
 
-  inline fun <reified T> getKey(path: String, defVal: T? = null): T? {
+  protected inline fun <reified T> getKey(path: String, defVal: T? = null): T? {
     return try {
       val data = sharedPreferences.getString(path, null)
       Timber.i("path = $path data $data")
@@ -56,7 +56,7 @@ abstract class DataStore(val sharedPreferences: SharedPreferences) {
     }
   }
 
-  inline fun <reified T> getKeys(path: String, defVal: List<T>? = null): List<T>? {
+  protected inline fun <reified T> getKeys(path: String, defVal: List<T>? = null): List<T>? {
     Timber.i("$path ${T::class.java}")
     return try {
       val data = sharedPreferences.all.keys.filter { it.startsWith(path) }

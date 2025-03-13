@@ -18,6 +18,7 @@ import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.databinding.FragmentHomeBinding
 import cloud.app.vvf.ui.detail.loadWith
+import cloud.app.vvf.ui.extension.ExtensionViewModel
 import cloud.app.vvf.ui.main.configureFeedUI
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.firstVisible
@@ -30,6 +31,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class HomeFragment : Fragment() {
   private var binding by autoCleared<FragmentHomeBinding>()
   private val viewModel by activityViewModels<HomeViewModel>()
+  private val extensionViewModel by activityViewModels<ExtensionViewModel>()
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -41,6 +44,7 @@ class HomeFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
     applyInsetsMain(binding.appBarLayoutCustom, binding.recyclerView)
+
     configureFeedUI<DatabaseClient>(
       R.string.home,
       viewModel,
@@ -54,16 +58,16 @@ class HomeFragment : Fragment() {
 
     binding.selectedExtension.setOnClickListener { button ->
       val databaseExtensions =
-        viewModel.extListFlow.value?.filter { it.types.contains(ExtensionType.DATABASE) }
+        extensionViewModel.extListFlow.value?.filter { it.types.contains(ExtensionType.DATABASE) }
       showDropdownMenu(button, databaseExtensions)
     }
 
-    observe(viewModel.extListFlow) { list ->
-      val dbList = list.filter { it.types.contains(ExtensionType.DATABASE) }
+    observe(extensionViewModel.extListFlow) { list ->
+      val dbList = list?.filter { it.types.contains(ExtensionType.DATABASE) }
       binding.selectedExtension.isGone = dbList.isNullOrEmpty()
     }
 
-    observe(viewModel.selectedExtension) {
+    observe(extensionViewModel.selectedExtension) {
       binding.selectedExtension.loadWith(it?.icon?.toImageHolder())
     }
   }
@@ -71,7 +75,7 @@ class HomeFragment : Fragment() {
   private fun showDropdownMenu(view: View, extensions: List<Extension<*>>?) {
 
     val activity = activity ?: return
-    val selectedExtension = viewModel.selectedExtension.value ?: return
+    val selectedExtension = extensionViewModel.selectedExtension.value ?: return
 
     val dropdownItems = extensions?.map {
       DropdownItem(it.icon, it.name, it.id, it.id == selectedExtension.id)
@@ -97,7 +101,7 @@ class HomeFragment : Fragment() {
 //        .show()
 
       popupWindow.dismiss()
-      viewModel.selectDbExtension(extensions[position])
+      extensionViewModel.selectDbExtension(extensions[position])
 
     }
 

@@ -10,6 +10,7 @@ object ImageUrlBuilder {
     if (path.startsWith("http://") || path.startsWith("https://")) {
       return path
     }
+
     val widthPath = when {
       width <= 92 -> "/w92"
       width <= 154 -> "/w154"

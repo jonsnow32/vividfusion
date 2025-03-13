@@ -10,7 +10,7 @@ import androidx.fragment.app.activityViewModels
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.DialogLoginUserBinding
 import cloud.app.vvf.databinding.ItemLoginUserBinding
-import cloud.app.vvf.datastore.app.helper.CurrentUser
+import cloud.app.vvf.datastore.app.helper.CurrentUserItem
 import cloud.app.vvf.ui.setting.SettingsRootFragment
 import cloud.app.vvf.ui.widget.dialog.DockingDialog
 import cloud.app.vvf.utils.autoCleared
@@ -74,7 +74,7 @@ class LoginUserBottomSheet : DockingDialog() {
                 binding.logout.setOnClickListener {
                     val id = metadata?.className ?: return@setOnClickListener
                     viewModel.logout(id, user?.id)
-                    viewModel.setLoginUser(CurrentUser(id, null))
+                    viewModel.setLoginUser(CurrentUserItem(id, null))
                 }
 
 

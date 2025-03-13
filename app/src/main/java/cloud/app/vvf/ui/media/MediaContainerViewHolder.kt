@@ -2,11 +2,13 @@ package cloud.app.vvf.ui.media
 
 
 import android.content.res.Configuration
+import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -47,6 +49,7 @@ sealed class MediaContainerViewHolder(
   abstract fun bind(container: MediaItemsContainer)
   open val clickView = binding.root
   abstract val transitionView: View
+  abstract val extras: Bundle?
 
   class PageView(
     val extensionId: String?,
@@ -55,8 +58,6 @@ sealed class MediaContainerViewHolder(
     val fragment: Fragment,
     val listener: MediaItemAdapter.Listener
   ) : MediaContainerViewHolder(binding) {
-
-
     override fun bind(container: MediaItemsContainer) {
       binding.previewViewpager.setPageTransformer(HeaderPageTransformer())
       val items = (container as MediaItemsContainer.PageView).items
@@ -175,6 +176,8 @@ sealed class MediaContainerViewHolder(
 
     override val clickView: View = binding.homePreviewPlay
     override val transitionView: View = binding.homePreviewPlay
+    override val extras: Bundle?
+      get() = bundleOf("selected_position" to selectedPosition)
 
     companion object {
       fun create(
@@ -231,7 +234,7 @@ sealed class MediaContainerViewHolder(
           is PreviewItemBinding -> {
             posterUrl.loadInto(binding.previewImage, item.placeHolder())
             binding.tags.apply {
-              text = "sample" //item.tags?.joinToString(" • ") ?: ""
+              text = item.generalInfo?.genres?.joinToString(", ");
               maxLines = 2
             }
             binding.title.setTextWithVisibility(item.title)
@@ -248,11 +251,11 @@ sealed class MediaContainerViewHolder(
   }
 
   class Category(
+    private val fragment: Fragment,
     val binding: ContainerCategoryBinding,
     val viewModel: StateViewModel,
     private val sharedPool: RecyclerView.RecycledViewPool,
     private val extensionId: String?,
-    val listener: MediaItemAdapter.Listener,
   ) : MediaContainerViewHolder(binding) {
 
     override fun save(): SaveStateData = SaveStateData(
@@ -268,7 +271,7 @@ sealed class MediaContainerViewHolder(
       binding.title.text = category.title
       binding.subtitle.text = category.subtitle
       val adapter = MediaItemAdapter(
-        listener,
+        fragment,
         transitionView.transitionName + category.id,
         extensionId,
       )
@@ -291,22 +294,24 @@ sealed class MediaContainerViewHolder(
     val layoutManager get() = binding.recyclerView.layoutManager
     override val clickView: View = binding.titleCard
     override val transitionView: View = binding.titleCard
+    override val extras: Bundle?
+      get() = null
 
     companion object {
       fun create(
+        fragment: Fragment,
         parent: ViewGroup,
         viewModel: StateViewModel,
         sharedPool: RecyclerView.RecycledViewPool,
         extensionId: String?,
-        listener: MediaItemAdapter.Listener,
       ): MediaContainerViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return Category(
+          fragment,
           ContainerCategoryBinding.inflate(layoutInflater, parent, false),
           viewModel,
           sharedPool,
-          extensionId,
-          listener
+          extensionId
         )
       }
     }
@@ -317,13 +322,16 @@ sealed class MediaContainerViewHolder(
     private val extensionId: String?,
     val listener: MediaItemAdapter.Listener,
   ) : MediaContainerViewHolder(binding) {
+
     override fun bind(container: MediaItemsContainer) {
       val item = (container as? MediaItemsContainer.Item)?.media ?: return
       binding.bind(item)
-      binding.more.setOnClickListener { listener.onLongClick(extensionId, item, transitionView) }
+      binding.more.setOnClickListener { listener.onItemLongClick(extensionId, item, transitionView) }
     }
 
     override val transitionView: View = binding.imageView
+    override val extras: Bundle?
+      get() = null
 
     companion object {
       fun create(
@@ -343,8 +351,13 @@ sealed class MediaContainerViewHolder(
         title.text = item.title
         subtitle.text = item.subtitle
         subtitle.isVisible = item.subtitle.isNullOrBlank().not()
-
+        overview.text = item.overview
         item.poster.loadInto(imageView, item.placeHolder())
+
+        if(item is AVPMediaItem.PlaybackProgressItem && item.duration != null) {
+          watchProgress.visibility = View.VISIBLE
+          watchProgress.progress = ((item.position.toDouble() / item.duration!!) * 100).toInt()
+        }
       }
     }
   }

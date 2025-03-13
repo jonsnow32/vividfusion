@@ -8,9 +8,6 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.datastore.app.helper.deleteHistorySearch
-import cloud.app.vvf.datastore.app.helper.getSearchHistory
-import cloud.app.vvf.datastore.app.helper.saveSearchHistory
 import cloud.app.vvf.ui.main.FeedViewModel
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,10 +21,9 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  extListFlow: MutableStateFlow<List<Extension<*>>>,
   dataFlow: MutableStateFlow<AppDataStore>,
-) : FeedViewModel(throwableFlow,  extListFlow, dataFlow) {
-
+  selectedExtension: MutableStateFlow<Extension<DatabaseClient>?>
+) : FeedViewModel(throwableFlow, dataFlow, selectedExtension) {
   var query: String? = ""
   override suspend fun getTabs(client: BaseClient) =
     (client as? DatabaseClient)?.searchTabs(query)

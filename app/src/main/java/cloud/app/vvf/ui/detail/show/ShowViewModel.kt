@@ -8,13 +8,9 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
+import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgressItem
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.datastore.app.helper.PlaybackProgress
-import cloud.app.vvf.datastore.app.helper.PlaybackProgressFolder
-import cloud.app.vvf.datastore.app.helper.addFavoritesData
-import cloud.app.vvf.datastore.app.helper.getFavoritesData
-import cloud.app.vvf.datastore.app.helper.getLatestPlaybackProgress
-import cloud.app.vvf.datastore.app.helper.removeFavoritesData
+import cloud.app.vvf.datastore.app.PlaybackProgressFolder
 import cloud.app.vvf.extension.runClient
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,7 +37,7 @@ class ShowViewModel @Inject constructor(
   val trailers = MutableStateFlow<PagingData<AVPMediaItem>?>(null)
 
   val favoriteStatus = MutableStateFlow(false)
-  val lastWatchedEpisode = MutableStateFlow<PlaybackProgress?>(null)
+  val lastWatchedEpisode = MutableStateFlow<PlaybackProgressItem?>(null)
 
 
   fun getItemDetails(shortItem: AVPMediaItem, extensionId: String) {
@@ -63,7 +59,7 @@ class ShowViewModel @Inject constructor(
 
         fullMediaItem.value = showDetail
         val favoriteDeferred =
-          async { dataFlow.value.getFavoritesData<AVPMediaItem.ShowItem>(fullMediaItem.value?.id?.toString()) }
+          async { dataFlow.value.getFavoritesData(fullMediaItem.value?.id?.toString()) }
         val lastWatchedDeferred = async { dataFlow.value.getLatestPlaybackProgress(shortItem) }
 
         favoriteStatus.value = favoriteDeferred.await()

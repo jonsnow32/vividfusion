@@ -18,7 +18,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ExitConfirmDialog: DialogFragment(){
   @Inject
-  lateinit var dataFlow: MutableStateFlow<AppDataStore>
+  lateinit var sharedPreferences: SharedPreferences
 
   var binding by autoCleared<DialogConfirmExitBinding>()
 
@@ -43,7 +43,7 @@ class ExitConfirmDialog: DialogFragment(){
       dismiss()
     }
     binding.checkboxDontShowAgain.setOnCheckedChangeListener { buttonView, isChecked ->
-      dataFlow.value.sharedPreferences.edit().putBoolean(getString(R.string.pref_show_exit_confirm), !isChecked).apply()
+      sharedPreferences.edit().putBoolean(getString(R.string.pref_show_exit_confirm), !isChecked).apply()
     }
     binding.noBtn.requestFocus()
   }

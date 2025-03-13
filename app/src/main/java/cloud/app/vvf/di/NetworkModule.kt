@@ -48,10 +48,10 @@ class NetworkModule {
     loggingInterceptor: HttpLoggingInterceptor,
     cache: Cache,
     cookiePersistor: PersistentCookieJar,
-    dataFlow: MutableStateFlow<AppDataStore>,
+    sharedPreferences: SharedPreferences,
     context: Context,
   ): OkHttpClient {
-    val dns = dataFlow.value.sharedPreferences.getInt(context.getString(R.string.dns_pref), 0)
+    val dns = sharedPreferences.getInt(context.getString(R.string.dns_pref), 0)
     return OkHttpClient.Builder()
       .followRedirects(true)
       .followSslRedirects(true)

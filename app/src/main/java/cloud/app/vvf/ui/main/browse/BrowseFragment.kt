@@ -10,14 +10,12 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.databinding.FragmentBrowseBinding
 import cloud.app.vvf.ui.media.MediaClickListener
 import cloud.app.vvf.ui.media.MediaItemAdapter
 import cloud.app.vvf.utils.FastScrollerHelper
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.configure
-import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,12 +48,12 @@ class BrowseFragment : Fragment() {
     }
 
     FastScrollerHelper.applyTo(binding.recyclerView)
+
     if (viewModel.moreFlow == null) {
       val category = activityViewModel.moreFlow ?: return
       activityViewModel.moreFlow = null
-      viewModel.moreFlow = category
+      viewModel.setDataFlow(category)
       viewModel.title = activityViewModel.title;
-      viewModel.initialize()
     }
 
     binding.backBtn.setOnClickListener {
@@ -75,18 +73,16 @@ class BrowseFragment : Fragment() {
 
 
       val itemWidth = (viewWidth / span) - ctx.resources.getDimension(R.dimen.media_margin) * 4
-
       val itemHeight = itemWidth * 3 / 2 + ctx.resources.getDimension(R.dimen.media_title_height)
 
-      val adapter = MediaItemAdapter(
-        MediaClickListener(this.parentFragmentManager),
+      val adapter = MediaItemAdapter(this,
         view.transitionName,
         extensionId,
         itemWidth.roundToInt(),
         itemHeight.roundToInt()
       )
-      //val concatAdapter = adapter.withLoaders()
-      binding.recyclerView.adapter = adapter
+     val concatAdapter = adapter.withLoaders()
+      binding.recyclerView.adapter = concatAdapter
 
       binding.swipeRefresh.configure {
         //adapter.refresh()

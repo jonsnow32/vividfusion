@@ -7,8 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import cloud.app.vvf.MainActivityViewModel.Companion.applyFabInsets
-import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.databinding.FragmentManageExtensionsBinding
@@ -44,10 +42,6 @@ class ManageExtensionsFragment : BaseSettingsFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
       setupTransition(view)
-      applyInsets {
-        binding.fabContainer.applyInsets(it)
-      }
-
       binding.swipeRefresh.configure {
         viewModel.refresh()
       }
@@ -73,9 +67,10 @@ class ManageExtensionsFragment : BaseSettingsFragment() {
       binding.recyclerView.adapter = extensionAdapter.withEmptyAdapter()
 
 
-      observe(viewModel.extensionListFlow) { list ->
+      observe(viewModel.extListFlow) { list ->
           lifecycleScope.launch {
-            extensionAdapter.submit(list)
+            if(list != null)
+              extensionAdapter.submit(list)
           }
 
       }

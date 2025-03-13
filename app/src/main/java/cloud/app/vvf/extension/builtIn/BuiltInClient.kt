@@ -1,5 +1,6 @@
 package cloud.app.vvf.extension.builtIn
 
+import androidx.work.impl.close
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.clients.streams.StreamClient
 import cloud.app.vvf.common.helpers.ImportType
@@ -53,6 +54,7 @@ import com.uwetrottmann.tmdb2.enumerations.TimeWindow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Date
+import kotlin.text.toDouble
 
 class BuiltInClient : DatabaseClient, StreamClient {
 
@@ -66,7 +68,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
       description = "BuiltInClient is TMDB's core media provider. It handles searching, metadata retrieval, applying JustWatch as a purchase streaming option, and more.",
       version = "1.0.0",
       author = "Avp",
-      iconUrl = "https://www.freepnglogos.com/uploads/netflix-logo-0.png",
+      iconUrl = "https://www.themoviedb.org/assets/2/v4/marketing/logos/infuse_600-a28d709ee5137f75b31c4184643a22fe83ee8f64d3317509c33090922b66dbb6.png",
       types = listOf(ExtensionType.DATABASE, ExtensionType.STREAM)
     )
 
@@ -150,7 +152,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
           "Select the language for displaying movie and TV show metadata, such as titles, descriptions, and other details.",
           entryTitles = languageI3691Map.values.toList(),
           entryValues = languageI3691Map.keys.toList(),
-          defaultEntryIndex = 0
+          defaultEntryIndex = languageI3691Map.keys.indexOf("en")
         )
       )
     ),
@@ -351,7 +353,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
     return when (avpMediaItem) {
       is AVPMediaItem.MovieItem -> getMovieDetail(avpMediaItem.movie.ids.tmdbId)
       is AVPMediaItem.ShowItem -> getShowDetail(avpMediaItem.show.ids.tmdbId)
-      is AVPMediaItem.EpisodeItem -> getEpisodeDetail(avpMediaItem.episode.ids.tmdbId)
+      is AVPMediaItem.EpisodeItem -> getEpisodeDetail(avpMediaItem)
       is AVPMediaItem.SeasonItem -> getSeasonDetail(avpMediaItem)
       is AVPMediaItem.ActorItem -> getActorDetail(avpMediaItem.actor.id)
       else -> null
@@ -428,12 +430,12 @@ class BuiltInClient : DatabaseClient, StreamClient {
         AVPMediaItem.SeasonItem(
           season = Season(
             generalInfo = GeneralInfo(
-              title = it.name,
+              title = it.name ?: "Season ${it.season_number}",
               overview = it.overview,
               poster =  it.poster_path,
-              backdrop = "",
-              originalTitle = "",
-              homepage = "",
+              backdrop = seasonItem.showItem.show.generalInfo.backdrop,
+              originalTitle = seasonItem.showItem.show.generalInfo.title,
+              homepage = seasonItem.showItem.show.generalInfo.homepage,
               releaseDateMsUTC = it.air_date?.time
           ),
 
@@ -508,8 +510,62 @@ class BuiltInClient : DatabaseClient, StreamClient {
     }
   }
 
-  private fun getEpisodeDetail(tmdbId: Int?): AVPMediaItem.EpisodeItem? {
-    TODO("Not yet implemented")
+  private suspend fun getEpisodeDetail(episodeItem: AVPMediaItem.EpisodeItem?): AVPMediaItem.EpisodeItem? {
+    episodeItem ?: return null
+    val episode = episodeItem.episode
+
+    if (episode.showIds.tmdbId != null) {
+      return null // Missing show, season, or episode information
+    }
+
+    return withContext(Dispatchers.IO) {
+      val response = tmdb.tvEpisodesService().episode(
+        episode.showIds.tmdbId!!,
+        episode.seasonNumber,
+        episode.episodeNumber,
+        language,
+        AppendToResponse(
+          AppendToResponseItem.IMAGES,
+          AppendToResponseItem.VIDEOS,
+          AppendToResponseItem.EXTERNAL_IDS,
+          AppendToResponseItem.CREDITS,
+          AppendToResponseItem.COMBINED_CREDITS
+        )
+      ).execute()
+
+      if (response.isSuccessful) {
+        val episodeDetail = response.body()
+        episodeDetail?.let {
+          AVPMediaItem.EpisodeItem(
+            Episode(
+              Ids(
+                tmdbId = it.id,
+                imdbId = it.external_ids?.imdb_id,
+                tvdbId = it.external_ids?.tvdb_id,
+              ),
+              GeneralInfo(
+                title = it.name ?: "E${it.episode_number}",
+                backdrop = it.still_path,
+                poster = it.still_path,
+                overview = it.overview,
+                releaseDateMsUTC = it.air_date?.time,
+                originalTitle = it.name,
+                voteCount = it.vote_count,
+                voteAverage = it.vote_average,
+                rating = it.rating?.toDouble()
+              ),
+              seasonNumber = it.season_number ?: 0,
+              episodeNumber = it.episode_number ?: 0,
+              showIds = episode.showIds,
+              showOriginTitle = episode.showOriginTitle,
+            ),
+            seasonItem = episodeItem.seasonItem
+          )
+        }
+      } else {
+        null // Or handle error, maybe emit to throwableFlow
+      }
+    }
   }
 
   private suspend fun getShowDetail(tmdbId: Int?): AVPMediaItem.ShowItem? {

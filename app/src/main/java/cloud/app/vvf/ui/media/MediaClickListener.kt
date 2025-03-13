@@ -11,7 +11,7 @@ import cloud.app.vvf.ui.main.browse.BrowseViewModel
 import cloud.app.vvf.ui.detail.movie.MovieFragment
 import cloud.app.vvf.ui.detail.show.ShowFragment
 import cloud.app.vvf.ui.detail.show.season.SeasonFragment
-import cloud.app.vvf.ui.widget.dialog.ItemOptionDialog
+import cloud.app.vvf.ui.widget.dialog.itemOption.ItemOptionDialog
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.tryWith
@@ -19,6 +19,7 @@ import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
+import cloud.app.vvf.ui.stream.StreamFragment
 
 class MediaClickListener(
   private val fragmentManager: FragmentManager,
@@ -29,7 +30,7 @@ class MediaClickListener(
   val fragment get() = fragmentManager.findFragmentById(R.id.navHostFragment)!!
   private fun noClient() = fragment.createSnack(fragment.requireContext().noClient())
 
-  override fun onClick(
+  override fun onItemClick(
     extensionId: String?, item: AVPMediaItem, transitionView: View?
   ) {
     val bundle = Bundle()
@@ -59,7 +60,7 @@ class MediaClickListener(
       }
 
       is AVPMediaItem.ActorItem -> {
-        onLongClick(extensionId, item, transitionView)
+        onItemLongClick(extensionId, item, transitionView)
       }
 
       is AVPMediaItem.EpisodeItem,
@@ -68,10 +69,11 @@ class MediaClickListener(
       }
 
       is AVPMediaItem.TrailerItem -> TODO()
+      is AVPMediaItem.PlaybackProgressItem -> onItemClick(extensionId, item.item, transitionView)
     }
   }
 
-  override fun onLongClick(
+  override fun onItemLongClick(
     extensionId: String?, item: AVPMediaItem, transitionView: View?
   ): Boolean {
     extensionId?.let {
@@ -82,30 +84,45 @@ class MediaClickListener(
     return false
   }
 
-  override fun onFocusChange(extensionId: String?, item: AVPMediaItem, hasFocus: Boolean) {
+  override fun onItemFocusChange(extensionId: String?, item: AVPMediaItem, hasFocus: Boolean) {
     afterFocusChange?.invoke(item, hasFocus)
   }
 
-  override fun onClick(extensionId: String?, container: MediaItemsContainer, transitionView: View) {
+  override fun onContainerClick(extensionId: String?, container: MediaItemsContainer, holder: MediaContainerViewHolder) {
     when (container) {
       is MediaItemsContainer.Item -> tryWith {
-        onClick(
+        onItemClick(
           extensionId,
           container.media,
-          transitionView
+          holder.transitionView
         )
       }
 
       is MediaItemsContainer.Category -> openContainer(
         extensionId,
         container.title,
-        transitionView,
+        holder.transitionView,
         container.more
       )
 
-      is MediaItemsContainer.PageView -> fragment.createSnack("Coming soon")
+      is MediaItemsContainer.PageView -> {
+        val extras = holder.extras
+        val selectedPosition = extras?.getInt("selected_position") ?: 0
+        fragment.navigate(StreamFragment.newInstance(container.items[selectedPosition]))
+      }
     }
   }
+
+  override fun onContainerLongClick(
+    extensionId: String?, container: MediaItemsContainer, holder: MediaContainerViewHolder
+  ) = when (container) {
+    is MediaItemsContainer.Item -> onItemLongClick(extensionId, container.media, holder.transitionView)
+    else -> {
+      onContainerClick(extensionId, container, holder)
+      true
+    }
+  }
+
 
   private fun openContainer(
     extensionId: String?,
@@ -125,16 +142,6 @@ class MediaClickListener(
     browseFragment.arguments = bundle
     fragment.navigate(browseFragment, transitionView)
     afterOpening?.invoke()
-  }
-
-  override fun onLongClick(
-    extensionId: String?, container: MediaItemsContainer, transitionView: View
-  ) = when (container) {
-    is MediaItemsContainer.Item -> onLongClick(extensionId, container.media, transitionView)
-    else -> {
-      onClick(extensionId, container, transitionView)
-      true
-    }
   }
 
 }

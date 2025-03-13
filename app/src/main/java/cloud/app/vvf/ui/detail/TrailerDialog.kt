@@ -38,7 +38,7 @@ class TrailerDialog : DockingDialog() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    val videoAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", extensionId)
+    val videoAdapter = MediaItemAdapter(this, "", extensionId)
     binding.rvVideos.adapter = videoAdapter
     lifecycleScope.launch {
       val paged = items.map { AVPMediaItem.TrailerItem(it) }.toPaged()

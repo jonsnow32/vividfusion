@@ -51,7 +51,8 @@ class ShowFragment : Fragment() {
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.ShowItem>("mediaItem")!! }
 
   @Inject
-  lateinit var dataFlow: MutableStateFlow<AppDataStore>
+  lateinit var sharedPreferences: SharedPreferences
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -128,8 +129,7 @@ class ShowFragment : Fragment() {
         binding.recommendedHolder.isGone = false
         if (binding.rvRecommendedMedia.adapter == null) {
           val recommendationAdapter =
-            MediaItemAdapter(
-              MediaClickListener(fragmentManager = parentFragmentManager), "", extensionId
+            MediaItemAdapter(this, "", extensionId
             )
           binding.rvRecommendedMedia.adapter = recommendationAdapter
         }
@@ -162,9 +162,7 @@ class ShowFragment : Fragment() {
     binding.seasonHolder.isGone = seasons.isNullOrEmpty()
     seasons?.let {
       binding.rvSeason.adapter =
-        MediaItemAdapter(
-          MediaClickListener(fragmentManager = parentFragmentManager),
-          "",
+        MediaItemAdapter(this,"",
           extensionId
         )
       setupSortOptions(seasons)
@@ -176,7 +174,7 @@ class ShowFragment : Fragment() {
   private fun setupSortOptions(seasons: List<AVPMediaItem.SeasonItem>) {
     binding.seasonSortTxt.isGone = (seasons.size < 2)
 
-    val key = dataFlow.value.sharedPreferences.getInt(
+    val key = sharedPreferences.getInt(
       getString(R.string.pref_season_sort),
       SortMode.ASCENDING.ordinal
     )
@@ -187,7 +185,7 @@ class ShowFragment : Fragment() {
     displaySortedSeasons(seasons, currentSortMode)
 
     binding.seasonSortTxt.setOnClickListener {
-      val sortMode = SortMode.entries[dataFlow.value.sharedPreferences.getInt(
+      val sortMode = SortMode.entries[sharedPreferences.getInt(
         getString(R.string.pref_season_sort),
         SortMode.ASCENDING.ordinal
       )]
@@ -197,7 +195,7 @@ class ShowFragment : Fragment() {
       }
       updateSortUI(newSortMode)
       displaySortedSeasons(seasons, newSortMode)
-      dataFlow.value.sharedPreferences.edit()
+      sharedPreferences.edit()
         .putInt(getString(R.string.pref_season_sort), newSortMode.ordinal).apply()
     }
   }
@@ -237,7 +235,7 @@ class ShowFragment : Fragment() {
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {
-    val actorAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", extensionId)
+    val actorAdapter = MediaItemAdapter(this, "", extensionId)
     binding.rvActors.adapter = actorAdapter
 
     val actorList = mediaItem.generalInfo?.actors?.map { AVPMediaItem.ActorItem(it) }
@@ -260,9 +258,7 @@ class ShowFragment : Fragment() {
 
     recommendations?.let {
       val recommendationAdapter =
-        MediaItemAdapter(
-          MediaClickListener(fragmentManager = parentFragmentManager), "", extensionId
-        )
+        MediaItemAdapter(this, "", extensionId )
       binding.rvRecommendedMedia.adapter = recommendationAdapter
 
       lifecycleScope.launch {

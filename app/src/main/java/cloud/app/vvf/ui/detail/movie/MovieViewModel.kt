@@ -6,9 +6,6 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.datastore.app.helper.addFavoritesData
-import cloud.app.vvf.datastore.app.helper.getFavoritesData
-import cloud.app.vvf.datastore.app.helper.removeFavoritesData
 import cloud.app.vvf.extension.runClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +36,7 @@ class MovieViewModel @Inject constructor(
 
         fullMediaItem.value = movieDetails
         val favoriteDeferred =
-          async { dataFlow.value.getFavoritesData<AVPMediaItem.MovieItem>(fullMediaItem.value?.id?.toString()) }
+          async { dataFlow.value.getFavoritesData(fullMediaItem.value?.id?.toString()) }
         favoriteStatus.value = favoriteDeferred.await()
         loading.value = false
       }

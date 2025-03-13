@@ -13,17 +13,18 @@ import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
 
 class MediaItemAdapter(
-  private val listener: Listener,
+  private val fragment: Fragment,
   private val transition: String,
   private val extensionId: String?,
   private val itemWidth: Int? = null,
-  private val itemHeight: Int? = null
+  private val itemHeight: Int? = null,
+  private val listener: Listener = MediaClickListener(fragment.parentFragmentManager)
 ) : PagingDataAdapter<AVPMediaItem, MediaItemViewHolder>(DiffCallback) {
 
   interface Listener {
-    fun onClick(extensionId: String?, item: AVPMediaItem, transitionView: View?)
-    fun onLongClick(extensionId: String?, item: AVPMediaItem, transitionView: View?): Boolean
-    fun onFocusChange(extensionId: String?, item: AVPMediaItem, hasFocus: Boolean);
+    fun onItemClick(extensionId: String?, item: AVPMediaItem, transitionView: View?)
+    fun onItemLongClick(extensionId: String?, item: AVPMediaItem, transitionView: View?): Boolean
+    fun onItemFocusChange( extensionId: String?, item: AVPMediaItem, hasFocus: Boolean);
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
@@ -36,10 +37,12 @@ class MediaItemAdapter(
       5 -> MediaItemViewHolder.Season.create(parent)
       6 -> MediaItemViewHolder.Trailer.create(parent)
       7 -> MediaItemViewHolder.SeasonLarge.create(parent)
+      8 -> MediaItemViewHolder.Playback.create(parent)
       else -> throw IllegalArgumentException("Invalid view type")
     }
     return holder
   }
+
 
   override fun getItemViewType(position: Int): Int {
     val item = getItem(position) ?: return 0
@@ -51,6 +54,7 @@ class MediaItemAdapter(
       is AVPMediaItem.StreamItem -> 4
       is AVPMediaItem.SeasonItem -> if (item.season.generalInfo.poster.isNullOrEmpty()) 5 else 7
       is AVPMediaItem.TrailerItem -> 6
+      is AVPMediaItem.PlaybackProgressItem -> 8
     }
   }
 
@@ -75,20 +79,20 @@ class MediaItemAdapter(
     holder.transitionView.transitionName = (transition + item.id).hashCode().toString()
     holder.bind(item)
     holder.itemView.setOnClickListener {
-      listener.onClick(extensionId, item, holder.transitionView)
+      listener.onItemClick(extensionId, item, holder.transitionView)
     }
     holder.itemView.setOnLongClickListener {
-      listener.onLongClick(extensionId, item, holder.transitionView)
+      listener.onItemLongClick(extensionId, item, holder.transitionView)
     }
     holder.itemView.setOnFocusChangeListener { v, hasFocus ->
-      listener.onFocusChange(extensionId, item, hasFocus)
+      listener.onItemFocusChange(extensionId, item, hasFocus)
     }
   }
 
   fun withLoaders(): ConcatAdapter {
-    val footer = MediaContainerLoadingAdapter(listener as Fragment) { retry() }
-    val header = MediaContainerLoadingAdapter(listener) { retry() }
-    val empty = MediaContainerEmptyAdapter()
+    val footer = MediaLoadStateAdapter(fragment, false) { retry() }
+    val header = MediaLoadStateAdapter(fragment, false) { retry() }
+    val empty = MediaEmptyAdapter()
     addLoadStateListener { loadStates ->
       empty.loadState = if (loadStates.refresh is LoadState.NotLoading && itemCount == 0)
         LoadState.Loading

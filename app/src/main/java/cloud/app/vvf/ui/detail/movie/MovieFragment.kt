@@ -128,7 +128,7 @@ class MovieFragment : Fragment() {
   }
 
   private fun setupActorAdapter(mediaItem: AVPMediaItem) {
-    val actorAdapter = MediaItemAdapter(MediaClickListener(parentFragmentManager), "", extensionId)
+    val actorAdapter = MediaItemAdapter(this, "", extensionId)
     binding.rvActors.adapter = actorAdapter
 
     val actorList = mediaItem.generalInfo?.actors?.map { AVPMediaItem.ActorItem(it) }
@@ -152,7 +152,7 @@ class MovieFragment : Fragment() {
     recommendations?.let {
       val recommendationAdapter =
         MediaItemAdapter(
-          MediaClickListener(parentFragmentManager), "", extensionId
+          this, "", extensionId
         )
       binding.rvRecommendedMedia.adapter = recommendationAdapter
 

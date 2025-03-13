@@ -7,7 +7,7 @@ import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.databinding.ItemNothingToShowBinding
 
-class MediaContainerEmptyAdapter : LoadStateAdapter<MediaContainerEmptyAdapter.ViewHolder>() {
+class MediaEmptyAdapter : LoadStateAdapter<MediaEmptyAdapter.ViewHolder>() {
   class ViewHolder(val binding: ItemNothingToShowBinding) : RecyclerView.ViewHolder(binding.root)
 
   override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState): ViewHolder {
