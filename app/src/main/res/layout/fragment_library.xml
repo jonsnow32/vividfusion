@@ -10,47 +10,36 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/colorSurfaceContainer"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent">
 
-    <FrameLayout
-      android:id="@+id/searchHome"
-      android:layout_width="match_parent"
-      android:layout_height="40dp"
-      android:layout_margin="10dp"
-      android:clickable="true"
+    <com.google.android.material.card.MaterialCardView
+      android:id="@+id/accountBtn"
+      android:layout_width="32dp"
+      android:layout_height="32dp"
+      android:layout_margin="4dp"
+      android:clipToPadding="false"
       android:focusable="true"
-      android:visibility="gone">
-
-      <com.google.android.material.textview.MaterialTextView
-        style="@style/MaterialAlertDialog.Material3.Body.Text"
-        android:textSize="18sp"
-        android:layout_marginStart="16dp"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/home"
-        android:gravity="center_vertical"/>
+      android:clickable="true"
+      app:cardBackgroundColor="@color/transparent">
 
       <ImageView
-        android:id="@+id/btnSettings"
-        android:layout_width="25dp"
-        android:layout_height="25dp"
-        android:layout_gravity="end|center_vertical"
+        android:id="@+id/accountImage"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/add_color"
+        android:src="@drawable/funemoji_2" />
+    </com.google.android.material.card.MaterialCardView>
 
-        android:layout_margin="10dp"
-        android:background="?selectableItemBackgroundBorderless"
-        android:contentDescription="@string/settings"
-        android:tag = "@string/tv_no_focus_tag"
-        android:src="@drawable/ic_settings_outline" />
-    </FrameLayout>
 
     <com.google.android.material.tabs.TabLayout
       android:id="@+id/tabLayout"
       style="@style/TabLayout"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
+      android:layout_height="match_parent"
       android:nextFocusLeft="@id/navView"
       android:nextFocusUp="@id/navView">
 

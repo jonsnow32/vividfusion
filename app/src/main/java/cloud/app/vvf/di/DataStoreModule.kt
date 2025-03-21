@@ -2,10 +2,10 @@ package cloud.app.vvf.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.preference.PreferenceManager
 import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.datastore.account.AccountDataStore
 import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.utils.BackupHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,4 +44,8 @@ class DataStoreModule {
   @Provides
   fun provideAppDataStore(context: Context, accountFlow: MutableStateFlow<Account>) =
     MutableStateFlow<AppDataStore>(AppDataStore(context, accountFlow.value))
+
+  @Singleton
+  @Provides
+  fun provideBackupHelper(context: Context) = BackupHelper(context)
 }

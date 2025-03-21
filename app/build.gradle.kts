@@ -14,8 +14,8 @@ android {
     applicationId = "cloud.app.vvf"
     minSdk = 24
     targetSdk = 35
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = 100
+    versionName = "1.0.0"
     buildConfigField("int", "VERSION_CODE", "$versionCode")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -110,5 +110,8 @@ dependencies {
   implementation(libs.fastscroll.library)
 
   implementation(libs.pikolo)
-    implementation(kotlin("reflect"))
+  implementation(kotlin("reflect"))
+
+  implementation("androidx.hilt:hilt-work:1.2.0")
+  ksp("androidx.hilt:hilt-compiler:1.2.0")
 }

@@ -19,7 +19,7 @@ const val USERS_FOLDER = "users"
 const val PlaybackProgressFolder = "progress"
 
 class AppDataStore(val context: Context, val account: Account) :
-  DataStore(context.getSharedPreferences(account.getSlug(), Context.MODE_PRIVATE)) {
+  DataStore(context.getSharedPreferences("account_${account.getSlug()}", Context.MODE_PRIVATE)) {
 
   fun getAllBookmarks(): List<BookmarkItem>? {
     return getKeys<BookmarkItem>("$BOOKMARK_FOLDER/", null)?.sortedByDescending { it.lastUpdated }

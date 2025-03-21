@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 abstract class FeedViewModel(
@@ -56,7 +57,7 @@ abstract class FeedViewModel(
 
   private suspend fun loadFeed(extension: Extension<*>) {
     extension.run<DatabaseClient, Unit>(throwableFlow) {
-      feed.value = getFeed(this)?.cachedIn(viewModelScope)?.first()
+      feed.value = getFeed(this)?.cachedIn(viewModelScope)?.firstOrNull()
     }
   }
 

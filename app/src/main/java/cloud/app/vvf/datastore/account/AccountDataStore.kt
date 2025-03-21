@@ -12,23 +12,18 @@ const val ACCOUNTS_FOLDER = "accounts"
 
 @Serializable
 data class Account(
+  val id : Long,
   val name: String,
   val avatar: Int,
   val lockPin: String? = null,
   var isActive: Boolean = false,
 ) {
-  fun getSlug(): String {
-    return name
-      .trim()
-      .lowercase()
-      .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
-      .replace("\\s+".toRegex(), "-")
-  }
+  fun getSlug() = id
 }
 
 class AccountDataStore(val context: Context) :
   DataStore(context.getSharedPreferences("accounts_preference", Context.MODE_PRIVATE)) {
-  fun removeAccount(slug: String) {
+  fun removeAccount(slug: Long) {
     return removeKey("$ACCOUNTS_FOLDER/${slug}")
   }
 
@@ -54,7 +49,7 @@ class AccountDataStore(val context: Context) :
     return getKeys<Account>(
       "$ACCOUNTS_FOLDER/",
       null
-    )?.first { account -> account.isActive == true }
+    )?.firstOrNull() { account -> account.isActive == true }
       ?: createDefaultAccount()
   }
 
@@ -64,8 +59,9 @@ class AccountDataStore(val context: Context) :
 
   fun createDefaultAccount(): Account {
     val defaultAccount = Account(
+      id = 0,
       name = "Default",
-      avatar = R.drawable.ic_person,
+      avatar = R.drawable.funemoji_2,
       lockPin = null,
       isActive = true
     )

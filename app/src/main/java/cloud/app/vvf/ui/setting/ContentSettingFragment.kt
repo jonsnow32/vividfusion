@@ -27,7 +27,7 @@ class ContentSettingFragment : BaseSettingsFragment() {
     @Inject lateinit var dataFlow: MutableStateFlow<AppDataStore>
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
-      preferenceManager.sharedPreferencesName = dataFlow.value.account.getSlug()
+      preferenceManager.sharedPreferencesName = context.packageName
       preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
       val screen = preferenceManager.createPreferenceScreen(context)
       preferenceScreen = screen

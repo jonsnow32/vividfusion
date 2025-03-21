@@ -8,12 +8,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import cloud.app.vvf.R
-import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.ui.widget.dialog.account.AccountDialog
 import cloud.app.vvf.utils.navigate
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableStateFlow
-import javax.inject.Inject
 
 class SettingsRootFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.settings)
@@ -78,11 +74,19 @@ class SettingsRootFragment : BaseSettingsFragment() {
 //      }
 
       TransitionPreference(context).add {
+        title = getString(R.string.backup_updates)
+        key = "backup_updates"
+        icon = AppCompatResources.getDrawable(context, R.drawable.database_24dp)
+      }
+
+      TransitionPreference(context).add {
         title = getString(R.string.about)
         key = "about"
         summary = getString(R.string.about_summary)
         icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
       }
+
+
 
     }
 
@@ -103,6 +107,7 @@ class SettingsRootFragment : BaseSettingsFragment() {
         "ui" -> UiSettingFragment()
         "content" -> ContentSettingFragment()
         "general" -> GeneralSettingsFragment()
+        "backup_updates" -> BackupUpdateFragment()
         else -> null
       }
       fragment ?: return false

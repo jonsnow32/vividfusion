@@ -2,6 +2,8 @@ package cloud.app.vvf
 
 import android.app.Activity
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -9,6 +11,8 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import cloud.app.vvf.common.helpers.network.HttpHelper
@@ -25,7 +29,11 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class VVFApplication : Application(), Application.ActivityLifecycleCallbacks {
+class VVFApplication : Application(), Application.ActivityLifecycleCallbacks,
+  Configuration.Provider {
+  @Inject
+  lateinit var workerFactory: HiltWorkerFactory
+
   @Inject
   lateinit var throwableFlow: MutableSharedFlow<Throwable>
 
@@ -78,6 +86,11 @@ class VVFApplication : Application(), Application.ActivityLifecycleCallbacks {
   override fun onActivityDestroyed(activity: Activity) {
     if (currentActivity == activity) currentActivity = null
   }
+
+  override val workManagerConfiguration: Configuration
+    get() = Configuration.Builder()
+      .setWorkerFactory(workerFactory)
+      .build()
 
   companion object {
 
@@ -153,5 +166,26 @@ class VVFApplication : Application(), Application.ActivityLifecycleCallbacks {
     fun Context.loginNotSupported(client: String) = SnackBarViewModel.Message(
       getString(R.string.not_supported, getString(R.string.login), client)
     )
+
+    fun Context.createNotificationChannel(
+      channelId: String,
+      channelName: String,
+      description: String
+    ) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel =
+          NotificationChannel(channelId, channelName, importance).apply {
+            this.description = description
+          }
+
+        // Register the channel with the system.
+        val notificationManager: NotificationManager =
+          this.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        notificationManager.createNotificationChannel(channel)
+      }
+    }
   }
+
 }

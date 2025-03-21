@@ -13,9 +13,11 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.databinding.FragmentLibraryBinding
 import cloud.app.vvf.ui.main.configureFeedUI
 import cloud.app.vvf.ui.setting.SettingsRootFragment
+import cloud.app.vvf.ui.widget.dialog.account.AccountDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.firstVisible
 import cloud.app.vvf.utils.navigate
+import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.scrollTo
 import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,12 +52,14 @@ class LibraryFragment : Fragment() {
 
     }
 
-    binding.btnSettings.setOnClickListener {
-      navigate(SettingsRootFragment())
+    binding.accountBtn.setOnClickListener {
+      AccountDialog.newInstance(getString(R.string.account)) {
+
+      }.show(parentFragmentManager)
     }
 
-    binding.searchHome.setOnClickListener {
-      //findNavController().navigate(R.id.action_mainFragment_to_searchFragment)
+    observe(viewModel.dataFlow) {
+      binding.accountImage.setImageResource(it.account.avatar)
     }
   }
   override fun onStop() {

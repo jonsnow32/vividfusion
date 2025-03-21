@@ -137,8 +137,36 @@ class MainActivity : AppCompatActivity() {
 
     val localeCode = sharedPreferences.getString(getString(R.string.pref_locale), "en")
     setLocale(localeCode)
-
+    checkUpdate()
   }
+
+  private fun checkUpdate() {
+    val isUpdating = sharedPreferences.getBoolean("isUpdating", false)
+    val updatingVersion = sharedPreferences.getString("updatingVersion", null)
+    val currentVersion = packageManager.getPackageInfo(packageName, 0).versionName
+
+    if (isUpdating && updatingVersion != null && currentVersion == updatingVersion) {
+      // Update succeeded
+      Timber.i("Update completed: $currentVersion")
+      showUpdateSuccessDialog(updatingVersion)
+      sharedPreferences.edit().clear().apply() // Clear update state
+    } else if (isUpdating) {
+      // Update was in progress but didn’t complete (e.g., cancelled)
+      Timber.w("Update was in progress but didn’t complete. Current: $currentVersion, Expected: $updatingVersion")
+      sharedPreferences.edit().clear().apply()
+    }
+  }
+  private fun showUpdateSuccessDialog(newVersion: String) {
+    MaterialAlertDialogBuilder(this)
+      .setTitle(R.string.update_success_title)
+      .setMessage(getString(R.string.update_success_message, newVersion))
+      .setPositiveButton(android.R.string.ok) { _, _ ->
+        // Optional: Add action, e.g., restart or proceed
+      }
+      .setCancelable(false)
+      .show()
+  }
+
   private fun onIntent(intent: Intent?) {
     this.intent = null
     intent ?: return

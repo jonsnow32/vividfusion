@@ -1,6 +1,5 @@
 package cloud.app.vvf.extension.builtIn
 
-import androidx.work.impl.close
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.clients.streams.StreamClient
 import cloud.app.vvf.common.helpers.ImportType
@@ -16,7 +15,6 @@ import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.SortBy
-import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.common.models.Tab
 import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.common.models.movie.GeneralInfo
@@ -25,13 +23,14 @@ import cloud.app.vvf.common.models.movie.Season
 import cloud.app.vvf.common.models.movie.Show
 import cloud.app.vvf.common.models.stream.PremiumType
 import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingCategory
 import cloud.app.vvf.common.settings.SettingList
+import cloud.app.vvf.common.settings.SettingMultipleChoice
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.common.settings.SettingTextInput
-import cloud.app.vvf.network.api.trakt.AppTrakt
 import cloud.app.vvf.extension.builtIn.tmdb.AppTmdb
 import cloud.app.vvf.extension.builtIn.tmdb.SearchSuggestion
 import cloud.app.vvf.extension.builtIn.tmdb.companies
@@ -46,6 +45,7 @@ import cloud.app.vvf.extension.builtIn.tmdb.showGenres
 import cloud.app.vvf.extension.builtIn.tmdb.toMediaItem
 import cloud.app.vvf.extension.builtIn.tmdb.toMediaItemsList
 import cloud.app.vvf.extension.builtIn.tvdb.AppTheTvdb
+import cloud.app.vvf.network.api.trakt.AppTrakt
 import com.uwetrottmann.tmdb2.entities.AppendToResponse
 import com.uwetrottmann.tmdb2.entities.DiscoverFilter
 import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
@@ -54,7 +54,6 @@ import com.uwetrottmann.tmdb2.enumerations.TimeWindow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Date
-import kotlin.text.toDouble
 
 class BuiltInClient : DatabaseClient, StreamClient {
 
@@ -91,16 +90,17 @@ class BuiltInClient : DatabaseClient, StreamClient {
     const val PREF_SHOW_UNAIRD_EPISODE = "show_unaired_episode_key"
   }
 
-  private val includeAdult get() = prefSettings.getBoolean(PREF_INCLUDE_ADULT)
-  private val region get() = prefSettings.getString(PREF_REGION)
-  private val language get() = prefSettings.getString(PREF_METADATA_LANGUAGE)
-  private val showSpecialSeason get() = prefSettings.getBoolean(PREF_SHOW_SPECIAL_SEASON)
-  private val showUnairedEpisode get() = prefSettings.getBoolean(PREF_SHOW_UNAIRD_EPISODE)
+  private val includeAdult get() = prefSettings.getBoolean(PREF_INCLUDE_ADULT) ?: false
+  private val region get() = prefSettings.getString(PREF_REGION) ?: "US"
+  private val language get() = prefSettings.getString(PREF_METADATA_LANGUAGE) ?: "en"
+  private val showSpecialSeason get() = prefSettings.getBoolean(PREF_SHOW_SPECIAL_SEASON) ?: true
+  private val showUnairedEpisode get() = prefSettings.getBoolean(PREF_SHOW_UNAIRD_EPISODE) ?: true
 
 
   private lateinit var tmdb: AppTmdb
   private lateinit var tvdb: AppTheTvdb
   private lateinit var trakt: AppTrakt
+
   override val defaultSettings: List<Setting> = listOf(
     SettingCategory(
       title = "API Access",
@@ -251,12 +251,12 @@ class BuiltInClient : DatabaseClient, StreamClient {
     pageSize: Int,
     sortBy: com.uwetrottmann.tmdb2.enumerations.SortBy?
   ): List<MediaItemsContainer> {
-    if(page != 1) return emptyList()
+    if (page != 1) return emptyList()
 
     val result = mutableListOf<MediaItemsContainer>()
     //get trending movie/show here
     val trending = withContext(Dispatchers.IO) {
-      val trendingResponse = tmdb .trendingService().trendingAll(TimeWindow.DAY).execute()
+      val trendingResponse = tmdb.trendingService().trendingAll(TimeWindow.DAY).execute()
       if (trendingResponse.isSuccessful) {
         val list = trendingResponse.body()?.results?.mapNotNull {
           when (it.media_type) {
@@ -432,12 +432,12 @@ class BuiltInClient : DatabaseClient, StreamClient {
             generalInfo = GeneralInfo(
               title = it.name ?: "Season ${it.season_number}",
               overview = it.overview,
-              poster =  it.poster_path,
+              poster = it.poster_path,
               backdrop = seasonItem.showItem.show.generalInfo.backdrop,
               originalTitle = seasonItem.showItem.show.generalInfo.title,
               homepage = seasonItem.showItem.show.generalInfo.homepage,
               releaseDateMsUTC = it.air_date?.time
-          ),
+            ),
 
             number = it.season_number ?: -1,
             episodeCount = it.episodes?.size ?: 0,
@@ -458,7 +458,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
                   releaseDateMsUTC = episode.air_date?.time,
                   originalTitle = episode.name ?: "",
                   homepage = null,
-                    voteCount = episode.vote_count,
+                  voteCount = episode.vote_count,
                   voteAverage = episode.vote_average,
                   rating = episode.rating?.toDouble()
                 ),
@@ -535,6 +535,9 @@ class BuiltInClient : DatabaseClient, StreamClient {
 
       if (response.isSuccessful) {
         val episodeDetail = response.body()
+        // Find the next episode (if it exists)
+        val nextEpisode: Episode? = findNextEpisode(episode, episodeDetail)
+
         episodeDetail?.let {
           AVPMediaItem.EpisodeItem(
             Episode(
@@ -559,12 +562,63 @@ class BuiltInClient : DatabaseClient, StreamClient {
               showIds = episode.showIds,
               showOriginTitle = episode.showOriginTitle,
             ),
-            seasonItem = episodeItem.seasonItem
+            seasonItem = episodeItem.seasonItem,
+            nextEpisode = nextEpisode
           )
         }
       } else {
         null // Or handle error, maybe emit to throwableFlow
       }
+    }
+  }
+
+  /**
+   * Finds the next episode in the same season (if it exists).
+   */
+  private suspend fun findNextEpisode(
+    currentEpisode: Episode,
+    currentEpisodeDetail: com.uwetrottmann.tmdb2.entities.TvEpisode?
+  ): Episode? {
+    // Check if the current episode data is valid
+    if (currentEpisode.showIds.tmdbId == null || currentEpisode.seasonNumber == null) return null
+
+    val nextEpisodeNumber = currentEpisode.episodeNumber + 1
+
+    val nextEpisodeResponse = tmdb.tvEpisodesService().episode(
+      currentEpisode.showIds.tmdbId!!,
+      currentEpisode.seasonNumber!!,
+      nextEpisodeNumber,
+      language
+    ).execute()
+
+    return if (nextEpisodeResponse.isSuccessful) {
+      val nextEpisodeDetail = nextEpisodeResponse.body()
+      nextEpisodeDetail?.let {
+        Episode(
+          Ids(
+            tmdbId = it.id,
+            imdbId = it.external_ids?.imdb_id,
+            tvdbId = it.external_ids?.tvdb_id
+          ),
+          GeneralInfo(
+            title = it.name ?: "E${it.episode_number}",
+            backdrop = it.still_path,
+            poster = it.still_path,
+            overview = it.overview,
+            releaseDateMsUTC = it.air_date?.time,
+            originalTitle = it.name,
+            voteCount = it.vote_count,
+            voteAverage = it.vote_average,
+            rating = it.rating?.toDouble()
+          ),
+          seasonNumber = it.season_number ?: 0,
+          episodeNumber = it.episode_number ?: 0,
+          showIds = currentEpisode.showIds,
+          showOriginTitle = currentEpisode.showOriginTitle,
+        )
+      }
+    } else {
+      null // No next episode found
     }
   }
 
@@ -847,7 +901,7 @@ class BuiltInClient : DatabaseClient, StreamClient {
                   homepage = null,
                   voteCount = episode.siteRatingCount,
                   voteAverage = episode.siteRating,
-                  rating =  episode.siteRating
+                  rating = episode.siteRating
                 ),
                 seasonNumber = episode.airedSeason ?: 0,
                 episodeNumber = episode.airedEpisodeNumber ?: 0,

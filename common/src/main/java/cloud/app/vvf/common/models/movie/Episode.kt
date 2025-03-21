@@ -11,6 +11,5 @@ data class Episode(
   @SerialName("episode_number") var episodeNumber: Int,
   @SerialName("show_ids") var showIds: Ids,
   @SerialName("show_origin_title") var showOriginTitle: String,
-  @SerialName("position") var position: Long = 0,
   @SerialName("update_time") var updateTime: Long = System.currentTimeMillis()
 )

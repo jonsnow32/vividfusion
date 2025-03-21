@@ -38,6 +38,10 @@ class AccountDialogViewModel @Inject constructor(
     loadAccounts()
   }
 
+  fun updateAccount(account: Account) {
+    accountFlow.value.saveAccount(account)
+    loadAccounts()
+  }
   fun setActiveAccount(context: Context?, account: Account, callback: (Boolean) -> Unit) {
     context ?: return
 

@@ -70,6 +70,6 @@ class ExtensionRepo<T : BaseClient>(
   companion object {
     const val FEATURE = "cloud.app.vvf.extension"
     fun Context.getPluginFileDir() =
-      File(filesDir, "").apply { mkdirs() }
+      File(filesDir, "extensions").apply { mkdirs() }
   }
 }

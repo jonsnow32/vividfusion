@@ -88,6 +88,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
           }
           true
         }
+
         else -> false
       }
     }
@@ -149,9 +150,6 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
         binding.enabledCont.setOnClickListener { toggle() }
       }
 
-
-
-
       extensionMetadata.iconUrl?.toImageHolder().loadWith(binding.extensionIcon)
 
       binding.extensionDetails.text = getString(
@@ -184,7 +182,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
 
       override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         val context = preferenceManager.context
-        preferenceManager.sharedPreferencesName = context.packageName
+        preferenceManager.sharedPreferencesName = "${context.packageName}${extensionId}"
         preferenceManager.sharedPreferencesMode = Context.MODE_PRIVATE
         val screen = preferenceManager.createPreferenceScreen(context)
         val preferences = preferenceManager.sharedPreferences ?: return

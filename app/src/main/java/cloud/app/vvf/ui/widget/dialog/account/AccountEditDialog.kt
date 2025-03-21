@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.AccountEditDialogBinding
 import cloud.app.vvf.datastore.account.Account
+import cloud.app.vvf.extension.ExtensionAssetResponse
 import cloud.app.vvf.ui.widget.dialog.DockingDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.dismissSafe
@@ -16,9 +18,16 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class AccountEditDialog : DockingDialog() {
-  var binding by autoCleared<AccountEditDialogBinding>()
-  val account: Account? by lazy { arguments?.getSerialized<Account>("account") }
+
+  private var binding by autoCleared<AccountEditDialogBinding>()
+  private val args by lazy { requireArguments() }
+  private val account: Account? by lazy { args.getSerialized<Account>("account") }
+
   var newAccount: Account? = null
+
+  private val avatarAdapter by lazy {
+    AvatarAdapter(AVATAR_LIST.map { AvatarItem(it, selected = it == account?.avatar) })
+  }
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -29,49 +38,58 @@ class AccountEditDialog : DockingDialog() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    account?.apply {
-      binding.accountName.setText(name)
-      binding.accountImage.setImageResource(avatar)
-      binding.lockAccount.isChecked = lockPin != null
 
-      binding.title.text = getString(R.string.edit_account)
-    } ?: run {
-      binding.title.text = getString(R.string.create_account)
-    }
-
-    binding.cancelBtt.setOnClickListener { v ->
-      dialog.dismissSafe(activity)
-    }
-    binding.applyBtt.setOnClickListener {
-      newAccount = Account(
-        name = binding.accountName.text.toString(),
-        avatar = R.drawable.ic_person,
-        lockPin = if (binding.pin.text.toString().isEmpty()) null else binding.pin.text.toString()
-      )
-      dialog.dismissSafe(activity)
-    }
-    binding.lockAccount.setOnCheckedChangeListener { buttonView, isChecked ->
-      binding.pin.visibility = if (isChecked) View.VISIBLE else View.GONE
-    }
-  }
-
-  override fun getResultBundle(): Bundle? {
-    return if (newAccount != null) {
-      Bundle().apply {
-        putSerialized("newAccount", newAccount)
+    with(binding) {
+      account?.let {
+        accountName.setText(it.name)
+        lockAccount.isChecked = it.lockPin != null
+        pin.visibility =  if (it.lockPin != null) View.VISIBLE else View.GONE
+        pin.setText(it.lockPin)
+        title.text = getString(R.string.edit_account)
+      } ?: run {
+        title.text = getString(R.string.create_account)
+        accountName.hint = RANDOM_NAMES.random()
       }
-    } else {
-      null
+
+      cancelBtt.setOnClickListener { dialog.dismissSafe(activity) }
+
+      applyBtt.setOnClickListener {
+        newAccount = Account(
+          id = account?.id ?: System.currentTimeMillis(),
+          name = if (accountName.text.toString()
+              .isEmpty()
+          ) accountName.hint.toString() else accountName.text.toString(),
+          avatar = avatarAdapter.items.find { it.selected }?.resId ?: R.drawable.funemoji_2,
+          lockPin = if(lockAccount.isChecked) pin.text.toString().takeIf { it.isNotEmpty() } else null,
+          isActive = account?.isActive == true
+        )
+        dialog.dismissSafe(activity)
+      }
+
+      lockAccount.setOnCheckedChangeListener { _, isChecked ->
+        pin.visibility = if (isChecked) View.VISIBLE else View.GONE
+      }
+
+      rvAvatars.adapter = avatarAdapter
     }
   }
+
+  override fun getResultBundle(): Bundle? =
+    newAccount.let { Bundle().apply { putSerialized("newAccount", it) } }
 
   companion object {
-    fun newInstance(account: Account? = null): AccountEditDialog {
-      val args = Bundle()
-      args.putSerialized("account", account)
-      val fragment = AccountEditDialog()
-      fragment.arguments = args
-      return fragment
+    private val AVATAR_LIST = (1..17).map { i ->
+      R.drawable::class.java.getField("funemoji_$i").getInt(null)
+    }
+
+    private val RANDOM_NAMES = listOf(
+      "James", "Emily", "Michael", "Olivia", "William", "Sophia",
+      "Benjamin", "Charlotte", "Daniel", "Abigail", "Henry", "Grace",
+      "Samuel", "Lily", "Christopher", "Madison", "Andrew"
+    )
+
+    fun newInstance(account: Account? = null) = AccountEditDialog().apply {
+      arguments = Bundle().apply { putSerialized("account", account) }
     }
   }
 }

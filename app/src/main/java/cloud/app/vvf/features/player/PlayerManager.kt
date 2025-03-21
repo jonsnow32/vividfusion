@@ -18,6 +18,7 @@ import cloud.app.vvf.features.player.playerContracts.MxFreeContract
 import cloud.app.vvf.features.player.playerContracts.MxProContract
 import cloud.app.vvf.features.player.playerContracts.VLCContract
 import cloud.app.vvf.utils.Utils
+import cloud.app.vvf.utils.showToast
 import okhttp3.OkHttpClient
 
 class PlayerManager : DefaultLifecycleObserver, PlayerContract.PlayBackListener {
@@ -120,11 +121,7 @@ class PlayerManager : DefaultLifecycleObserver, PlayerContract.PlayBackListener 
       if (players.size == 1) {
 
       }
-      Toast.makeText(
-        context,
-        context.resources.getString(R.string.players_cannot_play),
-        Toast.LENGTH_LONG
-      ).show()
+      context.showToast(R.string.players_cannot_play)
     }
   }
 }

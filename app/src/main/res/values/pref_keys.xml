@@ -23,6 +23,11 @@
   <string name="pref_hide_unaired_episodes">pref_hide_unaired_episodes</string>
   <string name="pref_enable_dynamic_color">pref_enable_dynamic_color</string>
   <string name="pref_region">pref_region</string>
-    <string name="pref_pin">pref_pin</string>
+  <string name="pref_pin">pref_pin</string>
+  <string name="pref_complete_percent_key">pref_complete_percent_key</string>
+  <string name="pref_automatic_backup_key">pref_automatic_backup_key</string>
+  <string name="pref_backup_path">pref_backup_path</string>
+  <string name="pref_backup_path_allowed">pref_backup_path_allowed</string>
+  <string name="pref_show_check_update">pref_show_check_update</string>
 
 </resources>

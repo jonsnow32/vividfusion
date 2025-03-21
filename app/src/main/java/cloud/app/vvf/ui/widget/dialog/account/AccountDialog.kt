@@ -20,6 +20,7 @@ import cloud.app.vvf.utils.dismissSafe
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setDefaultFocus
+import cloud.app.vvf.utils.showToast
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,23 +53,20 @@ class AccountDialog : DockingDialog(), AccountAdapter.AccountClickListener {
         resultBundle?.getSerialized<Account>("newAccount")?.let { newAccount ->
           viewmodel.setActiveAccount(context, newAccount) { isSuccess ->
             if (isSuccess) viewmodel.loadAccounts()
-            else Toast.makeText(
-              context,
-              getString(R.string.create_account_failed, newAccount.name),
-              Toast.LENGTH_SHORT
-            ).show()
+            else
+              context?.showToast(R.string.create_account_failed)
           }
         }
       }
     }
   }
 
-  override fun onAccountClick(account: Account) {
+  override fun onSelectAccount(account: Account) {
     if (account.lockPin.isNullOrEmpty()) {
       viewmodel.setActiveAccount(context, account) {
         dialog.dismissSafe(activity)
-        Toast.makeText(context, getString(R.string.switch_account_to, account.name),
-          Toast.LENGTH_SHORT).show()
+        context?.showToast(R.string.switch_account_to)
+
       }
     } else {
       val context = context ?: return;
@@ -76,11 +74,52 @@ class AccountDialog : DockingDialog(), AccountAdapter.AccountClickListener {
         if (account.lockPin == pin) {
           viewmodel.setActiveAccount(context, account) {
             dialog.dismissSafe(activity)
-            Toast.makeText(context, getString(R.string.switch_account_to, account.name), Toast.LENGTH_SHORT).show()
+            activity?.showToast(getString(R.string.switch_account_to, account.name))
           }
         }
       }
     }
+  }
+
+  fun showEditDialog(account: Account) {
+    if (account.getSlug() == 0L)
+      context?.showToast(R.string.can_not_edit_default_account)
+    else {
+      AccountEditDialog.newInstance(account).show(parentFragmentManager) { resultBundle ->
+        resultBundle?.getSerialized<Account>("newAccount")?.let { newAccount ->
+          if (account.getSlug() == newAccount.getSlug()) {
+            viewmodel.updateAccount(newAccount)
+          } else {
+            viewmodel.setActiveAccount(context, newAccount) { isSuccess ->
+              if (isSuccess) viewmodel.loadAccounts()
+              else context?.showToast(getString(R.string.create_account_failed, newAccount.name))
+
+            }
+          }
+        }
+      }
+    }
+  }
+
+  override fun onShowMenuOption(account: Account) {
+    //showEditDialog(account)
+  }
+
+  override fun onEditAccount(account: Account) {
+
+
+    if (account.lockPin.isNullOrEmpty()) {
+      showEditDialog(account)
+    } else {
+      val context = context ?: return;
+      showInputPinDialog(account, context) { pin ->
+        if (account.lockPin == pin) {
+          showEditDialog(account)
+        }
+      }
+    }
+
+
   }
 
   companion object {

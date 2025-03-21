@@ -74,23 +74,15 @@
         android:visibility="gone"/>
     </LinearLayout>
 
-
-    <androidx.cardview.widget.CardView
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/rvAvatars"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      app:cardCornerRadius="@dimen/rounded_image_radius">
+      android:layout_height="wrap_content"
+      app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+      android:orientation="horizontal"
+      tools:listitem="@layout/item_account_avatar">
+    </androidx.recyclerview.widget.RecyclerView>
 
-      <ImageView
-        android:id="@+id/accountImage"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_gravity="center"
-        android:contentDescription="@string/avatar"
-        android:focusable="true"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_person" />
-
-    </androidx.cardview.widget.CardView>
   </LinearLayout>
 
   <LinearLayout

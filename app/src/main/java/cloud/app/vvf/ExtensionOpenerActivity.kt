@@ -20,6 +20,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import cloud.app.vvf.extension.getPackageName
 import cloud.app.vvf.ui.extension.widget.InstallStatus
+import cloud.app.vvf.utils.showToast
 
 class ExtensionOpenerActivity : Activity() {
   override fun onStart() {
@@ -32,9 +33,8 @@ class ExtensionOpenerActivity : Activity() {
       else -> null
     }
 
-    if (file == null) Toast.makeText(
-      this, getString(R.string.file_not_found), Toast.LENGTH_SHORT
-    ).show()
+    if (file == null)
+      showToast(R.string.file_not_found)
 
     finish()
     val startIntent = Intent(this, MainActivity::class.java)

@@ -63,6 +63,7 @@
   <string name="manage_extensions">Manage extensions</string>
   <string name="name_settings">%1$s Settings</string>
   <string name="cancel">Cancel</string>
+  <string name="new_folder">New folder</string>
   <string name="logout">Log out</string>
   <string name="switch_account">Switch Account</string>
   <string name="switch_account_to">Switch Account to %s</string>
@@ -120,7 +121,7 @@
   <string name="episode">Episode</string>
   <string name="season_short">S</string>
   <string name="episode_short">E</string>
-    <string name="episode_short_format">S%02dE%02d</string>
+  <string name="episode_short_format">S%02dE%02d</string>
 
   <string name="type_watching">Watching</string>
   <string name="type_on_hold">On-Hold</string>
@@ -207,7 +208,7 @@
   <string name="select_an_account">Select an account</string>
   <string name="add_account">Add Account</string>
   <string name="last_watched_episode">Next: %s</string>
-    <string name="account">Account</string>
+  <string name="account">Account</string>
   <string name="none">None</string>
   <string name="home_preview">Movie Image</string>
   <string name="exit_confirm_msg">Are you sure you want to exit\ ?</string>
@@ -219,22 +220,46 @@
   <string name="extension_uninstalled_fail">Can\'t delete extension</string>
   <string name="enter_api_key">Enter Api key</string>
   <string name="api_key_required">Api key required</string>
-    <string name="vote">Vote</string>
+  <string name="vote">Vote</string>
   <string name="select_type_you_vote">Select the type of extension you want to vote for.</string>
   <string name="no_overview_metada">The metadata may not be available for selected language</string>
   <string name="home_page">Homepage</string>
   <string name="notify_me">Notify me</string>
-    <string name="pin">PIN</string>
+  <string name="pin">PIN</string>
   <string name="enter_pin">Enter pin</string>
-    <string name="default_account">Default</string>
+  <string name="default_account">Default</string>
   <string name="use_pin_code">Use Pin Code</string>
   <string name="create_account">Create Account</string>
   <string name="avatar">Avatar</string>
   <string name="edit_account">Edit account</string>
-    <string name="pin_wrong">Pin is wrong</string>
+  <string name="pin_wrong">Pin is wrong</string>
   <string name="create_account_failed">The %s account already exists.</string>
   <string name="action_goto_show">TV Show Info</string>
-
+  <string name="can_not_edit_default_account">Cannot edit default account.</string>
+  <string name="backup_restore"><![CDATA[Backup & Restore]]></string>
+  <string name="backup_updates"><![CDATA[Update & Backup]]></string>
+  <string name="backup">Backup</string>
+  <string name="backup_frequency">Backup frequency</string>
+  <string name="backup_now">Backup now</string>
+  <string name="backup_success">Backup success</string>
+  <string name="backup_fail">Backup failed</string>
+  <string name="restore">Restore</string>
+  <string name="backup_path">Backup location</string>
+  <string name="update">Update</string>
+  <string name="restore_success">Restore successfull</string>
+  <string name="restore_fail">Restore fail</string>
+  <string name="check_for_update">Check App Update</string>
+  <string name="show_check_update">Show app updates</string>
+  <string name="update_coming_soon">Update comming soon</string>
+  <string name="downloading_update">Downloading update...</string>
+  <string name="no_update_availiable">No update available</string>
+  <string name="update_title">Update from %1$s to %2$s</string>
+  <string name="installing">Installing...</string>
+  <string name="installed">Installed</string>
+  <string name="installation_cancelled">Installation cancelled or failed</string>
+  <string name="update_fail">Update failed: %1$s</string>
+  <string name="update_success_title">Update Successful</string>
+  <string name="update_success_message">The app has been updated to version %1$s. Enjoy the latest features!</string>
 
   <string-array name="themes">
     <item>Light</item>

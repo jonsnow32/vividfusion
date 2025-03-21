@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:padding="16dp"
+  android:gravity="center">
+
+  <ImageView
+    android:id="@+id/currentUserAvatar"
+    android:layout_width="64dp"
+    android:layout_height="64dp"
+    android:src="@drawable/download_2_24dp"
+    android:layout_margin="32dp"
+    android:importantForAccessibility="no" />
+
+  <!-- Version transition text -->
+  <TextView
+    android:id="@+id/version_info_text"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/update_title"
+    android:textSize="16sp"
+    android:layout_marginBottom="16dp"/>
+
+  <!-- Status text (e.g., Downloading, Installing) -->
+  <TextView
+    android:id="@+id/status_text"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/downloading_update"
+    android:textSize="14sp"
+    android:layout_marginBottom="16dp"/>
+
+  <!-- ProgressBar for download -->
+  <ProgressBar
+    android:id="@+id/progress_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    style="@android:style/Widget.ProgressBar.Horizontal"/>
+
+  <!-- Percentage text -->
+  <TextView
+    android:id="@+id/percentage_text"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="0%"
+    android:textSize="14sp"/>
+
+</LinearLayout>

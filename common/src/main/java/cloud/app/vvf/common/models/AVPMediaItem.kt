@@ -40,7 +40,7 @@ sealed class AVPMediaItem {
   }
 
   @Serializable
-  data class EpisodeItem(val episode: Episode, val seasonItem: SeasonItem) : AVPMediaItem() {
+  data class EpisodeItem(val episode: Episode, val seasonItem: SeasonItem, val nextEpisode: Episode? = null) : AVPMediaItem() {
     fun getSlug() = "${seasonItem.getSlug()}/${episode.episodeNumber}"
   }
 
@@ -93,6 +93,10 @@ sealed class AVPMediaItem {
       is MovieItem -> item.movie.generalInfo.backdrop?.toImageHolder()
       is EpisodeItem -> item.seasonItem.showItem.generalInfo?.backdrop?.toImageHolder()
       else -> null
+    }
+    fun getPercent() : Int {
+      if(duration == null || duration <= 0) return 0
+      return ((position.toFloat() / duration.toFloat()) * 100).toInt()
     }
   }
 

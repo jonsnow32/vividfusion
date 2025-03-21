@@ -14,6 +14,7 @@ import cloud.app.vvf.network.Interceptors.addQuad9Dns
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.helpers.network.ignoreAllSSLErrors
 import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.utils.AppUpdater
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
@@ -98,5 +99,10 @@ class NetworkModule {
   @Provides
   fun provideCookieJar(context: Context): PersistentCookieJar =
     PersistentCookieJar(SetCookieCache(), SharedPrefsCookiePersistor(context));
+
+
+  @Provides
+  @Singleton
+  fun provideAppUpdate(context: Context, client: OkHttpClient, sharedPreferences: SharedPreferences) = AppUpdater(context, client)
 
 }

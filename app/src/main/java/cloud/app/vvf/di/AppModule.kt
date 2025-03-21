@@ -3,6 +3,7 @@ package cloud.app.vvf.di
 import android.app.Application
 import android.content.Context
 import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.utils.AppUpdater
 import cloud.app.vvf.viewmodels.SnackBarViewModel
 import dagger.Module
 import dagger.Provides

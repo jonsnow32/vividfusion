@@ -5,9 +5,15 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
-import android.os.LocaleList
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.Toast
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import cloud.app.vvf.R
+import cloud.app.vvf.databinding.ToastBinding
 import java.util.Locale
 
 const val PHONE: Int = 0b001
@@ -75,4 +81,21 @@ fun Context.setLocale(languageCode: String?) {
   createConfigurationContext(config)
   @Suppress("DEPRECATION")
   resources.updateConfiguration(config, resources.displayMetrics)
+}
+
+fun Context.showToast(message: String, idRes: Int? = null, duration: Int = Toast.LENGTH_SHORT) {
+  val layoutInflater = LayoutInflater.from(this)
+  val binding = ToastBinding.inflate(layoutInflater)
+  binding.toastText.text = message
+  if (idRes != null) binding.icon.setImageDrawable(ContextCompat.getDrawable(this, idRes))
+  else binding.icon.visibility = View.GONE
+  Toast(this).apply {
+    this.duration = duration
+    setGravity(Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, 0, 100)
+    view = binding.root
+    show()
+  }
+}
+fun Context.showToast(msgID: Int, idRes: Int? = null, duration: Int = Toast.LENGTH_SHORT) {
+  showToast(getString(msgID, idRes, duration))
 }
