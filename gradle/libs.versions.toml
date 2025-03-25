@@ -9,6 +9,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 kotlinxSerializationJson = "1.7.3"
+kotlinx-coroutines-core = "1.9.0"
 library = "1.3.0"
 material = "1.12.0"
 hilt = "2.49"
@@ -45,6 +46,7 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 # Android core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 kotlinx-serialization-json-v171 = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
 kotlinx-serialize-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialize" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
