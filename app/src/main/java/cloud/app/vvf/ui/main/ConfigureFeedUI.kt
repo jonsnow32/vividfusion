@@ -65,7 +65,6 @@ inline fun <reified T> Fragment.configureFeedUI(
   val parent = parentFragment as Fragment
 
   FastScrollerHelper.applyTo(recyclerView)
-
   swipeRefresh.configure {
     viewModel.refresh(viewModel.selectedExtension.value, true)
   }

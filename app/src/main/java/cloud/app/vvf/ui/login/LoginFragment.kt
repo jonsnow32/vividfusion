@@ -26,6 +26,7 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.user.LoginClient
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.databinding.FragmentLoginBinding
 import cloud.app.vvf.databinding.ItemInputBinding
 import cloud.app.vvf.extension.getExtension
@@ -268,7 +269,7 @@ class LoginFragment : Fragment() {
                 if (it.isRequired && loginViewModel.inputs[it.key].isNullOrEmpty()) {
                     lifecycleScope.launch {
                         loginViewModel.messageFlow.emit(
-                            SnackBarViewModel.Message(
+                            Message(
                                 getString(
                                     R.string.required_field,
                                     it.label
@@ -304,7 +305,7 @@ class LoginFragment : Fragment() {
             if (username.isEmpty()) {
                 lifecycleScope.launch {
                     loginViewModel.messageFlow.emit(
-                        SnackBarViewModel.Message(
+                        Message(
                             getString(R.string.required_field, getString(R.string.username))
                         )
                     )

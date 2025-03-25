@@ -103,6 +103,6 @@ class NetworkModule {
 
   @Provides
   @Singleton
-  fun provideAppUpdate(context: Context, client: OkHttpClient, sharedPreferences: SharedPreferences) = AppUpdater(context, client)
+  fun provideAppUpdate(context: Context, client: OkHttpClient, sharedPreferences: SharedPreferences) = AppUpdater(context, client, "jonsnow32", "vividfusion", context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "Unknown")
 
 }

@@ -1,27 +1,34 @@
 package cloud.app.vvf.utils
 
 import android.content.Context
-import android.content.Intent
-import androidx.core.content.FileProvider
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import cloud.app.vvf.services.downloader.ApkDownloader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
-import java.io.File
 import java.io.IOException
 
 class AppUpdater(
   private val context: Context,
-  private val client: OkHttpClient
+  private val client: OkHttpClient,
+  private val owner: String,
+  private val repo: String,
+  private val currentVersion: String,
 ) {
   private val json: Json = Json { ignoreUnknownKeys = true }
   private val baseUrl = "https://api.github.com/repos"
+  private val sharedPrefs = context.getSharedPreferences("AppUpdaterPrefs", Context.MODE_PRIVATE)
+  private val SHA_KEY_PREFIX = "tag_sha_"
 
-  // Data classes for GitHub API response
   @Serializable
   data class GitHubRelease(
     val tag_name: String,
@@ -35,99 +42,126 @@ class AppUpdater(
     val browser_download_url: String
   )
 
-  // Check for update and return the latest release if newer than current version
+  @Serializable
+  data class GitRef(
+    val ref: String,
+    val node_id: String,
+    val url: String,
+    val `object`: GitObject
+  )
+
+  @Serializable
+  data class GitObject(
+    val sha: String,
+    val type: String,
+    val url: String
+  )
+
   suspend fun checkForUpdate(
-    owner: String,
-    repo: String,
-    currentVersion: String,
     token: String? = null
   ): GitHubRelease? = withContext(Dispatchers.IO) {
+    // Fetch the latest release to get the tag_name
     val release = getLatestRelease(owner, repo, token) ?: return@withContext null
-    if (isNewerVersion(release.tag_name, currentVersion)) release else null
+    if (isNewerVersion(release.tag_name, currentVersion))
+      release
+    else null
+
   }
 
-  suspend fun downloadAndInstall(
+  suspend fun enqueueDownload(
     release: GitHubRelease,
-    assetNameRegex: Regex = ".*\\.apk$".toRegex(),
-    onProgress: (Long, Long) -> Unit = { _, _ -> }
-  ) = withContext(Dispatchers.IO) {
+    assetNameRegex: Regex = ".*\\.apk$".toRegex()
+  ): String = withContext(Dispatchers.IO) {
     val asset = release.assets.find { it.name.matches(assetNameRegex) }
       ?: throw IllegalStateException("No APK found in release ${release.tag_name}")
 
-    val cacheDir = KUniFile.fromFile(context, context.cacheDir)
-      ?: throw IOException("Failed to access cache directory")
-    val apkFile = cacheDir.createFile(asset.name, "application/vnd.android.package-archive")
-      ?: throw IOException("Failed to create APK file")
+    val workManager = WorkManager.getInstance(context)
+    val currentTag = APK_DOWNLOAD_WORK_TAG
 
-    downloadFile(asset.browser_download_url, apkFile, onProgress)
-    installApk(apkFile) // Back to launching directly
-  }
-  private fun downloadFile(url: String, kUniFile: KUniFile, onProgress: (Long, Long) -> Unit) {
-    val request = Request.Builder().url(url).build()
-    client.newCall(request).execute().use { response ->
-      if (!response.isSuccessful) throw IOException("Failed to download file: ${response.code}")
-      val totalBytes = response.body?.contentLength() ?: -1L
-      var downloadedBytes = 0L
-
-      Timber.d("Starting download: totalBytes=$totalBytes")
-      response.body?.byteStream()?.use { input ->
-        kUniFile.openOutputStream().use { output ->
-          val buffer = ByteArray(1024)
-          var bytesRead: Int
-          while (input.read(buffer).also { bytesRead = it } != -1) {
-            output.write(buffer, 0, bytesRead)
-            downloadedBytes += bytesRead
-            Timber.d("Download progress: $downloadedBytes / $totalBytes")
-            onProgress(downloadedBytes, totalBytes)
-            output.flush()
-          }
-          Timber.d("Download complete: $downloadedBytes / $totalBytes")
-          if (totalBytes == -1L) {
-            onProgress(downloadedBytes, downloadedBytes)
-          }
-        }
-      } ?: throw IOException("Empty response body")
+    val existingWorkers = workManager.getWorkInfosByTag(currentTag).get()
+    val runningWorker = existingWorkers.firstOrNull {
+      it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING || it.state == WorkInfo.State.SUCCEEDED
     }
+
+    if (runningWorker != null) {
+      Timber.d("Worker with tag $currentTag is already running. Returning existing ID.")
+      return@withContext runningWorker.id.toString()
+    }
+
+    //cancel all worker
+    val inputData = Data.Builder()
+      .putString(ApkDownloader.FileParams.KEY_FILE_URL, asset.browser_download_url)
+      .putString(ApkDownloader.FileParams.KEY_FILE_NAME, asset.name.removeSuffix(".apk"))
+      .putString(ApkDownloader.FileParams.KEY_FILE_TYPE, "apk")
+      .putString(ApkDownloader.FileParams.KEY_TAG_LAST_UPDATE, release.published_at)
+      .build()
+
+    val downloadRequest = OneTimeWorkRequestBuilder<ApkDownloader>()
+      .setInputData(inputData)
+      .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+      .addTag(currentTag)
+      .build()
+
+    workManager.enqueue(downloadRequest)
+    Timber.d("Enqueued download with ID: ${downloadRequest.id}")
+    return@withContext downloadRequest.id.toString()
   }
 
+  suspend fun getTagSha(tagName: String, token: String?): String? =
+    withContext(Dispatchers.IO) {
+      val url = "$baseUrl/$owner/$repo/git/refs/tags/$tagName"
+      val request = Request.Builder()
+        .url(url)
+        .addHeader("Accept", "application/vnd.github+json")
+        .addHeader("Cache-Control", "no-cache, no-store")
+        .addHeader("Pragma", "no-cache")
+        .apply { token?.let { addHeader("Authorization", "Bearer $it") } }
+        .build()
+
+      return@withContext try {
+        client.newCall(request).execute().use { response ->
+          if (!response.isSuccessful) {
+            Timber.e("Failed to fetch tag SHA: ${response.code}")
+            return@use null
+          }
+          val body = response.body?.string() ?: throw IOException("Empty response body")
+          val gitRef = json.decodeFromString<GitRef>(body)
+          gitRef.`object`.sha
+        }
+      } catch (e: Exception) {
+        Timber.e(e, "Error fetching tag SHA for $tagName")
+        null
+      }
+    }
 
   private fun getLatestRelease(owner: String, repo: String, token: String?): GitHubRelease? {
     val url = "$baseUrl/$owner/$repo/releases/latest"
     val request = Request.Builder()
       .url(url)
       .addHeader("Accept", "application/vnd.github+json")
+      .addHeader("Cache-Control", "no-cache, no-store")
+      .addHeader("Pragma", "no-cache")
       .apply { token?.let { addHeader("Authorization", "Bearer $it") } }
       .build()
 
     return try {
-      client.newCall(request).execute().use { response ->
+      val noCacheClient = client.newBuilder()
+        .cache(null)
+        .build()
+
+      noCacheClient.newCall(request).execute().use { response ->
         if (!response.isSuccessful) throw IOException("Failed to fetch release: ${response.code}")
-        val body = response.body?.string() ?: throw IOException("Empty response body")
-        json.decodeFromString<GitHubRelease>(body)
+        val body = response.body.string()
+
+        val release = json.decodeFromString<GitHubRelease>(body)
+        if (hasApkFile(release)) release else null
       }
     } catch (e: Exception) {
-      println("Error fetching latest release: ${e.message}")
+      Timber.e(e, "Error fetching latest release")
       null
     }
   }
 
-
-
-  private fun installApk(apkFile: KUniFile) {
-    val apkUri = FileProvider.getUriForFile(
-      context,
-      "${context.packageName}.fileprovider",
-      File(apkFile.filePath ?: throw IOException("APK file path unavailable"))
-    )
-    val intent = Intent(Intent.ACTION_VIEW).apply {
-      setDataAndType(apkUri, "application/vnd.android.package-archive")
-      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    }
-    context.startActivity(intent)
-  }
-
-  // Compare version strings (e.g., "v1.0.0" vs "1.0.0")
   private fun isNewerVersion(latest: String, current: String): Boolean {
     val latestClean = latest.trimStart('v').split(".")
     val currentClean = current.trimStart('v').split(".")
@@ -138,5 +172,13 @@ class AppUpdater(
       if (latestPart < currentPart) return false
     }
     return false
+  }
+
+  private fun hasApkFile(release: GitHubRelease): Boolean {
+    return release.assets.any { it.name.endsWith(".apk") }
+  }
+
+  companion object {
+    const val APK_DOWNLOAD_WORK_TAG = "apk_download"
   }
 }

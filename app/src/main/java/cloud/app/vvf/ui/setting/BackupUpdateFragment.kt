@@ -3,8 +3,6 @@ package cloud.app.vvf.ui.setting
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
@@ -38,7 +36,7 @@ import java.util.Date
 import javax.inject.Inject
 
 class BackupUpdateFragment : BaseSettingsFragment() {
-  override val title get() = getString(R.string.backup_restore)
+  override val title get() = getString(R.string.backup_updates)
   override val transitionName = "backup_restore"
   override val container = { BackupRestorePreference() }
 
@@ -234,17 +232,11 @@ class BackupUpdateFragment : BaseSettingsFragment() {
           lifecycleScope.launch {
             val context = context
             try {
-              val currentVersion =
-                context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "Unknown"
-              val latestRelease = appUpdater.checkForUpdate(
-                "jonsnow32", // Replace with your GitHub username
-                "vividfusion",  // Replace with your repo name
-                currentVersion ?: "1.0",
-                null      // Add GitHub token if needed
-              )
-
+              val latestRelease = appUpdater.checkForUpdate()
               if (latestRelease != null) {
-                parentFragment?.parentFragment?.navigate(UpdateFragment.newInstance(latestRelease), null, true) ?: context.showToast(R.string.update_fail)
+                parentFragment?.navigate(
+                  UpdateFragment.newInstance(latestRelease), null, true
+                ) ?: context.showToast(R.string.update_fail)
               } else {
                 context.showToast(R.string.no_update_availiable)
 
@@ -262,9 +254,9 @@ class BackupUpdateFragment : BaseSettingsFragment() {
         title = getString(R.string.show_check_update)
         layoutResource = R.layout.preference_switch
         icon = AppCompatResources.getDrawable(context, R.drawable.notify_24dp)
-        key = getString(R.string.pref_show_check_update)
+        key = getString(R.string.pref_auto_check_update)
+        summary = getString(R.string.show_check_update_summary)
         updateCategoryPreference.addPreference(this)
-
       }
     }
 

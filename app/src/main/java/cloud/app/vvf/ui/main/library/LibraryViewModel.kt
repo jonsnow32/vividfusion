@@ -57,8 +57,9 @@ class LibraryViewModel @Inject constructor(
   override fun getFeed(client: BaseClient): Flow<PagingData<MediaItemsContainer>>? {
     return when (tab?.id) {
       "Favorites" -> {
-        val data = dataFlow.value.getFavorites()
+        val data = dataFlow.value.getFavorites() ?: emptyList()
         data?.map { MediaItemsContainer.Item(it) }?.toPaged()?.toFlow()
+
       }
 
       "Bookmarks" ->

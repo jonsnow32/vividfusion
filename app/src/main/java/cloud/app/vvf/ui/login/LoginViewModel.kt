@@ -6,6 +6,7 @@ import cloud.app.vvf.R
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.user.LoginClient
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.common.models.User
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.run
@@ -21,7 +22,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     val extensionList: MutableStateFlow<List<Extension<*>>?>,
     private val context: Application,
-    val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
+    val messageFlow: MutableSharedFlow<Message>,
     val dataFlow: MutableStateFlow<AppDataStore>,
     throwableFlow: MutableSharedFlow<Throwable>
 ) : CatchingViewModel(throwableFlow) {
@@ -34,7 +35,7 @@ class LoginViewModel @Inject constructor(
         users: List<User>
     ) {
         if (users.isEmpty()) {
-            messageFlow.emit(SnackBarViewModel.Message(context.getString(R.string.no_user_found)))
+            messageFlow.emit(Message(context.getString(R.string.no_user_found)))
             return
         }
 //        val entities = users.map { it.toEntity(extension.id) }

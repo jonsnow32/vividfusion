@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.extension.getExtension
 import cloud.app.vvf.ui.detail.movie.MovieFragment
 import cloud.app.vvf.ui.detail.show.ShowFragment
@@ -52,7 +53,7 @@ fun FragmentActivity.openItemFragmentFromUri(uri: Uri) {
   fun createSnack(id: Int) {
     val snackbar by viewModels<SnackBarViewModel>()
     val message = getString(id)
-    snackbar.create(SnackBarViewModel.Message(message))
+    snackbar.create(Message(message))
   }
   when (uri.host) {
     "extensions" -> {

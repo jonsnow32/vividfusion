@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.ExceptionActivity
 import cloud.app.vvf.R
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import cloud.app.vvf.utils.observe
 import com.google.android.material.snackbar.Snackbar
@@ -27,17 +28,6 @@ class SnackBarViewModel @Inject constructor(
 ) : ViewModel() {
 
   val throwableFlow = mutableThrowableFlow.asSharedFlow()
-
-  data class Message(
-    val message: String,
-    val action: Action? = null,
-    val anchorView: View? = null
-  )
-
-  data class Action(
-    val name: String,
-    val handler: (() -> Unit)
-  )
 
   private val messages = mutableListOf<Message>()
 
@@ -84,7 +74,7 @@ class SnackBarViewModel @Inject constructor(
         throwable.printStackTrace()
         val message = Message(
           message = getTitle(throwable),
-          action = Action(getString(R.string.view)) {
+          action = Message.Action(getString(R.string.view)) {
             ExceptionActivity.start(this, throwable)
           }
         )

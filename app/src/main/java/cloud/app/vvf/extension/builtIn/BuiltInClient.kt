@@ -1,6 +1,8 @@
 package cloud.app.vvf.extension.builtIn
 
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.clients.provider.HttpHelperProvider
+import cloud.app.vvf.common.clients.provider.MessageFlowProvider
 import cloud.app.vvf.common.clients.streams.StreamClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.Page
@@ -13,6 +15,7 @@ import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.MediaItemsContainer
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.SortBy
 import cloud.app.vvf.common.models.Tab
@@ -52,10 +55,12 @@ import com.uwetrottmann.tmdb2.enumerations.AppendToResponseItem
 import com.uwetrottmann.tmdb2.enumerations.MediaType
 import com.uwetrottmann.tmdb2.enumerations.TimeWindow
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import java.util.Date
 
-class BuiltInClient : DatabaseClient, StreamClient {
+class BuiltInClient : DatabaseClient, StreamClient, HttpHelperProvider, MessageFlowProvider {
 
   companion object {
 
@@ -186,10 +191,11 @@ class BuiltInClient : DatabaseClient, StreamClient {
 
   private lateinit var prefSettings: PrefSettings
 
-  override
-
-  fun init(prefSettings: PrefSettings, httpHelper: HttpHelper) {
+  override fun init(prefSettings: PrefSettings) {
     this.prefSettings = prefSettings
+  }
+
+  override fun setHttpHelper(httpHelper: HttpHelper) {
     tmdb = AppTmdb(
       httpHelper.okHttpClient,
       prefSettings.getString(PREF_TMDB_API_KEY) ?: "4ef60b9d635f533695cbcaccb6603a57"
@@ -207,6 +213,11 @@ class BuiltInClient : DatabaseClient, StreamClient {
     )
   }
 
+  private lateinit var messageFlow: MutableSharedFlow<Message>
+
+  override fun setMessageFlow(messageFlow: MutableSharedFlow<Message>) {
+    this.messageFlow = messageFlow;
+  }
   override fun onSettingsChanged(key: String, value: Any) {
     when (key) {
       PREF_TVDB_API_KEY -> {
@@ -241,7 +252,6 @@ class BuiltInClient : DatabaseClient, StreamClient {
       "Companies" -> getCompanies(companies, page, pageSize, sortBy)
       else -> TODO()
     }
-
     val continuation = if (items.size < pageSize) null else (page + 1).toString()
     Page(items, continuation)
   }

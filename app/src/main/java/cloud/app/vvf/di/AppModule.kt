@@ -3,8 +3,7 @@ package cloud.app.vvf.di
 import android.app.Application
 import android.content.Context
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.utils.AppUpdater
-import cloud.app.vvf.viewmodels.SnackBarViewModel
+import cloud.app.vvf.common.models.Message
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +25,7 @@ class AppModule {
 
   @Provides
   @Singleton
-  fun provideMessageFlow() = MutableSharedFlow<SnackBarViewModel.Message>()
+  fun provideMessageFlow() = MutableSharedFlow<Message>()
 
   @Provides
   @Singleton

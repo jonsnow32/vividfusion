@@ -16,21 +16,27 @@ import cloud.app.vvf.extension.plugger.PackageChangeListener
 import cloud.app.vvf.extension.plugger.catchLazy
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.clients.provider.HttpHelperProvider
+import cloud.app.vvf.common.clients.provider.MessageFlowProvider
 import cloud.app.vvf.common.clients.streams.StreamClient
 import cloud.app.vvf.common.clients.subtitles.SubtitleClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.utils.getSettings
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import tel.jeelpa.plugger.utils.mapState
 import java.io.File
 
 class ExtensionRepo<T : BaseClient>(
   private val context: Context,
   private val httpHelper: HttpHelper,
+  private val messageFlow: MutableSharedFlow<Message>,
   private val listener: PackageChangeListener,
   private val fileChangeListener: FileChangeListener,
   private vararg val repo: LazyPluginRepo<ExtensionMetadata, T>
@@ -58,7 +64,9 @@ class ExtensionRepo<T : BaseClient>(
         val (metadata, resultLazy) = plugin
         metadata to catchLazy {
           val instance = resultLazy.value.getOrThrow()
-          instance.init(getSettings(context, metadata), httpHelper)
+          instance.init(getSettings(context, metadata))
+          if (instance is HttpHelperProvider) instance.setHttpHelper(httpHelper)
+          if (instance is MessageFlowProvider) instance.setMessageFlow(messageFlow)
           instance
         }
       }

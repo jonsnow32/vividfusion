@@ -12,6 +12,7 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.datastore.account.AccountDataStore
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.ExtensionAssetResponse
@@ -26,7 +27,6 @@ import cloud.app.vvf.extension.waitForResult
 import cloud.app.vvf.network.api.voting.VotingService
 import cloud.app.vvf.ui.extension.widget.InstallStatus
 import cloud.app.vvf.utils.navigate
-import cloud.app.vvf.viewmodels.SnackBarViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -40,8 +40,6 @@ import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
 import java.io.File
 import javax.inject.Inject
-import kotlin.collections.find
-import kotlin.collections.firstOrNull
 
 @HiltViewModel
 class ExtensionViewModel @Inject constructor(
@@ -51,7 +49,7 @@ class ExtensionViewModel @Inject constructor(
   val extListFlow: MutableStateFlow<List<Extension<*>>?>,
   val refresher: MutableSharedFlow<Boolean>,
   val okHttpClient: OkHttpClient,
-  val messageFlow: MutableSharedFlow<SnackBarViewModel.Message>,
+  val messageFlow: MutableSharedFlow<Message>,
   val dataFlow: MutableStateFlow<AppDataStore>,
   val votingService: VotingService,
   val selectedExtension: MutableStateFlow<Extension<DatabaseClient>?>
@@ -95,7 +93,7 @@ class ExtensionViewModel @Inject constructor(
       throwableFlow.emit(it)
       false
     }
-    if (result) messageFlow.emit(SnackBarViewModel.Message(context.getString(R.string.extension_installed_successfully)))
+    if (result) messageFlow.emit(Message(context.getString(R.string.extension_installed_successfully)))
     return result
   }
 
@@ -107,7 +105,7 @@ class ExtensionViewModel @Inject constructor(
         throwableFlow.emit(it)
         false
       }
-      if (result) messageFlow.emit(SnackBarViewModel.Message(context.getString(R.string.extension_uninstalled_successfully)))
+      if (result) messageFlow.emit(Message(context.getString(R.string.extension_uninstalled_successfully)))
       function(result)
     }
 
@@ -126,7 +124,7 @@ class ExtensionViewModel @Inject constructor(
       }
 
       if (list.isEmpty()) {
-        messageFlow.emit(SnackBarViewModel.Message(context.getString(R.string.list_is_empty)))
+        messageFlow.emit(Message(context.getString(R.string.list_is_empty)))
         return@launch
       }
 
@@ -157,7 +155,7 @@ class ExtensionViewModel @Inject constructor(
         null
       } ?: return@flow
       messageFlow.emit(
-        SnackBarViewModel.Message(
+        Message(
           context.getString(R.string.downloading_update_for_extension, extension.name)
         )
       )
@@ -179,7 +177,7 @@ class ExtensionViewModel @Inject constructor(
           null
         } ?: return@forEach
         messageFlow.emit(
-          SnackBarViewModel.Message(
+          Message(
             context.getString(R.string.downloading_update_for_extension, extension.name)
           )
         )
@@ -219,7 +217,7 @@ class ExtensionViewModel @Inject constructor(
             }
           }
         } else {
-          messageFlow.emit(SnackBarViewModel.Message("You have already voted for this extension"))
+          messageFlow.emit(Message("You have already voted for this extension"))
         }
       }
     }

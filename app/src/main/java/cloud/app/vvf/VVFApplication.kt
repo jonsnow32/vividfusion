@@ -13,9 +13,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
-import cloud.app.vvf.extension.ExtensionLoader
-import cloud.app.vvf.viewmodels.SnackBarViewModel
 import cloud.app.vvf.common.helpers.network.HttpHelper
+import cloud.app.vvf.common.models.Message
+import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.utils.setLocale
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
@@ -159,11 +159,11 @@ class VVFApplication : Application(), Application.ActivityLifecycleCallbacks,
       Runtime.getRuntime().exit(0)
     }
 
-    fun Context.noClient() = SnackBarViewModel.Message(
+    fun Context.noClient() = Message(
       getString(R.string.extension_empty)
     )
 
-    fun Context.loginNotSupported(client: String) = SnackBarViewModel.Message(
+    fun Context.loginNotSupported(client: String) = Message(
       getString(R.string.not_supported, getString(R.string.login), client)
     )
 

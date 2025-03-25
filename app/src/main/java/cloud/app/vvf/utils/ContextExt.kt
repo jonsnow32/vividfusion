@@ -71,6 +71,12 @@ val appLanguageExceptions = hashMapOf(
   "zh-rTW" to Locale.TRADITIONAL_CHINESE
 )
 
+fun Context.colorFromAttribute(attribute: Int): Int {
+  val attributes = obtainStyledAttributes(intArrayOf(attribute))
+  val color = attributes.getColor(0, 0)
+  attributes.recycle()
+  return color
+}
 fun Context.setLocale(languageCode: String?) {
   if (languageCode == null) return
   val locale = appLanguageExceptions[languageCode] ?: Locale(languageCode)

@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.helpers.network.HttpHelper
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.ExtensionLoader
 import dagger.Module
@@ -38,12 +39,14 @@ class ExtensionModule {
     httpHelper: HttpHelper,
     throwableFlow: MutableSharedFlow<Throwable>,
     extensionsFlow: MutableStateFlow<List<Extension<*>>>,
+    messageFlow: MutableSharedFlow<Message>,
     refresher: MutableSharedFlow<Boolean>
   ) = ExtensionLoader(
     context,
     httpHelper,
     throwableFlow,
     extensionsFlow,
+    messageFlow,
     refresher
   )
 

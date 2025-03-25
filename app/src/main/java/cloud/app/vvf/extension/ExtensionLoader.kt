@@ -5,6 +5,7 @@ import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.Message
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.builtIn.BuiltInRepo
 import cloud.app.vvf.extension.plugger.FileChangeListener
@@ -27,6 +28,7 @@ class ExtensionLoader(
   private val httpHelper: HttpHelper,
   private val throwableFlow: MutableSharedFlow<Throwable>,
   private val extensionsFlow: MutableStateFlow<List<Extension<*>>>,
+  private val messageFlow: MutableSharedFlow<Message>,
   private val refresher: MutableSharedFlow<Boolean>,
 
   ) {
@@ -38,6 +40,7 @@ class ExtensionLoader(
   private val extensionRepo = ExtensionRepo(
     context,
     httpHelper,
+    messageFlow,
     appListener,
     fileListener,
     BuiltInRepo()

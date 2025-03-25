@@ -252,14 +252,23 @@
   <string name="show_check_update">Show app updates</string>
   <string name="update_coming_soon">Update comming soon</string>
   <string name="downloading_update">Downloading update...</string>
+  <string name="downloaded_update">Downloaded</string>
   <string name="no_update_availiable">No update available</string>
-  <string name="update_title">Update from %1$s to %2$s</string>
+  <string name="update_title">Update from %1$s -> %2$s</string>
   <string name="installing">Installing...</string>
   <string name="installed">Installed</string>
   <string name="installation_cancelled">Installation cancelled or failed</string>
   <string name="update_fail">Update failed: %1$s</string>
   <string name="update_success_title">Update Successful</string>
   <string name="update_success_message">The app has been updated to version %1$s. Enjoy the latest features!</string>
+  <string name="download_cancelled">Download cancelled</string>
+  <string name="download_failed">Download failed</string>
+  <string name="no_file_uri_returned">No file URI returned</string>
+  <string name="checking_for_updates">Checking for updates</string>
+  <string name="notification_permission_denied">Notification permission denied; download may be limited</string>
+  <string name="grant_notification_permission">Please grant notification permission for download progress</string>
+  <string name="show_check_update_summary">Automatically check new version after starting the app</string>
+  <string name="subscription_in_progress_notification">Updating subscribed shows</string>
 
   <string-array name="themes">
     <item>Light</item>
