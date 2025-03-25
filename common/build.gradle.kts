@@ -10,25 +10,28 @@ java {
   targetCompatibility = JavaVersion.VERSION_17
 }
 
+group = "cloud.app.vvf.common"
+version = "1.0"
+
 kotlin {
   jvmToolchain(17)
 }
 
 dependencies {
   api(libs.squareup.okhttp)
-  api(libs.jsoup);
+  api(libs.jsoup)
+  api(libs.kotlinx.coroutines.core)
   api(libs.kotlinx.serialization.json.v171)
 }
 
-afterEvaluate {
-  publishing {
-    publications {
-      create<MavenPublication>("mavenJava") {
-        groupId = "cloud.app.vvf"
-        artifactId = "common"
-        version = "1.0"
-        from(components["java"])
-      }
+
+publishing {
+  publications {
+    create<MavenPublication>("maven") { // Explicitly create a publication
+      from(components["java"]) // Include the Java/Kotlin library component
+      groupId = "cloud.app.vvf.common" // Consistent groupId
+      artifactId = "common" // Define the artifactId
+      version = project.version.toString()
     }
   }
 }

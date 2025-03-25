@@ -55,7 +55,7 @@ class MediaContainerAdapter(
       oldItem: MediaItemsContainer,
       newItem: MediaItemsContainer
     ): Boolean {
-      return oldItem == newItem
+      return oldItem.sameAs(newItem)
     }
   }
 

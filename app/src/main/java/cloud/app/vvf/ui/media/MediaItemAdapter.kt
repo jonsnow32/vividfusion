@@ -119,7 +119,7 @@ class MediaItemAdapter(
       oldItem: AVPMediaItem,
       newItem: AVPMediaItem
     ): Boolean {
-      return oldItem == newItem
+      return oldItem.sameAs(newItem)
     }
   }
 }
