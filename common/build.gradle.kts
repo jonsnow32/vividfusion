@@ -11,7 +11,7 @@ java {
 }
 
 group = "cloud.app.vvf.common"
-version = "1.0"
+version = "1.0.2"
 
 kotlin {
   jvmToolchain(17)
