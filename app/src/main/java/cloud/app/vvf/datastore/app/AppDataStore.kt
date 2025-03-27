@@ -113,6 +113,27 @@ class AppDataStore(val context: Context, val account: Account) :
     return false
   }
 
+  fun getPlaybackProgressOfSeason(seasonItem: AVPMediaItem.SeasonItem?): List<PlaybackProgressItem>? {
+    if (seasonItem == null) return null
+    return getKeys<PlaybackProgressItem>(
+      "$PlaybackProgressFolder/",
+      null
+    )?.mapNotNull { item ->
+      when (item.item) {
+        is AVPMediaItem.EpisodeItem -> {
+          if ((item.item as AVPMediaItem.EpisodeItem).seasonItem.id == seasonItem.id)
+            item
+          else
+            null
+        }
+
+        else -> null
+      }
+    }
+    return null
+  }
+
+
   fun getPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgressItem? {
     if (mediaItem is AVPMediaItem.EpisodeItem || mediaItem is AVPMediaItem.MovieItem) {
       return getKey<PlaybackProgressItem>("$PlaybackProgressFolder/${mediaItem.id}", null)
@@ -138,7 +159,7 @@ class AppDataStore(val context: Context, val account: Account) :
     val episodePlayback = data?.filter { it.item is AVPMediaItem.EpisodeItem }
       ?.groupBy { (it.item as AVPMediaItem.EpisodeItem).seasonItem.showItem.getSlug() }
       ?.map { entry -> entry.value.first() }
-      //?.maxBy { entry -> entry.value.maxBy { it.lastUpdated }.lastUpdated }
+    //?.maxBy { entry -> entry.value.maxBy { it.lastUpdated }.lastUpdated }
 
     val moviePlayback = data?.filter { it.item is AVPMediaItem.MovieItem }
     return episodePlayback?.plus(moviePlayback ?: emptyList())

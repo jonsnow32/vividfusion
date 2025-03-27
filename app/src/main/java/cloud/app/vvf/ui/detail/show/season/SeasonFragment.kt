@@ -14,18 +14,19 @@ import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
-import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.databinding.FragmentSeasonBinding
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.detail.show.episode.EpisodeAdapter
+import cloud.app.vvf.ui.detail.show.episode.EpisodeAdapter.EpisodeData
 import cloud.app.vvf.ui.widget.dialog.itemOption.ItemOptionDialog
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.autoCleared
+import cloud.app.vvf.utils.collect
 import cloud.app.vvf.utils.getSerialized
-import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.getValue
 
@@ -77,7 +78,13 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   }
 
   private fun setupObservers() {
-    observe(viewModel.favoriteStatus) { isFavorite ->
+    collect(viewModel.fullSeasonItem) { mediaItem ->
+      if (mediaItem == null) return@collect
+      bind(mediaItem)
+      setupEpisodes(mediaItem.season.episodes?.map { episode -> EpisodeData(episode, 0, 0) })
+    }
+
+    collect(viewModel.favoriteStatus) { isFavorite ->
       var favoriteIconRes = R.drawable.favorite_24dp
       var favoriteStringnRes = R.string.action_remove_from_favorites
       if (!isFavorite) {
@@ -87,34 +94,32 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
       binding.header.imgBtnFavourite.setImageResource(favoriteIconRes)
     }
 
-
-    observe(viewModel.fullMediaItem) { mediaItem ->
-      if (mediaItem == null) return@observe
-      bind(mediaItem)
-      setupEpisodes(mediaItem.season.episodes)
+    collect(viewModel.episodeData) {
+      if (it == null) return@collect
+      bind(viewModel.fullSeasonItem.value)
+      displaySortedEpisodes(it, getCurrentSort())
     }
-
   }
 
-  private enum class SortMode { ASCENDING, DESCENDING }
+  enum class SortMode { ASCENDING, DESCENDING }
+
+  fun getCurrentSort(): SortMode {
+    val key = sharedPreferences.getInt(
+      getString(R.string.pref_episode_sort),
+      SortMode.ASCENDING.ordinal
+    )
+    return SortMode.entries[key]
+  }
 
   private var currentSelectedRangeIndex = 0;
-  private fun setupEpisodes(episodes: List<Episode>?) {
-    fun getCurrentSort(): SortMode {
-      val key = sharedPreferences.getInt(
-        getString(R.string.pref_episode_sort),
-        SortMode.ASCENDING.ordinal
-      )
-
-      return SortMode.entries[key]
-    }
+  private fun setupEpisodes(episodes: List<EpisodeData>?) {
 
     binding.episodeHolder.isGone = false
     binding.skeletonEpisodes.root.isGone = true
 
     if (episodes.isNullOrEmpty()) return
 
-    val rangeSize = 50
+    val rangeSize = 20
     val episodeRanges = divideEpisodesIntoRanges(episodes, rangeSize)
     if (episodeRanges.size > 1) {
       binding.episodeSelectRange.text = episodeRanges[currentSelectedRangeIndex].rangeLabel
@@ -130,12 +135,8 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
           result?.let {
             currentSelectedRangeIndex = it.getIntegerArrayList("selected_items")?.get(0) ?: 0
             binding.episodeSelectRange.text = episodeRanges[currentSelectedRangeIndex].rangeLabel
-            displaySortedEpisodes(
-              episodeRanges[currentSelectedRangeIndex].episodes,
-              getCurrentSort()
-            )
+            viewModel.loadPlayback(episodeRanges[currentSelectedRangeIndex].episodes)
           }
-
         }
       }
     }
@@ -149,18 +150,18 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
     binding.episodeSortTxt.isGone = (episodes.size < 2)
     val currentSortMode = getCurrentSort()
     updateSortUI(currentSortMode)
-    displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, currentSortMode)
-
+    viewModel.loadPlayback(episodeRanges[currentSelectedRangeIndex].episodes)
     binding.episodeSortTxt.setOnClickListener {
       val sortMode = getCurrentSort()
       val newSortMode = when (sortMode) {
         SortMode.DESCENDING -> SortMode.ASCENDING
         SortMode.ASCENDING -> SortMode.DESCENDING
       }
-      updateSortUI(newSortMode)
-      displaySortedEpisodes(episodeRanges[currentSelectedRangeIndex].episodes, newSortMode)
       sharedPreferences.edit().putInt(getString(R.string.pref_episode_sort), newSortMode.ordinal)
         .apply()
+      updateSortUI(newSortMode)
+      viewModel.loadPlayback(episodeRanges[currentSelectedRangeIndex].episodes)
+
     }
   }
 
@@ -174,16 +175,16 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
     )
   }
 
-  private fun displaySortedEpisodes(episodes: List<Episode>, sortMode: SortMode) {
+  private fun displaySortedEpisodes(episodes: List<EpisodeData>, sortMode: SortMode) {
     val sortedEpisodes = sortEpisodes(episodes, sortMode)
     val seasonAdapter = binding.rvEpisodes.adapter as EpisodeAdapter
     seasonAdapter.submitList(sortedEpisodes) // Use flatMap here
   }
 
-  private fun sortEpisodes(episodes: List<Episode>, sortMode: SortMode): List<Episode> {
+  private fun sortEpisodes(episodes: List<EpisodeData>, sortMode: SortMode): List<EpisodeData> {
     return when (sortMode) {
-      SortMode.DESCENDING -> episodes.sortedByDescending { it.episodeNumber }
-      SortMode.ASCENDING -> episodes.sortedBy { it.episodeNumber }
+      SortMode.DESCENDING -> episodes.sortedByDescending { it.episode.episodeNumber }
+      SortMode.ASCENDING -> episodes.sortedBy { it.episode.episodeNumber }
     }
   }
 
@@ -199,7 +200,7 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
   }
 
   private fun divideEpisodesIntoRanges(
-    episodes: List<Episode>,
+    episodes: List<EpisodeData>,
     rangeSize: Int
   ): List<EpisodeRange> {
     return episodes.chunked(rangeSize).mapIndexed { index, chunk ->
@@ -211,17 +212,24 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
 
   data class EpisodeRange(
     val rangeLabel: String,
-    val episodes: List<Episode>
+    val episodes: List<EpisodeData>
   )
 
-  override fun onClick(episode: Episode) {
-    viewModel.saveHistory(episode.toMediaItem(shortItem))
+  override fun onClick(episodeData: EpisodeData) {
+    viewModel.saveHistory(
+      episodeData.episode.toMediaItem(
+        viewModel.fullSeasonItem.value ?: shortItem
+      )
+    )
   }
 
-  override fun onLongClick(episode: Episode) : Boolean {
+  override fun onLongClick(episode: EpisodeData): Boolean {
     ItemOptionDialog.newInstance(
       extensionId,
-      AVPMediaItem.EpisodeItem(episode = episode, seasonItem = shortItem)
+      AVPMediaItem.EpisodeItem(
+        episode = episode.episode,
+        seasonItem = viewModel.fullSeasonItem.value ?: shortItem
+      )
     ).show(parentFragmentManager)
     return true
   }
