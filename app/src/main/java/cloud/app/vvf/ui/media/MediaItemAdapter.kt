@@ -29,15 +29,17 @@ class MediaItemAdapter(
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaItemViewHolder {
     val holder = when (viewType) {
-      0 -> MediaItemViewHolder.Movie.create(parent)
-      1 -> MediaItemViewHolder.Show.create(parent)
-      2 -> MediaItemViewHolder.Episode.create(parent)
+      0 -> MediaItemViewHolder.Media.create(parent)
+      1 -> MediaItemViewHolder.Media.create(parent)
+      2 -> MediaItemViewHolder.Media.create(parent)
       3 -> MediaItemViewHolder.Actor.create(parent)
       4 -> MediaItemViewHolder.Stream.create(parent)
       5 -> MediaItemViewHolder.Season.create(parent)
       6 -> MediaItemViewHolder.Trailer.create(parent)
       7 -> MediaItemViewHolder.SeasonLarge.create(parent)
-      8 -> MediaItemViewHolder.Playback.create(parent)
+      8 -> MediaItemViewHolder.Media.create(parent)
+      9 -> MediaItemViewHolder.Media.create(parent)
+      10 -> MediaItemViewHolder.Media.create(parent)
       else -> throw IllegalArgumentException("Invalid view type")
     }
     return holder
@@ -55,6 +57,8 @@ class MediaItemAdapter(
       is AVPMediaItem.SeasonItem -> if (item.season.generalInfo.poster.isNullOrEmpty()) 5 else 7
       is AVPMediaItem.TrailerItem -> 6
       is AVPMediaItem.PlaybackProgressItem -> 8
+      is AVPMediaItem.LocalVideoItem -> 9
+      is AVPMediaItem.LocalVideoAlbum -> 10
     }
   }
 

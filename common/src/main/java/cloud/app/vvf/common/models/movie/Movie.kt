@@ -13,7 +13,6 @@ data class Movie(
   @SerialName("position") var position: Long = 0,
   @SerialName("update_time") var updateTime: Long = System.currentTimeMillis(),
   @SerialName("status") var status: String? = null
-
 )
 {
   override fun equals(other: Any?): Boolean {

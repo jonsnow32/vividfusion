@@ -5,22 +5,22 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Visibility
 import cloud.app.vvf.R
+import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
+import cloud.app.vvf.common.utils.millisecondsToReadable
 import cloud.app.vvf.databinding.ItemActorBinding
-import cloud.app.vvf.databinding.ItemMediaTitleBinding
 import cloud.app.vvf.databinding.ItemMediaBinding
-import cloud.app.vvf.databinding.ItemMovieCoverBinding
+import cloud.app.vvf.databinding.ItemMediaTitleBinding
+import cloud.app.vvf.databinding.ItemMediaCoverBinding
 import cloud.app.vvf.databinding.ItemSeasonBinding
 import cloud.app.vvf.databinding.ItemSeasonLargeBinding
 import cloud.app.vvf.databinding.ItemStreamBinding
+import cloud.app.vvf.databinding.ItemVideoBinding
 import cloud.app.vvf.utils.loadInto
 import cloud.app.vvf.utils.roundTo
 import cloud.app.vvf.utils.setTextWithVisibility
-import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
-import cloud.app.vvf.databinding.ItemMediaCoverWithPlaybackBinding
-import cloud.app.vvf.databinding.ItemMediaPlaybackBinding
-import cloud.app.vvf.databinding.ItemVideoBinding
 
 sealed class MediaItemViewHolder(itemView: View) :
   RecyclerView.ViewHolder(itemView) {
@@ -33,24 +33,43 @@ sealed class MediaItemViewHolder(itemView: View) :
     subtitle.text = item.subtitle
   }
 
-  fun ItemMovieCoverBinding.bind(item: AVPMediaItem) {
-    item.poster.loadInto(imageView, item.placeHolder())
-    this.iconContainer.isVisible = item.rating != null
-    this.rating.text = item.rating?.roundTo(1).toString()
-  }
+  fun ItemMediaCoverBinding.bind(item: AVPMediaItem) {
+    when (item) {
+      is AVPMediaItem.PlaybackProgressItem -> {
+        item.poster.loadInto(imageView, item.placeHolder())
+        this.iconContainer.isVisible = item.rating != null
+        this.rating.text = item.rating?.roundTo(1).toString()
+        if (item.duration != null) {
+          watchProgress.visibility = View.VISIBLE
+          watchProgress.progress = ((item.position.toDouble() / item.duration!!) * 100).toInt()
+        }
+        this.playIcon.visibility = View.VISIBLE
+      }
 
-  fun ItemMediaCoverWithPlaybackBinding.bind(item: AVPMediaItem.PlaybackProgressItem) {
-    item.poster.loadInto(imageView, item.placeHolder())
-    this.iconContainer.isVisible = item.rating != null
-    this.rating.text = item.rating?.roundTo(1).toString()
-    if(item.duration != null) {
-      watchProgress.visibility = View.VISIBLE
-      watchProgress.progress = ((item.position.toDouble() / item.duration!!) * 100).toInt()
+      is AVPMediaItem.LocalVideoItem -> {
+        item.poster.loadInto(imageView, item.placeHolder())
+        this.iconContainer.isVisible = true
+        this.rating.setTextWithVisibility(item.video.duration.millisecondsToReadable())
+//        this.playIcon.visibility = View.VISIBLE
+      }
+
+      is AVPMediaItem.ActorItem,
+      is AVPMediaItem.EpisodeItem,
+      is AVPMediaItem.LocalVideoAlbum,
+      is AVPMediaItem.MovieItem,
+      is AVPMediaItem.SeasonItem,
+      is AVPMediaItem.ShowItem,
+      is AVPMediaItem.StreamItem,
+      is AVPMediaItem.TrailerItem -> {
+        item.poster.loadInto(imageView, item.placeHolder())
+        this.iconContainer.isVisible = item.rating != null
+        this.rating.text = item.rating?.roundTo(1).toString()
+      }
     }
-    this.playIcon.visibility = View.VISIBLE
+
   }
 
-  class Movie(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
+  class Media(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
     private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
     override val transitionView: View
       get() = binding.cover.imageView
@@ -65,34 +84,13 @@ sealed class MediaItemViewHolder(itemView: View) :
         parent: ViewGroup
       ): MediaItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
-        return Movie(
+        return Media(
           ItemMediaBinding.inflate(layoutInflater, parent, false)
         )
       }
     }
   }
 
-  class Episode(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
-    private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
-    override val transitionView: View
-      get() = binding.cover.root
-
-    override fun bind(item: AVPMediaItem) {
-      titleBinding.bind(item)
-      binding.cover.bind(item)
-    }
-
-    companion object {
-      fun create(
-        parent: ViewGroup
-      ): MediaItemViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        return Episode(
-          ItemMediaBinding.inflate(layoutInflater, parent, false)
-        )
-      }
-    }
-  }
 
   class SeasonLarge(val binding: ItemSeasonLargeBinding) : MediaItemViewHolder(binding.root) {
     override val transitionView: View
@@ -136,7 +134,7 @@ sealed class MediaItemViewHolder(itemView: View) :
         item.watchedEpisodeNumber ?: 0,
         season.episodeCount
       )
-      binding.seasonProgress.progress = if(season.episodeCount > 0)
+      binding.seasonProgress.progress = if (season.episodeCount > 0)
         ((item.watchedEpisodeNumber ?: 0) * 100 / season.episodeCount) else 0
 
     }
@@ -148,49 +146,6 @@ sealed class MediaItemViewHolder(itemView: View) :
         val layoutInflater = LayoutInflater.from(parent.context)
         return Season(
           ItemSeasonBinding.inflate(layoutInflater, parent, false)
-        )
-      }
-    }
-  }
-
-  class Show(val binding: ItemMediaBinding) : MediaItemViewHolder(binding.root) {
-    private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
-    override val transitionView: View
-      get() = binding.cover.root
-
-    override fun bind(item: AVPMediaItem) {
-      titleBinding.bind(item)
-      binding.cover.bind(item)
-    }
-
-    companion object {
-      fun create(
-        parent: ViewGroup
-      ): MediaItemViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        return Show(
-          ItemMediaBinding.inflate(layoutInflater, parent, false)
-        )
-      }
-    }
-  }
-  class Playback(val binding: ItemMediaPlaybackBinding) : MediaItemViewHolder(binding.root) {
-    private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
-    override val transitionView: View
-      get() = binding.cover.root
-
-    override fun bind(item: AVPMediaItem) {
-      titleBinding.bind(item)
-      binding.cover.bind(item as AVPMediaItem.PlaybackProgressItem)
-    }
-
-    companion object {
-      fun create(
-        parent: ViewGroup
-      ): MediaItemViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        return Playback(
-          ItemMediaPlaybackBinding.inflate(layoutInflater, parent, false)
         )
       }
     }
@@ -281,12 +236,8 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.StreamItem -> R.drawable.ic_video
       is AVPMediaItem.TrailerItem -> R.drawable.ic_video
       is AVPMediaItem.PlaybackProgressItem -> R.drawable.ic_video
-    }
-
-    fun ItemMediaBinding.bind(item: AVPMediaItem) {
-      item.backdrop.loadInto(cover.imageView, item.placeHolder())
-      cover.iconContainer.isVisible = item.rating != null
-      cover.rating.text = item.rating?.roundTo(1).toString()
+      is AVPMediaItem.LocalVideoAlbum -> R.drawable.ic_album
+      is AVPMediaItem.LocalVideoItem -> R.drawable.ic_video
     }
   }
 }

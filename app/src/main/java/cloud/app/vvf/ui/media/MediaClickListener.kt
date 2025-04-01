@@ -70,6 +70,8 @@ class MediaClickListener(
 
       is AVPMediaItem.TrailerItem -> TODO()
       is AVPMediaItem.PlaybackProgressItem -> onItemClick(extensionId, item.item, transitionView)
+      is AVPMediaItem.LocalVideoAlbum -> TODO()
+      is AVPMediaItem.LocalVideoItem -> TODO()
     }
   }
 

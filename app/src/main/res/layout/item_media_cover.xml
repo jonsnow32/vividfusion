@@ -8,13 +8,38 @@
   app:cardBackgroundColor="?attr/colorSurfaceContainer"
   app:cardCornerRadius="@dimen/rounded_radius">
 
+
   <ImageView
     android:id="@+id/imageView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:importantForAccessibility="no"
     android:scaleType="centerCrop"
-    tools:srcCompat="@drawable/art_video" />
+    tools:srcCompat="@drawable/sample_video_poster" />
+
+  <ImageView
+    android:id="@+id/playIcon"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:importantForAccessibility="no"
+    android:padding="16dp"
+    android:layout_gravity="center"
+    android:visibility="gone"
+    android:src="@drawable/play_button" />
+
+
+  <androidx.core.widget.ContentLoadingProgressBar
+    android:id="@+id/watchProgress"
+    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="5dp"
+    android:layout_gravity="bottom"
+    android:layout_marginBottom="-1.5dp"
+    android:progressBackgroundTint="?attr/colorPrimary"
+    android:progressTint="?attr/colorPrimary"
+    android:visibility="gone"
+    tools:progress="50"
+    tools:visibility="visible" />
 
   <androidx.cardview.widget.CardView
     android:id="@+id/iconContainer"

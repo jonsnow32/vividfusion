@@ -83,7 +83,7 @@ fun LayoutMediaHeaderBinding.bind(mediaItem: AVPMediaItem, fragment: Fragment, e
 
   dot.isGone = mediaItem.generalInfo?.voteCount == null || mediaItem.releaseMonthYear == null
   dot2.isGone = mediaItem.generalInfo?.runtime == null
-  runTime.setTextWithVisibility(secondsToReadable(mediaItem.generalInfo?.runtime))
+  runTime.setTextWithVisibility(mediaItem.generalInfo?.runtime?.secondsToReadable())
 
   if (mediaItem.homePage.isNullOrEmpty()) {
     imgBtnHomepage.isGone = true;

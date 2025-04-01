@@ -1,13 +1,17 @@
 package cloud.app.vvf.ui.media
 
+import android.Manifest
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.ExceptionActivity
+import cloud.app.vvf.common.exceptions.AppPermissionRequiredException
 import cloud.app.vvf.databinding.ItemErrorBinding
 import cloud.app.vvf.databinding.ItemLoginRequiredBinding
 import cloud.app.vvf.databinding.ItemNotLoadingBinding
@@ -17,6 +21,7 @@ import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import cloud.app.vvf.common.exceptions.LoginRequiredException
 import cloud.app.vvf.common.exceptions.MissingApiKeyException
 import cloud.app.vvf.databinding.ItemApiKeyRequiredBinding
+import cloud.app.vvf.databinding.ItemPermissionRequireBinding
 import cloud.app.vvf.ui.setting.ExtensionSettingFragment
 import cloud.app.vvf.utils.navigate
 
@@ -27,6 +32,7 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
     fun onError(view: View, error: Throwable)
     fun onLoginRequired(view: View, error: LoginRequiredException)
     fun onApiKeyEnter(view: View, error: MissingApiKeyException)
+    fun onRequestPermission(error: AppPermissionRequiredException)
   }
 
   class LoadStateViewHolder(val mediaLoadStateView: MediaLoadStateView) : RecyclerView.ViewHolder(mediaLoadStateView.root)
@@ -63,6 +69,22 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
         }
         binding.retry.setOnClickListener {
           listener?.onRetry()
+        }
+      }
+    }
+
+    data class PermissionRequireView(val binding: ItemPermissionRequireBinding, val listener: Listener?) :
+      MediaLoadStateView(binding.root) {
+      override fun bind(loadState: LoadState) {
+        val error =
+          (loadState as LoadState.Error).error as AppPermissionRequiredException
+
+        binding.error.run {
+          transitionName = loadState.error.hashCode().toString()
+          text = context.getTitle(loadState.error)
+        }
+        binding.requestPermissionBtn.setOnClickListener {
+          listener?.onRequestPermission(error)
         }
       }
     }
@@ -130,6 +152,11 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
         5 -> MediaLoadStateView.GridItemsLoadingView( // Handle GridLoadingView
           SkeletonItemMediaRecyclerGridBinding.inflate(inflater, parent, false)
         )
+
+        6 -> MediaLoadStateView.PermissionRequireView(
+          ItemPermissionRequireBinding.inflate(inflater, parent, false),
+          listener
+        )
         else -> throw IllegalStateException()
       }
 
@@ -145,6 +172,7 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
         when (loadState.error) {
           is LoginRequiredException -> 3
           is MissingApiKeyException -> 4
+          is AppPermissionRequiredException -> 6
           else -> 2
         }
       }
@@ -174,6 +202,17 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
         ExtensionSettingFragment.newInstance(error.extensionId, error.clientName),
         view
       )
+    }
+
+    val REQUEST_CODE = 39483948
+    override fun onRequestPermission(
+      error: AppPermissionRequiredException
+    ) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        requestPermissions(fragment.requireActivity(), arrayOf(Manifest.permission.READ_MEDIA_VIDEO), REQUEST_CODE)
+      } else {
+        requestPermissions(fragment.requireActivity(), arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE)
+      }
     }
   }, isContainerAdapter)
 }

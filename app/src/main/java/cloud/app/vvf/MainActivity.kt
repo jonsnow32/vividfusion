@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.hardware.input.InputManager
+import android.os.Build
 import android.os.Bundle
 import android.view.InputDevice
 import android.view.LayoutInflater
@@ -138,6 +139,7 @@ class MainActivity : AppCompatActivity() {
     val localeCode = sharedPreferences.getString(getString(R.string.pref_locale), "en")
     setLocale(localeCode)
     checkUpdate()
+
   }
 
   private fun checkUpdate() {

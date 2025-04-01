@@ -20,3 +20,9 @@ data class StreamData(
   @SerialName("magnets") var magnets: List<MagnetObject>? = null,
   @SerialName("subtitles") var subtitles: List<SubtitleData>? = null
 )
+
+interface BaseStreamData {
+  fun getStreamUri(): String
+  fun getStreamQuality(): StreamQuality
+  fun getStreamLength(): Long
+}

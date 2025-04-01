@@ -25,6 +25,7 @@ import cloud.app.vvf.common.settings.SettingCategory
 import cloud.app.vvf.common.settings.SettingItem
 import cloud.app.vvf.common.settings.SettingList
 import cloud.app.vvf.common.settings.SettingMultipleChoice
+import cloud.app.vvf.common.settings.SettingSlider
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.common.settings.SettingTextInput
 import cloud.app.vvf.databinding.FragmentExtensionBinding
@@ -37,6 +38,7 @@ import cloud.app.vvf.ui.login.LoginUserViewModel
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.MaterialListPreference
 import cloud.app.vvf.utils.MaterialMultipleChoicePreference
+import cloud.app.vvf.utils.MaterialSliderPreference
 import cloud.app.vvf.utils.MaterialTextInputPreference
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.loadWith
@@ -309,6 +311,17 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
             }
           }
 
+          is SettingSlider -> {
+            MaterialSliderPreference(preferenceGroup.context, from, to, steps, allowOverride).also {
+              it.title = this.title
+              it.key = this.key
+              it.summary = this.summary
+              it.setDefaultValue(this.defaultValue)
+
+              it.isIconSpaceReserved = false
+              preferenceGroup.addPreference(it)
+            }
+          }
           else -> throw IllegalArgumentException("Unsupported setting type")
         }
       }

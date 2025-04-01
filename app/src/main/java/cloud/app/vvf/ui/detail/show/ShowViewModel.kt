@@ -85,13 +85,10 @@ class ShowViewModel @Inject constructor(
                 lastWatchedEpisode.value = dataFlow.value.getLatestPlaybackProgress(item.seasonItem.showItem)
               }
             }
-
             else -> {}
           }
-
         }
       }
-
     }
   }
 

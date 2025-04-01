@@ -269,7 +269,16 @@
   <string name="grant_notification_permission">Please grant notification permission for download progress</string>
   <string name="show_check_update_summary">Automatically check new version after starting the app</string>
   <string name="subscription_in_progress_notification">Updating subscribed shows</string>
-
+  <string name="refresh_library_on_reload">Refresh Library on Reload</string>
+  <string name="refresh_library_on_reload_summary">Scan the device every time the feed is loaded</string>
+  <string name="request_permission">Request Permission</string>
+  <string name="grant_permission">Grant Permission</string>
+  <string name="time_range_today">Today</string>
+  <string name="time_range_yesterday">Yesterday</string>
+  <string name="time_range_one_week_ago">Last Week</string>
+  <string name="time_range_one_month_ago">Last Month</string>
+  <string name="time_range_one_year_ago">Last Year</string>
+  <string name="time_range_previous_year">%d</string>
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>

@@ -34,8 +34,8 @@ fun Long.toLocalMonthYear(): String {
 }
 
 
-fun secondsToReadable(seconds: Int?): String? {
-  var secondsLong = seconds?.toLong() ?: return null
+fun Int.secondsToReadable(): String? {
+  var secondsLong = toLong()
   val days = TimeUnit.SECONDS
     .toDays(secondsLong)
   secondsLong -= TimeUnit.DAYS.toSeconds(days)
@@ -53,4 +53,31 @@ fun secondsToReadable(seconds: Int?): String? {
   }
   //println("$days $hours $minutes")
   return "${if (days != 0L) "$days" + "d " else ""}${if (hours != 0L) "$hours" + "h " else ""}${minutes}m"
+}
+
+fun Long.millisecondsToReadable(): String? {
+  val seconds = this / 1000
+  val minutes = seconds / 60
+  val hours = minutes / 60
+  val days = hours / 24
+
+  val parts = mutableListOf<String>()
+
+  if (days > 0) {
+    parts.add("${days}d")
+  }
+  if (hours % 24 > 0) {
+    parts.add("${hours % 24}h")
+  }
+  if (minutes % 60 > 0) {
+    parts.add("${minutes % 60}m")
+  }
+  if (seconds % 60 > 0) {
+    parts.add("${seconds % 60}s")
+  }
+
+  return when {
+    parts.isEmpty() -> "0s"
+    else -> parts.joinToString(" ")
+  }
 }

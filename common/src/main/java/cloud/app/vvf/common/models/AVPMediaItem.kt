@@ -3,7 +3,10 @@ package cloud.app.vvf.common.models
 
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
+import cloud.app.vvf.common.models.ImageHolder.Companion.toUriImageHolder
 import cloud.app.vvf.common.models.movie.Episode
+import cloud.app.vvf.common.models.movie.LocalAlbum
+import cloud.app.vvf.common.models.movie.LocalVideo
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Season
 import cloud.app.vvf.common.models.movie.Show
@@ -14,6 +17,30 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class AVPMediaItem {
+
+  @Serializable
+  data class LocalVideoItem(val video: LocalVideo) : AVPMediaItem() {
+    fun getSlug(): String {
+      val formattedName = video.uri
+        .trim()
+        .lowercase()
+        .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
+        .replace("\\s+".toRegex(), "-")
+      return "$formattedName-${releaseYear}"
+    }
+  }
+
+  @Serializable
+  data class LocalVideoAlbum(val album: LocalAlbum) : AVPMediaItem() {
+    fun getSlug(): String {
+      val formattedName = album.uri
+        .trim()
+        .lowercase()
+        .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
+        .replace("\\s+".toRegex(), "-")
+      return "$formattedName-${releaseYear}"
+    }
+  }
 
   @Serializable
   data class MovieItem(val movie: Movie) : AVPMediaItem() {
@@ -130,6 +157,8 @@ sealed class AVPMediaItem {
       is SeasonItem -> getSlug()
       is TrailerItem -> streamData.originalUrl
       is PlaybackProgressItem -> getSlug()
+      is LocalVideoAlbum -> getSlug()
+      is LocalVideoItem -> getSlug()
     }
 
   val title
@@ -142,6 +171,8 @@ sealed class AVPMediaItem {
       is SeasonItem -> if(season.generalInfo.title.isEmpty()) "Season ${season.number}" else season.generalInfo.title
       is TrailerItem -> streamData.originalUrl
       is PlaybackProgressItem -> getName()
+      is LocalVideoAlbum -> album.title
+      is LocalVideoItem -> video.title
     }
 
   val releaseYear
@@ -151,6 +182,7 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.getReleaseYear()
       is EpisodeItem -> episode.generalInfo.getReleaseYear()
       is SeasonItem -> season.releaseDateMsUTC?.getYear()
+      is LocalVideoItem -> video.dateAdded.getYear()
       else  -> null
     }
 
@@ -160,6 +192,7 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
       is EpisodeItem -> episode.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
       is SeasonItem -> season.releaseDateMsUTC?.toLocalMonthYear()
+      is LocalVideoItem -> video.dateAdded.toLocalMonthYear()
       else -> null
     }
 
@@ -188,6 +221,8 @@ sealed class AVPMediaItem {
       is StreamItem -> streamData.streamQuality.toImageHolder()
       is SeasonItem -> season.generalInfo.poster?.toImageHolder()
       is PlaybackProgressItem -> getPoster()
+      is LocalVideoItem -> video.poster.toUriImageHolder()
+      is LocalVideoAlbum -> album.poster.toUriImageHolder()
       else -> null
     }
 

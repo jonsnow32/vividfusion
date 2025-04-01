@@ -52,11 +52,13 @@ class ItemOptionViewModel @Inject constructor(
               detailItem.value?.id?.toString()
             )
           }
-
+          is AVPMediaItem.LocalVideoAlbum,
+          is AVPMediaItem.LocalVideoItem,
           is AVPMediaItem.PlaybackProgressItem,
           is AVPMediaItem.TrailerItem -> async {
             true
           }
+
 
         }
         favoriteStatus.value = favoriteDeferred.await()

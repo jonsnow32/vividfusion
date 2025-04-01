@@ -43,7 +43,7 @@ class ExtensionLoader(
     messageFlow,
     appListener,
     fileListener,
-    BuiltInRepo()
+    BuiltInRepo(context)
   )
 
   fun initialize() {
