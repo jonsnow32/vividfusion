@@ -1,6 +1,7 @@
-package cloud.app.vvf.common.models
+package cloud.app.vvf.common.models.actor
 
 
+import cloud.app.vvf.common.models.ImageHolder
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 

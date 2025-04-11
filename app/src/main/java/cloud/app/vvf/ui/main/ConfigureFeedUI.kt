@@ -6,7 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.common.models.extension.Tab
 import cloud.app.vvf.ui.extension.ExtensionViewModel
 import cloud.app.vvf.ui.extension.adapter.ExtensionNotSupportedAdapter
 import cloud.app.vvf.ui.extension.adapter.ExtensionLoadingAdapter

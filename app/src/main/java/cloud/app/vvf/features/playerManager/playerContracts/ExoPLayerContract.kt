@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.activity.result.ActivityResult
 import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.R
+import cloud.app.vvf.common.models.video.VVFVideo
 import cloud.app.vvf.features.playerManager.PlayerContract
 import cloud.app.vvf.features.playerManager.data.PlayData
 import cloud.app.vvf.features.playerManager.data.PlayerType
@@ -71,14 +72,16 @@ class ExoPLayerContract(listener: PlayBackListener) : PlayerContract(listener) {
 //        intent.putExtra(EXTRA_POSITION, input.avpMediaItem?.getPosition())
 
     val videosHeadersArrays = mutableListOf<String>()
-    input.streamEntities.forEach { streamEntity ->
-      streamEntity.resolvedUrl?.let {
+    input.videos.forEach { video ->
+      video.uri.let {
         videosHeadersArrays.add(it)
-        videosHeadersArrays.add(streamEntity.toString())
+        videosHeadersArrays.add(video.toString())
         val headers = mutableListOf<String>()
-        streamEntity.headers?.map { header ->
-          headers.add(header.key)
-          headers.add(header.value)
+        if(video is VVFVideo.RemoteVideo) {
+          video.headers?.map { header ->
+            headers.add(header.key)
+            headers.add(header.value)
+          }
         }
         videosHeadersArrays.add(headers.joinToString((".|.")))
       }
@@ -86,7 +89,8 @@ class ExoPLayerContract(listener: PlayBackListener) : PlayerContract(listener) {
     intent.putExtra(EXTRA_VIDEO_URLS_NAME_HEADERS, videosHeadersArrays.toTypedArray())
     intent.putExtra(EXTRA_VIDEO_START_INDEX, input.selectedId)
     val subtitlesArray = mutableListOf<String>()
-    input.streamEntities[input.selectedId].subtitles?.map { subtitle ->
+
+    input.subtitles?.map { subtitle ->
       if (subtitle.languageCode != null) {
         subtitlesArray.add(subtitle.languageCode!!)
         subtitlesArray.add(subtitle.url)

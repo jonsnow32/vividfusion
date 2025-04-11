@@ -1,4 +1,4 @@
-package cloud.app.vvf.common.models
+package cloud.app.vvf.common.models.extension
 
 enum class ExtensionType(val feature: String) {
   DATABASE("database"), STREAM("stream"), SUBTITLE("subtitle");

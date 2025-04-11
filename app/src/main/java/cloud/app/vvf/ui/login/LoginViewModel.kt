@@ -6,11 +6,10 @@ import cloud.app.vvf.R
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.user.LoginClient
-import cloud.app.vvf.common.models.Message
-import cloud.app.vvf.common.models.User
+import cloud.app.vvf.common.models.extension.Message
+import cloud.app.vvf.common.models.user.User
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.run
-import cloud.app.vvf.viewmodels.SnackBarViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

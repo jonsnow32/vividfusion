@@ -4,13 +4,13 @@ package cloud.app.vvf.common.models
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.ImageHolder.Companion.toUriImageHolder
+import cloud.app.vvf.common.models.actor.Actor
 import cloud.app.vvf.common.models.movie.Episode
-import cloud.app.vvf.common.models.movie.LocalAlbum
-import cloud.app.vvf.common.models.movie.LocalVideo
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Season
 import cloud.app.vvf.common.models.movie.Show
-import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.common.models.video.VVFAlbum
+import cloud.app.vvf.common.models.video.VVFVideo
 import cloud.app.vvf.common.utils.getYear
 import cloud.app.vvf.common.utils.toLocalMonthYear
 import kotlinx.serialization.Serializable
@@ -19,9 +19,9 @@ import kotlinx.serialization.Serializable
 sealed class AVPMediaItem {
 
   @Serializable
-  data class LocalVideoItem(val video: LocalVideo) : AVPMediaItem() {
+  data class VideoItem(val vvfVideo: VVFVideo) : AVPMediaItem() {
     fun getSlug(): String {
-      val formattedName = video.uri
+      val formattedName = vvfVideo.uri
         .trim()
         .lowercase()
         .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
@@ -31,7 +31,7 @@ sealed class AVPMediaItem {
   }
 
   @Serializable
-  data class LocalVideoAlbum(val album: LocalAlbum) : AVPMediaItem() {
+  data class AlbumItem(val album: VVFAlbum) : AVPMediaItem() {
     fun getSlug(): String {
       val formattedName = album.uri
         .trim()
@@ -67,7 +67,11 @@ sealed class AVPMediaItem {
   }
 
   @Serializable
-  data class EpisodeItem(val episode: Episode, val seasonItem: SeasonItem, val nextEpisode: Episode? = null) : AVPMediaItem() {
+  data class EpisodeItem(
+    val episode: Episode,
+    val seasonItem: SeasonItem,
+    val nextEpisode: Episode? = null
+  ) : AVPMediaItem() {
     fun getSlug() = "${seasonItem.getSlug()}/${episode.episodeNumber}"
   }
 
@@ -86,10 +90,7 @@ sealed class AVPMediaItem {
   data class ActorItem(val actor: Actor) : AVPMediaItem()
 
   @Serializable
-  data class StreamItem(val streamData: StreamData) : AVPMediaItem()
-
-  @Serializable
-  data class TrailerItem(val streamData: StreamData) : AVPMediaItem()
+  data class TrailerItem(val vvfVideo: VVFVideo) : AVPMediaItem()
 
   @Serializable
   data class PlaybackProgress(
@@ -97,39 +98,43 @@ sealed class AVPMediaItem {
     var position: Long,
     var duration: Long = 0L,
     var lastUpdated: Long = System.currentTimeMillis()
-  ): AVPMediaItem() {
+  ) : AVPMediaItem() {
 
-    fun getSlug() = when(item) {
+    fun getSlug() = when (item) {
       is EpisodeItem -> item.getSlug()
       is MovieItem -> item.getSlug()
-      is LocalVideoItem -> item.getSlug()
+      is VideoItem -> item.getSlug()
       else -> null
     }
-    fun getName() = when(item) {
+
+    fun getName() = when (item) {
       is MovieItem -> item.movie.generalInfo.title
-      is EpisodeItem -> if(item.episode.generalInfo.title.isEmpty())  "Episode ${item.episode.episodeNumber}" else item.episode.generalInfo.title
-      is LocalVideoItem -> item.video.title
+      is EpisodeItem -> if (item.episode.generalInfo.title.isEmpty()) "Episode ${item.episode.episodeNumber}" else item.episode.generalInfo.title
+      is VideoItem -> item.vvfVideo.title
       else -> ""
     }
-    fun getItemPoster() = when(item) {
+
+    fun getItemPoster() = when (item) {
       is MovieItem -> item.movie.generalInfo.poster?.toImageHolder()
       is EpisodeItem -> item.seasonItem.showItem.generalInfo?.poster?.toImageHolder()
-      is LocalVideoItem -> item.video.poster.toUriImageHolder()
+      is VideoItem -> item.vvfVideo.thumbnailUri?.toUriImageHolder()
       else -> null
     }
-    fun getItemBackdrop() = when(item) {
+
+    fun getItemBackdrop() = when (item) {
       is MovieItem -> item.movie.generalInfo.backdrop?.toImageHolder()
       is EpisodeItem -> item.seasonItem.showItem.generalInfo?.backdrop?.toImageHolder()
-      is LocalVideoItem -> item.video.poster.toUriImageHolder()
+      is VideoItem -> item.vvfVideo.thumbnailUri?.toUriImageHolder()
       else -> null
     }
-    fun getPercent() : Int {
-      if(duration <= 0) return 0
+
+    fun getPercent(): Int {
+      if (duration <= 0) return 0
       return ((position.toFloat() / duration.toFloat()) * 100).toInt()
     }
 
     fun getEpisode(): EpisodeItem? {
-      if(item !is EpisodeItem) return null
+      if (item !is EpisodeItem) return null
       return item
     }
   }
@@ -140,7 +145,6 @@ sealed class AVPMediaItem {
     fun Movie.toMediaItem() = MovieItem(this)
     fun Show.toMediaItem() = ShowItem(this)
     fun Episode.toMediaItem(season: SeasonItem) = EpisodeItem(this, season)
-    fun StreamData.toMediaItem() = StreamItem(this)
     fun Season.toMediaItem(showItem: ShowItem) = SeasonItem(this, showItem)
 
     fun toMediaItemsContainer(
@@ -160,12 +164,11 @@ sealed class AVPMediaItem {
       is MovieItem -> getSlug()
       is ShowItem -> getSlug()
       is EpisodeItem -> getSlug()
-      is StreamItem -> streamData.fileName.hashCode()
       is SeasonItem -> getSlug()
-      is TrailerItem -> streamData.originalUrl
+      is TrailerItem -> vvfVideo.uri
       is PlaybackProgress -> getSlug()
-      is LocalVideoAlbum -> getSlug()
-      is LocalVideoItem -> getSlug()
+      is AlbumItem -> getSlug()
+      is VideoItem -> getSlug()
     }
 
   val title
@@ -173,13 +176,12 @@ sealed class AVPMediaItem {
       is ActorItem -> actor.name
       is MovieItem -> movie.generalInfo.title
       is ShowItem -> show.generalInfo.title
-      is EpisodeItem -> if(episode.generalInfo.title.isEmpty())  "Episode ${episode.episodeNumber}" else episode.generalInfo.title
-      is StreamItem -> streamData.fileName
-      is SeasonItem -> if(season.generalInfo.title.isEmpty()) "Season ${season.number}" else season.generalInfo.title
-      is TrailerItem -> streamData.originalUrl
+      is EpisodeItem -> if (episode.generalInfo.title.isEmpty()) "Episode ${episode.episodeNumber}" else episode.generalInfo.title
+      is SeasonItem -> if (season.generalInfo.title.isEmpty()) "Season ${season.number}" else season.generalInfo.title
+      is TrailerItem -> vvfVideo.title
       is PlaybackProgress -> getName()
-      is LocalVideoAlbum -> album.title
-      is LocalVideoItem -> video.title
+      is AlbumItem -> album.title
+      is VideoItem -> vvfVideo.title
     }
 
   val releaseYear
@@ -189,8 +191,8 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.getReleaseYear()
       is EpisodeItem -> episode.generalInfo.getReleaseYear()
       is SeasonItem -> season.releaseDateMsUTC?.getYear()
-      is LocalVideoItem -> video.dateAdded.getYear()
-      else  -> null
+      is VideoItem -> vvfVideo.addedTime?.getYear()
+      else -> null
     }
 
   val releaseMonthYear
@@ -199,7 +201,7 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
       is EpisodeItem -> episode.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
       is SeasonItem -> season.releaseDateMsUTC?.toLocalMonthYear()
-      is LocalVideoItem -> video.dateAdded.toLocalMonthYear()
+      is VideoItem -> vvfVideo.addedTime?.toLocalMonthYear()
       else -> null
     }
 
@@ -225,11 +227,10 @@ sealed class AVPMediaItem {
       is MovieItem -> movie.generalInfo.poster?.toImageHolder()
       is ShowItem -> show.generalInfo.poster?.toImageHolder()
       is EpisodeItem -> seasonItem.showItem.generalInfo?.poster?.toImageHolder()
-      is StreamItem -> streamData.streamQuality.toImageHolder()
       is SeasonItem -> season.generalInfo.poster?.toImageHolder()
       is PlaybackProgress -> getItemPoster()
-      is LocalVideoItem -> video.poster.toUriImageHolder()
-      is LocalVideoAlbum -> album.poster.toUriImageHolder()
+      is VideoItem -> vvfVideo.thumbnailUri?.toUriImageHolder()
+      is AlbumItem -> album.poster.toUriImageHolder()
       else -> null
     }
 
@@ -238,9 +239,13 @@ sealed class AVPMediaItem {
       is ActorItem -> actor.image
       is MovieItem -> movie.generalInfo.backdrop?.toImageHolder()
       is ShowItem -> show.generalInfo.backdrop?.toImageHolder()
-      is EpisodeItem -> episode.generalInfo.backdrop?.toImageHolder() ?: seasonItem.showItem.generalInfo?.backdrop?.toImageHolder()
-      is SeasonItem -> season.generalInfo.backdrop?.toImageHolder() ?: showItem.generalInfo?.backdrop?.toImageHolder()
-      is LocalVideoItem -> video.poster.toUriImageHolder()
+      is EpisodeItem -> episode.generalInfo.backdrop?.toImageHolder()
+        ?: seasonItem.showItem.generalInfo?.backdrop?.toImageHolder()
+
+      is SeasonItem -> season.generalInfo.backdrop?.toImageHolder()
+        ?: showItem.generalInfo?.backdrop?.toImageHolder()
+
+      is VideoItem -> vvfVideo.thumbnailUri?.toUriImageHolder()
       is PlaybackProgress -> getItemBackdrop()
       else -> null
     }
@@ -251,12 +256,12 @@ sealed class AVPMediaItem {
       is MovieItem -> movie.generalInfo.genres?.firstOrNull() ?: ""
       is ShowItem -> show.generalInfo.genres?.firstOrNull() ?: ""
       is EpisodeItem -> seasonItem.showItem.title
-      is StreamItem -> streamData.providerName
-      is PlaybackProgress -> when(item)  {
+      is PlaybackProgress -> when (item) {
         is MovieItem -> item.movie.generalInfo.genres?.firstOrNull() ?: ""
         is EpisodeItem -> item.seasonItem.showItem.title
         else -> ""
       }
+
       else -> null
     }
 
@@ -290,7 +295,7 @@ sealed class AVPMediaItem {
     }
 
   val tagline
-    get() = when(this) {
+    get() = when (this) {
       is MovieItem -> movie.tagline
       is ShowItem -> show.tagLine
       else -> null

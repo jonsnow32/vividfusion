@@ -1,8 +1,6 @@
 package cloud.app.vvf.extension
 
 import android.content.Context
-import android.content.SharedPreferences
-import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.extension.plugger.AndroidPluginLoader
 import cloud.app.vvf.extension.plugger.FileManifestParser
 import cloud.app.vvf.extension.plugger.ApkManifestParser
@@ -15,21 +13,14 @@ import cloud.app.vvf.extension.plugger.LazyRepoComposer
 import cloud.app.vvf.extension.plugger.PackageChangeListener
 import cloud.app.vvf.extension.plugger.catchLazy
 import cloud.app.vvf.common.clients.BaseClient
-import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.clients.provider.HttpHelperProvider
 import cloud.app.vvf.common.clients.provider.MessageFlowProvider
-import cloud.app.vvf.common.clients.streams.StreamClient
-import cloud.app.vvf.common.clients.subtitles.SubtitleClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.network.HttpHelper
-import cloud.app.vvf.common.models.ExtensionType
-import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.models.Message
-import cloud.app.vvf.datastore.account.Account
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.utils.getSettings
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import tel.jeelpa.plugger.utils.mapState
 import java.io.File
 

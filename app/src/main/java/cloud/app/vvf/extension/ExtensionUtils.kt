@@ -4,7 +4,7 @@ import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.ui.exception.AppException.Companion.toAppException
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionType
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 

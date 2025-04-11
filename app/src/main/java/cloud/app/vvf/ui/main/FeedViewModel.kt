@@ -8,7 +8,7 @@ import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.models.MediaItemsContainer
-import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.common.models.extension.Tab
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.run
 import kotlinx.coroutines.Dispatchers

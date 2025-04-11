@@ -47,11 +47,9 @@ class ItemOptionViewModel @Inject constructor(
           is AVPMediaItem.EpisodeItem,
           is AVPMediaItem.SeasonItem,
           is AVPMediaItem.ShowItem,
-          is AVPMediaItem.LocalVideoAlbum,
-          is AVPMediaItem.LocalVideoItem,
-          is AVPMediaItem.PlaybackProgress,
-
-          is AVPMediaItem.StreamItem -> async {
+          is AVPMediaItem.AlbumItem,
+          is AVPMediaItem.VideoItem,
+          is AVPMediaItem.PlaybackProgress-> async {
             dataFlow.value.getFavoritesData(
               detailItem.value?.id?.toString()
             )
@@ -85,7 +83,7 @@ class ItemOptionViewModel @Inject constructor(
     viewModelScope.launch {
       knowFors.value =
         MediaItemsContainer.Category(
-          title = item.title,
+          title = item.title ?: "Unknown",
           more = extension.value?.run<DatabaseClient, PagedData<AVPMediaItem>>(throwableFlow) { getKnowFor(item) })
     }
   }

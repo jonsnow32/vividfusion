@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import cloud.app.vvf.databinding.DialogExtensionsListBinding
 import cloud.app.vvf.utils.autoCleared
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionType
 
 class ExtensionsListBottomSheet : BottomSheetDialogFragment() {
 

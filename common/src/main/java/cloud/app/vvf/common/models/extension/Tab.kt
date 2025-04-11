@@ -1,4 +1,4 @@
-package cloud.app.vvf.common.models
+package cloud.app.vvf.common.models.extension
 
 data class Tab (
     val id: String,

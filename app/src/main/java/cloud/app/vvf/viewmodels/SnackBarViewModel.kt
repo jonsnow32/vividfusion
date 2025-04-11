@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.ExceptionActivity
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.Message
+import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import cloud.app.vvf.utils.observe
 import com.google.android.material.snackbar.Snackbar

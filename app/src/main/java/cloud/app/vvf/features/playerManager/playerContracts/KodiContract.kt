@@ -60,11 +60,11 @@ open class KodiContract(listener: PlayBackListener) : PlayerContract(listener) {
     intent.putExtra("return_result", true)
     intent.putExtra(
       "subs",
-      arrayOf(input.streamEntities[0].subtitles?.map { subtitle -> subtitle.url })
+      arrayOf(input.subtitles?.map { subtitle -> subtitle.url })
     )
     intent.putExtra(
       "subs.name",
-      arrayOf(input.streamEntities[0].subtitles?.map { subtitle -> subtitle.name })
+      arrayOf(input.subtitles?.map { subtitle -> subtitle.name })
     )
     return intent
   }

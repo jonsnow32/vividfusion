@@ -2,8 +2,8 @@ package cloud.app.vvf.extension.plugger
 
 import cloud.app.vvf.common.helpers.ImportType
 import tel.jeelpa.plugger.ManifestParser
-import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionType
 
 class ApkManifestParser(
   private val importType: ImportType

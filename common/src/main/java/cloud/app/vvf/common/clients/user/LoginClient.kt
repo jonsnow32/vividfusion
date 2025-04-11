@@ -2,7 +2,7 @@ package cloud.app.vvf.common.clients.user
 
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.models.Request
-import cloud.app.vvf.common.models.User
+import cloud.app.vvf.common.models.user.User
 
 sealed interface LoginClient : BaseClient{
 

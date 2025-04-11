@@ -1,6 +1,6 @@
 package cloud.app.vvf.common.exceptions
 
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionType
 
 class UnauthorizedException(
     val userId: String,

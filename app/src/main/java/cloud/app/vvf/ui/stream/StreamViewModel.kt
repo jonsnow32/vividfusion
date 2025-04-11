@@ -1,24 +1,22 @@
 package cloud.app.vvf.ui.stream
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.viewModelScope
-import cloud.app.vvf.R
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.streams.StreamClient
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.EpisodeItem
+import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.common.models.movie.GeneralInfo
 import cloud.app.vvf.common.models.movie.Ids
 import cloud.app.vvf.common.models.movie.Season
 import cloud.app.vvf.common.models.subtitle.SubtitleData
-import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.common.models.video.VVFVideo
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.run
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +33,8 @@ class StreamViewModel @Inject constructor(
   val dataFlow: MutableStateFlow<AppDataStore>,
 ) :
   CatchingViewModel(throwableFlow) {
-  private val _streams = MutableStateFlow<List<StreamData>>(emptyList())
-  val streams: StateFlow<List<StreamData>> = _streams.asStateFlow()
+  private val _streams = MutableStateFlow<List<VVFVideo>>(emptyList())
+  val streams: StateFlow<List<VVFVideo>> = _streams.asStateFlow()
 
   private val _subtitles = MutableStateFlow<List<SubtitleData>>(emptyList())
   val subtitles: StateFlow<List<SubtitleData>> = _subtitles.asStateFlow()
@@ -61,7 +59,7 @@ class StreamViewModel @Inject constructor(
                   title = "S01E01",
                   originalTitle = "S01E01"
                 ),
-                showOriginTitle = avpMediaItem.generalInfo?.originalTitle ?: avpMediaItem.title,
+                showOriginTitle = avpMediaItem.generalInfo?.originalTitle ?: avpMediaItem.title ?: "",
                 showIds = avpMediaItem.show.ids,
                 ids = Ids()
               ), seasonItem = AVPMediaItem.SeasonItem(
@@ -84,12 +82,14 @@ class StreamViewModel @Inject constructor(
 
         extensions?.forEach {
           viewModelScope.launch(Dispatchers.IO) {
-            it.run<StreamClient, Boolean>(throwableFlow) {
-              loadLinks(
-                item,
-                subtitleCallback = ::onSubtitleReceived,
-                callback = ::onLinkReceived
-              )
+            if(it.metadata.types.contains(ExtensionType.STREAM)) {
+              it.run<StreamClient, Boolean>(throwableFlow) {
+                loadLinks(
+                  item,
+                  subtitleCallback = ::onSubtitleReceived,
+                  callback = ::onLinkReceived
+                )
+              }
             }
           }
         }
@@ -102,7 +102,7 @@ class StreamViewModel @Inject constructor(
     _subtitles.value = _subtitles.value + subtitleData
   }
 
-  fun onLinkReceived(streamData: StreamData) {
+  fun onLinkReceived(streamData: VVFVideo) {
     _streams.value = _streams.value + streamData
   }
 }

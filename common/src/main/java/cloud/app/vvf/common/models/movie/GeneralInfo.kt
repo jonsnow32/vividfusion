@@ -1,11 +1,11 @@
 package cloud.app.vvf.common.models.movie
 
-import cloud.app.vvf.common.models.Actor
-import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.common.models.actor.Actor
+import cloud.app.vvf.common.models.video.VVFVideo
 import cloud.app.vvf.common.utils.getYear
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-import kotlinx.serialization.SerialName
 @Serializable
 data class GeneralInfo(
   @SerialName("title") var title: String,
@@ -22,7 +22,7 @@ data class GeneralInfo(
   @SerialName("vote_count") var voteCount: Int? = null,
   @SerialName("actors") var actors: List<Actor>? = null,
   @SerialName("homepage") var homepage: String? = null,
-  @SerialName("videos") var videos: List<StreamData>? = null
+  @SerialName("videos") var videos: List<VVFVideo>? = null
 ) {
   fun getReleaseYear(): Int? {
     return releaseDateMsUTC?.getYear()

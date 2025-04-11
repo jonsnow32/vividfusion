@@ -2,8 +2,8 @@ package cloud.app.vvf.datastore.account
 
 import android.content.Context
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.datastore.DataStore
 import kotlinx.serialization.Serializable
 

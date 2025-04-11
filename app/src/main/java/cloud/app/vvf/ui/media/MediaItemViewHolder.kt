@@ -45,20 +45,20 @@ sealed class MediaItemViewHolder(itemView: View) :
         this.playIcon.visibility = View.VISIBLE
       }
 
-      is AVPMediaItem.LocalVideoItem -> {
+      is AVPMediaItem.VideoItem -> {
         item.poster.loadInto(imageView, item.placeHolder())
         this.iconContainer.isVisible = true
-        this.rating.setTextWithVisibility(item.video.duration.millisecondsToReadable())
+        this.rating.setTextWithVisibility(item.vvfVideo.duration?.millisecondsToReadable())
 //        this.playIcon.visibility = View.VISIBLE
       }
 
       is AVPMediaItem.ActorItem,
       is AVPMediaItem.EpisodeItem,
-      is AVPMediaItem.LocalVideoAlbum,
+      is AVPMediaItem.AlbumItem,
       is AVPMediaItem.MovieItem,
       is AVPMediaItem.SeasonItem,
       is AVPMediaItem.ShowItem,
-      is AVPMediaItem.StreamItem,
+      //is AVPMediaItem.StreamItem,
       is AVPMediaItem.TrailerItem -> {
         item.poster.loadInto(imageView, item.placeHolder())
         this.iconContainer.isVisible = item.rating != null
@@ -199,29 +199,6 @@ sealed class MediaItemViewHolder(itemView: View) :
 
   }
 
-  class Stream(val binding: ItemStreamBinding) : MediaItemViewHolder(binding.root) {
-    override val transitionView: View
-      get() = binding.root
-
-    override fun bind(item: AVPMediaItem) {
-      item as AVPMediaItem.StreamItem
-      binding.name.text = item.title
-//      binding.voiceActorName.text = item.actorData.voiceActor?.name
-//      binding.actorExtra.text = item.actorData.roleString
-//      item.poster.loadInto(binding.actorImage, item.placeHolder())
-    }
-
-    companion object {
-      fun create(
-        parent: ViewGroup
-      ): MediaItemViewHolder {
-        val layoutInflater = LayoutInflater.from(parent.context)
-        return Stream(
-          ItemStreamBinding.inflate(layoutInflater, parent, false)
-        )
-      }
-    }
-  }
 
   companion object {
     fun AVPMediaItem.placeHolder() = R.drawable.rounded_rectangle
@@ -232,11 +209,11 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.SeasonItem -> R.drawable.ic_video
       is AVPMediaItem.EpisodeItem -> R.drawable.ic_video
       is AVPMediaItem.ActorItem -> R.drawable.ic_person
-      is AVPMediaItem.StreamItem -> R.drawable.ic_video
+      //is AVPMediaItem.StreamItem -> R.drawable.ic_video
       is AVPMediaItem.TrailerItem -> R.drawable.ic_video
       is AVPMediaItem.PlaybackProgress -> R.drawable.ic_video
-      is AVPMediaItem.LocalVideoAlbum -> R.drawable.ic_album
-      is AVPMediaItem.LocalVideoItem -> R.drawable.ic_video
+      is AVPMediaItem.AlbumItem -> R.drawable.ic_album
+      is AVPMediaItem.VideoItem -> R.drawable.ic_video
     }
   }
 }

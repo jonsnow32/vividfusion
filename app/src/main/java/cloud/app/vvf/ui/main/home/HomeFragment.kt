@@ -14,7 +14,7 @@ import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.databinding.FragmentHomeBinding
 import cloud.app.vvf.ui.detail.loadWith

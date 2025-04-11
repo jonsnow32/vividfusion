@@ -4,9 +4,8 @@ import android.content.Context
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.extension.plugger.LazyPluginRepo
 import cloud.app.vvf.extension.plugger.catchLazy
-import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import kotlinx.coroutines.flow.MutableStateFlow
-import okhttp3.Cache
 
 class BuiltInRepo(val context: Context): LazyPluginRepo<ExtensionMetadata, BaseClient> {
   override fun getAllPlugins() = MutableStateFlow(

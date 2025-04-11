@@ -3,12 +3,11 @@ package cloud.app.vvf.extension.plugger
 import android.content.pm.PackageManager
 import cloud.app.vvf.common.helpers.ImportType
 import tel.jeelpa.plugger.ManifestParser
-import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionType
 import com.google.gson.Gson
 import java.io.File
 import java.io.InputStreamReader
-import java.util.jar.JarFile
 import java.util.zip.ZipFile
 
 class FileManifestParser(

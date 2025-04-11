@@ -6,13 +6,12 @@ import android.content.Intent
 import android.content.pm.PackageInfo
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.collection.emptyLongSet
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.helpers.ImportType
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.extension.ExtensionRepo.Companion.FEATURE
 import cloud.app.vvf.extension.ExtensionRepo.Companion.getPluginFileDir
 import cloud.app.vvf.extension.plugger.ApkManifestParser

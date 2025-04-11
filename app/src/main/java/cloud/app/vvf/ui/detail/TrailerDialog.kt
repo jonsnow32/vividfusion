@@ -7,9 +7,8 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.common.models.video.VVFVideo
 import cloud.app.vvf.databinding.DialogTrailersBinding
-import cloud.app.vvf.ui.media.MediaClickListener
 import cloud.app.vvf.ui.media.MediaItemAdapter
 import cloud.app.vvf.ui.paging.toFlow
 import cloud.app.vvf.ui.widget.dialog.DockingDialog
@@ -24,7 +23,7 @@ import kotlinx.coroutines.launch
 class TrailerDialog : DockingDialog() {
   var binding by autoCleared<DialogTrailersBinding>()
   private val args by lazy { requireArguments() }
-  private val items by lazy { args.getSerialized<List<StreamData>>(ARG_VIDEO_ITEMS) ?: emptyList() }
+  private val items by lazy { args.getSerialized<List<VVFVideo>>(ARG_VIDEO_ITEMS) ?: emptyList() }
   private val extensionId by lazy {
     args.getString(ARG_CLIENT_ID)
   }
@@ -50,7 +49,7 @@ class TrailerDialog : DockingDialog() {
     const val ARG_VIDEO_ITEMS = "ARG_VIDEO_ITEMS"
     const val ARG_CLIENT_ID = "ARG_CLIENT_ID"
     fun List<AVPMediaItem>.toPaged() = PagedData.Single { this }
-    fun newInstance(videos: List<StreamData>?, extensionId: String) = TrailerDialog().apply {
+    fun newInstance(videos: List<VVFVideo>?, extensionId: String) = TrailerDialog().apply {
       arguments = Bundle().apply {
         putSerialized(ARG_VIDEO_ITEMS, ArrayList(videos))
         putString(ARG_CLIENT_ID, extensionId)

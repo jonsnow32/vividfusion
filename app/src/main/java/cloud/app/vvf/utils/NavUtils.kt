@@ -9,7 +9,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.commit
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.Message
+import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.extension.getExtension
 import cloud.app.vvf.ui.detail.movie.MovieFragment
 import cloud.app.vvf.ui.detail.show.ShowFragment

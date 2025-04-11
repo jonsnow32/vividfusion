@@ -33,7 +33,7 @@ class MediaItemAdapter(
       1 -> MediaItemViewHolder.Media.create(parent)
       2 -> MediaItemViewHolder.Media.create(parent)
       3 -> MediaItemViewHolder.Actor.create(parent)
-      4 -> MediaItemViewHolder.Stream.create(parent)
+      //4 -> MediaItemViewHolder.Stream.create(parent)
       5 -> MediaItemViewHolder.Season.create(parent)
       6 -> MediaItemViewHolder.Trailer.create(parent)
       7 -> MediaItemViewHolder.SeasonLarge.create(parent)
@@ -53,12 +53,12 @@ class MediaItemAdapter(
       is AVPMediaItem.ShowItem -> 1
       is AVPMediaItem.EpisodeItem -> 2
       is AVPMediaItem.ActorItem -> 3
-      is AVPMediaItem.StreamItem -> 4
+      //is AVPMediaItem.StreamItem -> 4
       is AVPMediaItem.SeasonItem -> if (item.season.generalInfo.poster.isNullOrEmpty()) 5 else 7
       is AVPMediaItem.TrailerItem -> 6
       is AVPMediaItem.PlaybackProgress -> 8
-      is AVPMediaItem.LocalVideoItem -> 9
-      is AVPMediaItem.LocalVideoAlbum -> 10
+      is AVPMediaItem.VideoItem -> 9
+      is AVPMediaItem.AlbumItem -> 10
     }
   }
 

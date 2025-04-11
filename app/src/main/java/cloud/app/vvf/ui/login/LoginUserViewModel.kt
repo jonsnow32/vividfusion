@@ -3,7 +3,7 @@ package cloud.app.vvf.ui.login
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
-import cloud.app.vvf.common.models.User
+import cloud.app.vvf.common.models.user.User
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.datastore.app.helper.CurrentUserItem
 import dagger.hilt.android.lifecycle.HiltViewModel

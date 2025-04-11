@@ -24,9 +24,9 @@ import cloud.app.vvf.VVFApplication.Companion.loginNotSupported
 import cloud.app.vvf.VVFApplication.Companion.noClient
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.clients.user.LoginClient
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
-import cloud.app.vvf.common.models.Message
+import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.databinding.FragmentLoginBinding
 import cloud.app.vvf.databinding.ItemInputBinding
 import cloud.app.vvf.extension.getExtension
@@ -37,7 +37,6 @@ import cloud.app.vvf.utils.loadWith
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.onAppBarChangeListener
 import cloud.app.vvf.utils.setupTransition
-import cloud.app.vvf.viewmodels.SnackBarViewModel
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import com.google.android.material.button.MaterialButton
 import dagger.hilt.android.AndroidEntryPoint

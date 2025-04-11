@@ -3,9 +3,9 @@ package cloud.app.vvf.datastore.app
 import android.content.Context
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgress
-import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.models.SearchItem
-import cloud.app.vvf.common.models.User
+import cloud.app.vvf.common.models.user.User
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.datastore.app.helper.BOOKMARK_FOLDER
@@ -109,7 +109,7 @@ class AppDataStore(val context: Context, val account: Account) :
 
   fun updateProgress(data: PlaybackProgress): Boolean {
     data.lastUpdated = System.currentTimeMillis()
-    if (data.item is AVPMediaItem.EpisodeItem || data.item is AVPMediaItem.MovieItem || data.item is AVPMediaItem.LocalVideoItem) {
+    if (data.item is AVPMediaItem.EpisodeItem || data.item is AVPMediaItem.MovieItem || data.item is AVPMediaItem.VideoItem) {
       setKey("$PlaybackProgressFolder/${data.item.id}", data)
       return true
     }
@@ -139,7 +139,7 @@ class AppDataStore(val context: Context, val account: Account) :
     when (mediaItem) {
       is AVPMediaItem.EpisodeItem,
       is AVPMediaItem.MovieItem,
-      is AVPMediaItem.LocalVideoItem -> getKeys<PlaybackProgress>("$PlaybackProgressFolder/${mediaItem.id}")?.maxByOrNull { it.lastUpdated }
+      is AVPMediaItem.VideoItem -> getKeys<PlaybackProgress>("$PlaybackProgressFolder/${mediaItem.id}")?.maxByOrNull { it.lastUpdated }
 
       else -> null
     }

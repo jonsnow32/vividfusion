@@ -11,7 +11,7 @@ import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.MediaItemsContainer.Companion.toPaged
-import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.common.models.extension.Tab
 import cloud.app.vvf.datastore.account.AccountDataStore
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.ui.main.FeedViewModel

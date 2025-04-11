@@ -1,17 +1,15 @@
 package cloud.app.vvf.common.clients.streams
 
 import cloud.app.vvf.common.clients.BaseClient
-import cloud.app.vvf.common.clients.provider.HttpHelperProvider
-import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.subtitle.SubtitleData
-import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.common.models.video.VVFVideo
 
 interface StreamClient : BaseClient {
 
   suspend fun loadLinks(
       mediaItem: AVPMediaItem,
       subtitleCallback: (SubtitleData) -> Unit,
-      callback: (StreamData) -> Unit
+      callback: (VVFVideo) -> Unit
   ): Boolean
 }

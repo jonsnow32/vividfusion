@@ -9,13 +9,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
+import cloud.app.vvf.common.models.video.VVFVideo
 import cloud.app.vvf.databinding.ItemStreamBinding
-import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.ui.detail.loadWith
 import cloud.app.vvf.utils.loadInto
 
 class StreamAdapter(val listener: ItemClickListener) :
-  ListAdapter<StreamData, StreamAdapter.ViewHolder>(DiffCallback) {
+  ListAdapter<VVFVideo, StreamAdapter.ViewHolder>(DiffCallback) {
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
     val inflater = LayoutInflater.from(parent.context)
@@ -59,27 +61,42 @@ class StreamAdapter(val listener: ItemClickListener) :
   class ViewHolder(val binding: ItemStreamBinding, val context: Context) :
     RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("ResourceType")
-    fun bind(streamData: StreamData) {
-      binding.name.text = streamData.providerName
-      binding.url.text = streamData.originalUrl
-      streamData.providerLogo?.toImageHolder().loadInto(binding.logo)
-      streamData.hostLogo?.toImageHolder().loadInto(binding.extLogo)
+    fun bind(videoItem: VVFVideo) {
+      binding.name.text = videoItem.title
+      binding.url.text = videoItem.uri
+      when(videoItem) {
+        is VVFVideo.LocalVideo -> {
+          videoItem.thumbnailUri.toImageHolder().loadInto(binding.logo)
+        }
+        is VVFVideo.RemoteVideo -> {
+          videoItem.providerLogo?.toImageHolder().loadInto(binding.logo)
+          videoItem.hostLogo?.toImageHolder().loadInto(binding.extLogo)
+        }
+      }
+
     }
   }
 
   interface ItemClickListener {
-    fun onStreamItemClick(streamData: StreamData)
-    fun onStreamItemLongClick(streamData: StreamData)
+    fun onStreamItemClick(streamData: VVFVideo)
+    fun onStreamItemLongClick(streamData: VVFVideo)
     fun onDoubleDpadUpClicked()
   }
 
-  object DiffCallback : DiffUtil.ItemCallback<StreamData>() {
-    override fun areItemsTheSame(oldItem: StreamData, newItem: StreamData): Boolean {
-      return oldItem.originalUrl == newItem.originalUrl
+  object DiffCallback : DiffUtil.ItemCallback<VVFVideo>() {
+    override fun areItemsTheSame(oldItem: VVFVideo, newItem: VVFVideo): Boolean {
+      return oldItem.uri == newItem.uri
     }
 
-    override fun areContentsTheSame(oldItem: StreamData, newItem: StreamData): Boolean {
-      return oldItem.originalUrl == newItem.originalUrl && oldItem.fileSize == newItem.fileSize
+    override fun areContentsTheSame(oldItem: VVFVideo, newItem: VVFVideo): Boolean {
+      return when(oldItem) {
+        is VVFVideo.LocalVideo -> {
+          newItem is VVFVideo.LocalVideo && oldItem.thumbnailUri == newItem.thumbnailUri
+        }
+        is VVFVideo.RemoteVideo -> {
+          newItem is VVFVideo.RemoteVideo && oldItem.uri == newItem.uri && oldItem.fileSize == newItem.fileSize
+        }
+      }
     }
   }
 }

@@ -5,7 +5,7 @@ import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.SearchItem
-import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.common.models.extension.Tab
 
 interface DatabaseClient : BaseClient{
   suspend fun getHomeTabs(): List<Tab>

@@ -1,11 +1,7 @@
 package cloud.app.vvf.common.clients
 
-import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
-import cloud.app.vvf.common.clients.streams.StreamClient
-import cloud.app.vvf.common.clients.subtitles.SubtitleClient
-import cloud.app.vvf.common.helpers.network.HttpHelper
-import cloud.app.vvf.common.models.ExtensionType
-import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 

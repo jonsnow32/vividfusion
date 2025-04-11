@@ -1,4 +1,4 @@
-package cloud.app.vvf.common.models
+package cloud.app.vvf.common.models.extension
 
 import cloud.app.vvf.common.helpers.ImportType
 import kotlinx.serialization.Serializable

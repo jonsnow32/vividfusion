@@ -20,6 +20,7 @@ import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
+import cloud.app.vvf.common.models.video.VVFVideo
 import cloud.app.vvf.extension.builtIn.MediaUtils
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.ui.stream.StreamFragment
@@ -70,25 +71,32 @@ class MediaClickListener(
       }
 
       is AVPMediaItem.EpisodeItem,
-      is AVPMediaItem.StreamItem -> {
-        fragment.createSnack(fragment.getString(R.string.not_implemented))
-      }
-
       is AVPMediaItem.TrailerItem -> TODO()
+
       is AVPMediaItem.PlaybackProgress -> onItemClick(extensionId, item.item, transitionView)
-      is AVPMediaItem.LocalVideoAlbum -> TODO()
-      is AVPMediaItem.LocalVideoItem -> {
+      is AVPMediaItem.AlbumItem -> TODO()
+      is AVPMediaItem.VideoItem -> {
         fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+
           val context = fragment.context ?: return@launch
-          val localVideos = MediaUtils.getAllVideosByAlbum(context, item.video.album).map {
-            AVPMediaItem.LocalVideoItem(it)
+          val localVideos = when (item.vvfVideo) {
+            is VVFVideo.LocalVideo -> MediaUtils.getAllVideosByAlbum(
+              context,
+              (item.vvfVideo as VVFVideo.LocalVideo).album
+            ).map {
+              AVPMediaItem.VideoItem(it)
+            }
+
+            is VVFVideo.RemoteVideo -> listOf(item)
           }
+
           withContext(Dispatchers.Main) {
             fragment.navigate(
               PlayerFragment.newInstance(
                 mediaItems = localVideos,
                 selectedMediaIdx = localVideos.indexOfFirst { it -> it.id == item.id })
             )
+
           }
         }
 

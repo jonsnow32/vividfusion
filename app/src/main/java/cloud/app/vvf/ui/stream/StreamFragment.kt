@@ -7,18 +7,18 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
+import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.stream.PremiumType
+import cloud.app.vvf.common.models.video.VVFVideo
 import cloud.app.vvf.databinding.FragmentStreamBinding
 import cloud.app.vvf.features.playerManager.PlayerManager
 import cloud.app.vvf.features.playerManager.data.PlayData
+import cloud.app.vvf.utils.Utils
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.setupTransition
-import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.stream.PremiumType
-import cloud.app.vvf.common.models.stream.StreamData
-import cloud.app.vvf.utils.Utils
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -65,25 +65,38 @@ class StreamFragment : Fragment(), StreamAdapter.ItemClickListener {
     viewModel.loadStream(mediaItem)
   }
 
-  override fun onStreamItemClick(streamData: StreamData) {
-    when (streamData.premiumType) {
-      PremiumType.JustWatch.ordinal -> {
-        Utils.launchBrowser(requireContext(), streamData.originalUrl)
-      }
-
-      else -> {
+  override fun onStreamItemClick(streamData: VVFVideo) {
+    when (streamData) {
+      is VVFVideo.LocalVideo -> {
         val playData = PlayData(
           listOf(streamData),
           selectedId = 0,
-          title = streamData.fileName
+          title = streamData.title
         )
         PlayerManager.getInstance().play(playData, parentFragmentManager)
       }
+      is VVFVideo.RemoteVideo -> {
+        when (streamData.premiumType) {
+          PremiumType.JustWatch.ordinal -> {
+            Utils.launchBrowser(requireContext(), streamData.originalUrl)
+          }
+
+          else -> {
+            val playData = PlayData(
+              listOf(streamData),
+              selectedId = 0,
+              title = streamData.fileName
+            )
+            PlayerManager.getInstance().play(playData, parentFragmentManager)
+          }
+        }
+      }
     }
+
 
   }
 
-  override fun onStreamItemLongClick(streamData: StreamData) {
+  override fun onStreamItemLongClick(streamData: VVFVideo) {
     TODO("Not yet implemented")
   }
 

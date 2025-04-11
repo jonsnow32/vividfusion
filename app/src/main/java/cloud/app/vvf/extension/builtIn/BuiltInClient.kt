@@ -9,12 +9,12 @@ import cloud.app.vvf.common.helpers.Page
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItemsContainer
-import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.common.models.MediaItemsContainer
-import cloud.app.vvf.common.models.Message
+import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.common.models.SearchItem
-import cloud.app.vvf.common.models.Tab
+import cloud.app.vvf.common.models.extension.Tab
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingSwitch
@@ -98,7 +98,7 @@ class BuiltInClient(val context: Context) : DatabaseClient,
             continuation,
             20
           ).map { video ->
-            AVPMediaItem.LocalVideoItem(video)
+            AVPMediaItem.VideoItem(video)
           }
         }
         Page(
@@ -130,8 +130,8 @@ class BuiltInClient(val context: Context) : DatabaseClient,
       albums.forEachIndexed { index, album ->
         val data = PagedData.Single<AVPMediaItem> {
           album.videos.map { video ->
-            AVPMediaItem.LocalVideoItem(video)
-          }.sortedByDescending { item -> item.video.dateAdded }
+            AVPMediaItem.VideoItem(video)
+          }.sortedByDescending { item -> item.vvfVideo.addedTime }
         }
         result.add(MediaItemsContainer.Category(album.title, null, data))
       }
@@ -207,7 +207,7 @@ class BuiltInClient(val context: Context) : DatabaseClient,
       version = "1.0.0",
       author = "Avp",
       iconUrl = "https://www.themoviedb.org/assets/2/v4/marketing/logos/infuse_600-a28d709ee5137f75b31c4184643a22fe83ee8f64d3317509c33090922b66dbb6.png",
-      types = listOf(ExtensionType.DATABASE, ExtensionType.STREAM)
+      types = listOf(ExtensionType.DATABASE)
     )
   }
 }

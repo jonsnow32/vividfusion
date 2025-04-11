@@ -3,10 +3,8 @@ package cloud.app.vvf.utils
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.models.ExtensionType
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.settings.PrefSettings
-import cloud.app.vvf.datastore.account.Account
 
 fun getSettings(context: Context, metadata: ExtensionMetadata): PrefSettings {
   val name = "${context.packageName}${metadata.className}"

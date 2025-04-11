@@ -1,6 +1,6 @@
 package cloud.app.vvf.extension
 
-import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
 
 
 class ExtensionLoadingException(

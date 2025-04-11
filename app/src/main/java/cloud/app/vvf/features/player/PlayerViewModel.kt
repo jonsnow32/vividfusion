@@ -9,6 +9,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.VideoSize
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -45,7 +46,7 @@ class PlayerViewModel @Inject constructor(
   }
 
   // Initialize ExoPlayer with a list of MediaItems and SubtitleData
-  @androidx.media3.common.util.UnstableApi
+  @UnstableApi
   fun initialize(
     mediaItems: List<AVPMediaItem>,
     selectedMediaIdx: Int = 0,

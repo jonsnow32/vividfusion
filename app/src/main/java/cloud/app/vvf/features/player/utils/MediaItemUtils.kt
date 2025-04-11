@@ -4,8 +4,8 @@ import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.movie.LocalVideo
-import cloud.app.vvf.common.models.stream.StreamData
+import cloud.app.vvf.common.models.video.VVFVideo
+import cloud.app.vvf.common.models.video.VVFVideo.LocalVideo
 
 
 object MediaItemUtils {
@@ -20,33 +20,21 @@ object MediaItemUtils {
   fun List<AVPMediaItem>.toMediaItems() = mapNotNull { item -> item.toMediaItem() }
   fun AVPMediaItem.toMediaItem(): MediaItem? {
     return when (this) {
-      is AVPMediaItem.LocalVideoItem -> {
+      is AVPMediaItem.VideoItem -> {
         val item = MediaItem.Builder()
-        val metadata = video.toMetaData()
+        val metadata = vvfVideo.toMetaData()
         item.setMediaMetadata(metadata)
-        item.setMediaId(video.uri)
-        item.setUri(video.uri)
-        item.build()
-      }
-
-      is AVPMediaItem.StreamItem -> {
-        val item = MediaItem.Builder()
-        val metadata = streamData.toMetaData()
-        item.setMediaMetadata(metadata)
-        item.setMediaId(id.toString())
-        item.setUri(streamData.resolvedUrl.toString())
+        item.setMediaId(vvfVideo.uri)
+        item.setUri(vvfVideo.uri)
         item.build()
       }
       else -> null
     }
   }
 
-  private fun LocalVideo.toMetaData(): MediaMetadata {
+  private fun VVFVideo.toMetaData(): MediaMetadata {
     return MediaMetadata.Builder()
       .build()
   }
 
-  private fun StreamData.toMetaData(): MediaMetadata {
-    return MediaMetadata.Builder().build()
-  }
 }

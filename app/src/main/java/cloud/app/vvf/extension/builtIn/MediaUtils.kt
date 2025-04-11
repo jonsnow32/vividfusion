@@ -11,8 +11,8 @@ import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import cloud.app.vvf.common.exceptions.AppPermissionRequiredException
-import cloud.app.vvf.common.models.movie.LocalAlbum
-import cloud.app.vvf.common.models.movie.LocalVideo
+import cloud.app.vvf.common.models.video.VVFAlbum
+import cloud.app.vvf.common.models.video.VVFVideo.LocalVideo
 import timber.log.Timber
 import java.util.Calendar
 
@@ -99,10 +99,10 @@ object MediaUtils {
             LocalVideo(
               id = id,
               title = title,
-              poster = thumbnailUri,
+              thumbnailUri = thumbnailUri,
               uri = data,
               duration = duration,
-              size = size,
+              fileSize = size,
               dateAdded = dateAdded,
               album = album,
               width = width,
@@ -117,7 +117,7 @@ object MediaUtils {
     return videos
   }
 
-  fun getAllAlbums(context: Context): List<LocalAlbum> {
+  fun getAllAlbums(context: Context): List<VVFAlbum> {
     val videos = mutableListOf<LocalVideo>()
     var page = 1
     val pageSize = 50
@@ -137,10 +137,10 @@ object MediaUtils {
     return albumMap.map { (albumName, videoList) ->
       val totalDuration = videoList.sumOf { it.duration }
       val firstVideo = videoList.first()
-      LocalAlbum(
+      VVFAlbum(
         id = albumName.hashCode().toString(),
         title = albumName,
-        poster = firstVideo.poster,
+        poster = firstVideo.thumbnailUri,
         uri = firstVideo.uri,
         duration = totalDuration,
         videos = videoList
@@ -247,10 +247,10 @@ object MediaUtils {
               LocalVideo(
                 id = id,
                 title = title,
-                poster = thumbnailUri,
+                thumbnailUri = thumbnailUri,
                 uri = data,
                 duration = duration,
-                size = size,
+                fileSize = size,
                 dateAdded = dateAdded,
                 album = album,
                 width = width,
@@ -378,10 +378,10 @@ object MediaUtils {
             LocalVideo(
               id = id,
               title = title,
-              poster = thumbnailUri,
+              thumbnailUri = thumbnailUri,
               uri = data,
               duration = duration,
-              size = size,
+              fileSize = size,
               dateAdded = dateAdded,
               album = album,
               width = width,
@@ -446,10 +446,10 @@ object MediaUtils {
           LocalVideo(
             id = id,
             title = title,
-            poster = thumbnailUri,
+            thumbnailUri = thumbnailUri,
             uri = data,
             duration = duration,
-            size = size,
+            fileSize = size,
             dateAdded = dateAdded,
             album = album,
             width = width,

@@ -3,7 +3,7 @@ package cloud.app.vvf.extension.plugger
 import tel.jeelpa.plugger.PluginRepo
 import tel.jeelpa.plugger.utils.combineStates
 import tel.jeelpa.plugger.utils.mapState
-import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
 
 interface LazyPluginRepo<T, R> : PluginRepo<T, Lazy<Result<R>>>
 

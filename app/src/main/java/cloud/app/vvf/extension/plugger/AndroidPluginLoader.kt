@@ -1,7 +1,7 @@
 package cloud.app.vvf.extension.plugger
 
 import android.content.Context
-import cloud.app.vvf.common.models.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import tel.jeelpa.plugger.PluginLoader
 import tel.jeelpa.plugger.pluginloader.GetClassLoaderWithPathUseCase
 

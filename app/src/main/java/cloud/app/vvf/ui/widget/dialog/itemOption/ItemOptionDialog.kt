@@ -163,9 +163,6 @@ class ItemOptionDialog : DockingDialog() {
       })
     }
 
-    is AVPMediaItem.SeasonItem,
-    is AVPMediaItem.StreamItem -> listOf()
-
     else -> listOf()
   } + listOfNotNull(
     ItemAction.Resource(
@@ -177,7 +174,7 @@ class ItemOptionDialog : DockingDialog() {
   )
 
   fun getFavoritesAction(item: AVPMediaItem): ItemAction? {
-    return if (item is AVPMediaItem.MovieItem || item is AVPMediaItem.ShowItem || item is AVPMediaItem.ActorItem ||  item is AVPMediaItem.LocalVideoItem ||  item is AVPMediaItem.LocalVideoAlbum) {
+    return if (item is AVPMediaItem.MovieItem || item is AVPMediaItem.ShowItem || item is AVPMediaItem.ActorItem ||  item is AVPMediaItem.VideoItem ||  item is AVPMediaItem.AlbumItem) {
       if (!viewModel.favoriteStatus.value)
         ItemAction.Resource(
           R.drawable.favorite_border_24dp,

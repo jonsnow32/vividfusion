@@ -14,7 +14,7 @@ import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import cloud.app.vvf.common.helpers.network.HttpHelper
-import cloud.app.vvf.common.models.Message
+import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.utils.setLocale
 import com.google.android.material.color.DynamicColors

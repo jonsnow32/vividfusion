@@ -14,12 +14,9 @@ import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.ExtensionOpenerActivity.Companion.EXTENSION_INSTALLER
 import cloud.app.vvf.R
 import cloud.app.vvf.common.helpers.ImportType
-import cloud.app.vvf.common.models.ExtensionType
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.databinding.DialogExtensionInstallerBinding
-import cloud.app.vvf.extension.ExtensionLoadingException
 import cloud.app.vvf.extension.getID
-import cloud.app.vvf.extension.getType
 import cloud.app.vvf.extension.plugger.ApkManifestParser
 import cloud.app.vvf.extension.plugger.ApkPluginSource
 import cloud.app.vvf.extension.plugger.ApkFileInfo

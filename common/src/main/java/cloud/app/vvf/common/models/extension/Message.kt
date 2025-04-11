@@ -1,5 +1,4 @@
-package cloud.app.vvf.common.models
-
+package cloud.app.vvf.common.models.extension
 
 /**
  * A message to be sent to the app.

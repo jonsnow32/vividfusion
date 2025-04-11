@@ -1,9 +1,8 @@
 package cloud.app.vvf.extension.plugger
 
 import cloud.app.vvf.common.helpers.ImportType
-import cloud.app.vvf.common.models.ExtensionMetadata
-import cloud.app.vvf.common.models.ExtensionType
-import kotlinx.serialization.SerialName
+import cloud.app.vvf.common.models.extension.ExtensionMetadata
+import cloud.app.vvf.common.models.extension.ExtensionType
 import kotlinx.serialization.Serializable
 
 @Serializable
