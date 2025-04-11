@@ -2,7 +2,7 @@ package cloud.app.vvf.datastore.app
 
 import android.content.Context
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgressItem
+import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgress
 import cloud.app.vvf.common.models.ExtensionMetadata
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.User
@@ -10,19 +10,21 @@ import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.datastore.app.helper.BOOKMARK_FOLDER
 import cloud.app.vvf.datastore.app.helper.BookmarkItem
+import cloud.app.vvf.datastore.app.helper.PlayerSettingItem
 
 
 const val ExtensionFolder = "extensionDir"
 const val FAVORITE_FOLDER = "favorites"
 const val SEARCH_HISTORY_FOLDER = "search_history"
+const val PLAYER_SETTING_FOLDER = "player_setting"
 const val USERS_FOLDER = "users"
-const val PlaybackProgressFolder = "progress"
+const val PlaybackProgressFolder = "history_progress"
 
 class AppDataStore(val context: Context, val account: Account) :
   DataStore(context.getSharedPreferences("account_${account.getSlug()}", Context.MODE_PRIVATE)) {
 
   fun getAllBookmarks(): List<BookmarkItem>? {
-    return getKeys<BookmarkItem>("$BOOKMARK_FOLDER/", null)?.sortedByDescending { it.lastUpdated }
+    return getKeys<BookmarkItem>("$BOOKMARK_FOLDER/")?.sortedByDescending { it.lastUpdated }
   }
 
   fun addToBookmark(data: BookmarkItem?) {
@@ -43,7 +45,7 @@ class AppDataStore(val context: Context, val account: Account) :
   }
 
   fun findBookmark(avpMediaItem: AVPMediaItem?): BookmarkItem? {
-    return getKey<BookmarkItem>("$BOOKMARK_FOLDER/${avpMediaItem?.id}", null)
+    return getKey<BookmarkItem>("$BOOKMARK_FOLDER/${avpMediaItem?.id}")
   }
 
   fun removeBookmark(avpMediaItem: AVPMediaItem?) {
@@ -59,7 +61,7 @@ class AppDataStore(val context: Context, val account: Account) :
   }
 
   fun getExtensions(): List<ExtensionMetadata>? {
-    return getKeys<ExtensionMetadata>("$ExtensionFolder/", null)
+    return getKeys<ExtensionMetadata>("$ExtensionFolder/")
   }
 
   fun saveExtensions(extensions: List<ExtensionMetadata>) {
@@ -74,7 +76,7 @@ class AppDataStore(val context: Context, val account: Account) :
   }
 
   fun getCurrentDBExtension(): ExtensionMetadata? {
-    return getKey<ExtensionMetadata>("$ExtensionFolder/defaultDB/", null)
+    return getKey<ExtensionMetadata>("$ExtensionFolder/defaultDB/")
   }
 
   fun setCurrentDBExtension(extension: ExtensionMetadata): Boolean {
@@ -96,28 +98,28 @@ class AppDataStore(val context: Context, val account: Account) :
   }
 
   fun getFavorites(): List<AVPMediaItem>? {
-    return getKeys<AVPMediaItem>(FAVORITE_FOLDER, null)
+    return getKeys<AVPMediaItem>(FAVORITE_FOLDER)
   }
 
   fun getFavoritesData(slug: String?): Boolean {
     if (slug == null) return false
-    val data = getKey<AVPMediaItem>("$FAVORITE_FOLDER/${slug}", null)
+    val data = getKey<AVPMediaItem>("$FAVORITE_FOLDER/${slug}")
     return data != null;
   }
 
-  fun savePlaybackProgress(data: PlaybackProgressItem): Boolean {
-    if (data.item is AVPMediaItem.EpisodeItem || data.item is AVPMediaItem.MovieItem) {
+  fun updateProgress(data: PlaybackProgress): Boolean {
+    data.lastUpdated = System.currentTimeMillis()
+    if (data.item is AVPMediaItem.EpisodeItem || data.item is AVPMediaItem.MovieItem || data.item is AVPMediaItem.LocalVideoItem) {
       setKey("$PlaybackProgressFolder/${data.item.id}", data)
       return true
     }
     return false
   }
 
-  fun getPlaybackProgressOfSeason(seasonItem: AVPMediaItem.SeasonItem?): List<PlaybackProgressItem>? {
+  fun findPlaybackProgress(seasonItem: AVPMediaItem.SeasonItem?): List<PlaybackProgress>? {
     if (seasonItem == null) return null
-    return getKeys<PlaybackProgressItem>(
-      "$PlaybackProgressFolder/",
-      null
+    return getKeys<PlaybackProgress>(
+      "$PlaybackProgressFolder/"
     )?.mapNotNull { item ->
       when (item.item) {
         is AVPMediaItem.EpisodeItem -> {
@@ -133,28 +135,35 @@ class AppDataStore(val context: Context, val account: Account) :
     return null
   }
 
+  fun findPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgress? =
+    when (mediaItem) {
+      is AVPMediaItem.EpisodeItem,
+      is AVPMediaItem.MovieItem,
+      is AVPMediaItem.LocalVideoItem -> getKeys<PlaybackProgress>("$PlaybackProgressFolder/${mediaItem.id}")?.maxByOrNull { it.lastUpdated }
 
-  fun getPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgressItem? {
-    if (mediaItem is AVPMediaItem.EpisodeItem || mediaItem is AVPMediaItem.MovieItem) {
-      return getKey<PlaybackProgressItem>("$PlaybackProgressFolder/${mediaItem.id}", null)
+      else -> null
     }
-    return null
+
+  fun findPlaybackProgress(slug: String): PlaybackProgress? =
+    getKeys<PlaybackProgress>("$PlaybackProgressFolder/$slug")?.maxByOrNull { it.lastUpdated }
+
+  fun getWatchedEpisodeCount(seasonItem: AVPMediaItem.SeasonItem): Int {
+    return getKeys<String>("$PlaybackProgressFolder/${seasonItem.id}")?.count() ?: 0
   }
 
-  fun getLatestPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgressItem? = when (mediaItem) {
+  fun getLatestPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgress? = when (mediaItem) {
     is AVPMediaItem.SeasonItem,
-    is AVPMediaItem.ShowItem -> getKeys("$PlaybackProgressFolder/${mediaItem.id}").mapNotNull {
-      getKey<PlaybackProgressItem>(
-        it,
-        null
+    is AVPMediaItem.ShowItem -> getKeys<String>("$PlaybackProgressFolder/${mediaItem.id}")?.mapNotNull {
+      getKey<PlaybackProgress>(
+        it
       )
-    }.maxByOrNull { it.lastUpdated }
+    }?.maxByOrNull { it.lastUpdated }
 
     else -> null
   }
 
-  fun getALlPlayback(): List<PlaybackProgressItem>? {
-    val data = getKeys<PlaybackProgressItem>("$PlaybackProgressFolder/", null)
+  fun getALlPlayback(): List<PlaybackProgress>? {
+    val data = getKeys<PlaybackProgress>("$PlaybackProgressFolder/")
 
     val episodePlayback = data?.filter { it.item is AVPMediaItem.EpisodeItem }
       ?.groupBy { (it.item as AVPMediaItem.EpisodeItem).seasonItem.showItem.getSlug() }
@@ -168,8 +177,7 @@ class AppDataStore(val context: Context, val account: Account) :
 
   fun getSearchHistory(): List<SearchItem>? {
     return getKeys<SearchItem>(
-      "$SEARCH_HISTORY_FOLDER/",
-      null
+      "$SEARCH_HISTORY_FOLDER/"
     )?.sortedByDescending { it.searchedAt }
   }
 
@@ -187,11 +195,14 @@ class AppDataStore(val context: Context, val account: Account) :
 
 
   fun getCurrentUser(id: String?): User? {
-    return getKey<User>("$USERS_FOLDER/${id}", null)
+    return getKey<User>("$USERS_FOLDER/${id}")
   }
 
   fun getAllUsers(id: String?): List<User>? {
-    return getKeys<User>("$USERS_FOLDER/", null)
+    return getKeys<User>("$USERS_FOLDER/")
   }
 
+  fun getPlayerSetting(): PlayerSettingItem {
+    return getKey<PlayerSettingItem>("$PLAYER_SETTING_FOLDER/") ?: PlayerSettingItem("sample")
+  }
 }

@@ -66,12 +66,12 @@ class SettingsRootFragment : BaseSettingsFragment() {
         icon = AppCompatResources.getDrawable(context, R.drawable.tune_24dp)
       }
 
-//      TransitionPreference(context).add {
-//        title = getString(R.string.contents)
-//        key = "content"
-//        summary = getString(R.string.content_setting_summary)
-//        icon = AppCompatResources.getDrawable(context, R.drawable.database_24dp)
-//      }
+      TransitionPreference(context).add {
+        title = getString(R.string.player)
+        key = "player"
+        summary = getString(R.string.player_description)
+        icon = AppCompatResources.getDrawable(context, R.drawable.video_settings_24dp)
+      }
 
       TransitionPreference(context).add {
         title = getString(R.string.backup_updates)
@@ -85,9 +85,6 @@ class SettingsRootFragment : BaseSettingsFragment() {
         summary = getString(R.string.about_summary)
         icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
       }
-
-
-
     }
 
     class TransitionPreference(
@@ -106,6 +103,7 @@ class SettingsRootFragment : BaseSettingsFragment() {
         "extension" -> ManageExtensionsFragment()
         "ui" -> UiSettingFragment()
         "content" -> ContentSettingFragment()
+        "player" -> PlayerSettingFragment()
         "general" -> GeneralSettingsFragment()
         "backup_updates" -> BackupUpdateFragment()
         else -> null

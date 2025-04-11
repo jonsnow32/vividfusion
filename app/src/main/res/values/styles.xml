@@ -106,16 +106,16 @@
   </style>
 
 
-<!--  <style name="SelectableButton" parent="NiceButton">-->
-<!--    <item name="android:layout_height">40dp</item>-->
-<!--    <item name="android:layout_width">wrap_content</item>-->
+  <!--  <style name="SelectableButton" parent="NiceButton">-->
+  <!--    <item name="android:layout_height">40dp</item>-->
+  <!--    <item name="android:layout_width">wrap_content</item>-->
 
-<!--    <item name="strokeColor">@color/selectable_black</item>-->
-<!--    <item name="backgroundTint">@color/selectable_white</item>-->
-<!--    <item name="iconTint">@color/selectable_black</item>-->
-<!--    <item name="android:textColor">@color/selectable_black</item>-->
-<!--    <item name="rippleColor">@color/selectable_black</item>-->
-<!--  </style>-->
+  <!--    <item name="strokeColor">@color/selectable_black</item>-->
+  <!--    <item name="backgroundTint">@color/selectable_white</item>-->
+  <!--    <item name="iconTint">@color/selectable_black</item>-->
+  <!--    <item name="android:textColor">@color/selectable_black</item>-->
+  <!--    <item name="rippleColor">@color/selectable_black</item>-->
+  <!--  </style>-->
 
   <style name="FlowLayoutItem">
     <item name="android:layout_height">30dp</item>
@@ -222,7 +222,7 @@
   <style name="Widget.App.Snackbar" parent="Widget.Material3.Snackbar">
     <item name="backgroundTint">?attr/colorSurfaceInverse</item>
     <item name="android:textColor">?attr/colorOnSurfaceInverse</item>
-<!--    <item name="actionTextColor">?attr/colorPrimary</item>-->
+    <!--    <item name="actionTextColor">?attr/colorPrimary</item>-->
   </style>
 
   <!-- Base theme for all custom dialogs -->
@@ -300,4 +300,15 @@
     <item name="cornerSize">16dp</item> <!-- Rounded Corners -->
     <item name="android:foreground">@drawable/outline_drawable</item>
   </style>
+
+  <style name="MarqueeButtonText">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:gravity">top|center_horizontal</item>
+    <item name="android:singleLine">true</item>
+    <item name="android:scrollHorizontally">true</item>
+    <item name="android:marqueeRepeatLimit">marquee_forever</item>
+    <item name="android:ellipsize">marquee</item>
+  </style>
+
 </resources>

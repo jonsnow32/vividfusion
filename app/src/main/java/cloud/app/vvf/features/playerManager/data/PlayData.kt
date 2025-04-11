@@ -1,4 +1,4 @@
-package cloud.app.vvf.features.player.data
+package cloud.app.vvf.features.playerManager.data
 
 import android.net.Uri
 import androidx.core.net.toUri

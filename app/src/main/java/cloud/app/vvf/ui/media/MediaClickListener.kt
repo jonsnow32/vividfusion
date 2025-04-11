@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.VVFApplication.Companion.noClient
 import cloud.app.vvf.R
 import cloud.app.vvf.ui.main.browse.BrowseFragment
@@ -19,7 +20,12 @@ import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
+import cloud.app.vvf.extension.builtIn.MediaUtils
+import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.ui.stream.StreamFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MediaClickListener(
   private val fragmentManager: FragmentManager,
@@ -69,9 +75,24 @@ class MediaClickListener(
       }
 
       is AVPMediaItem.TrailerItem -> TODO()
-      is AVPMediaItem.PlaybackProgressItem -> onItemClick(extensionId, item.item, transitionView)
+      is AVPMediaItem.PlaybackProgress -> onItemClick(extensionId, item.item, transitionView)
       is AVPMediaItem.LocalVideoAlbum -> TODO()
-      is AVPMediaItem.LocalVideoItem -> TODO()
+      is AVPMediaItem.LocalVideoItem -> {
+        fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+          val context = fragment.context ?: return@launch
+          val localVideos = MediaUtils.getAllVideosByAlbum(context, item.video.album).map {
+            AVPMediaItem.LocalVideoItem(it)
+          }
+          withContext(Dispatchers.Main) {
+            fragment.navigate(
+              PlayerFragment.newInstance(
+                mediaItems = localVideos,
+                selectedMediaIdx = localVideos.indexOfFirst { it -> it.id == item.id })
+            )
+          }
+        }
+
+      }
     }
   }
 
@@ -90,7 +111,11 @@ class MediaClickListener(
     afterFocusChange?.invoke(item, hasFocus)
   }
 
-  override fun onContainerClick(extensionId: String?, container: MediaItemsContainer, holder: MediaContainerViewHolder) {
+  override fun onContainerClick(
+    extensionId: String?,
+    container: MediaItemsContainer,
+    holder: MediaContainerViewHolder
+  ) {
     when (container) {
       is MediaItemsContainer.Item -> tryWith {
         onItemClick(
@@ -118,7 +143,12 @@ class MediaClickListener(
   override fun onContainerLongClick(
     extensionId: String?, container: MediaItemsContainer, holder: MediaContainerViewHolder
   ) = when (container) {
-    is MediaItemsContainer.Item -> onItemLongClick(extensionId, container.media, holder.transitionView)
+    is MediaItemsContainer.Item -> onItemLongClick(
+      extensionId,
+      container.media,
+      holder.transitionView
+    )
+
     else -> {
       onContainerClick(extensionId, container, holder)
       true

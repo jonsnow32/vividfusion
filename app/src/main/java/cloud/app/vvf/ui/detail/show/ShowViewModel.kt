@@ -8,9 +8,8 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
-import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgressItem
+import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgress
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.datastore.app.PlaybackProgressFolder
 import cloud.app.vvf.extension.runClient
 import cloud.app.vvf.ui.paging.toFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,7 +36,7 @@ class ShowViewModel @Inject constructor(
   val trailers = MutableStateFlow<PagingData<AVPMediaItem>?>(null)
 
   val favoriteStatus = MutableStateFlow(false)
-  val lastWatchedEpisode = MutableStateFlow<PlaybackProgressItem?>(null)
+  val lastWatchedEpisode = MutableStateFlow<PlaybackProgress?>(null)
 
 
   fun getItemDetails(shortItem: AVPMediaItem, extensionId: String) {
@@ -53,7 +52,7 @@ class ShowViewModel @Inject constructor(
         watchedSeasons.value =
           (showDetail as AVPMediaItem.ShowItem).show.seasons?.map { it.toMediaItem(showDetail) }
             ?.map {
-              it.watchedEpisodeNumber = dataFlow.value.getKeys("$PlaybackProgressFolder/${it.id}").count()
+              it.watchedEpisodeNumber = dataFlow.value.getWatchedEpisodeCount(it)
               it
             }
 
@@ -79,7 +78,7 @@ class ShowViewModel @Inject constructor(
                 watchedSeasons.value =
                   item.seasonItem.showItem.show.seasons?.map { it.toMediaItem(item.seasonItem.showItem) }
                     ?.map {
-                      it.watchedEpisodeNumber = dataFlow.value.getKeys("$PlaybackProgressFolder/${it.id}").count()
+                      it.watchedEpisodeNumber = dataFlow.value.getWatchedEpisodeCount(it)
                       it
                     }
                 lastWatchedEpisode.value = dataFlow.value.getLatestPlaybackProgress(item.seasonItem.showItem)

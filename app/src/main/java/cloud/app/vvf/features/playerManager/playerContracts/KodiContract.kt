@@ -1,14 +1,13 @@
-package cloud.app.vvf.features.player.playerContracts
+package cloud.app.vvf.features.playerManager.playerContracts
 
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import cloud.app.vvf.R
-import cloud.app.vvf.features.player.PlayerContract
-import cloud.app.vvf.features.player.data.PlayData
-import cloud.app.vvf.features.player.data.PlayerType
+import cloud.app.vvf.features.playerManager.PlayerContract
+import cloud.app.vvf.features.playerManager.data.PlayData
+import cloud.app.vvf.features.playerManager.data.PlayerType
 import cloud.app.vvf.utils.showToast
 import timber.log.Timber
 

@@ -2,21 +2,23 @@
 agp = "8.6.1"
 browser = "1.8.0"
 glideTransformations = "4.3.0"
-kotlin = "2.0.21"
+kotlin = "2.1.20"
+ksp = "2.1.20-1.0.32"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
-kotlinxSerializationJson = "1.7.3"
-kotlinx-coroutines-core = "1.9.0"
+kotlinx-coroutines-core = "1.10.1"
+kotlinxCoroutinesGuava = "1.10.1"
 library = "1.3.0"
 material = "1.12.0"
-hilt = "2.49"
-ksp = "2.0.21-1.0.26"
-media3 = "1.1.1"
+hilt = "2.55"
+hiltx = "1.2.0"
+media3 = "1.6.0"
+nextlibMedia3 = "0.8.4"
 mediahome = "1.0.0"
-navigation = "2.8.3"
+navigation = "2.8.9"
 lifecycle = "2.8.7"
 pikolo = "2.0.2"
 plugger = "82e00ea5a4"
@@ -36,6 +38,8 @@ serialize = "1.7.3"
 glide = "4.16.0"
 jsoup = "1.18.1"
 fragment = "1.8.6"
+juniversalchardet = "2.5.0"
+
 [libraries]
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 androidx-tvprovider = { module = "androidx.tvprovider:tvprovider", version.ref = "tvprovider" }
@@ -45,8 +49,8 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 
 # Android core
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-kotlinx-serialization-json-v171 = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
+kotlinx-coroutines-guava = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-guava", version.ref = "kotlinxCoroutinesGuava" }
 kotlinx-serialize-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialize" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
@@ -63,26 +67,33 @@ androidx-preference = { group = "androidx.preference", name = "preference-ktx", 
 androidx-paging-common = { group = "androidx.paging", name = "paging-common-ktx", version.ref = "paging" }
 androidx-paging-runtime = { group = "androidx.paging", name = "paging-runtime-ktx", version.ref = "paging" }
 androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefresh" }
+juniversalchardet = { module = "com.github.albfernandez:juniversalchardet", version.ref = "juniversalchardet" }
 
 # Dagger
 hilt = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltx" }
+androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltx" }
 
 # Media3 libraries
-androidx-media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
-androidx-media3-cast = { group = "androidx.media3", name = "media3-cast", version.ref = "media3" }
-androidx-media3-common = { group = "androidx.media3", name = "media3-common", version.ref = "media3" }
-androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3" }
-androidx-media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
-com-google-android-mediahome-video = { group = "com.google.android.mediahome", name = "video", version.ref = "mediahome" }
-androidx-media3-exoplayer-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
-androidx-media3-exoplayer-dash = { group = "androidx.media3", name = "media3-exoplayer-dash", version.ref = "media3" }
-androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3" }
+media3-cast = { module = "androidx.media3:media3-cast", version.ref = "media3" }
+media3-common = { module = "androidx.media3:media3-common", version.ref = "media3" }
+media3-datasource-okhttp = { module = "androidx.media3:media3-datasource-okhttp", version.ref = "media3" }
+media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3" }
+media3-exoplayer-dash = { module = "androidx.media3:media3-exoplayer-dash", version.ref = "media3" }
+media3-exoplayer-hls = { module = "androidx.media3:media3-exoplayer-hls", version.ref = "media3" }
+media3-session = { module = "androidx.media3:media3-session", version.ref = "media3" }
+media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3" }
+nextlib-media3ext = { module = "com.github.anilbeesetti.nextlib:nextlib-media3ext", version.ref = "nextlibMedia3" }
+nextlib-mediainfo = { module = "com.github.anilbeesetti.nextlib:nextlib-mediainfo", version.ref = "nextlibMedia3" }
+mediahome-video = { module = "com.google.android.mediahome:video", version.ref = "mediahome" }
 
 # Logging
-pikolo = { module = "com.github.madrapps:pikolo", version.ref = "pikolo" }
-plugger = { module = "com.github.jeelpatel231:plugger", version.ref = "plugger" }
+
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+
+#Pluger
+plugger = { module = "com.github.jeelpatel231:plugger", version.ref = "plugger" }
 
 # service
 tmdb = { group = "com.uwetrottmann.tmdb2", name = "tmdb-java", version.ref = "tmdb" }
@@ -102,6 +113,8 @@ jsoup = {group = "org.jsoup", name = "jsoup", version.ref = "jsoup"}
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "ksp", version.ref = "glide" }
 nestedscrollwebview = { module = "com.telefonica:nestedscrollwebview", version = "0.1.6" }
+pikolo = { module = "com.github.madrapps:pikolo", version.ref = "pikolo" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -113,3 +126,6 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
+[bundles]
+media3 = ["media3-cast", "media3-common", "media3-datasource-okhttp", "media3-exoplayer", "media3-exoplayer-dash", "media3-exoplayer-hls", "media3-session", "media3-ui"]
+nextlibMedia3 = ["nextlib-media3ext", "nextlib-mediainfo"]

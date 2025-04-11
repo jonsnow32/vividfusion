@@ -25,7 +25,7 @@ class ItemOptionViewModel @Inject constructor(
   val dataFlow: MutableStateFlow<AppDataStore>,
   ) : CatchingViewModel(throwableFlow) {
 
-  var loading = MutableSharedFlow<Boolean>();
+  var loading = MutableStateFlow<Boolean>(false);
   var detailItem = MutableStateFlow<AVPMediaItem?>(null)
   val favoriteStatus = MutableStateFlow(false)
   val bookmarkStatus = MutableStateFlow<BookmarkItem?>(null)
@@ -47,16 +47,18 @@ class ItemOptionViewModel @Inject constructor(
           is AVPMediaItem.EpisodeItem,
           is AVPMediaItem.SeasonItem,
           is AVPMediaItem.ShowItem,
+          is AVPMediaItem.LocalVideoAlbum,
+          is AVPMediaItem.LocalVideoItem,
+          is AVPMediaItem.PlaybackProgress,
+
           is AVPMediaItem.StreamItem -> async {
             dataFlow.value.getFavoritesData(
               detailItem.value?.id?.toString()
             )
           }
-          is AVPMediaItem.LocalVideoAlbum,
-          is AVPMediaItem.LocalVideoItem,
-          is AVPMediaItem.PlaybackProgressItem,
+
           is AVPMediaItem.TrailerItem -> async {
-            true
+            false
           }
 
 

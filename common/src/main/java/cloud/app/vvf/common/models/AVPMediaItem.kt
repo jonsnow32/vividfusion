@@ -92,38 +92,45 @@ sealed class AVPMediaItem {
   data class TrailerItem(val streamData: StreamData) : AVPMediaItem()
 
   @Serializable
-  data class PlaybackProgressItem(
+  data class PlaybackProgress(
     val item: AVPMediaItem,
-    val position: Long,
-    val duration: Long? = null,
-    val lastUpdated: Long = System.currentTimeMillis()
+    var position: Long,
+    var duration: Long = 0L,
+    var lastUpdated: Long = System.currentTimeMillis()
   ): AVPMediaItem() {
-    fun getEpisode(): AVPMediaItem.EpisodeItem? {
-      return item as? AVPMediaItem.EpisodeItem
-    }
+
     fun getSlug() = when(item) {
       is EpisodeItem -> item.getSlug()
       is MovieItem -> item.getSlug()
+      is LocalVideoItem -> item.getSlug()
       else -> null
     }
     fun getName() = when(item) {
       is MovieItem -> item.movie.generalInfo.title
       is EpisodeItem -> if(item.episode.generalInfo.title.isEmpty())  "Episode ${item.episode.episodeNumber}" else item.episode.generalInfo.title
+      is LocalVideoItem -> item.video.title
       else -> ""
     }
-    fun getPoster() = when(item) {
+    fun getItemPoster() = when(item) {
       is MovieItem -> item.movie.generalInfo.poster?.toImageHolder()
       is EpisodeItem -> item.seasonItem.showItem.generalInfo?.poster?.toImageHolder()
+      is LocalVideoItem -> item.video.poster.toUriImageHolder()
       else -> null
     }
-    fun getBackdrop() = when(item) {
+    fun getItemBackdrop() = when(item) {
       is MovieItem -> item.movie.generalInfo.backdrop?.toImageHolder()
       is EpisodeItem -> item.seasonItem.showItem.generalInfo?.backdrop?.toImageHolder()
+      is LocalVideoItem -> item.video.poster.toUriImageHolder()
       else -> null
     }
     fun getPercent() : Int {
-      if(duration == null || duration <= 0) return 0
+      if(duration <= 0) return 0
       return ((position.toFloat() / duration.toFloat()) * 100).toInt()
+    }
+
+    fun getEpisode(): EpisodeItem? {
+      if(item !is EpisodeItem) return null
+      return item
     }
   }
 
@@ -156,7 +163,7 @@ sealed class AVPMediaItem {
       is StreamItem -> streamData.fileName.hashCode()
       is SeasonItem -> getSlug()
       is TrailerItem -> streamData.originalUrl
-      is PlaybackProgressItem -> getSlug()
+      is PlaybackProgress -> getSlug()
       is LocalVideoAlbum -> getSlug()
       is LocalVideoItem -> getSlug()
     }
@@ -170,7 +177,7 @@ sealed class AVPMediaItem {
       is StreamItem -> streamData.fileName
       is SeasonItem -> if(season.generalInfo.title.isEmpty()) "Season ${season.number}" else season.generalInfo.title
       is TrailerItem -> streamData.originalUrl
-      is PlaybackProgressItem -> getName()
+      is PlaybackProgress -> getName()
       is LocalVideoAlbum -> album.title
       is LocalVideoItem -> video.title
     }
@@ -220,7 +227,7 @@ sealed class AVPMediaItem {
       is EpisodeItem -> seasonItem.showItem.generalInfo?.poster?.toImageHolder()
       is StreamItem -> streamData.streamQuality.toImageHolder()
       is SeasonItem -> season.generalInfo.poster?.toImageHolder()
-      is PlaybackProgressItem -> getPoster()
+      is PlaybackProgress -> getItemPoster()
       is LocalVideoItem -> video.poster.toUriImageHolder()
       is LocalVideoAlbum -> album.poster.toUriImageHolder()
       else -> null
@@ -233,7 +240,8 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.backdrop?.toImageHolder()
       is EpisodeItem -> episode.generalInfo.backdrop?.toImageHolder() ?: seasonItem.showItem.generalInfo?.backdrop?.toImageHolder()
       is SeasonItem -> season.generalInfo.backdrop?.toImageHolder() ?: showItem.generalInfo?.backdrop?.toImageHolder()
-      is PlaybackProgressItem -> getBackdrop()
+      is LocalVideoItem -> video.poster.toUriImageHolder()
+      is PlaybackProgress -> getItemBackdrop()
       else -> null
     }
 
@@ -244,7 +252,7 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.genres?.firstOrNull() ?: ""
       is EpisodeItem -> seasonItem.showItem.title
       is StreamItem -> streamData.providerName
-      is PlaybackProgressItem -> when(item)  {
+      is PlaybackProgress -> when(item)  {
         is MovieItem -> item.movie.generalInfo.genres?.firstOrNull() ?: ""
         is EpisodeItem -> item.seasonItem.showItem.title
         else -> ""
@@ -258,7 +266,7 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.overview ?: ""
       is EpisodeItem -> episode.generalInfo.overview ?: ""
       is SeasonItem -> season.generalInfo.overview ?: ""
-      is PlaybackProgressItem -> item.generalInfo?.overview ?: ""
+      is PlaybackProgress -> item.generalInfo?.overview ?: ""
       else -> ""
     }
 
@@ -288,5 +296,4 @@ sealed class AVPMediaItem {
       else -> null
 
     }
-
 }

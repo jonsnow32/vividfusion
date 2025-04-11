@@ -62,26 +62,26 @@ dependencies {
   implementation(libs.androidx.paging.common)
   implementation(libs.androidx.paging.runtime)
   implementation(libs.androidx.swiperefreshlayout)
-  //Media 3
-  implementation(libs.androidx.media3.ui)
-  implementation(libs.androidx.media3.cast)
-  implementation(libs.androidx.media3.common)
-  implementation(libs.androidx.media3.session)
-  implementation(libs.androidx.media3.exoplayer)
-  implementation(libs.com.google.android.mediahome.video)
-  implementation(libs.androidx.media3.exoplayer.hls)
-  implementation(libs.androidx.media3.exoplayer.dash)
-  implementation(libs.androidx.media3.datasource.okhttp)
+  implementation(libs.kotlinx.coroutines.guava)
 
+  //Media 3
+  implementation(libs.bundles.media3)
+  implementation(libs.mediahome.video)
+  // FFmpeg Decoding
+  implementation(libs.bundles.nextlibMedia3)
+  implementation(libs.juniversalchardet)
   //Dagger
   implementation(libs.hilt)
   ksp(libs.hilt.compiler)
+  implementation(libs.androidx.hilt.work)
+  ksp(libs.androidx.hilt.compiler)
 
   //UI
   implementation(libs.material)
   implementation(libs.glide)
   ksp(libs.glide.compiler)
   implementation(libs.nestedscrollwebview)
+  implementation(libs.pikolo)
 
   //Worker
   implementation(libs.androidx.work.runtime)
@@ -109,9 +109,4 @@ dependencies {
   implementation(libs.glide.transformations)
   implementation(libs.fastscroll.library)
 
-  implementation(libs.pikolo)
-  implementation(kotlin("reflect"))
-
-  implementation("androidx.hilt:hilt-work:1.2.0")
-  ksp("androidx.hilt:hilt-compiler:1.2.0")
 }

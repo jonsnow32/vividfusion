@@ -5,7 +5,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.Visibility
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
@@ -35,7 +34,7 @@ sealed class MediaItemViewHolder(itemView: View) :
 
   fun ItemMediaCoverBinding.bind(item: AVPMediaItem) {
     when (item) {
-      is AVPMediaItem.PlaybackProgressItem -> {
+      is AVPMediaItem.PlaybackProgress -> {
         item.poster.loadInto(imageView, item.placeHolder())
         this.iconContainer.isVisible = item.rating != null
         this.rating.text = item.rating?.roundTo(1).toString()
@@ -235,7 +234,7 @@ sealed class MediaItemViewHolder(itemView: View) :
       is AVPMediaItem.ActorItem -> R.drawable.ic_person
       is AVPMediaItem.StreamItem -> R.drawable.ic_video
       is AVPMediaItem.TrailerItem -> R.drawable.ic_video
-      is AVPMediaItem.PlaybackProgressItem -> R.drawable.ic_video
+      is AVPMediaItem.PlaybackProgress -> R.drawable.ic_video
       is AVPMediaItem.LocalVideoAlbum -> R.drawable.ic_album
       is AVPMediaItem.LocalVideoItem -> R.drawable.ic_video
     }

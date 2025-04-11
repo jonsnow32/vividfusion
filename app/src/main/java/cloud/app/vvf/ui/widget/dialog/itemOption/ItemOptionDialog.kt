@@ -71,7 +71,7 @@ class ItemOptionDialog : DockingDialog() {
 
 
     observe(viewModel.loading) {
-      if (!it && viewModel.detailItem.value != null) {
+      if (!it) {
         binding.recyclerView.adapter = ActionAdapter(getActions(viewModel.detailItem.value!!))
       }
     }
@@ -177,7 +177,7 @@ class ItemOptionDialog : DockingDialog() {
   )
 
   fun getFavoritesAction(item: AVPMediaItem): ItemAction? {
-    return if (item is AVPMediaItem.MovieItem || item is AVPMediaItem.ShowItem || item is AVPMediaItem.ActorItem) {
+    return if (item is AVPMediaItem.MovieItem || item is AVPMediaItem.ShowItem || item is AVPMediaItem.ActorItem ||  item is AVPMediaItem.LocalVideoItem ||  item is AVPMediaItem.LocalVideoAlbum) {
       if (!viewModel.favoriteStatus.value)
         ItemAction.Resource(
           R.drawable.favorite_border_24dp,

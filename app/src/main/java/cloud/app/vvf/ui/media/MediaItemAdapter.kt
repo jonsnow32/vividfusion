@@ -56,7 +56,7 @@ class MediaItemAdapter(
       is AVPMediaItem.StreamItem -> 4
       is AVPMediaItem.SeasonItem -> if (item.season.generalInfo.poster.isNullOrEmpty()) 5 else 7
       is AVPMediaItem.TrailerItem -> 6
-      is AVPMediaItem.PlaybackProgressItem -> 8
+      is AVPMediaItem.PlaybackProgress -> 8
       is AVPMediaItem.LocalVideoItem -> 9
       is AVPMediaItem.LocalVideoAlbum -> 10
     }

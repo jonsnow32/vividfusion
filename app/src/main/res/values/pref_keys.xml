@@ -15,6 +15,17 @@
   <string name="pref_animations">pref_animations</string>
   <string name="pref_shared_element_animations_key">pref_shared_element_animations_key</string>
 
+  <!-- player -->
+  <string name="pref_use_long_press_control">pref_use_long_press_control</string>
+  <string name="pref_long_press_control_speed">pref_long_press_control_speed</string>
+  <string name="pref_zoom_control">pref_zoom_control</string>
+  <string name="pref_double_tap_gesture">pref_double_tap_gesture</string>
+  <string name="pref_seek_speed">pref_seek_speed</string>
+  <string name="pref_use_seek_control">pref_use_seek_control</string>
+  <string name="pref_use_swipe_control">pref_use_swipe_control</string>
+  <string name="pref_subtitle_chartset">pref_subtitle_chartset</string>
+  <string name="pref_key_overlap_notch">pref_key_overlap_notch</string>
+
 
   <!--content-->
   <string name="pref_tv_show_settings">pref_tv_show_settings</string>
@@ -29,5 +40,6 @@
   <string name="pref_backup_path">pref_backup_path</string>
   <string name="pref_backup_path_allowed">pref_backup_path_allowed</string>
   <string name="pref_auto_check_update">pref_auto_check_update</string>
+
 
 </resources>

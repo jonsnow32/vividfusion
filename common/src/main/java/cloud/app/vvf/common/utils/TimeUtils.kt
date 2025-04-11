@@ -6,6 +6,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
 
 fun Long.getYear(): Int {
   val calendar = Calendar.getInstance()
@@ -56,28 +57,28 @@ fun Int.secondsToReadable(): String? {
 }
 
 fun Long.millisecondsToReadable(): String? {
-  val seconds = this / 1000
-  val minutes = seconds / 60
-  val hours = minutes / 60
-  val days = hours / 24
+  val hours = TimeUnit.MILLISECONDS.toHours(this)
+  val minutes = TimeUnit.MILLISECONDS.toMinutes(this) - TimeUnit.HOURS.toMinutes(hours)
+  val seconds = TimeUnit.MILLISECONDS.toSeconds(this) -
+    TimeUnit.MINUTES.toSeconds(minutes) -
+    TimeUnit.HOURS.toSeconds(hours)
+  return if (hours > 0) {
+    String.format("%02d:%02d:%02d", hours, minutes, seconds)
+  } else {
+    String.format("%02d:%02d", minutes, seconds)
+  }
+}
 
-  val parts = mutableListOf<String>()
 
-  if (days > 0) {
-    parts.add("${days}d")
-  }
-  if (hours % 24 > 0) {
-    parts.add("${hours % 24}h")
-  }
-  if (minutes % 60 > 0) {
-    parts.add("${minutes % 60}m")
-  }
-  if (seconds % 60 > 0) {
-    parts.add("${seconds % 60}s")
-  }
+/**
+ * Formats the given duration in milliseconds to a string in the format of
+ * `+mm:ss` or `+hh:mm:ss` or `-mm:ss` or `-hh:mm:ss`.
+ */
 
-  return when {
-    parts.isEmpty() -> "0s"
-    else -> parts.joinToString(" ")
+fun Long.millisecondsToReadableWithSign(): String {
+  return if (this >= 0) {
+    "+${millisecondsToReadable()}"
+  } else {
+    "-${abs(this).millisecondsToReadable()}"
   }
 }

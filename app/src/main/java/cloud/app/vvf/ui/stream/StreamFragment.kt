@@ -8,8 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.databinding.FragmentStreamBinding
-import cloud.app.vvf.features.player.PlayerManager
-import cloud.app.vvf.features.player.data.PlayData
+import cloud.app.vvf.features.playerManager.PlayerManager
+import cloud.app.vvf.features.playerManager.data.PlayData
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe

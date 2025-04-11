@@ -179,6 +179,7 @@
   <string name="enable">Enable</string>
   <string name="enabled">Enabled</string>
   <string name="disabled">Disabled</string>
+  <string name="disable">Disable</string>
   <string name="something_went_wrong">Something went wrong!!</string>
   <string name="region">Region</string>
   <string name="bookmarks">Bookmarks</string>
@@ -279,6 +280,52 @@
   <string name="time_range_one_month_ago">Last Month</string>
   <string name="time_range_one_year_ago">Last Year</string>
   <string name="time_range_previous_year">%d</string>
+  <string name="fast_playback_speed">%.1fx speed</string>
+  <string name="resize_fit">Fit to screen</string>
+  <string name="resize_fill">Stretch</string>
+  <string name="resize_crop">Crop</string>
+  <string name="resize_zoom">Zoom</string>
+  <string name="resize_zoom_percent">100%</string>
+  <string name="controls_lock">Lock controls</string>
+  <string name="controls_unlock">Unlock controls</string>
+  <string name="player_controls_exit">Navigate up</string>
+  <string name="player_controls_next">Player next</string>
+  <string name="player_controls_play_pause">Player play pause</string>
+  <string name="player_controls_previous">Player previous</string>
+  <string name="player_controls_progress">Player progress bar</string>
+  <string name="player_description">Player appearance, playback controls, subtitle styles</string>
+  <string name="screen_rotation">Screen Rotation</string>
+  <string name="player_screen_orientation">Player screen orientation</string>
+  <string name="video_zoom">Video zoom</string>
+  <string name="resume_description">Select whether to resume played videos from the point where you stopped</string>
+  <string name="select_audio_track">Select audio track</string>
+  <string name="select_subtitle_track">Select subtitle track</string>
+  <string name="select_playback_speed">Select playback speed</string>
+    <string name="go_back_img_des">Go back</string>
+  <string name="next_video">Next video</string>
+  <string name="torrent">Torrent</string>
+  <string name="no_audio_tracks_found">No audio tracks found</string>
+  <string name="no_subtitle_tracks_found">No subtitle tracks found</string>
+  <string name="open_subtitle">Open Local subtitle</string>
+  <string name="skip_silence">Skip silence</string>
+  <string name="playback">Playback</string>
+  <string name="playback_setting_summary">Adjust playback options such as speed, quality, and captions.</string>
+  <string name="zoom_gesture">Zoom gesture</string>
+  <string name="zoom_gesture_description">Pinch to zoom the video</string>
+
+  <string name="seek_gesture">Seek gesture</string>
+  <string name="seek_gesture_description">Swipe horizontally to seek forwards or backwards</string>
+
+  <string name="swipe_gesture">Swipe gesture</string>
+  <string name="swipe_gesture_description">Swipe vertically to adjust the brightness and volume</string>
+
+  <string name="subtitle_text_encoding">Subtitle text encoding</string>
+  <string name="seek_speed">Seek speed</string>
+  <string name="seek_speed_description">Set how far the video skips in seconds.</string>
+  <string name="player">Player</string>
+
+  <string name="title_overlap_notch">Overlap Notch</string>
+  <string name="summary_overlap_notch">Enable this to allow content to overlap with the notch area.</string>
   <string-array name="themes">
     <item>Light</item>
     <item>Dark</item>

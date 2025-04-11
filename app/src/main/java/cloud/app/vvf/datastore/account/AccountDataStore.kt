@@ -48,13 +48,12 @@ class AccountDataStore(val context: Context) :
   fun getActiveAccount(): Account {
     return getKeys<Account>(
       "$ACCOUNTS_FOLDER/",
-      null
     )?.firstOrNull() { account -> account.isActive == true }
       ?: createDefaultAccount()
   }
 
   fun getAllAccounts(): List<Account>? {
-    return getKeys<Account>("$ACCOUNTS_FOLDER/", null)
+    return getKeys<Account>("$ACCOUNTS_FOLDER/")
   }
 
   fun createDefaultAccount(): Account {
@@ -66,7 +65,7 @@ class AccountDataStore(val context: Context) :
       isActive = true
     )
 
-    return getKey<Account>("$ACCOUNTS_FOLDER/${defaultAccount.getSlug()}", null)
+    return getKey<Account>("$ACCOUNTS_FOLDER/${defaultAccount.getSlug()}")
       ?: defaultAccount.also {
         saveAccount(it)
       }

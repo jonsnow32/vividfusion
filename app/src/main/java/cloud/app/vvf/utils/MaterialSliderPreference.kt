@@ -23,7 +23,7 @@ class MaterialSliderPreference(
         layoutResource = R.layout.preference_slider
     }
 
-    private var customSummary: CharSequence? = null
+    internal var customSummary: CharSequence? = null
     private var defaultValue: Int? = null
 
     override fun onSetInitialValue(defaultValue: Any?) {

@@ -1,4 +1,4 @@
-package cloud.app.vvf.features.player
+package cloud.app.vvf.features.playerManager
 
 import android.content.Context
 import android.content.Intent
@@ -10,7 +10,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import cloud.app.vvf.features.player.data.PlayData
+import cloud.app.vvf.features.playerManager.data.PlayData
 
 abstract class PlayerContract(val listener: PlayBackListener) :
     ActivityResultContract<PlayData, ActivityResult>() {

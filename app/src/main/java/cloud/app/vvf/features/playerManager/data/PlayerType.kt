@@ -1,4 +1,4 @@
-package cloud.app.vvf.features.player.data
+package cloud.app.vvf.features.playerManager.data
 
 enum class PlayerType(val desciption: String) {
     MXPro("MxPro Player"),

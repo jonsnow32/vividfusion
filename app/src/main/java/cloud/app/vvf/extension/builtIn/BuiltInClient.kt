@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit
 class BuiltInClient(val context: Context) : DatabaseClient,
   MessageFlowProvider {
   override suspend fun getHomeTabs(): List<Tab> {
-    return listOf(Tab("Videos", "Videos"), Tab("Music", "Music"))
+    return listOf(Tab("All", "All"), Tab("Albums", "Albums"))
   }
 
   private val pageSize = 4
@@ -36,7 +36,8 @@ class BuiltInClient(val context: Context) : DatabaseClient,
     val page = it?.toInt() ?: 1
 
     val items = when (tab?.id) {
-      "Videos" -> getVideoCategories(context, page)
+      "All" -> getVideoCategories(context, page)
+      "Albums" -> getAlbumCategories(context, page)
       else -> TODO()
     }
 
@@ -48,7 +49,7 @@ class BuiltInClient(val context: Context) : DatabaseClient,
     val currentTime = System.currentTimeMillis()
     val calendar = Calendar.getInstance().apply { timeInMillis = currentTime }
     val currentYear = calendar.get(Calendar.YEAR)
-    val oldestYear = MediaUtils.getOldestVideoYear(context) ?: currentYear
+    val oldestYear = getOldestVideoYear(context) ?: currentYear
 
     // Adjust "Today" to start at midnight
     calendar.set(Calendar.HOUR_OF_DAY, 0)
@@ -61,8 +62,12 @@ class BuiltInClient(val context: Context) : DatabaseClient,
       context.getString(R.string.time_range_today) to todayStart, // Start of today
       context.getString(R.string.time_range_yesterday) to currentTime - TimeUnit.DAYS.toMillis(1),
       context.getString(R.string.time_range_one_week_ago) to currentTime - TimeUnit.DAYS.toMillis(7),
-      context.getString(R.string.time_range_one_month_ago) to currentTime - TimeUnit.DAYS.toMillis(30),
-      context.getString(R.string.time_range_one_year_ago) to currentTime - TimeUnit.DAYS.toMillis(365)
+      context.getString(R.string.time_range_one_month_ago) to currentTime - TimeUnit.DAYS.toMillis(
+        30
+      ),
+      context.getString(R.string.time_range_one_year_ago) to currentTime - TimeUnit.DAYS.toMillis(
+        365
+      )
     )
 
     val previousYears = mutableListOf<Pair<String, Long>>()
@@ -116,8 +121,26 @@ class BuiltInClient(val context: Context) : DatabaseClient,
     return result
   }
 
+  suspend fun getAlbumCategories(context: Context, page: Int = 1): List<MediaItemsContainer> {
+    if (page != 1) return emptyList()
+    val result = mutableListOf<MediaItemsContainer>()
+
+    withContext(Dispatchers.IO) {
+      val albums = MediaUtils.getAllAlbums(context)
+      albums.forEachIndexed { index, album ->
+        val data = PagedData.Single<AVPMediaItem> {
+          album.videos.map { video ->
+            AVPMediaItem.LocalVideoItem(video)
+          }.sortedByDescending { item -> item.video.dateAdded }
+        }
+        result.add(MediaItemsContainer.Category(album.title, null, data))
+      }
+    }
+    return result
+  }
+
   override suspend fun getMediaDetail(avpMediaItem: AVPMediaItem): AVPMediaItem? {
-    TODO("Not yet implemented")
+    return null
   }
 
   override fun getKnowFor(actor: AVPMediaItem.ActorItem): PagedData<AVPMediaItem> {

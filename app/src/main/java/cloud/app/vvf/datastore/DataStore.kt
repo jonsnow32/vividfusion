@@ -9,11 +9,6 @@ import java.io.File
 
 abstract class DataStore(protected val sharedPreferences: SharedPreferences) {
 
-  fun getKeys(folder: String): List<String> {
-    Timber.i(folder)
-    return sharedPreferences.all.keys.filter { it.startsWith(folder) }
-  }
-
   fun removeKey(folder: String, path: String) {
     removeKey("$folder/$path")
   }
@@ -30,11 +25,6 @@ abstract class DataStore(protected val sharedPreferences: SharedPreferences) {
     }
   }
 
-  fun removeKeys(folder: String): Int {
-    val keys = getKeys(folder)
-    keys.forEach { removeKey(it) }
-    return keys.size
-  }
 
   protected inline fun <reified T> setKey(path: String, value: T) {
     try {
@@ -45,28 +35,28 @@ abstract class DataStore(protected val sharedPreferences: SharedPreferences) {
     }
   }
 
-  protected inline fun <reified T> getKey(path: String, defVal: T? = null): T? {
+  protected inline fun <reified T> getKey(path: String): T? {
     return try {
       val data = sharedPreferences.getString(path, null)
       Timber.i("path = $path data $data")
       data?.toData<T>()
     } catch (e: Exception) {
       Timber.e(e)
-      defVal
+      null
     }
   }
 
-  protected inline fun <reified T> getKeys(path: String, defVal: List<T>? = null): List<T>? {
+  protected inline fun <reified T> getKeys(path: String): List<T>? {
     Timber.i("$path ${T::class.java}")
     return try {
       val data = sharedPreferences.all.keys.filter { it.startsWith(path) }
       if (data.isEmpty()) return null
       data.mapNotNull {
-        getKey<T>(it, null)
+        getKey<T>(it)
       }
     } catch (e: Exception) {
       Timber.e(e)
-      defVal
+      null
     }
   }
 

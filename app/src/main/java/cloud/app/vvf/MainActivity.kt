@@ -3,26 +3,30 @@ package cloud.app.vvf
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.hardware.input.InputManager
-import android.os.Build
 import android.os.Bundle
 import android.view.InputDevice
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
+import androidx.media3.common.util.UnstableApi
 import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.databinding.ActivityMainBinding
 import cloud.app.vvf.databinding.ConfirmExitDialogBinding
-import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.features.player.PlayerManager
+import cloud.app.vvf.features.player.PlayerFragment
+import cloud.app.vvf.features.playerManager.PlayerManager
+import cloud.app.vvf.ui.main.MainFragment
 import cloud.app.vvf.utils.TV
 import cloud.app.vvf.utils.Utils.isAndroidTV
 import cloud.app.vvf.utils.isLayout
@@ -34,7 +38,6 @@ import cloud.app.vvf.utils.updateTv
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.configureSnackBar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.system.exitProcess
@@ -242,4 +245,19 @@ class MainActivity : AppCompatActivity() {
   }
 
 
+  @OptIn(UnstableApi::class)
+  override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    val currentFragment = supportFragmentManager.fragments.find { it.isVisible }
+    if (currentFragment is PlayerFragment)
+      return currentFragment.handleKeyDown(keyCode, event)
+    return super.onKeyDown(keyCode, event)
+  }
+  @OptIn(UnstableApi::class)
+  override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+    val currentFragment = supportFragmentManager.fragments.find { it.isVisible }
+    if (currentFragment is PlayerFragment)
+      return currentFragment.handleKeyUp(keyCode, event)
+    return super.onKeyUp(keyCode, event)
+  }
 }
+

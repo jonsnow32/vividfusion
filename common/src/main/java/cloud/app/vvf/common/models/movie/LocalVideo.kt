@@ -2,6 +2,7 @@ package cloud.app.vvf.common.models.movie
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import javax.naming.Context
 
 @Serializable
 data class LocalVideo(
@@ -13,7 +14,10 @@ data class LocalVideo(
   @SerialName("size") val size: Long,
   @SerialName("date_added") val dateAdded: Long,
   @SerialName("album") val album: String,
+  @SerialName("width") val width: Int? = null,
+  @SerialName("height") val height: Int? = null,
 )
+
 @Serializable
 data class  LocalAlbum(
   @SerialName("id") val id: String,

@@ -1,5 +1,6 @@
 package cloud.app.vvf.ui.main
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -101,6 +102,10 @@ class MainFragment : Fragment() {
     }
     fragments[id] = fragment
     return fragment
+  }
+
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
   }
 //
 //  override fun onHiddenChanged(hidden: Boolean) {

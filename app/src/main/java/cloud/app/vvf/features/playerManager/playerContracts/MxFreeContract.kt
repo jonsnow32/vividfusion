@@ -1,7 +1,7 @@
-package cloud.app.vvf.features.player.playerContracts
+package cloud.app.vvf.features.playerManager.playerContracts
 
 import cloud.app.vvf.R
-import cloud.app.vvf.features.player.data.PlayerType
+import cloud.app.vvf.features.playerManager.data.PlayerType
 
 class MxFreeContract(listener: PlayBackListener) : MxProContract(listener) {
     override val packageName: String

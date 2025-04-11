@@ -21,7 +21,7 @@ dependencies {
   api(libs.squareup.okhttp)
   api(libs.jsoup)
   api(libs.kotlinx.coroutines.core)
-  api(libs.kotlinx.serialization.json.v171)
+  api(libs.kotlinx.serialize.json)
 }
 
 
