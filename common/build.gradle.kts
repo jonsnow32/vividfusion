@@ -11,7 +11,6 @@ java {
 }
 
 group = "cloud.app.vvf.common"
-version = "1.0.2"
 
 kotlin {
   jvmToolchain(17)
@@ -24,6 +23,29 @@ dependencies {
   api(libs.kotlinx.serialize.json)
 }
 
+
+// Generate a VVFBuildConfig class with the version
+tasks.named("processResources") {
+  val version = project.version.toString()
+  val targetDir = file("${layout.buildDirectory}/generated/source/kotlin/main/cloud/app/vvf/common")
+  doLast {
+    targetDir.mkdirs()
+    file("$targetDir/VVFBuildConfig.kt").writeText("""
+            package cloud.app.vvf.common
+
+            object VVFBuildConfig {
+                const val LIB_VERSION = "$version"
+            }
+        """.trimIndent())
+  }
+}
+
+// Include generated sources in the source set
+sourceSets {
+  main {
+    kotlin.srcDir("${layout.buildDirectory}/generated/source/kotlin/main")
+  }
+}
 
 publishing {
   publications {
