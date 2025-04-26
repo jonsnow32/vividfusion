@@ -3,12 +3,12 @@ package cloud.app.vvf.common.models.video
 import cloud.app.vvf.common.models.stream.MagnetObject
 import cloud.app.vvf.common.models.stream.PremiumType
 import cloud.app.vvf.common.models.stream.Resolution
+import cloud.app.vvf.common.models.stream.Streamable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class VVFVideo {
-  abstract val uri: String
+sealed class Video : Streamable{
   abstract val title: String?
   abstract val description: String?
   abstract val duration: Long?
@@ -27,7 +27,7 @@ sealed class VVFVideo {
     val album: String,
     val width: Int? = null,
     val height: Int? = null
-  ) : VVFVideo()
+  ) : Video()
 
   @Serializable
   data class RemoteVideo(
@@ -52,7 +52,7 @@ sealed class VVFVideo {
     @SerialName("file_name") var fileName: String = "",
     @SerialName("headers") var headers: HashMap<String, String>? = null,
     @SerialName("magnets") var magnets: List<MagnetObject>? = null,
-  ) : VVFVideo()
+  ) : Video()
 
 
   val addedTime = when (this) {

@@ -1,11 +1,11 @@
 package cloud.app.vvf.common.models.video
 
-import cloud.app.vvf.common.models.video.VVFVideo.LocalVideo
+import cloud.app.vvf.common.models.video.Video.LocalVideo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class VVFAlbum(
+data class VideoCollection(
   @SerialName("id") val id: String,
   @SerialName("title") val title: String,
   @SerialName("poster") val poster: String,

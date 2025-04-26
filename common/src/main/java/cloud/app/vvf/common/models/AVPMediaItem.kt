@@ -9,8 +9,9 @@ import cloud.app.vvf.common.models.movie.Episode
 import cloud.app.vvf.common.models.movie.Movie
 import cloud.app.vvf.common.models.movie.Season
 import cloud.app.vvf.common.models.movie.Show
-import cloud.app.vvf.common.models.video.VVFAlbum
-import cloud.app.vvf.common.models.video.VVFVideo
+import cloud.app.vvf.common.models.music.Track
+import cloud.app.vvf.common.models.video.VideoCollection
+import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.common.utils.getYear
 import cloud.app.vvf.common.utils.toLocalMonthYear
 import kotlinx.serialization.Serializable
@@ -18,10 +19,23 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class AVPMediaItem {
 
+
   @Serializable
-  data class VideoItem(val vvfVideo: VVFVideo) : AVPMediaItem() {
+  data class TrackItem(val track: Track) : AVPMediaItem() {
     fun getSlug(): String {
-      val formattedName = vvfVideo.uri
+      val formattedName = track.uri
+        .trim()
+        .lowercase()
+        .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
+        .replace("\\s+".toRegex(), "-")
+      return formattedName
+    }
+  }
+
+  @Serializable
+  data class VideoItem(val video: Video) : AVPMediaItem() {
+    fun getSlug(): String {
+      val formattedName = video.uri
         .trim()
         .lowercase()
         .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
@@ -31,7 +45,7 @@ sealed class AVPMediaItem {
   }
 
   @Serializable
-  data class AlbumItem(val album: VVFAlbum) : AVPMediaItem() {
+  data class VideoCollectionItem(val album: VideoCollection) : AVPMediaItem() {
     fun getSlug(): String {
       val formattedName = album.uri
         .trim()
@@ -90,7 +104,7 @@ sealed class AVPMediaItem {
   data class ActorItem(val actor: Actor) : AVPMediaItem()
 
   @Serializable
-  data class TrailerItem(val vvfVideo: VVFVideo) : AVPMediaItem()
+  data class TrailerItem(val video: Video) : AVPMediaItem()
 
   @Serializable
   data class PlaybackProgress(
@@ -104,27 +118,29 @@ sealed class AVPMediaItem {
       is EpisodeItem -> item.getSlug()
       is MovieItem -> item.getSlug()
       is VideoItem -> item.getSlug()
+      is TrackItem -> item.getSlug()
       else -> null
     }
 
     fun getName() = when (item) {
       is MovieItem -> item.movie.generalInfo.title
       is EpisodeItem -> if (item.episode.generalInfo.title.isEmpty()) "Episode ${item.episode.episodeNumber}" else item.episode.generalInfo.title
-      is VideoItem -> item.vvfVideo.title
+      is VideoItem -> item.video.title
+      is TrackItem -> item.track.title
       else -> ""
     }
 
     fun getItemPoster() = when (item) {
       is MovieItem -> item.movie.generalInfo.poster?.toImageHolder()
       is EpisodeItem -> item.seasonItem.showItem.generalInfo?.poster?.toImageHolder()
-      is VideoItem -> item.vvfVideo.thumbnailUri?.toUriImageHolder()
+      is VideoItem -> item.video.thumbnailUri?.toUriImageHolder()
+      is TrackItem -> item.track.cover?.toImageHolder()
       else -> null
     }
 
     fun getItemBackdrop() = when (item) {
       is MovieItem -> item.movie.generalInfo.backdrop?.toImageHolder()
       is EpisodeItem -> item.seasonItem.showItem.generalInfo?.backdrop?.toImageHolder()
-      is VideoItem -> item.vvfVideo.thumbnailUri?.toUriImageHolder()
       else -> null
     }
 
@@ -165,10 +181,11 @@ sealed class AVPMediaItem {
       is ShowItem -> getSlug()
       is EpisodeItem -> getSlug()
       is SeasonItem -> getSlug()
-      is TrailerItem -> vvfVideo.uri
+      is TrailerItem -> video.uri
       is PlaybackProgress -> getSlug()
-      is AlbumItem -> getSlug()
+      is VideoCollectionItem -> getSlug()
       is VideoItem -> getSlug()
+      is TrackItem -> getSlug()
     }
 
   val title
@@ -178,10 +195,11 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.title
       is EpisodeItem -> if (episode.generalInfo.title.isEmpty()) "Episode ${episode.episodeNumber}" else episode.generalInfo.title
       is SeasonItem -> if (season.generalInfo.title.isEmpty()) "Season ${season.number}" else season.generalInfo.title
-      is TrailerItem -> vvfVideo.title
+      is TrailerItem -> video.title
       is PlaybackProgress -> getName()
-      is AlbumItem -> album.title
-      is VideoItem -> vvfVideo.title
+      is VideoCollectionItem -> album.title
+      is VideoItem -> video.title
+      is TrackItem -> track.title
     }
 
   val releaseYear
@@ -191,7 +209,8 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.getReleaseYear()
       is EpisodeItem -> episode.generalInfo.getReleaseYear()
       is SeasonItem -> season.releaseDateMsUTC?.getYear()
-      is VideoItem -> vvfVideo.addedTime?.getYear()
+      is VideoItem -> video.addedTime?.getYear()
+      is TrackItem -> track.releaseDate?.getYear()
       else -> null
     }
 
@@ -201,7 +220,8 @@ sealed class AVPMediaItem {
       is ShowItem -> show.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
       is EpisodeItem -> episode.generalInfo.releaseDateMsUTC?.toLocalMonthYear()
       is SeasonItem -> season.releaseDateMsUTC?.toLocalMonthYear()
-      is VideoItem -> vvfVideo.addedTime?.toLocalMonthYear()
+      is VideoItem -> video.addedTime?.toLocalMonthYear()
+      is TrackItem -> track.releaseDate?.toLocalMonthYear()
       else -> null
     }
 
@@ -229,8 +249,9 @@ sealed class AVPMediaItem {
       is EpisodeItem -> seasonItem.showItem.generalInfo?.poster?.toImageHolder()
       is SeasonItem -> season.generalInfo.poster?.toImageHolder()
       is PlaybackProgress -> getItemPoster()
-      is VideoItem -> vvfVideo.thumbnailUri?.toUriImageHolder()
-      is AlbumItem -> album.poster.toUriImageHolder()
+      is VideoItem -> video.thumbnailUri?.toUriImageHolder()
+      is VideoCollectionItem -> album.poster.toUriImageHolder()
+      is TrackItem -> track.cover?.toUriImageHolder()
       else -> null
     }
 
@@ -245,7 +266,6 @@ sealed class AVPMediaItem {
       is SeasonItem -> season.generalInfo.backdrop?.toImageHolder()
         ?: showItem.generalInfo?.backdrop?.toImageHolder()
 
-      is VideoItem -> vvfVideo.thumbnailUri?.toUriImageHolder()
       is PlaybackProgress -> getItemBackdrop()
       else -> null
     }

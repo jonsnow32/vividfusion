@@ -1,7 +1,7 @@
 package cloud.app.vvf.common.helpers.extractors
 
 import cloud.app.vvf.common.models.subtitle.SubtitleData
-import cloud.app.vvf.common.models.video.VVFVideo
+import cloud.app.vvf.common.models.video.Video
 
 interface IExtractor {
   val name: String
@@ -11,6 +11,6 @@ interface IExtractor {
     url: String,
     referer: String? = null,
     subtitleCallback: (SubtitleData) -> Unit,
-    callback: (VVFVideo) -> Unit
+    callback: (Video) -> Unit
   )
 }
