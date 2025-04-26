@@ -16,7 +16,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 
 fun ImageHolder?.loadInto(
-  imageView: ImageView, placeholder: Int? = null, errorDrawable: Int? = null
+    imageView: ImageView, placeholder: Int? = null, errorDrawable: Int? = null
 ) = tryWith {
   val builder = Glide.with(imageView).asDrawable().transition(DrawableTransitionOptions.withCrossFade())
   val request = createRequest(builder, placeholder, errorDrawable)

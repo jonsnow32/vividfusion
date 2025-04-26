@@ -42,7 +42,7 @@ class ExtensionModule {
     messageFlow: MutableSharedFlow<Message>,
     refresher: MutableSharedFlow<Boolean>
   ) = ExtensionLoader(
-    context,
+    context.applicationContext,
     httpHelper,
     throwableFlow,
     extensionsFlow,

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:background="@android:color/transparent"
+  android:layout_height="match_parent">
+
+  <ImageView
+    android:id="@+id/subtitle_offset_reset"
+    android:layout_width="44dp"
+    android:layout_height="44dp"
+    android:layout_gravity="end|top"
+    android:layout_margin="8dp"
+    android:background="?android:attr/selectableItemBackgroundBorderless"
+    android:contentDescription="@string/reset"
+    android:focusable="true"
+    android:nextFocusLeft="@id/subtitle_offset_add"
+    android:nextFocusDown="@id/apply_btt"
+    android:padding="10dp"
+    android:src="@drawable/round_restart_alt_24"
+    tools:ignore="ContentDescription" />
+
+  <androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/rvSubtitlesOffset"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="78dp" />
+
+  <TextView
+    android:id="@+id/no_subtitles_loaded_notice"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:alpha="0.7"
+    android:text="@string/no_subtitles_loaded"
+    android:textSize="18sp"
+    android:textStyle="italic" />
+
+  <LinearLayout
+    android:id="@+id/linearLayout3"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom|center_horizontal"
+    android:orientation="vertical">
+
+    <LinearLayout
+      android:layout_width="410dp"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:gravity="center"
+      android:orientation="vertical">
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <ImageView
+          android:id="@+id/subtitle_offset_subtract_more"
+          android:layout_width="44dp"
+          android:layout_height="44dp"
+          android:layout_gravity="center"
+          android:layout_marginStart="10dp"
+          android:layout_marginEnd="10dp"
+          android:background="?android:attr/selectableItemBackgroundBorderless"
+          android:contentDescription="@string/subtitle_offset_subtract_more"
+          android:focusable="true"
+          android:nextFocusRight="@id/subtitle_offset_subtract"
+          android:padding="10dp"
+          android:src="@drawable/ic_arrow_left_24"
+          tools:ignore="ContentDescription" />
+
+        <ImageView
+          android:id="@+id/subtitle_offset_subtract"
+          android:layout_width="44dp"
+          android:layout_height="44dp"
+          android:layout_gravity="center"
+          android:layout_marginEnd="10dp"
+          android:background="?android:attr/selectableItemBackgroundBorderless"
+          android:contentDescription="@string/subtitle_offset_subtract"
+          android:focusable="true"
+          android:nextFocusLeft="@id/subtitle_offset_subtract_more"
+          android:padding="10dp"
+          android:src="@drawable/ic_remove_24"
+          tools:ignore="ContentDescription" />
+
+        <com.google.android.material.textfield.TextInputLayout
+          android:id="@+id/subtitle_offset_input_layout"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:hint="@string/subtitle_offset_title">
+
+          <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/subtitle_offset_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="no"
+            android:gravity="center"
+            android:inputType="numberSigned"
+            android:textAlignment="center"
+            tools:ignore="LabelFor" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageView
+          android:id="@+id/subtitle_offset_add"
+          android:layout_width="44dp"
+          android:layout_height="44dp"
+          android:layout_gravity="center"
+          android:layout_marginStart="10dp"
+          android:background="?android:attr/selectableItemBackgroundBorderless"
+          android:contentDescription="@string/subtitle_offset_add"
+          android:focusable="true"
+          android:nextFocusRight="@id/subtitle_offset_add_more"
+          android:padding="10dp"
+          android:src="@drawable/ic_add_20dp"
+          tools:ignore="ContentDescription" />
+
+        <ImageView
+          android:id="@+id/subtitle_offset_add_more"
+          android:layout_width="44dp"
+          android:layout_height="44dp"
+          android:layout_gravity="center"
+          android:layout_marginStart="10dp"
+          android:layout_marginEnd="10dp"
+          android:background="?android:attr/selectableItemBackgroundBorderless"
+          android:contentDescription="@string/subtitle_offset_add_more"
+          android:focusable="true"
+          android:nextFocusLeft="@id/apply_btt"
+          android:nextFocusDown="@id/apply_btt"
+          android:padding="10dp"
+          android:src="@drawable/ic_arrow_right_24"
+          tools:ignore="ContentDescription" />
+
+      </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="60dp"
+      android:gravity="bottom|end"
+      android:orientation="horizontal"
+      android:padding="8dp"
+      android:visibility="gone">
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/cancel_btt"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginEnd="8dp"
+        android:text="@string/sort_cancel" />
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/reset_btt"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|end"
+        android:layout_marginEnd="8dp"
+        android:text="@string/reset" />
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/apply_btt"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|end"
+        android:text="@string/sort_apply"
+        android:visibility="visible">
+
+        <requestFocus />
+      </com.google.android.material.button.MaterialButton>
+    </LinearLayout>
+  </LinearLayout>
+</FrameLayout>

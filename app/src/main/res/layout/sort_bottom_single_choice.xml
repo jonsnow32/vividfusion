@@ -1,5 +1,5 @@
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@android:id/text1"
   style="@style/CheckLabel"
-  tools:text="hello" />
+  tools:text="@tools:sample/first_names" />

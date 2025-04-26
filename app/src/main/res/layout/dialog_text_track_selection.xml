@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="?attr/colorSurfaceContainer"
+  android:orientation="vertical">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+
+    android:layout_marginTop="20dp"
+    android:layout_marginBottom="10dp"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+    <TextView
+      android:id="@+id/text1"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_rowWeight="1"
+      android:layout_weight="1"
+      android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+      android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+      android:textSize="20sp"
+      android:textStyle="bold"
+      tools:text="Test" />
+
+    <ImageButton
+      android:id="@+id/subtitleOffsetBtn"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:background="@drawable/transparent_circle_background"
+      android:contentDescription="@string/subtitle_offset_title"
+      android:layout_marginHorizontal="16dp"
+      android:src="@drawable/outline_display_settings_24">
+
+    </ImageButton>
+  </LinearLayout>
+
+
+  <ListView
+    android:id="@+id/listview1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_rowWeight="1"
+    android:layout_marginBottom="120dp"
+    android:nextFocusLeft="@id/apply_btt"
+    android:nextFocusRight="@id/cancel_btt"
+    android:paddingTop="10dp"
+    android:requiresFadingEdge="vertical"
+    tools:listitem="@layout/sort_bottom_single_choice" />
+
+  <LinearLayout
+    android:id="@+id/apply_btt_holder"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:layout_marginTop="-120dp"
+    android:gravity="bottom|end"
+    android:orientation="vertical">
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/openLocalSubtitleBtn"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical|end"
+      android:text="@string/open_local_subtitle" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/onlineSubtitleBtn"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical|end"
+      android:text="@string/browse_online_subtitle" />
+
+  </LinearLayout>
+</LinearLayout>

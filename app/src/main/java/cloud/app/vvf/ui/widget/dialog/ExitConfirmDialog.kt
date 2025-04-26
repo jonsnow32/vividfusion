@@ -9,10 +9,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.DialogConfirmExitBinding
-import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.utils.autoCleared
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 @AndroidEntryPoint

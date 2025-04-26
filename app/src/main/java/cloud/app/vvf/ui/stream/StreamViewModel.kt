@@ -13,7 +13,7 @@ import cloud.app.vvf.common.models.movie.GeneralInfo
 import cloud.app.vvf.common.models.movie.Ids
 import cloud.app.vvf.common.models.movie.Season
 import cloud.app.vvf.common.models.subtitle.SubtitleData
-import cloud.app.vvf.common.models.video.VVFVideo
+import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.run
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,8 +33,8 @@ class StreamViewModel @Inject constructor(
   val dataFlow: MutableStateFlow<AppDataStore>,
 ) :
   CatchingViewModel(throwableFlow) {
-  private val _streams = MutableStateFlow<List<VVFVideo>>(emptyList())
-  val streams: StateFlow<List<VVFVideo>> = _streams.asStateFlow()
+  private val _streams = MutableStateFlow<List<Video>>(emptyList())
+  val streams: StateFlow<List<Video>> = _streams.asStateFlow()
 
   private val _subtitles = MutableStateFlow<List<SubtitleData>>(emptyList())
   val subtitles: StateFlow<List<SubtitleData>> = _subtitles.asStateFlow()
@@ -102,7 +102,7 @@ class StreamViewModel @Inject constructor(
     _subtitles.value = _subtitles.value + subtitleData
   }
 
-  fun onLinkReceived(streamData: VVFVideo) {
+  fun onLinkReceived(streamData: Video) {
     _streams.value = _streams.value + streamData
   }
 }

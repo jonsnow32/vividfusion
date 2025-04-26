@@ -88,20 +88,22 @@ fun Context.setLocale(languageCode: String?) {
   @Suppress("DEPRECATION")
   resources.updateConfiguration(config, resources.displayMetrics)
 }
-
+var currentToast : Toast? = null
 fun Context.showToast(message: String, idRes: Int? = null, duration: Int = Toast.LENGTH_SHORT) {
+  currentToast?.cancel()
   val layoutInflater = LayoutInflater.from(this)
   val binding = ToastBinding.inflate(layoutInflater)
   binding.toastText.text = message
   if (idRes != null) binding.icon.setImageDrawable(ContextCompat.getDrawable(this, idRes))
   else binding.icon.visibility = View.GONE
-  Toast(this).apply {
+  currentToast = Toast(this).apply {
     this.duration = duration
     setGravity(Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL, 0, 100)
     view = binding.root
     show()
   }
 }
+
 fun Context.showToast(msgID: Int, idRes: Int? = null, duration: Int = Toast.LENGTH_SHORT) {
   showToast(getString(msgID, idRes, duration))
 }

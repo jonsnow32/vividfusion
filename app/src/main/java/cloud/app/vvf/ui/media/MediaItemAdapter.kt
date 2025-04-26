@@ -40,6 +40,7 @@ class MediaItemAdapter(
       8 -> MediaItemViewHolder.Media.create(parent)
       9 -> MediaItemViewHolder.Media.create(parent)
       10 -> MediaItemViewHolder.Media.create(parent)
+      11 -> MediaItemViewHolder.Track.create(parent)
       else -> throw IllegalArgumentException("Invalid view type")
     }
     return holder
@@ -58,7 +59,8 @@ class MediaItemAdapter(
       is AVPMediaItem.TrailerItem -> 6
       is AVPMediaItem.PlaybackProgress -> 8
       is AVPMediaItem.VideoItem -> 9
-      is AVPMediaItem.AlbumItem -> 10
+      is AVPMediaItem.VideoCollectionItem -> 10
+      is AVPMediaItem.TrackItem -> 11
     }
   }
 

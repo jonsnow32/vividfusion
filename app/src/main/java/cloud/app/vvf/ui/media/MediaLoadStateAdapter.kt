@@ -1,31 +1,32 @@
 package cloud.app.vvf.ui.media
 
-import android.Manifest
-import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.fragment.app.Fragment
 import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.ExceptionActivity
+import cloud.app.vvf.R
 import cloud.app.vvf.common.exceptions.AppPermissionRequiredException
-import cloud.app.vvf.databinding.ItemErrorBinding
-import cloud.app.vvf.databinding.ItemLoginRequiredBinding
-import cloud.app.vvf.databinding.ItemNotLoadingBinding
-import cloud.app.vvf.databinding.SkeletonItemContainerBinding
-import cloud.app.vvf.databinding.SkeletonItemMediaRecyclerGridBinding
-import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import cloud.app.vvf.common.exceptions.LoginRequiredException
 import cloud.app.vvf.common.exceptions.MissingApiKeyException
 import cloud.app.vvf.databinding.ItemApiKeyRequiredBinding
+import cloud.app.vvf.databinding.ItemErrorBinding
+import cloud.app.vvf.databinding.ItemLoginRequiredBinding
+import cloud.app.vvf.databinding.ItemNotLoadingBinding
 import cloud.app.vvf.databinding.ItemPermissionRequireBinding
+import cloud.app.vvf.databinding.SkeletonItemContainerBinding
+import cloud.app.vvf.databinding.SkeletonItemMediaRecyclerGridBinding
+import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import cloud.app.vvf.ui.setting.ExtensionSettingFragment
 import cloud.app.vvf.utils.navigate
+import cloud.app.vvf.utils.requestPermission
+import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 
-class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForContainer: Boolean) : LoadStateAdapter<MediaLoadStateAdapter.LoadStateViewHolder>() {
+class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForContainer: Boolean) :
+  LoadStateAdapter<MediaLoadStateAdapter.LoadStateViewHolder>() {
 
   interface Listener {
     fun onRetry()
@@ -35,7 +36,8 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
     fun onRequestPermission(error: AppPermissionRequiredException)
   }
 
-  class LoadStateViewHolder(val mediaLoadStateView: MediaLoadStateView) : RecyclerView.ViewHolder(mediaLoadStateView.root)
+  class LoadStateViewHolder(val mediaLoadStateView: MediaLoadStateView) :
+    RecyclerView.ViewHolder(mediaLoadStateView.root)
 
   sealed class MediaLoadStateView(val root: View) {
     data class NotLoadingView(val binding: ItemNotLoadingBinding, val listener: Listener?) :
@@ -47,7 +49,8 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
       }
     }
 
-    data class ContainerLoadingView(val binding: SkeletonItemContainerBinding) : MediaLoadStateView(binding.root) {
+    data class ContainerLoadingView(val binding: SkeletonItemContainerBinding) :
+      MediaLoadStateView(binding.root) {
       override fun bind(loadState: LoadState) {}
     }
 
@@ -73,7 +76,10 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
       }
     }
 
-    data class PermissionRequireView(val binding: ItemPermissionRequireBinding, val listener: Listener?) :
+    data class PermissionRequireView(
+      val binding: ItemPermissionRequireBinding,
+      val listener: Listener?
+    ) :
       MediaLoadStateView(binding.root) {
       override fun bind(loadState: LoadState) {
         val error =
@@ -157,6 +163,7 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
           ItemPermissionRequireBinding.inflate(inflater, parent, false),
           listener
         )
+
         else -> throw IllegalStateException()
       }
 
@@ -166,7 +173,7 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
 
   override fun getStateViewType(loadState: LoadState): Int {
     return when (loadState) {
-      is LoadState.Loading -> if(isAdapterForContainer) 0 else 5
+      is LoadState.Loading -> if (isAdapterForContainer) 0 else 5
       is LoadState.NotLoading -> 1
       is LoadState.Error -> {
         when (loadState.error) {
@@ -183,36 +190,38 @@ class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForCont
     holder.mediaLoadStateView.bind(loadState)
   }
 
-  constructor (fragment: Fragment, isContainerAdapter: Boolean = true,  retry: () -> Unit, ) : this(object : Listener {
-    override fun onRetry() {
-      retry()
-    }
-
-    override fun onError(view: View, error: Throwable) {
-      ExceptionActivity.start(view.context, error)
-    }
-
-    override fun onLoginRequired(view: View, error: LoginRequiredException) {
-      ExceptionActivity.start(view.context, error)
-    }
-
-    override fun onApiKeyEnter(view: View, error: MissingApiKeyException) {
-      //fragment.navigate(ManageExtensionsFragment())
-      val extension = fragment.navigate(
-        ExtensionSettingFragment.newInstance(error.extensionId, error.clientName),
-        view
-      )
-    }
-
-    val REQUEST_CODE = 39483948
-    override fun onRequestPermission(
-      error: AppPermissionRequiredException
-    ) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        requestPermissions(fragment.requireActivity(), arrayOf(Manifest.permission.READ_MEDIA_VIDEO), REQUEST_CODE)
-      } else {
-        requestPermissions(fragment.requireActivity(), arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), REQUEST_CODE)
+  constructor (fragment: Fragment, isContainerAdapter: Boolean = true, retry: () -> Unit) : this(
+    object : Listener {
+      override fun onRetry() {
+        retry()
       }
-    }
-  }, isContainerAdapter)
+
+      override fun onError(view: View, error: Throwable) {
+        ExceptionActivity.start(view.context, error)
+      }
+
+      override fun onLoginRequired(view: View, error: LoginRequiredException) {
+        ExceptionActivity.start(view.context, error)
+      }
+
+      override fun onApiKeyEnter(view: View, error: MissingApiKeyException) {
+        val extension = fragment.navigate(
+          ExtensionSettingFragment.newInstance(error.extensionId, error.clientName),
+          view
+        )
+      }
+
+      override fun onRequestPermission(error: AppPermissionRequiredException) {
+        val activity = fragment.requireActivity()
+
+        activity.requestPermission(error.permissionName, onCancel = {
+          fragment.createSnack(R.string.permission_denied)
+        }, onGranted = {
+          retry()
+        })
+      }
+
+    },
+    isContainerAdapter
+  )
 }

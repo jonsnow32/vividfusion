@@ -6,7 +6,7 @@ import android.content.Intent
 import androidx.activity.result.ActivityResult
 import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.video.VVFVideo
+import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.features.playerManager.PlayerContract
 import cloud.app.vvf.features.playerManager.data.PlayData
 import cloud.app.vvf.features.playerManager.data.PlayerType
@@ -77,7 +77,7 @@ class ExoPLayerContract(listener: PlayBackListener) : PlayerContract(listener) {
         videosHeadersArrays.add(it)
         videosHeadersArrays.add(video.toString())
         val headers = mutableListOf<String>()
-        if(video is VVFVideo.RemoteVideo) {
+        if(video is Video.RemoteVideo) {
           video.headers?.map { header ->
             headers.add(header.key)
             headers.add(header.value)

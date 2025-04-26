@@ -1,22 +1,21 @@
 package cloud.app.vvf.features.gesture
 
 import android.annotation.SuppressLint
-import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.view.ViewGroup.LayoutParams
+import android.widget.FrameLayout
+import androidx.annotation.OptIn
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.ui.AspectRatioFrameLayout
 import cloud.app.vvf.R
 import cloud.app.vvf.common.utils.millisecondsToReadable
 import cloud.app.vvf.common.utils.millisecondsToReadableWithSign
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.features.player.PlayerFragment.Companion.HIDE_DELAY_MILLIS
-import cloud.app.vvf.features.player.PlayerViewModel
 import cloud.app.vvf.features.player.seekBack
 import cloud.app.vvf.features.player.seekForward
 import cloud.app.vvf.utils.toDp
@@ -27,33 +26,35 @@ import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-
-class PlayerGestureHelper(
+@SuppressLint("ClickableViewAccessibility")
+@OptIn(UnstableApi::class)
+class PlayerGestureHelper
+  (
   private val fragment: PlayerFragment,
   private val volumeManager: VolumeManager,
   private val brightnessManager: BrightnessManager,
 ) {
   private val viewModel by lazy { fragment.viewModel }
   private val useZoomControls by lazy {
-    viewModel.preference.getBoolean(
+    viewModel.defaultAppSetting.getBoolean(
       fragment.getString(R.string.pref_zoom_control),
       true
     )
   }
   private val useSeekControls by lazy {
-    viewModel.preference.getBoolean(
+    viewModel.defaultAppSetting.getBoolean(
       fragment.getString(R.string.pref_use_seek_control),
       true
     )
   }
   private val useSwipeControls by lazy {
-    viewModel.preference.getBoolean(
+    viewModel.defaultAppSetting.getBoolean(
       fragment.getString(R.string.pref_use_swipe_control),
       true
     )
   }
   private val seekSpeed by lazy {
-    viewModel.preference.getLong(
+    viewModel.defaultAppSetting.getInt(
       fragment.getString(R.string.pref_seek_speed),
       20
     )
@@ -66,9 +67,8 @@ class PlayerGestureHelper(
   private var hideBrightnessIndicatorJob: Job? = null
   private var hideInfoLayoutJob: Job? = null
 
-  @UnstableApi
-  private var exoContentFrameLayout: AspectRatioFrameLayout =
-    playerView.findViewById(R.id.exo_content_frame)
+  private var exoContentFrameLayout: FrameLayout =
+    playerView.findViewById(R.id.player_view)
 
   private var currentGestureAction: GestureAction? = null
   private var seekStart = 0L
@@ -83,8 +83,10 @@ class PlayerGestureHelper(
     object : GestureDetector.SimpleOnGestureListener() {
       override fun onSingleTapConfirmed(event: MotionEvent): Boolean {
         with(playerView) {
-          @UnstableApi
-          fragment.animateLayoutChanges(!isControllerFullyVisible, true)
+
+          fragment.run {
+            animateLayoutChanges(!isControllerFullyVisible, true)
+          }
         }
         return true
       }

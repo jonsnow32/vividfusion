@@ -15,11 +15,12 @@ import cloud.app.vvf.databinding.ItemMediaTitleBinding
 import cloud.app.vvf.databinding.ItemMediaCoverBinding
 import cloud.app.vvf.databinding.ItemSeasonBinding
 import cloud.app.vvf.databinding.ItemSeasonLargeBinding
-import cloud.app.vvf.databinding.ItemStreamBinding
+import cloud.app.vvf.databinding.ItemTrackBinding
 import cloud.app.vvf.databinding.ItemVideoBinding
 import cloud.app.vvf.utils.loadInto
 import cloud.app.vvf.utils.roundTo
 import cloud.app.vvf.utils.setTextWithVisibility
+import com.uwetrottmann.tmdb2.entities.FavoriteMedia
 
 sealed class MediaItemViewHolder(itemView: View) :
   RecyclerView.ViewHolder(itemView) {
@@ -45,16 +46,23 @@ sealed class MediaItemViewHolder(itemView: View) :
         this.playIcon.visibility = View.VISIBLE
       }
 
-      is AVPMediaItem.VideoItem -> {
+      is AVPMediaItem.TrackItem -> {
         item.poster.loadInto(imageView, item.placeHolder())
         this.iconContainer.isVisible = true
-        this.rating.setTextWithVisibility(item.vvfVideo.duration?.millisecondsToReadable())
+        this.rating.setTextWithVisibility(item.track.duration?.millisecondsToReadable())
+//        this.playIcon.visibility = View.VISIBLE
+      }
+
+        is AVPMediaItem.VideoItem -> {
+        item.poster.loadInto(imageView, item.placeHolder())
+        this.iconContainer.isVisible = true
+        this.rating.setTextWithVisibility(item.video.duration?.millisecondsToReadable())
 //        this.playIcon.visibility = View.VISIBLE
       }
 
       is AVPMediaItem.ActorItem,
       is AVPMediaItem.EpisodeItem,
-      is AVPMediaItem.AlbumItem,
+      is AVPMediaItem.VideoCollectionItem,
       is AVPMediaItem.MovieItem,
       is AVPMediaItem.SeasonItem,
       is AVPMediaItem.ShowItem,
@@ -173,6 +181,30 @@ sealed class MediaItemViewHolder(itemView: View) :
       }
     }
   }
+  class Track(val binding: ItemTrackBinding) : MediaItemViewHolder(binding.root) {
+    private val titleBinding = ItemMediaTitleBinding.bind(binding.root)
+    override val transitionView: View
+      get() = binding.imageView
+
+    override fun bind(item: AVPMediaItem) {
+      item as AVPMediaItem.TrackItem
+      titleBinding.title.setTextWithVisibility(item.title)
+      titleBinding.subtitle.setTextWithVisibility(item.track.album)
+      if(item.poster != null) item.poster.loadInto(binding.imageView)
+    }
+
+
+    companion object {
+      fun create(
+        parent: ViewGroup
+      ): MediaItemViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+        return Track(
+          ItemTrackBinding.inflate(layoutInflater, parent, false)
+        )
+      }
+    }
+  }
 
   class Trailer(val binding: ItemVideoBinding) : MediaItemViewHolder(binding.root) {
     override val transitionView: View
@@ -212,8 +244,9 @@ sealed class MediaItemViewHolder(itemView: View) :
       //is AVPMediaItem.StreamItem -> R.drawable.ic_video
       is AVPMediaItem.TrailerItem -> R.drawable.ic_video
       is AVPMediaItem.PlaybackProgress -> R.drawable.ic_video
-      is AVPMediaItem.AlbumItem -> R.drawable.ic_album
+      is AVPMediaItem.VideoCollectionItem -> R.drawable.ic_album
       is AVPMediaItem.VideoItem -> R.drawable.ic_video
+      is AVPMediaItem.TrackItem -> R.drawable.ic_audio_track
     }
   }
 }

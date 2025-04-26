@@ -64,7 +64,7 @@
           android:layout_gravity="start"
           android:layout_marginEnd="10dp"
           android:visibility="gone"
-          android:text="@string/filler" />
+          android:text="@string/filter" />
 
         <TextView
           android:id="@+id/episode_text"

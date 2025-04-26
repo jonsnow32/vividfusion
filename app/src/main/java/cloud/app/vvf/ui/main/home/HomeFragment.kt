@@ -70,6 +70,7 @@ class HomeFragment : Fragment() {
     observe(extensionViewModel.selectedExtension) {
       binding.selectedExtension.loadWith(it?.icon?.toImageHolder())
     }
+
   }
 
   private fun showDropdownMenu(view: View, extensions: List<Extension<*>>?) {

@@ -1,8 +1,15 @@
 package cloud.app.vvf.utils
 
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.view.View
 import android.view.ViewPropertyAnimator
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.view.animation.AnimationSet
+import android.view.animation.Interpolator
+import android.view.animation.TranslateAnimation
+import androidx.constraintlayout.motion.utils.Easing.getInterpolator
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.forEach
 import androidx.core.view.forEachIndexed
@@ -17,6 +24,12 @@ import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.transition.MaterialArcMotion
 import com.google.android.material.transition.MaterialContainerTransform
 import com.google.android.material.transition.MaterialSharedAxis
+import kotlin.math.sign
+
+
+const val ANIMATIONS_KEY = "animations"
+const val SCROLL_ANIMATIONS_KEY = "shared_element"
+
 
 fun startAnimation(
   view: View, animation: ViewPropertyAnimator, durationMultiplier: Float = 1f
@@ -124,3 +137,49 @@ fun Fragment.setupTransition(view: View) {
     view.doOnPreDraw { startPostponedEnterTransition() }
   }
 }
+
+
+private val View.animationDurationSmall: Long
+  get() = context.applicationContext.run {
+    MotionUtils.resolveThemeDuration(
+      this, com.google.android.material.R.attr.motionDurationShort1, 100
+    ).toLong()
+  }
+
+private fun getInterpolator(context: Context) = MotionUtils.resolveThemeInterpolator(
+  context, com.google.android.material.R.attr.motionEasingStandardInterpolator,
+  FastOutSlowInInterpolator()
+)
+
+private fun View.animatedWithAlpha(delay: Long = 0, vararg anim: Animation) {
+  if (!animations) return
+  val set = AnimationSet(true)
+  set.interpolator = getInterpolator(context) as Interpolator
+  val alpha = AlphaAnimation(0.0f, 1.0f)
+  alpha.duration = animationDurationSmall
+  alpha.startOffset = delay
+  set.addAnimation(alpha)
+  anim.forEach { set.addAnimation(it) }
+  startAnimation(set)
+}
+
+fun View.applyTranslationYAnimation(amount: Int, delay: Long = 0) {
+  if (!animations) return
+  if (!scrollAnimations) return
+  val multiplier = amount.sign
+  val translate = TranslateAnimation(
+    Animation.RELATIVE_TO_SELF, 0f,
+    Animation.RELATIVE_TO_SELF, 0f,
+    Animation.RELATIVE_TO_SELF, multiplier * 1.5f,
+    Animation.RELATIVE_TO_SELF, 0f,
+  )
+  translate.duration = animationDuration
+  translate.startOffset = delay
+  animatedWithAlpha(delay, translate)
+}
+
+private val View.scrollAnimations
+  get() = context.applicationContext.run {
+    getSharedPreferences(context.packageName, MODE_PRIVATE)
+      .getBoolean(SCROLL_ANIMATIONS_KEY, false)
+  }

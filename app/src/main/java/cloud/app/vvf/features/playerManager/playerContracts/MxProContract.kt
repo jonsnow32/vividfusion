@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResult
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.video.VVFVideo
+import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.features.playerManager.PlayerContract
 import cloud.app.vvf.features.playerManager.data.PlayData
 import cloud.app.vvf.features.playerManager.data.PlayerType
@@ -63,7 +63,7 @@ open class MxProContract(listener: PlayBackListener) : PlayerContract(listener) 
     val headers = mutableListOf<String>()
 
     val video = input.videos[input.selectedId]
-    if (video is VVFVideo.RemoteVideo) {
+    if (video is Video.RemoteVideo) {
       video.headers?.forEach {
         headers.add(it.key)
         headers.add(it.value)

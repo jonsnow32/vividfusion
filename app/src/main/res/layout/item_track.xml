@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  style="@style/Selectable"
+  android:layout_width="@dimen/track_width"
+  android:layout_height="wrap_content"
+  android:layout_margin="@dimen/media_margin"
+  android:foreground="@drawable/outline_drawable"
+  android:orientation="vertical">
+
+  <androidx.cardview.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/track_width"
+    android:layout_margin="1dp"
+    app:cardBackgroundColor="?attr/colorSurfaceContainer"
+    app:cardCornerRadius="@dimen/rounded_radius">
+
+
+    <ImageView
+      android:id="@+id/imageView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:importantForAccessibility="no"
+      android:scaleType="centerCrop"
+      android:src="@drawable/ic_audio_track"
+      app:tint="?colorControlNormal" />
+
+
+    <androidx.core.widget.ContentLoadingProgressBar
+      android:id="@+id/watchProgress"
+      style="@android:style/Widget.Material.ProgressBar.Horizontal"
+      android:layout_width="match_parent"
+      android:layout_height="5dp"
+      android:layout_gravity="bottom"
+      android:layout_marginBottom="-1.5dp"
+      android:progressBackgroundTint="?attr/colorPrimary"
+      android:progressTint="?attr/colorPrimary"
+      android:visibility="gone"
+      tools:progress="50"
+      tools:visibility="visible" />
+
+    <androidx.cardview.widget.CardView
+      android:id="@+id/iconContainer"
+      android:layout_width="wrap_content"
+      android:layout_height="24dp"
+      android:layout_gravity="top|end"
+      android:layout_margin="4dp"
+      android:alpha="0.66"
+      app:cardBackgroundColor="?attr/colorSurfaceContainer"
+      app:cardCornerRadius="@dimen/rounded_radius">
+
+      <TextView
+        android:id="@+id/rating"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="@dimen/rounded_radius"
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+        tools:text="@string/rating_7_8" />
+
+    </androidx.cardview.widget.CardView>
+
+  </androidx.cardview.widget.CardView>
+
+
+  <include layout="@layout/item_media_title" />
+
+</LinearLayout>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/overlay_background">
+
+
+  <TextView
+    android:id="@+id/no_subtitles_loaded_notice"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:alpha="0.7"
+    android:focusable="true"
+    android:gravity="center"
+    android:clickable="true"
+    android:text="@string/no_subtitles_loaded"
+    android:textSize="18sp"
+    android:textStyle="italic" />
+
+  <androidx.recyclerview.widget.RecyclerView
+    android:id="@+id/rvSubtitlesOffset"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+
+  <ImageView
+    android:id="@+id/subtitle_offset_reset"
+    android:layout_width="44dp"
+    android:layout_height="44dp"
+    android:layout_gravity="end|top"
+    android:layout_margin="8dp"
+    android:background="?android:attr/selectableItemBackgroundBorderless"
+    android:contentDescription="@string/reset"
+    android:focusable="true"
+    android:nextFocusLeft="@id/subtitle_offset_add"
+    android:nextFocusDown="@id/apply_btt"
+    android:padding="10dp"
+    android:src="@drawable/round_restart_alt_24"
+    app:tint="@color/white"
+    tools:ignore="ContentDescription" />
+
+  <ImageView
+    android:id="@+id/subtitle_offset_close"
+    android:layout_width="44dp"
+    android:layout_height="44dp"
+    android:layout_gravity="start|top"
+    android:layout_margin="8dp"
+    android:contentDescription="@string/reset"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackgroundBorderless"
+    android:nextFocusLeft="@id/subtitle_offset_add"
+    android:nextFocusDown="@id/apply_btt"
+    android:padding="10dp"
+    android:src="@drawable/ic_close"
+    app:tint="@color/white"
+    tools:ignore="ContentDescription" />
+
+
+  <LinearLayout
+    android:visibility="gone"
+    android:background="@drawable/background_shadow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:gravity="center_horizontal"
+    android:padding="16dp">
+
+    <ImageView
+      android:id="@+id/subtitle_offset_subtract_more"
+      android:layout_width="44dp"
+      android:layout_height="44dp"
+      android:layout_gravity="center"
+      android:layout_marginStart="10dp"
+      android:layout_marginEnd="10dp"
+      android:background="?android:attr/selectableItemBackgroundBorderless"
+      android:contentDescription="@string/subtitle_offset_subtract_more"
+      android:focusable="true"
+      android:nextFocusRight="@id/subtitle_offset_subtract"
+      android:padding="10dp"
+      android:src="@drawable/ic_arrow_left_24"
+      tools:ignore="ContentDescription" />
+
+    <ImageView
+      android:id="@+id/subtitle_offset_subtract"
+      android:layout_width="44dp"
+      android:layout_height="44dp"
+      android:layout_gravity="center"
+      android:layout_marginEnd="10dp"
+      android:background="?android:attr/selectableItemBackgroundBorderless"
+      android:contentDescription="@string/subtitle_offset_subtract"
+      android:focusable="true"
+      android:nextFocusLeft="@id/subtitle_offset_subtract_more"
+      android:padding="10dp"
+      android:src="@drawable/ic_remove_24"
+      tools:ignore="ContentDescription" />
+
+    <com.google.android.material.textfield.TextInputLayout
+      android:id="@+id/subtitle_offset_input_layout"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:hint="@string/subtitle_offset_title">
+
+      <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/subtitle_offset_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="no"
+        android:gravity="center"
+        android:inputType="numberSigned"
+        android:textAlignment="center"
+        tools:ignore="LabelFor" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+      android:id="@+id/subtitle_offset_add"
+      android:layout_width="44dp"
+      android:layout_height="44dp"
+      android:layout_gravity="center"
+      android:layout_marginStart="10dp"
+      android:background="?android:attr/selectableItemBackgroundBorderless"
+      android:contentDescription="@string/subtitle_offset_add"
+      android:focusable="true"
+      android:nextFocusRight="@id/subtitle_offset_add_more"
+      android:padding="10dp"
+      android:src="@drawable/ic_add_20dp"
+      tools:ignore="ContentDescription" />
+
+    <ImageView
+      android:id="@+id/subtitle_offset_add_more"
+      android:layout_width="44dp"
+      android:layout_height="44dp"
+      android:layout_gravity="center"
+      android:layout_marginStart="10dp"
+      android:layout_marginEnd="10dp"
+      android:background="?android:attr/selectableItemBackgroundBorderless"
+      android:contentDescription="@string/subtitle_offset_add_more"
+      android:focusable="true"
+      android:nextFocusLeft="@id/apply_btt"
+      android:nextFocusDown="@id/apply_btt"
+      android:padding="10dp"
+      android:src="@drawable/ic_arrow_right_24"
+      tools:ignore="ContentDescription" />
+
+  </LinearLayout>
+</FrameLayout>

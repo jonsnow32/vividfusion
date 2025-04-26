@@ -1,11 +1,14 @@
 package cloud.app.vvf.ui.widget.dialog.itemOption
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isGone
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ConcatAdapter
@@ -35,7 +38,7 @@ import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ItemOptionDialog : DockingDialog() {
+class ItemOptionDialog : DockingDialog(0.4f) {
   private var binding by autoCleared<DialogMediaItemBinding>()
   private val viewModel by viewModels<ItemOptionViewModel>()
   private val args by lazy { requireArguments() }
@@ -63,9 +66,12 @@ class ItemOptionDialog : DockingDialog() {
   @SuppressLint("UseCompatLoadingForDrawables")
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     binding.itemContainer.run {
-      item.backdrop.loadWith(binding.imageView)
+      if (item.backdrop != null)
+        item.backdrop.loadWith(binding.imageView)
+      binding.itemContainer.isGone = item.backdrop == null
       viewModel.getItemDetails(item, extensionId)
     }
+
     binding.recyclerView.adapter =
       ConcatAdapter(ActionAdapter(getActions(item)), LoadingAdapter())
 
@@ -163,6 +169,20 @@ class ItemOptionDialog : DockingDialog() {
       })
     }
 
+    is AVPMediaItem.TrackItem -> {
+      listOfNotNull(ItemAction.Resource(R.drawable.ic_delete, R.string.action_delete) {
+        viewModel.deleteItem(requireActivity(), item)
+      }, ItemAction.Resource(R.drawable.edit_24dp, R.string.action_rename) {
+        viewModel.renameItem(requireActivity(), item, "")
+      })
+    }
+
+    is AVPMediaItem.VideoItem -> {
+      listOfNotNull(ItemAction.Resource(R.drawable.ic_delete, R.string.action_delete) {
+        viewModel.deleteItem(requireActivity(), item)
+      })
+    }
+
     else -> listOf()
   } + listOfNotNull(
     ItemAction.Resource(
@@ -173,8 +193,14 @@ class ItemOptionDialog : DockingDialog() {
     }, getFavoritesAction(item)
   )
 
-  fun getFavoritesAction(item: AVPMediaItem): ItemAction? {
-    return if (item is AVPMediaItem.MovieItem || item is AVPMediaItem.ShowItem || item is AVPMediaItem.ActorItem ||  item is AVPMediaItem.VideoItem ||  item is AVPMediaItem.AlbumItem) {
+  private fun getFavoritesAction(item: AVPMediaItem): ItemAction? {
+    return if (item is AVPMediaItem.MovieItem
+      || item is AVPMediaItem.ShowItem
+      || item is AVPMediaItem.ActorItem
+      || item is AVPMediaItem.VideoItem
+      || item is AVPMediaItem.VideoCollectionItem
+      || item is AVPMediaItem.TrackItem
+    ) {
       if (!viewModel.favoriteStatus.value)
         ItemAction.Resource(
           R.drawable.favorite_border_24dp,

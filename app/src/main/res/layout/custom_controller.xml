@@ -64,34 +64,38 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent">
 
-      <FrameLayout
+      <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/player_top_holder"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-          android:layout_width="match_parent"
+          android:layout_width="0dp"
           android:layout_height="wrap_content"
-          android:layout_marginStart="32dp"
-          android:layout_marginTop="20dp"
-          android:layout_marginEnd="32dp"
-          android:orientation="vertical">
+          android:layout_marginHorizontal="16dp"
+          android:orientation="vertical"
+          app:layout_constraintBottom_toBottomOf="@+id/player_go_back_holder"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toEndOf="@+id/player_go_back_holder"
+          app:layout_constraintTop_toTopOf="@+id/player_go_back_holder">
 
           <TextView
-            android:maxLines="2"
-            android:id="@+id/player_video_title"
+            android:id="@+id/playerVideoTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
+            android:ellipsize="end"
             android:gravity="end"
             android:maxWidth="600dp"
+            android:maxLines="2"
             android:textAlignment="viewEnd"
             android:textSize="16sp"
             android:textStyle="bold"
-            tools:text="Hello world" />
+            android:textColor="@color/white"
+            tools:text="@tools:sample/lorem/random" />
 
           <TextView
-            android:id="@+id/player_video_title_rez"
+            android:id="@+id/playerVideoSize"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
@@ -107,8 +111,8 @@
           android:id="@+id/player_go_back_holder"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_marginEnd="17dp"
           android:layout_marginStart="17dp"
+          android:layout_marginEnd="17dp"
           android:orientation="horizontal"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toTopOf="parent">
@@ -129,9 +133,9 @@
               android:contentDescription="@string/back"
               android:focusable="true"
               android:nextFocusLeft="@id/player_go_back"
-              android:nextFocusRight="@id/player_restart"
+              android:nextFocusRight="@id/playerRestart"
               android:nextFocusUp="@id/player_go_back"
-              android:nextFocusDown="@id/player_go_forward"
+              android:nextFocusDown="@id/playerForward"
               android:src="@drawable/ic_back"
               android:tag="@string/tv_no_focus_tag"
               app:tint="@android:color/white" />
@@ -147,14 +151,15 @@
           </LinearLayout>
 
           <LinearLayout
-            android:id="@+id/player_restart_root"
+            android:id="@+id/playerRestartRoot"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <ImageView
-              android:id="@+id/player_restart"
+              android:id="@+id/playerRestart"
               android:layout_width="30dp"
               android:layout_height="30dp"
               android:layout_gravity="center"
@@ -162,9 +167,9 @@
               android:contentDescription="@string/restart"
               android:focusable="true"
               android:nextFocusLeft="@id/player_go_back"
-              android:nextFocusRight="@id/player_go_forward"
-              android:nextFocusUp="@id/player_restart"
-              android:nextFocusDown="@id/player_go_forward"
+              android:nextFocusRight="@id/playerForward"
+              android:nextFocusUp="@id/playerRestart"
+              android:nextFocusDown="@id/playerForward"
               android:src="@drawable/ic_replay_24"
               android:tag="@string/tv_no_focus_tag"
               app:tint="@android:color/white" />
@@ -180,29 +185,30 @@
           </LinearLayout>
 
           <LinearLayout
-            android:id="@+id/player_go_forward_root"
+            android:id="@+id/playerForwardRoot"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <ImageView
-              android:id="@+id/player_go_forward"
+              android:id="@+id/playerForward"
               android:layout_width="30dp"
               android:layout_height="30dp"
               android:layout_gravity="center"
               android:clickable="true"
               android:contentDescription="@string/next_video"
               android:focusable="true"
-              android:nextFocusLeft="@id/player_restart"
+              android:nextFocusLeft="@id/playerRestart"
               android:nextFocusRight="@id/exo_prev"
-              android:nextFocusDown="@id/player_go_forward"
+              android:nextFocusDown="@id/playerForward"
               android:src="@drawable/ic_next_24"
               android:tag="@string/tv_no_focus_tag"
               app:tint="@android:color/white" />
 
             <TextView
-              android:id="@+id/player_go_forward_text"
+              android:id="@+id/playerForwardText"
               style="@style/MarqueeButtonText"
               android:layout_marginTop="5dp"
               android:text="@string/next_video"
@@ -211,25 +217,25 @@
 
           </LinearLayout>
         </LinearLayout>
-      </FrameLayout>
+      </androidx.constraintlayout.widget.ConstraintLayout>
 
 
       <LinearLayout
-        android:id="@+id/player_center_controls"
-        android:layout_width="wrap_content"
+        android:id="@+id/playerCenterControls"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center_vertical"
+        android:gravity="center"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:orientation="horizontal">
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
           android:id="@id/exo_rew"
           android:layout_width="70dp"
           android:layout_height="70dp"
+          android:layout_marginEnd="36dp"
           android:background="@drawable/transparent_circle_background"
           android:backgroundTint="@android:color/white"
           android:contentDescription="@string/player_controls_previous"
@@ -237,23 +243,45 @@
           android:scaleType="fitXY"
           android:src="@drawable/ic_skip_prev" />
 
-        <ImageButton
-          android:id="@id/exo_play_pause"
-          android:layout_width="100dp"
-          android:layout_height="100dp"
-          android:layout_marginHorizontal="32dp"
-          android:background="@drawable/transparent_circle_background"
-          android:backgroundTint="@android:color/white"
-          android:contentDescription="@string/player_controls_play_pause"
-          android:padding="20dp"
-          android:scaleType="fitXY"
-          android:src="@drawable/ic_play" />
+
+        <FrameLayout
+          android:id="@+id/playPauseContainer"
+          android:layout_width="72dp"
+          android:layout_height="72dp"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent">
+
+          <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/playPauseToggle"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:background="@drawable/transparent_circle_background"
+            android:button="@drawable/anim_play_pause_48dp"
+            android:contentDescription="@string/play"
+            app:buttonTint="@color/white"
+            tools:ignore="DuplicateSpeakableTextCheck" />
+        </FrameLayout>
+
+        <!--        <ImageButton-->
+        <!--          android:id="@id/exo_play_pause"-->
+        <!--          android:layout_width="100dp"-->
+        <!--          android:layout_height="100dp"-->
+        <!--          android:layout_marginHorizontal="32dp"-->
+        <!--          android:background="@drawable/transparent_circle_background"-->
+        <!--          android:backgroundTint="@android:color/white"-->
+        <!--          android:contentDescription="@string/player_controls_play_pause"-->
+        <!--          android:padding="20dp"-->
+        <!--          android:scaleType="fitXY"-->
+        <!--          android:src="@drawable/ic_play" />-->
 
 
         <ImageButton
           android:id="@id/exo_ffwd"
           android:layout_width="70dp"
           android:layout_height="70dp"
+          android:layout_marginStart="36dp"
           android:background="@drawable/transparent_circle_background"
           android:backgroundTint="@android:color/white"
           android:contentDescription="@string/player_controls_next"
@@ -261,26 +289,6 @@
           android:scaleType="fitXY"
           android:src="@drawable/ic_skip_next" />
       </LinearLayout>
-
- <!--use for thinner app:trackThickness="3dp" com.google.android.material.progressindicator.CircularProgressIndicator-->
-      <ProgressBar
-        android:id="@+id/player_buffering"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-
-        android:clickable="false"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-
-        android:indeterminate="true"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:visibility="visible" />
-
 
       <LinearLayout
         android:id="@+id/bottom_player_bar"
@@ -329,7 +337,7 @@
 
             app:scrubber_color="?attr/colorPrimary"
             app:scrubber_dragged_size="26dp"
-            app:scrubber_enabled_size="24dp"/>
+            app:scrubber_enabled_size="24dp" />
 
           <TextView
             android:id="@id/exo_duration"
@@ -406,7 +414,9 @@
             android:contentDescription="@string/screen_rotation"
             android:padding="12dp"
             android:src="@drawable/ic_pip"
-            app:tint="@android:color/white" />
+            android:visibility="gone"
+            app:tint="@android:color/white"
+            tools:visibility="visible" />
 
           <ImageButton
             android:id="@+id/btnBackground"
@@ -417,19 +427,67 @@
             android:contentDescription="@string/screen_rotation"
             android:padding="12dp"
             android:src="@drawable/ic_headset"
-            app:tint="@android:color/white" />
+            android:visibility="gone"
+            app:tint="@android:color/white"
+            tools:visibility="visible" />
+
 
           <ImageButton
-            android:id="@+id/btnRotate"
+            android:id="@+id/btnAudioTrack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/dimen_controls_horizontal"
             android:background="@drawable/transparent_circle_background"
-            android:contentDescription="@string/screen_rotation"
+            android:contentDescription="@string/select_audio_track"
             android:padding="12dp"
-            android:src="@drawable/ic_screen_rotation"
-            app:tint="@android:color/white" />
+            android:src="@drawable/round_audiotrack_24"
+            app:tint="@android:color/white"
+            tools:visibility="visible" />
 
+          <ImageButton
+            android:id="@+id/btnTextTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dimen_controls_horizontal"
+            android:background="@drawable/transparent_circle_background"
+            android:contentDescription="@string/select_subtitle_track"
+            android:padding="12dp"
+            android:src="@drawable/outline_subtitles_24"
+            app:tint="@android:color/white"
+            tools:visibility="visible" />
+
+          <ImageButton
+            android:id="@+id/btnVideoTrack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dimen_controls_horizontal"
+            android:background="@drawable/transparent_circle_background"
+            android:contentDescription="@string/select_subtitle_track"
+            android:padding="12dp"
+            android:src="@drawable/outline_high_quality_24"
+            app:tint="@android:color/white"
+            tools:visibility="visible" />
+          <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp">
+
+            <ImageButton
+              android:id="@+id/btnRotate"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="end"
+              android:layout_marginStart="@dimen/dimen_controls_horizontal"
+              android:background="@drawable/transparent_circle_background"
+              android:contentDescription="@string/screen_rotation"
+              android:padding="12dp"
+              android:src="@drawable/ic_screen_rotation"
+              app:tint="@android:color/white" />
+
+          </LinearLayout>
 
         </LinearLayout>
 

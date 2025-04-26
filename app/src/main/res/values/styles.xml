@@ -182,10 +182,7 @@
   </style>
 
   <style name="CheckLabel" parent="@style/NoCheckLabel">
-    <!--        <item name="drawableTint">@color/check_selection_color</item>-->
-    <!--        Set color in the drawable instead of tint to allow multiple drawables-->
-    <item name="android:checkMark">?android:attr/listChoiceIndicatorSingle</item>
-    <item name="drawableStartCompat">@drawable/ic_baseline_check_24_listview</item>
+    <item name="drawableStartCompat">@drawable/dot_indicator</item>
   </style>
 
 
@@ -228,7 +225,7 @@
   <!-- Base theme for all custom dialogs -->
   <style name="BaseMaterialDialogTheme" parent="ThemeOverlay.Material3.Dialog">
     <item name="android:windowNoTitle">true</item>
-    <item name="android:windowIsFloating">false</item>
+    <item name="android:windowIsFloating">true</item>
     <item name="android:windowBackground">@drawable/dialog_bg</item>
     <item name="android:windowMinWidthMajor">@dimen/abc_dialog_min_width_major</item>
     <item name="android:windowMinWidthMinor">@dimen/abc_dialog_min_width_minor</item>

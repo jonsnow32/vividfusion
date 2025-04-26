@@ -12,6 +12,7 @@ import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.SeekParameters
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import cloud.app.vvf.common.models.subtitle.SubtitleData
 import timber.log.Timber
 
@@ -150,9 +151,8 @@ fun Player.setSeekParameters(seekParameters: SeekParameters) {
  * @param positionMs The position to seek to, in milliseconds.
  * @param shouldFastSeek Whether to seek to the nearest keyframe.
  */
-
+@UnstableApi
 fun Player.seekBack(positionMs: Long, shouldFastSeek: Boolean = false) {
-  @UnstableApi
   setSeekParameters(if (shouldFastSeek) SeekParameters.PREVIOUS_SYNC else SeekParameters.DEFAULT)
   this.seekTo(positionMs)
 }
@@ -163,9 +163,8 @@ fun Player.seekBack(positionMs: Long, shouldFastSeek: Boolean = false) {
  * @param positionMs The position to seek to, in milliseconds.
  * @param shouldFastSeek Whether to seek to the nearest keyframe.
  */
-
+@UnstableApi
 fun Player.seekForward(positionMs: Long, shouldFastSeek: Boolean = false) {
-  @UnstableApi
   setSeekParameters(if (shouldFastSeek) SeekParameters.NEXT_SYNC else SeekParameters.DEFAULT)
   this.seekTo(positionMs)
 }

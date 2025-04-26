@@ -9,14 +9,15 @@ import cloud.app.vvf.common.helpers.Page
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItemsContainer
+import cloud.app.vvf.common.models.MediaItemsContainer
+import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.models.extension.ExtensionType
-import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.extension.Message
-import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.extension.Tab
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
+import cloud.app.vvf.common.settings.SettingSlider
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.extension.builtIn.MediaUtils.getOldestVideoYear
 import kotlinx.coroutines.Dispatchers
@@ -28,21 +29,62 @@ import java.util.concurrent.TimeUnit
 class BuiltInClient(val context: Context) : DatabaseClient,
   MessageFlowProvider {
   override suspend fun getHomeTabs(): List<Tab> {
-    return listOf(Tab("All", "All"), Tab("Albums", "Albums"))
+    return listOf(
+      //Tab("AllVideos", "All Videos"),
+      Tab("VideoCollections", "Video Collections"),
+      Tab("Playlist", "Music Playlist")
+    )
   }
 
+  val minDuration by lazy<Long> {
+    (prefSettings.getInt("pref_min_media_duration")?.toLong() ?: 30L) * 1000L
+  }
   private val pageSize = 4
+
   override fun getHomeFeed(tab: Tab?) = PagedData.Continuous<MediaItemsContainer> {
     val page = it?.toInt() ?: 1
-
     val items = when (tab?.id) {
-      "All" -> getVideoCategories(context, page)
-      "Albums" -> getAlbumCategories(context, page)
+      "AllVideos" -> {
+        MediaUtils.checkVideoPermission(context)
+        getVideoCategories(context, page)
+      }
+
+      "VideoCollections" -> {
+        MediaUtils.checkVideoPermission(context)
+        getVideoCollections(context, page)
+      }
+      "Playlist" -> {
+        MediaUtils.checkAudioPermission(context)
+        getMusicCollections(context, page)
+      }
       else -> TODO()
     }
 
     val continuation = if (items.size < pageSize) null else (page + 1).toString()
     Page(items, continuation)
+  }
+
+  private suspend fun getMusicCollections(
+    context: Context,
+    page: Int
+  ): List<MediaItemsContainer> {
+    if (page != 1) return emptyList()
+    val result = mutableListOf<MediaItemsContainer>()
+
+    withContext(Dispatchers.IO) {
+      val albums = MediaUtils.getMusicCollections(context, minDuration)
+      albums.forEachIndexed { index, playlist ->
+        val data = PagedData.Single<AVPMediaItem> {
+          playlist.tracks?.mapNotNull { track ->
+            AVPMediaItem.TrackItem(track)
+          }?.sortedByDescending { item -> item.track.releaseDate ?: 0L }
+            ?: emptyList()
+        }
+        result.add(MediaItemsContainer.Category(playlist.title, null, data))
+      }
+    }
+
+    return result
   }
 
   fun getTimeRanges(context: Context): List<Pair<String, Long>> {
@@ -83,6 +125,8 @@ class BuiltInClient(val context: Context) : DatabaseClient,
   }
 
   suspend fun getVideoCategories(context: Context, page: Int = 1): List<MediaItemsContainer> {
+
+
     if (page != 1) return emptyList()
     val result = mutableListOf<MediaItemsContainer>()
 
@@ -96,7 +140,8 @@ class BuiltInClient(val context: Context) : DatabaseClient,
             value.second,
             if (index == 0) System.currentTimeMillis() else list[index - 1].second - 1, // Adjust end to avoid overlap
             continuation,
-            20
+            20,
+            minDuration
           ).map { video ->
             AVPMediaItem.VideoItem(video)
           }
@@ -121,17 +166,17 @@ class BuiltInClient(val context: Context) : DatabaseClient,
     return result
   }
 
-  suspend fun getAlbumCategories(context: Context, page: Int = 1): List<MediaItemsContainer> {
+  suspend fun getVideoCollections(context: Context, page: Int = 1): List<MediaItemsContainer> {
     if (page != 1) return emptyList()
     val result = mutableListOf<MediaItemsContainer>()
 
     withContext(Dispatchers.IO) {
-      val albums = MediaUtils.getAllAlbums(context)
+      val albums = MediaUtils.getVideoCollections(context, minDuration)
       albums.forEachIndexed { index, album ->
         val data = PagedData.Single<AVPMediaItem> {
           album.videos.map { video ->
             AVPMediaItem.VideoItem(video)
-          }.sortedByDescending { item -> item.vvfVideo.addedTime }
+          }.sortedByDescending { item -> item.video.addedTime }
         }
         result.add(MediaItemsContainer.Category(album.title, null, data))
       }
@@ -156,14 +201,70 @@ class BuiltInClient(val context: Context) : DatabaseClient,
   }
 
   override suspend fun searchTabs(query: String?): List<Tab> {
-    TODO("Not yet implemented")
+    return listOf(Tab("Videos", "Videos"), Tab("Musics", "Musics"))
   }
 
   override fun searchFeed(
     query: String?,
     tab: Tab?
   ): PagedData<MediaItemsContainer> {
-    TODO("Not yet implemented")
+    return PagedData.Continuous<MediaItemsContainer> { continuation ->
+      val page = continuation?.toInt() ?: 1
+      val pageSize = 20
+
+      val items = mutableListOf<MediaItemsContainer>()
+
+      withContext(Dispatchers.IO) {
+        when (tab?.id) {
+          "Videos" -> {
+            val videos = if (query.isNullOrBlank()) {
+              MediaUtils.getAllVideos(context, page, pageSize, minDuration)
+            } else {
+              MediaUtils.searchVideos(context, query, page, pageSize)
+            }
+            val data = PagedData.Single<AVPMediaItem> {
+              videos.map { video -> AVPMediaItem.VideoItem(video) }
+            }
+            if (videos.isNotEmpty()) {
+              items.add(
+                MediaItemsContainer.Category(
+                  title = "Videos",
+                  subtitle = null,
+                  more = data
+                )
+              )
+            }
+          }
+
+          "Musics" -> {
+            val tracks = if (query.isNullOrBlank()) {
+              MediaUtils.getAllTracks(context, page, pageSize, minDuration)
+            } else {
+              MediaUtils.searchTracks(context, query, page, pageSize)
+            }
+            val data = PagedData.Single<AVPMediaItem> {
+              tracks.map { track -> AVPMediaItem.TrackItem(track) }
+            }
+            if (tracks.isNotEmpty()) {
+              items.add(
+                MediaItemsContainer.Category(
+                  title = "Songs",
+                  subtitle = null,
+                  more = data
+                )
+              )
+            }
+          }
+
+          else -> {
+            // Trả về rỗng nếu không có tab hợp lệ
+          }
+        }
+      }
+
+      val newContinuation = if (items.isEmpty()) null else (page + 1).toString()
+      Page(items, newContinuation)
+    }
   }
 
   override val defaultSettings: List<Setting>
@@ -173,6 +274,14 @@ class BuiltInClient(val context: Context) : DatabaseClient,
         "refresh_library",
         context.getString(R.string.refresh_library_on_reload_summary),
         false
+      ),
+      SettingSlider(
+        title = context.getString(R.string.min_media_duration),
+        key = "pref_min_media_duration",
+        summary = context.getString(R.string.pref_min_media_duration_summary),
+        defaultValue = 30,
+        from = 0,
+        to = 3600,
       )
     )
 

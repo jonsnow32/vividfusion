@@ -41,6 +41,19 @@
     <item>168</item>
   </integer-array>
 
+
+  <string-array name="refer_decoder_names">
+    <item>@string/prefer_device_decoders</item>
+    <item>@string/prefer_app_decoders</item>
+    <item>@string/device_decoders_only</item>
+  </string-array>
+
+  <string-array name="refer_decoder_values">
+    <item>prefer_device_decoders</item>
+    <item>prefer_app_decoders</item>
+    <item>device_decoders_only</item>
+  </string-array>
+
   <string-array name="charsets_list" tools:ignore="TypographyDashes" translatable="false">
     <item>Auto detect</item>
     <item>Arabic (ISO-8859-6)</item>
@@ -95,4 +108,11 @@
     <item>Western European (ISO-8859-15)</item>
     <item>Western European  (ANSI) (Cp1252)</item>
   </string-array>
+
+  <string-array name="themes">
+    <item>Light</item>
+    <item>Dark</item>
+    <item>System</item>
+  </string-array>
+
 </resources>

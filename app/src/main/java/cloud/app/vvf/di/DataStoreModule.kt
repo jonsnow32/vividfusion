@@ -33,17 +33,17 @@ class DataStoreModule {
   @Singleton
   @Provides
   fun provideAccountDataStore(context: Context) =
-    MutableStateFlow<AccountDataStore>(AccountDataStore(context))
+    MutableStateFlow(AccountDataStore(context))
 
   @Singleton
   @Provides
   fun provideAccountFlow(dataStore: MutableStateFlow<AccountDataStore>) =
-    MutableStateFlow<Account>(dataStore.value.getActiveAccount())
+    MutableStateFlow(dataStore.value.getActiveAccount())
 
   @Singleton
   @Provides
   fun provideAppDataStore(context: Context, accountFlow: MutableStateFlow<Account>) =
-    MutableStateFlow<AppDataStore>(AppDataStore(context, accountFlow.value))
+    MutableStateFlow(AppDataStore(context, accountFlow.value))
 
   @Singleton
   @Provides

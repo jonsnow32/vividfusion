@@ -52,7 +52,7 @@
           android:layout_width="wrap_content"
           android:layout_gravity="start"
           android:layout_marginEnd="10dp"
-          android:text="@string/filler"
+          android:text="@string/filter"
           android:visibility="gone" />
 
         <TextView

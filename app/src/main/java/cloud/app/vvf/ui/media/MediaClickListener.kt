@@ -2,28 +2,34 @@ package cloud.app.vvf.ui.media
 
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.OptIn
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import cloud.app.vvf.VVFApplication.Companion.noClient
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import cloud.app.vvf.R
-import cloud.app.vvf.ui.main.browse.BrowseFragment
-import cloud.app.vvf.ui.main.browse.BrowseViewModel
+import cloud.app.vvf.VVFApplication.Companion.noClient
+import cloud.app.vvf.common.helpers.PagedData
+import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.AVPMediaItem.VideoItem
+import cloud.app.vvf.common.models.MediaItemsContainer
+import cloud.app.vvf.common.models.subtitle.SubtitleData
+import cloud.app.vvf.common.models.subtitle.SubtitleOrigin
+import cloud.app.vvf.common.models.video.Video
+import cloud.app.vvf.extension.builtIn.MediaUtils
+import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.ui.detail.movie.MovieFragment
 import cloud.app.vvf.ui.detail.show.ShowFragment
 import cloud.app.vvf.ui.detail.show.season.SeasonFragment
+import cloud.app.vvf.ui.main.browse.BrowseFragment
+import cloud.app.vvf.ui.main.browse.BrowseViewModel
+import cloud.app.vvf.ui.stream.StreamFragment
 import cloud.app.vvf.ui.widget.dialog.itemOption.ItemOptionDialog
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.tryWith
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
-import cloud.app.vvf.common.helpers.PagedData
-import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.MediaItemsContainer
-import cloud.app.vvf.common.models.video.VVFVideo
-import cloud.app.vvf.extension.builtIn.MediaUtils
-import cloud.app.vvf.features.player.PlayerFragment
-import cloud.app.vvf.ui.stream.StreamFragment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -37,6 +43,7 @@ class MediaClickListener(
   val fragment get() = fragmentManager.findFragmentById(R.id.navHostFragment)!!
   private fun noClient() = fragment.createSnack(fragment.requireContext().noClient())
 
+  @OptIn(UnstableApi::class)
   override fun onItemClick(
     extensionId: String?, item: AVPMediaItem, transitionView: View?
   ) {
@@ -74,32 +81,61 @@ class MediaClickListener(
       is AVPMediaItem.TrailerItem -> TODO()
 
       is AVPMediaItem.PlaybackProgress -> onItemClick(extensionId, item.item, transitionView)
-      is AVPMediaItem.AlbumItem -> TODO()
+      is AVPMediaItem.VideoCollectionItem -> TODO()
       is AVPMediaItem.VideoItem -> {
         fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
           val context = fragment.context ?: return@launch
-          val localVideos = when (item.vvfVideo) {
-            is VVFVideo.LocalVideo -> MediaUtils.getAllVideosByAlbum(
+          val localVideos = when (item.video) {
+            is Video.LocalVideo -> MediaUtils.getAllVideosByAlbum(
               context,
-              (item.vvfVideo as VVFVideo.LocalVideo).album
+              (item.video as Video.LocalVideo).album
             ).map {
-              AVPMediaItem.VideoItem(it)
+              VideoItem(it)
             }
 
-            is VVFVideo.RemoteVideo -> listOf(item)
+            is Video.RemoteVideo -> listOf(item)
           }
 
           withContext(Dispatchers.Main) {
             fragment.navigate(
               PlayerFragment.newInstance(
                 mediaItems = localVideos,
+                subtitles = listOf(
+                  SubtitleData(
+                    url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
+                    name = "ant",
+                    origin = SubtitleOrigin.DOWNLOADED_FILE,
+                    languageCode = "en",
+                    mimeType = MimeTypes.TEXT_VTT,
+                    headers = mapOf()
+                  )
+                ),
                 selectedMediaIdx = localVideos.indexOfFirst { it -> it.id == item.id })
             )
 
           }
         }
 
+      }
+
+      is AVPMediaItem.TrackItem -> {
+        fragment.navigate(
+          PlayerFragment.newInstance(
+            mediaItems = listOf(item),
+            selectedMediaIdx = 0,
+            subtitles = listOf(
+              SubtitleData(
+                url = "https://storage.googleapis.com/exoplayer-test-media-1/ssa/test-subs-position.ass",
+                name = "ant",
+                origin = SubtitleOrigin.DOWNLOADED_FILE,
+                languageCode = "en",
+                mimeType = MimeTypes.TEXT_VTT,
+                headers = mapOf()
+              )
+            ),
+          )
+        )
       }
     }
   }

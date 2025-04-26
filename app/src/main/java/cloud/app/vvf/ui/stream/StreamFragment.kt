@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.stream.PremiumType
-import cloud.app.vvf.common.models.video.VVFVideo
+import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.databinding.FragmentStreamBinding
 import cloud.app.vvf.features.playerManager.PlayerManager
 import cloud.app.vvf.features.playerManager.data.PlayData
@@ -65,9 +65,9 @@ class StreamFragment : Fragment(), StreamAdapter.ItemClickListener {
     viewModel.loadStream(mediaItem)
   }
 
-  override fun onStreamItemClick(streamData: VVFVideo) {
+  override fun onStreamItemClick(streamData: Video) {
     when (streamData) {
-      is VVFVideo.LocalVideo -> {
+      is Video.LocalVideo -> {
         val playData = PlayData(
           listOf(streamData),
           selectedId = 0,
@@ -75,7 +75,7 @@ class StreamFragment : Fragment(), StreamAdapter.ItemClickListener {
         )
         PlayerManager.getInstance().play(playData, parentFragmentManager)
       }
-      is VVFVideo.RemoteVideo -> {
+      is Video.RemoteVideo -> {
         when (streamData.premiumType) {
           PremiumType.JustWatch.ordinal -> {
             Utils.launchBrowser(requireContext(), streamData.originalUrl)
@@ -96,7 +96,7 @@ class StreamFragment : Fragment(), StreamAdapter.ItemClickListener {
 
   }
 
-  override fun onStreamItemLongClick(streamData: VVFVideo) {
+  override fun onStreamItemLongClick(streamData: Video) {
     TODO("Not yet implemented")
   }
 

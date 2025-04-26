@@ -81,7 +81,7 @@ class EpisodeAdapter(private val listener: Listener) :
 
       binding.episodeDescript.setTextWithVisibility(item.episode.generalInfo.overview)
       binding.episodeRating.setTextWithVisibility(
-        if (isUpcoming) itemView.context.getString(R.string.up_coming)
+        if (isUpcoming) itemView.context.getString(R.string.upcoming)
         else item.episode.generalInfo.rating?.toString()
       )
       binding.episodeRuntime.setTextWithVisibility(item.episode.generalInfo.runtime?.toString())
@@ -102,7 +102,7 @@ class EpisodeAdapter(private val listener: Listener) :
 
       binding.episodeText.text = "${item.episode.episodeNumber}. ${item.episode.generalInfo.title}"
       binding.episodeRating.setTextWithVisibility(
-        if (isUpcoming) itemView.context.getString(R.string.up_coming)
+        if (isUpcoming) itemView.context.getString(R.string.upcoming)
         else item.episode.generalInfo.rating?.toString()
       )
       binding.episodeRuntime.setTextWithVisibility(item.episode.generalInfo.runtime?.toString())

@@ -12,20 +12,20 @@ import androidx.fragment.app.FragmentManager
 import cloud.app.vvf.MainActivityViewModel.Companion.isRTL
 import cloud.app.vvf.R
 
-open class DockingDialog : DialogFragment() {
+open class DockingDialog(private val widthPercentage: Float = 0.4f) : DialogFragment() {
 
   enum class Docking {
     LEFT, RIGHT, BOTTOM
   }
 
   private var orientation: Docking = Docking.RIGHT
-  private val widthPercentage = 0.4f
+
   private var resultListener: ((Bundle?) -> Unit)? = null
 
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val isRTL = context?.isRTL() ?: false
     orientation = when (resources.configuration.orientation) {
-      Configuration.ORIENTATION_LANDSCAPE -> if(isRTL) Docking.LEFT else Docking.RIGHT
+      Configuration.ORIENTATION_LANDSCAPE -> if (isRTL) Docking.LEFT else Docking.RIGHT
       Configuration.ORIENTATION_PORTRAIT -> Docking.BOTTOM
       else -> Docking.BOTTOM
     }
@@ -87,6 +87,7 @@ open class DockingDialog : DialogFragment() {
           params.height = ViewGroup.LayoutParams.MATCH_PARENT
           params.gravity = Gravity.END
         }
+
         Docking.BOTTOM -> {
           params.width = ViewGroup.LayoutParams.MATCH_PARENT
           params.height = ViewGroup.LayoutParams.WRAP_CONTENT

@@ -155,4 +155,10 @@
   <color name="transparent">#00000000</color>
   <color name="player_background">#4D000000</color>
   <color name="transparent_white_300">#4DFFFFFF</color>
+
+  <color name="black">#FF000000</color>
+  <color name="white">#FFFFFFFF</color>
+  <color name="ic_launcher_background">#2EB9FF</color>
+  <color name="amoled_bg">@color/white</color>
+  <color name="amoled_fg">@color/white</color>
 </resources>

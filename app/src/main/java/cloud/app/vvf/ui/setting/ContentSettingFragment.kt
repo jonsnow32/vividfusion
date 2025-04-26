@@ -38,7 +38,7 @@ class ContentSettingFragment : BaseSettingsFragment() {
           true
         }
       PreferenceCategory(context).apply {
-        title = getString(R.string.shows)
+        title = getString(R.string.tv_shows)
         key = getString(R.string.pref_tv_show_settings)
         isIconSpaceReserved = false
         layoutResource = R.layout.preference_category

@@ -1,5 +1,6 @@
 package cloud.app.vvf.ui.widget.dialog.itemOption
 
+import android.content.Context
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.base.CatchingViewModel
 import cloud.app.vvf.common.clients.Extension
@@ -9,6 +10,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.datastore.app.helper.BookmarkItem
+import cloud.app.vvf.extension.builtIn.MediaUtils
 import cloud.app.vvf.extension.run
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +25,7 @@ class ItemOptionViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
   val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
   val dataFlow: MutableStateFlow<AppDataStore>,
-  ) : CatchingViewModel(throwableFlow) {
+) : CatchingViewModel(throwableFlow) {
 
   var loading = MutableStateFlow<Boolean>(false);
   var detailItem = MutableStateFlow<AVPMediaItem?>(null)
@@ -47,9 +49,10 @@ class ItemOptionViewModel @Inject constructor(
           is AVPMediaItem.EpisodeItem,
           is AVPMediaItem.SeasonItem,
           is AVPMediaItem.ShowItem,
-          is AVPMediaItem.AlbumItem,
+          is AVPMediaItem.VideoCollectionItem,
           is AVPMediaItem.VideoItem,
-          is AVPMediaItem.PlaybackProgress-> async {
+          is AVPMediaItem.TrackItem,
+          is AVPMediaItem.PlaybackProgress -> async {
             dataFlow.value.getFavoritesData(
               detailItem.value?.id?.toString()
             )
@@ -58,8 +61,6 @@ class ItemOptionViewModel @Inject constructor(
           is AVPMediaItem.TrailerItem -> async {
             false
           }
-
-
         }
         favoriteStatus.value = favoriteDeferred.await()
         bookmarkStatus.value = dataFlow.value.findBookmark(shortItem)
@@ -84,7 +85,39 @@ class ItemOptionViewModel @Inject constructor(
       knowFors.value =
         MediaItemsContainer.Category(
           title = item.title ?: "Unknown",
-          more = extension.value?.run<DatabaseClient, PagedData<AVPMediaItem>>(throwableFlow) { getKnowFor(item) })
+          more = extension.value?.run<DatabaseClient, PagedData<AVPMediaItem>>(throwableFlow) {
+            getKnowFor(
+              item
+            )
+          })
+    }
+  }
+
+  fun deleteItem(context: Context, item: AVPMediaItem) {
+    when (item) {
+      is AVPMediaItem.VideoItem,
+      is AVPMediaItem.TrackItem -> {
+        MediaUtils.deleteMedia(context, item)
+      }
+
+      else -> {
+        throw NotImplementedError()
+      }
+    }
+  }
+
+  fun renameItem(context: Context, item: AVPMediaItem, newName: String) {
+    when (item) {
+      is AVPMediaItem.TrackItem,
+      is AVPMediaItem.VideoItem -> {
+        viewModelScope.launch(Dispatchers.IO) {
+          MediaUtils.renameMedia(context, item, newName)
+        }
+      }
+
+      else -> {
+        throw NotImplementedError()
+      }
     }
   }
 

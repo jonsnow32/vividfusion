@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -19,12 +18,12 @@ import cloud.app.vvf.R
 import java.util.UUID
 
 
-fun ComponentActivity.checkAudioPermissions() {
+fun ComponentActivity.requestVideoPermission() {
   val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-    Manifest.permission.READ_MEDIA_AUDIO
+    Manifest.permission.READ_MEDIA_VIDEO
   else
     Manifest.permission.READ_EXTERNAL_STORAGE
-  checkPermissions(
+  requestPermissions(
     this,
     perm,
     R.string.permission_required,
@@ -33,7 +32,41 @@ fun ComponentActivity.checkAudioPermissions() {
   )?.launch(perm)
 }
 
-fun ComponentActivity.checkPermissions(
+
+fun ComponentActivity.requestAudioPermissions() {
+  val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+    Manifest.permission.READ_MEDIA_AUDIO
+  else
+    Manifest.permission.READ_EXTERNAL_STORAGE
+  requestPermissions(
+    this,
+    perm,
+    R.string.permission_required,
+    R.string.music_permission_required_summary,
+    { finish() }
+  )?.launch(perm)
+}
+
+fun ComponentActivity.requestPermission(permission: String, onCancel: () -> Unit, onGranted: () -> Unit) {
+  requestPermissions(
+    this,
+    permission,
+    R.string.permission_required,
+    R.string.music_permission_required_summary,
+    onCancel,onGranted
+  )?.launch(permission)
+}
+
+
+fun ComponentActivity.checkPermission(
+  context: Context,
+  perm: String,
+): Boolean = with(context) {
+  return  ContextCompat.checkSelfPermission(this, perm) == PackageManager.PERMISSION_GRANTED
+}
+
+
+fun ComponentActivity.requestPermissions(
   context: Context,
   perm: String,
   title: Int,

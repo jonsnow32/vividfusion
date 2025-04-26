@@ -1,8 +1,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
-  android:orientation="vertical"
-  android:layout_margin="8dp">
+  android:layout_margin="8dp"
+  android:orientation="vertical">
 
   <LinearLayout
     android:layout_width="match_parent"
@@ -18,7 +18,6 @@
   <com.google.android.material.slider.Slider
     android:id="@+id/preferences_slider"
     android:layout_width="match_parent"
-    android:value="0.4"
-    android:layout_marginHorizontal="8dp"
-    android:layout_height="wrap_content" />
+    android:layout_height="wrap_content"
+    android:value="0.5" />
 </LinearLayout>

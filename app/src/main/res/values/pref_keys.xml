@@ -25,7 +25,9 @@
   <string name="pref_use_swipe_control">pref_use_swipe_control</string>
   <string name="pref_subtitle_chartset">pref_subtitle_chartset</string>
   <string name="pref_key_overlap_notch">pref_key_overlap_notch</string>
-
+  <string name="pref_buffer_second">pref_buffer_second</string>
+  <string name="pref_video_cache_size_on_disk">pref_video_cache_siz_on_disk</string>
+  <string name="pref_video_cache_size_on_ram">pref_video_cache_size_on_ram</string>
 
   <!--content-->
   <string name="pref_tv_show_settings">pref_tv_show_settings</string>
@@ -40,6 +42,8 @@
   <string name="pref_backup_path">pref_backup_path</string>
   <string name="pref_backup_path_allowed">pref_backup_path_allowed</string>
   <string name="pref_auto_check_update">pref_auto_check_update</string>
+  <string name="pref_prefer_device_decoders">pref_prefer_device_decoders</string>
+
 
 
 </resources>

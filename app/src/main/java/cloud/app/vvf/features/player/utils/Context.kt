@@ -18,6 +18,11 @@ import android.provider.OpenableColumns
 import android.util.Log
 import android.util.TypedValue
 import androidx.core.text.isDigitsOnly
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
@@ -432,4 +437,85 @@ fun Context.getStorageVolumes() = try {
     } ?: listOf(Environment.getExternalStorageDirectory())
 } catch (e: Exception) {
     listOf(Environment.getExternalStorageDirectory())
+}
+
+suspend fun Context.uriToSubtitleConfiguration(
+  uri: Uri,
+  subtitleEncoding: String = "",
+  isSelected: Boolean = false,
+): MediaItem.SubtitleConfiguration {
+  val charset = if (subtitleEncoding.isNotEmpty() && Charset.isSupported(subtitleEncoding)) {
+    Charset.forName(subtitleEncoding)
+  } else {
+    null
+  }
+  val label = getFilenameFromUri(uri)
+  val mimeType = uri.getSubtitleMime()
+  val utf8ConvertedUri = convertToUTF8(uri = uri, charset = charset)
+  return MediaItem.SubtitleConfiguration.Builder(utf8ConvertedUri).apply {
+    setId(uri.toString())
+    setMimeType(mimeType)
+    setLabel(label)
+    if (isSelected) setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+  }.build()
+}
+
+fun Uri.getSubtitleMime(): String {
+  return when {
+    path?.endsWith(".ssa") == true || path?.endsWith(".ass") == true -> {
+      MimeTypes.TEXT_SSA
+    }
+
+    path?.endsWith(".vtt") == true -> {
+      MimeTypes.TEXT_VTT
+    }
+
+    path?.endsWith(".ttml") == true || path?.endsWith(".xml") == true || path?.endsWith(".dfxp") == true -> {
+      MimeTypes.APPLICATION_TTML
+    }
+
+    else -> {
+      MimeTypes.APPLICATION_SUBRIP
+    }
+  }
+}
+
+
+abstract class DiffAdapter<T>(
+  open val items: MutableList<T>,
+  val comparison: (first: T, second: T) -> Boolean = { first, second ->
+    first.hashCode() == second.hashCode()
+  }
+) :
+  RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+  override fun getItemCount(): Int {
+    return items.size
+  }
+
+  fun updateList(newList: List<T>) {
+    val diffResult = DiffUtil.calculateDiff(
+      GenericDiffCallback(this.items, newList)
+    )
+
+    items.clear()
+    items.addAll(newList)
+
+    diffResult.dispatchUpdatesTo(this)
+  }
+
+  inner class GenericDiffCallback(
+    private val oldList: List<T>,
+    private val newList: List<T>
+  ) :
+    DiffUtil.Callback() {
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+      comparison(oldList[oldItemPosition], newList[newItemPosition])
+
+    override fun getOldListSize() = oldList.size
+
+    override fun getNewListSize() = newList.size
+
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+      oldList[oldItemPosition] == newList[newItemPosition]
+  }
 }

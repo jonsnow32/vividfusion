@@ -1,6 +1,9 @@
 package cloud.app.vvf.datastore.app
 
 import android.content.Context
+import android.graphics.Color
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.CaptionStyleCompat
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgress
 import cloud.app.vvf.common.models.extension.ExtensionMetadata
@@ -11,6 +14,8 @@ import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.datastore.app.helper.BOOKMARK_FOLDER
 import cloud.app.vvf.datastore.app.helper.BookmarkItem
 import cloud.app.vvf.datastore.app.helper.PlayerSettingItem
+import cloud.app.vvf.features.player.utils.subtitle.DEF_SUBS_ELEVATION
+import cloud.app.vvf.features.player.utils.subtitle.SubtitleStyle
 
 
 const val ExtensionFolder = "extensionDir"
@@ -202,7 +207,30 @@ class AppDataStore(val context: Context, val account: Account) :
     return getKeys<User>("$USERS_FOLDER/")
   }
 
+  @UnstableApi
   fun getPlayerSetting(): PlayerSettingItem {
-    return getKey<PlayerSettingItem>("$PLAYER_SETTING_FOLDER/") ?: PlayerSettingItem("sample")
+    return getKey<PlayerSettingItem>("$PLAYER_SETTING_FOLDER/") ?: PlayerSettingItem(
+      subtitleStyle = SubtitleStyle(
+        foregroundColor = getDefColor(0),
+        backgroundColor = getDefColor(2),
+        windowColor = getDefColor(3),
+        edgeType = CaptionStyleCompat.EDGE_TYPE_OUTLINE,
+        edgeColor = getDefColor(1),
+        typeface = null,
+        typefaceFilePath = null,
+        elevation = DEF_SUBS_ELEVATION,
+        fixedTextSize = null,
+      )
+    )
+  }
+
+  private fun getDefColor(id: Int): Int {
+    return when (id) {
+      0 -> Color.WHITE
+      1 -> Color.BLACK
+      2 -> Color.TRANSPARENT
+      3 -> Color.TRANSPARENT
+      else -> Color.TRANSPARENT
+    }
   }
 }

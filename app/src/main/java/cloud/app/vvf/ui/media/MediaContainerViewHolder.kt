@@ -354,9 +354,9 @@ sealed class MediaContainerViewHolder(
         overview.text = item.overview
         item.poster.loadInto(imageView, item.placeHolder())
 
-        if(item is AVPMediaItem.PlaybackProgress && item.duration != null) {
+        if(item is AVPMediaItem.PlaybackProgress && item.duration > 0) {
           watchProgress.visibility = View.VISIBLE
-          watchProgress.progress = ((item.position.toDouble() / item.duration!!) * 100).toInt()
+          watchProgress.progress = ((item.position.toDouble() / item.duration) * 100).toInt()
         }
       }
     }

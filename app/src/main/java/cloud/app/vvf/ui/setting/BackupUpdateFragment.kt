@@ -238,7 +238,7 @@ class BackupUpdateFragment : BaseSettingsFragment() {
                   UpdateFragment.newInstance(latestRelease), null, true
                 ) ?: context.showToast(R.string.update_fail)
               } else {
-                context.showToast(R.string.no_update_availiable)
+                context.showToast(R.string.no_update_available)
 
               }
             } catch (e: Exception) {

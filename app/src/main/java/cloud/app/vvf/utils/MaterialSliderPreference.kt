@@ -24,6 +24,7 @@ class MaterialSliderPreference(
     }
 
     internal var customSummary: CharSequence? = null
+    internal var suffixSummary: CharSequence? = null
     private var defaultValue: Int? = null
 
     override fun onSetInitialValue(defaultValue: Any?) {
@@ -98,7 +99,7 @@ class MaterialSliderPreference(
     private fun updateSummary() {
         val value = context.getString(R.string.value)
         val entry = getPersistedInt(defaultValue ?: 0)
-        val sum = customSummary?.let { "\n\n$it" } ?: ""
-        summary = "$value : $entry$sum".trimIndent()
+        val sum = customSummary?.let { " \n$it" } ?: ""
+        summary = "$value : $entry $suffixSummary$sum".trimIndent()
     }
 }
