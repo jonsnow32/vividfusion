@@ -42,7 +42,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.io.ByteArrayOutputStream
 import java.io.File
 import javax.inject.Inject
@@ -308,10 +307,14 @@ class PlayerViewModel @Inject constructor(
     player?.switchTrack(C.TRACK_TYPE_TEXT, textTrackIndex)
   }
 
-  fun addSubtitleTrack(context: Context, uri: Uri) {
+  fun addSubtitleData(context: Context, subtitles: List<SubtitleData>) {
     viewModelScope.launch {
-      val newSubConfiguration = context.uriToSubtitleConfiguration(uri)
-      player?.addAdditionalSubtitleConfiguration(newSubConfiguration)
+      player?.addAdditionalSubtitleConfiguration(subtitles.map { context.uriToSubtitleConfiguration(it.url.toUri()) })
+    }
+  }
+  fun addSubtitleUri(context: Context, uris: List<Uri>) {
+    viewModelScope.launch {
+      player?.addAdditionalSubtitleConfiguration(uris.map { context.uriToSubtitleConfiguration(it) })
     }
   }
 

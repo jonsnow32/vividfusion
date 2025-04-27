@@ -4,6 +4,7 @@ import android.content.Context
 import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.clients.provider.MessageFlowProvider
+import cloud.app.vvf.common.clients.subtitles.SubtitleClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.Page
 import cloud.app.vvf.common.helpers.PagedData
@@ -15,18 +16,21 @@ import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.common.models.extension.Tab
+import cloud.app.vvf.common.models.subtitle.SubtitleData
+import cloud.app.vvf.common.models.subtitle.SubtitleOrigin
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingSlider
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.extension.builtIn.MediaUtils.getOldestVideoYear
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.withContext
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
-class BuiltInClient(val context: Context) : DatabaseClient,
+class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
   MessageFlowProvider {
   override suspend fun getHomeTabs(): List<Tab> {
     return listOf(
@@ -53,10 +57,12 @@ class BuiltInClient(val context: Context) : DatabaseClient,
         MediaUtils.checkVideoPermission(context)
         getVideoCollections(context, page)
       }
+
       "Playlist" -> {
         MediaUtils.checkAudioPermission(context)
         getMusicCollections(context, page)
       }
+
       else -> TODO()
     }
 
@@ -267,6 +273,79 @@ class BuiltInClient(val context: Context) : DatabaseClient,
     }
   }
 
+  override suspend fun loadSubtitles(
+    mediaItem: AVPMediaItem,
+    callback: (SubtitleData) -> Unit
+  ): Boolean {
+
+    val subtitles = listOf(
+      SubtitleData(
+        name = "TTML positioning",
+        mimeType = "application/ttml+xml",
+        languageCode = "en",
+        origin = SubtitleOrigin.URL,
+        url = "https://storage.googleapis.com/exoplayer-test-media-1/ttml/netflix_ttml_sample.xml",
+        headers = mapOf()
+      ),
+      SubtitleData(
+        name = "TTML Japanese features",
+        mimeType = "application/ttml+xml",
+        languageCode = "ja",
+        origin = SubtitleOrigin.URL,
+        url = "https://storage.googleapis.com/exoplayer-test-media-1/ttml/japanese-ttml.xml",
+        headers = mapOf()
+      ),
+      SubtitleData(
+        name = "TTML Netflix Japanese examples (IMSC1.1)",
+        mimeType = "application/ttml+xml",
+        languageCode = "ja",
+        origin = SubtitleOrigin.URL,
+        url = "https://storage.googleapis.com/exoplayer-test-media-1/ttml/netflix_japanese_ttml.xml",
+        headers = mapOf()
+      ),
+      SubtitleData(
+        name = "WebVTT positioning",
+        mimeType = "text/vtt",
+        languageCode = "en",
+        origin = SubtitleOrigin.URL,
+        url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
+        headers = mapOf()
+      ),
+      SubtitleData(
+        name = "WebVTT Japanese features",
+        mimeType = "text/vtt",
+        languageCode = "ja",
+        origin = SubtitleOrigin.URL,
+        url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/japanese.vtt",
+        headers = mapOf()
+      ),
+      SubtitleData(
+        name = "SubStation Alpha positioning",
+        mimeType = "text/x-ssa",
+        languageCode = "en",
+        origin = SubtitleOrigin.URL,
+        url = "https://storage.googleapis.com/exoplayer-test-media-1/ssa/test-subs-position.ass",
+        headers = mapOf()
+      ),
+      SubtitleData(
+        name = "SubStation Alpha styling",
+        mimeType = "text/x-ssa",
+        languageCode = "en",
+        origin = SubtitleOrigin.URL,
+        url = "https://storage.googleapis.com/exoplayer-test-media-1/ssa/test-subs-styling.ass",
+        headers = mapOf()
+      )
+    )
+
+
+    for (i in 1..100) {
+      delay(300)
+      callback.invoke(subtitles.random())
+    }
+    return true
+  }
+
+
   override val defaultSettings: List<Setting>
     get() = listOf(
       SettingSwitch(
@@ -316,7 +395,7 @@ class BuiltInClient(val context: Context) : DatabaseClient,
       version = "1.0.0",
       author = "Avp",
       iconUrl = "https://www.themoviedb.org/assets/2/v4/marketing/logos/infuse_600-a28d709ee5137f75b31c4184643a22fe83ee8f64d3317509c33090922b66dbb6.png",
-      types = listOf(ExtensionType.DATABASE)
+      types = listOf(ExtensionType.DATABASE, ExtensionType.SUBTITLE)
     )
   }
 }

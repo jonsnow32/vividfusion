@@ -99,10 +99,10 @@ class StreamViewModel @Inject constructor(
   }
 
   fun onSubtitleReceived(subtitleData: SubtitleData) {
-    _subtitles.value = _subtitles.value + subtitleData
+    _subtitles.value += subtitleData
   }
 
   fun onLinkReceived(streamData: Video) {
-    _streams.value = _streams.value + streamData
+    _streams.value += streamData
   }
 }

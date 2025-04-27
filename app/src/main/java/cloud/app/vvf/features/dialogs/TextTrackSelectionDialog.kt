@@ -25,7 +25,9 @@ class TextTrackSelectionDialog(
   private val openLocalSubtitle: () -> Unit,
   private val openOnlineSubtitle: () -> Unit,
   private val openSubtitleOffsetDialog: () -> Unit,
-) : DockingDialog(0.5f) {
+) : DockingDialog() {
+  override val widthPercentage: Float
+    get() = 0.5f
   private var binding by autoCleared<DialogTextTrackSelectionBinding>()
 
   override fun onCreateView(
@@ -50,8 +52,6 @@ class TextTrackSelectionDialog(
     }.toTypedArray()
 
     binding.apply {
-
-
       if(trackNames.isNotEmpty()) {
         text1.text = getString(R.string.select_subtitle_track)
         val arrayAdapter = ArrayAdapter(

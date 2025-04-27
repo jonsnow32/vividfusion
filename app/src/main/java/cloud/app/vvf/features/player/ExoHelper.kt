@@ -170,22 +170,20 @@ fun Player.seekForward(positionMs: Long, shouldFastSeek: Boolean = false) {
 }
 
 
-fun Player.addAdditionalSubtitleConfiguration(subtitle: MediaItem.SubtitleConfiguration) {
-  val currentMediaItemLocal = currentMediaItem ?: return
-  val existingSubConfigurations =
-    currentMediaItemLocal.localConfiguration?.subtitleConfigurations ?: emptyList()
+fun Player.addAdditionalSubtitleConfiguration(subtitles: List<MediaItem.SubtitleConfiguration>) {
+  val currentMediaItem = currentMediaItem ?: return
+  val existingSubConfigurations = currentMediaItem.localConfiguration?.subtitleConfigurations.orEmpty()
 
-  if (existingSubConfigurations.any { it.id == subtitle.id }) {
-    return
+  val newSubtitles = subtitles.filterNot { subtitle ->
+    existingSubConfigurations.any { it.id == subtitle.id }
   }
 
-  val updateMediaItem = currentMediaItemLocal
+  val updatedMediaItem = currentMediaItem
     .buildUpon()
-    .setSubtitleConfigurations(existingSubConfigurations + listOf(subtitle))
+    .setSubtitleConfigurations(existingSubConfigurations + newSubtitles)
     .build()
 
   val index = currentMediaItemIndex
-  addMediaItem(index + 1, updateMediaItem)
+  addMediaItem(index + 1, updatedMediaItem)
   removeMediaItem(index)
 }
-

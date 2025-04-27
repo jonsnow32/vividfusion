@@ -24,6 +24,8 @@ class AudioTrackSelectionDialog(
 ) : DockingDialog() {
   private var binding by autoCleared<DialogAudioTrackSelectionBinding>()
 
+  override val widthPercentage: Float
+    get() = 0.5f
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {

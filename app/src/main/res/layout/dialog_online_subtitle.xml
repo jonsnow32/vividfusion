@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/searchRoot"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  tools:context=".MainActivity">
+
+  <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurfaceContainer"
+    android:visibility="visible">
+
+    <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="40dp"
+      android:layout_gravity="center_vertical"
+      android:layout_marginStart="10dp"
+      android:layout_marginTop="10dp"
+      android:layout_marginEnd="35dp"
+      android:layout_marginBottom="10dp"
+      android:background="@drawable/search_background">
+
+      <androidx.appcompat.widget.SearchView
+        android:id="@+id/mainSearch"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:iconifiedByDefault="false"
+        android:inputType="text"
+        android:nextFocusRight="@id/searchExtension"
+        android:paddingStart="-10dp"
+        android:textColorHint="?android:textColorHint"
+        app:closeIcon="@drawable/ic_close"
+        app:iconifiedByDefault="false"
+        app:queryBackground="@android:color/transparent"
+        app:queryHint="@string/search_hint"
+        app:searchIcon="@drawable/ic_search_outline"
+        tools:ignore="RtlSymmetry">
+
+        <androidx.core.widget.ContentLoadingProgressBar
+          android:id="@+id/searchLoading"
+          style="@style/Widget.AppCompat.ProgressBar"
+          android:layout_width="20dp"
+          android:layout_height="20dp"
+          android:layout_gravity="center"
+          android:layout_marginStart="-35dp" />
+      </androidx.appcompat.widget.SearchView>
+    </FrameLayout>
+
+    <ImageView
+      android:id="@+id/searchExtension"
+      android:layout_width="25dp"
+      android:layout_height="25dp"
+      android:layout_gravity="end|center_vertical"
+
+      android:layout_margin="10dp"
+      android:background="?selectableItemBackgroundBorderless"
+      android:contentDescription="@string/search_filter"
+      android:nextFocusLeft="@id/mainSearch"
+      android:nextFocusRight="@id/mainSearch"
+      android:src="@drawable/ic_extension_24dp"
+      android:tag="@string/tv_no_focus_tag" />
+
+  </FrameLayout>
+
+  <View
+    android:id="@+id/appBarOutline"
+    style="@style/AppBarOutline"
+    app:layout_anchor="@id/searchBar"
+    app:layout_anchorGravity="bottom"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/searchBar" />
+
+  <ListView
+    android:id="@+id/listview1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_rowWeight="1"
+    android:nextFocusLeft="@id/apply_btt"
+    android:nextFocusRight="@id/cancel_btt"
+    android:requiresFadingEdge="vertical"
+    android:paddingBottom="60dp"
+    tools:listitem="@layout/sort_bottom_single_choice" />
+
+  <LinearLayout
+    android:id="@+id/apply_btt_holder"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_gravity="bottom"
+    android:layout_marginTop="-60dp"
+    android:gravity="bottom|end"
+    android:layout_marginEnd="10dp"
+    android:orientation="horizontal">
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/apply_btt"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical|end"
+      android:text="@string/sort_apply" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/cancel_btt"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical|end"
+      android:text="@string/sort_cancel" />
+  </LinearLayout>
+</LinearLayout>

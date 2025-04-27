@@ -35,6 +35,7 @@ import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.databinding.CustomControllerBinding
 import cloud.app.vvf.databinding.FragmentPlayerBinding
 import cloud.app.vvf.features.dialogs.AudioTrackSelectionDialog
+import cloud.app.vvf.features.dialogs.OnlineSubtitleDialog
 import cloud.app.vvf.features.dialogs.TextTrackSelectionDialog
 import cloud.app.vvf.features.gesture.BrightnessManager
 import cloud.app.vvf.features.gesture.PlayerGestureHelper
@@ -210,7 +211,15 @@ class PlayerFragment : Fragment() {
             )
           )
         },
-        openOnlineSubtitle = {},
+        openOnlineSubtitle = {
+          OnlineSubtitleDialog.newInstance(
+            viewModel.mediaMetaData.value?.title.toString(),
+            mediaItems?.get(currentMediaIdx)
+          ).show(parentFragmentManager) {
+            val selectedItems = it?.getSerialized<List<SubtitleData>>("selected_items")
+            selectedItems?.let { it1 -> viewModel.addSubtitleData(requireContext(), it1) }
+          }
+        },
         openSubtitleOffsetDialog = {
           animateLayoutChanges(false, fromUser = true)
           binding.subtitleOffsetView.apply {
@@ -418,7 +427,7 @@ class PlayerFragment : Fragment() {
         uri,
         Intent.FLAG_GRANT_READ_URI_PERMISSION
       )
-      viewModel.addSubtitleTrack(activity, uri)
+      viewModel.addSubtitleUri(activity, listOf(uri))
     }
   }
 

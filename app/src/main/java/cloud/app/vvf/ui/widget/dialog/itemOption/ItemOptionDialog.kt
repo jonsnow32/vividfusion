@@ -38,7 +38,7 @@ import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ItemOptionDialog : DockingDialog(0.4f) {
+class ItemOptionDialog : DockingDialog() {
   private var binding by autoCleared<DialogMediaItemBinding>()
   private val viewModel by viewModels<ItemOptionViewModel>()
   private val args by lazy { requireArguments() }

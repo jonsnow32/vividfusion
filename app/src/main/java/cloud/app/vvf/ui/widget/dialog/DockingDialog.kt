@@ -12,11 +12,12 @@ import androidx.fragment.app.FragmentManager
 import cloud.app.vvf.MainActivityViewModel.Companion.isRTL
 import cloud.app.vvf.R
 
-open class DockingDialog(private val widthPercentage: Float = 0.4f) : DialogFragment() {
+open class DockingDialog : DialogFragment() {
 
   enum class Docking {
     LEFT, RIGHT, BOTTOM
   }
+  open val widthPercentage: Float = 0.4f
 
   private var orientation: Docking = Docking.RIGHT
 
