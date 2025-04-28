@@ -103,13 +103,13 @@ class MediaClickListener(
                 mediaItems = localVideos,
                 subtitles = listOf(
                   SubtitleData(
-                    url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
-                    name = "ant",
-                    origin = SubtitleOrigin.DOWNLOADED_FILE,
+                    name = "WebVTT positioning",
+                    mimeType = "text/vtt",
                     languageCode = "en",
-                    mimeType = MimeTypes.TEXT_VTT,
+                    origin = SubtitleOrigin.URL,
+                    url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
                     headers = mapOf()
-                  )
+                  ),
                 ),
                 selectedMediaIdx = localVideos.indexOfFirst { it -> it.id == item.id })
             )
@@ -126,13 +126,13 @@ class MediaClickListener(
             selectedMediaIdx = 0,
             subtitles = listOf(
               SubtitleData(
-                url = "https://storage.googleapis.com/exoplayer-test-media-1/ssa/test-subs-position.ass",
-                name = "ant",
-                origin = SubtitleOrigin.DOWNLOADED_FILE,
+                name = "WebVTT positioning",
+                mimeType = "text/vtt",
                 languageCode = "en",
-                mimeType = MimeTypes.TEXT_VTT,
+                origin = SubtitleOrigin.URL,
+                url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
                 headers = mapOf()
-              )
+              ),
             ),
           )
         )

@@ -92,6 +92,7 @@ class SubtitleOffsetView @JvmOverloads constructor(
     adapter.submitList(cues)
     this.callback = callback
     isInit = true;
+    updateAdapterCues(currentTimeMs)
   }
 
   fun updateAdapterCues(current: Long) {

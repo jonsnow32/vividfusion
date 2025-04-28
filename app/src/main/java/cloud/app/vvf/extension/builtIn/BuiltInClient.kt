@@ -338,9 +338,9 @@ class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
     )
 
 
-    for (i in 1..100) {
-      delay(300)
-      callback.invoke(subtitles.random())
+    for (i in 1..subtitles.size) {
+      delay(10)
+      callback.invoke(subtitles.get(i - 1))
     }
     return true
   }

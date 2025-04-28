@@ -38,3 +38,4 @@ val Uri.isLocalPhotoPickerUri: Boolean
  */
 val Uri.isCloudPhotoPickerUri: Boolean
     get() = toString().contains("com.google.android.apps.photos.cloudpicker")
+

@@ -17,6 +17,10 @@ data class SubtitleData(
     return if (origin == SubtitleOrigin.EMBEDDED_IN_VIDEO) url
     else "$url|$name"
   }
+
+  override fun toString(): String {
+    return "$name - $mimeType - $languageCode"
+  }
 }
 
 enum class SubtitleOrigin {

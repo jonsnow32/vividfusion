@@ -98,7 +98,7 @@ class ShowFragment : Fragment() {
       }
     }
 
-    binding.header.imgBtnShare?.setOnClickListener {
+    binding.header.imgBtnShare.setOnClickListener {
 
     }
 

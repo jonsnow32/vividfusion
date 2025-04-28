@@ -34,7 +34,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.databinding.CustomControllerBinding
 import cloud.app.vvf.databinding.FragmentPlayerBinding
-import cloud.app.vvf.features.dialogs.AudioTrackSelectionDialog
+import cloud.app.vvf.features.dialogs.AudioVideoTrackSelectionDialog
 import cloud.app.vvf.features.dialogs.OnlineSubtitleDialog
 import cloud.app.vvf.features.dialogs.TextTrackSelectionDialog
 import cloud.app.vvf.features.gesture.BrightnessManager
@@ -42,6 +42,7 @@ import cloud.app.vvf.features.gesture.PlayerGestureHelper
 import cloud.app.vvf.features.gesture.VolumeManager
 import cloud.app.vvf.features.player.utils.ResizeMode
 import cloud.app.vvf.features.player.utils.getDetails
+import cloud.app.vvf.features.player.utils.getName
 import cloud.app.vvf.features.player.utils.getSelected
 import cloud.app.vvf.utils.UIHelper.hideSystemUI
 import cloud.app.vvf.utils.UIHelper.showSystemUI
@@ -188,9 +189,21 @@ class PlayerFragment : Fragment() {
     btnResize.setOnClickListener { viewModel.toggleResizeMode() }
     btnRotate.setOnClickListener { rotateScreen() }
     btnAudioTrack.setOnClickListener {
-      AudioTrackSelectionDialog(viewModel.player?.currentTracks ?: return@setOnClickListener) {
+      AudioVideoTrackSelectionDialog(
+        viewModel.player?.currentTracks ?: return@setOnClickListener,
+        C.TRACK_TYPE_AUDIO
+      ) {
         viewModel.selectAudioTrack(it)
       }.show(parentFragmentManager, "AudioTrackSelectionDialog")
+    }
+    btnVideoTrack.setOnClickListener {
+      AudioVideoTrackSelectionDialog(
+        viewModel.player?.currentTracks ?: return@setOnClickListener,
+        C.TRACK_TYPE_VIDEO
+      ) {
+        viewModel.selectVideoTrack(it)
+      }.show(parentFragmentManager, "VideoTrackSelectionDialog")
+
     }
     btnTextTrack.setOnClickListener {
       TextTrackSelectionDialog(
@@ -214,7 +227,10 @@ class PlayerFragment : Fragment() {
         openOnlineSubtitle = {
           OnlineSubtitleDialog.newInstance(
             viewModel.mediaMetaData.value?.title.toString(),
-            mediaItems?.get(currentMediaIdx)
+            mediaItems?.get(currentMediaIdx),
+            viewModel.tracks.value?.groups?.filter { it.type == C.TRACK_TYPE_TEXT }?.map { trackGroup ->
+              trackGroup.mediaTrackGroup.getFormat(0).id
+            }?.filterNotNull()
           ).show(parentFragmentManager) {
             val selectedItems = it?.getSerialized<List<SubtitleData>>("selected_items")
             selectedItems?.let { it1 -> viewModel.addSubtitleData(requireContext(), it1) }
@@ -242,7 +258,6 @@ class PlayerFragment : Fragment() {
         }
       ).show(parentFragmentManager, "TextTrackSelectionDialog")
     }
-    btnVideoTrack.setOnClickListener {}
   }
 
   private fun CustomControllerBinding.setupLockControls() {
@@ -318,7 +333,8 @@ class PlayerFragment : Fragment() {
       val videos = tracks.groups.filter { it.type == C.TRACK_TYPE_VIDEO }
       val subtitles = tracks.groups.filter { it.type == C.TRACK_TYPE_TEXT }.getSelected()
 
-      Timber.d(tracks.getDetails(requireContext()).toString())
+      playerControlBinding.btnAudioTrack.isGone = audios.isEmpty()
+      playerControlBinding.btnVideoTrack.isGone = videos.size < 2
     }
   }
 
@@ -332,6 +348,35 @@ class PlayerFragment : Fragment() {
     if (showToast) currentActivity.showToast(mode.nameRes)
     binding.resetScale.playFadeAnimation(false)
     binding.resetScale.moveTopAnimation(false)
+
+    val context = context ?: return@resize
+
+    when (mode.ordinal) {
+      0 -> playerControlBinding.btnResize.setImageDrawable(
+        ContextCompat.getDrawable(
+          context,
+          R.drawable.round_fit_screen_24
+        )
+      )
+
+      1 -> playerControlBinding.btnResize.setImageDrawable(
+        ContextCompat.getDrawable(
+          context,
+          R.drawable.round_aspect_ratio_24
+        )
+      )
+
+      2 -> playerControlBinding.btnResize.setImageDrawable(
+        ContextCompat.getDrawable(
+          context,
+          R.drawable.round_crop_landscape_24
+        )
+      )
+
+      else -> {
+
+      }
+    }
   }
 
   internal fun restartHideControllerTimeout() {
@@ -345,6 +390,10 @@ class PlayerFragment : Fragment() {
   }
 
   fun animateLayoutChanges(isShow: Boolean, fromUser: Boolean = false) {
+    if (!isAdded || view == null) {
+      return // Exit early if Fragment is not added, view is null, or binding is cleared
+    }
+
     if (fromUser && viewModel.isControlsLocked.value) {
       lockControls(true)
       return
@@ -417,6 +466,7 @@ class PlayerFragment : Fragment() {
     binding.infoText.text = "${(scale * 100).toInt()}%"
     binding.resetScale.playFadeAnimation(scale != 1.0f)
     binding.resetScale.moveTopAnimation(scale != 1.0f)
+
   }
 
   private var subtitleFileLauncherLaunchedForMediaItem: MediaItem? = null

@@ -3,7 +3,6 @@ package cloud.app.vvf.features.player
 import android.content.Context
 import androidx.core.net.toUri
 import androidx.media3.common.C
-import androidx.media3.common.C.TRACK_TYPE_VIDEO
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
@@ -12,7 +11,6 @@ import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.SeekParameters
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import cloud.app.vvf.common.models.subtitle.SubtitleData
 import timber.log.Timber
 
@@ -88,7 +86,6 @@ class ExoHelper(val context: Context) {
       }
   }
 }
-
 
 
 /**
@@ -169,21 +166,25 @@ fun Player.seekForward(positionMs: Long, shouldFastSeek: Boolean = false) {
   this.seekTo(positionMs)
 }
 
+fun Player.addAdditionalSubtitleConfiguration(subtitles: List<MediaItem.SubtitleConfiguration>): Int? {
+  val currentMediaItem = currentMediaItem ?: return null
+  val existingSubConfigurations =
+    currentMediaItem.localConfiguration?.subtitleConfigurations.orEmpty()
 
-fun Player.addAdditionalSubtitleConfiguration(subtitles: List<MediaItem.SubtitleConfiguration>) {
-  val currentMediaItem = currentMediaItem ?: return
-  val existingSubConfigurations = currentMediaItem.localConfiguration?.subtitleConfigurations.orEmpty()
-
-  val newSubtitles = subtitles.filterNot { subtitle ->
+  val filerSubtitles = subtitles.filterNot { subtitle ->
     existingSubConfigurations.any { it.id == subtitle.id }
   }
 
+  val subtitleConfigurations = existingSubConfigurations + filerSubtitles
+
   val updatedMediaItem = currentMediaItem
     .buildUpon()
-    .setSubtitleConfigurations(existingSubConfigurations + newSubtitles)
+    .setSubtitleConfigurations(subtitleConfigurations)
     .build()
 
   val index = currentMediaItemIndex
   addMediaItem(index + 1, updatedMediaItem)
   removeMediaItem(index)
+
+  return if (filerSubtitles.isEmpty()) return null else subtitleConfigurations.indexOf(filerSubtitles[0])
 }

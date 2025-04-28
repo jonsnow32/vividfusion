@@ -38,6 +38,7 @@ import cloud.app.vvf.features.player.utils.getSelected
 import cloud.app.vvf.features.player.utils.getSubtitleMime
 import cloud.app.vvf.features.player.utils.subtitle.SubtitleCue
 import cloud.app.vvf.features.player.utils.uriToSubtitleConfiguration
+import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,11 +61,15 @@ class PlayerViewModel @Inject constructor(
   var playbackPosition = MutableStateFlow(0L)
   var isPlaying = MutableStateFlow(false)
   var playbackState = MutableStateFlow(0)
+  var videoSize = MutableStateFlow<VideoSize?>(null)
+  var textTrackIdx = MutableStateFlow<Int?>(null)
+  var audioTrackIdx = MutableStateFlow<Int?>(null)
+  var videoTrackIdx = MutableStateFlow<Int?>(null)
+
   var resizeMode = MutableStateFlow<Int?>(null) // 0 = Fit, 1 = Fill, 2 = Zoom
   var requestedOrientation = MutableStateFlow(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
   var fullscreenNotch = MutableStateFlow(false)
   var isControlsLocked = MutableStateFlow(false)
-  var videoSize = MutableStateFlow<VideoSize?>(null)
   var cuesWithTiming = MutableStateFlow<List<SubtitleCue>>(emptyList())
   var tracks = MutableStateFlow<Tracks?>(null)
   var mediaMetaData = MutableStateFlow<MediaMetadata?>(null)
@@ -77,7 +82,7 @@ class PlayerViewModel @Inject constructor(
   private val currentPrefCacheSize by lazy {
     defaultAppSetting.getInt(
       application.getString(R.string.pref_video_cache_size_on_ram), 0
-    )* 1024 * 1024L
+    ) * 1024 * 1024L
   }
   private val currentPrefDiskSize by lazy {
     defaultAppSetting.getInt(
@@ -96,7 +101,6 @@ class PlayerViewModel @Inject constructor(
       application.getString(R.string.pref_key_overlap_notch), true
     )
   }
-
 
   fun initialize(
     context: Context,
@@ -140,8 +144,11 @@ class PlayerViewModel @Inject constructor(
       DefaultMediaSourceFactory(cacheDataSourceFactory).setSubtitleParserFactory(delayedFactory)
 
     val subtitleConfigurations = subtitles.map { subtitle ->
-      MediaItem.SubtitleConfiguration.Builder(subtitle.url.toUri()).setMimeType(subtitle.mimeType)
-        .setLanguage(subtitle.languageCode).setLabel(subtitle.name).setId(subtitle.url)
+      MediaItem.SubtitleConfiguration.Builder(subtitle.url.toUri())
+        .setMimeType(subtitle.mimeType)
+        .setLanguage(subtitle.languageCode)
+        .setLabel(subtitle.name)
+        .setId(subtitle.url)
         .setSelectionFlags(C.SELECTION_FLAG_DEFAULT).build()
     }
 
@@ -300,21 +307,56 @@ class PlayerViewModel @Inject constructor(
 
   fun selectAudioTrack(audioTrackIndex: Int) {
     player?.switchTrack(C.TRACK_TYPE_AUDIO, audioTrackIndex)
+    audioTrackIdx.value = audioTrackIndex
+  }
+
+  fun selectVideoTrack(videoTrackIndex: Int) {
+    player?.switchTrack(C.TRACK_TYPE_VIDEO, videoTrackIndex)
+    videoTrackIdx.value = videoTrackIndex
   }
 
   @OptIn(UnstableApi::class)
   fun selectTextTrack(textTrackIndex: Int) {
     player?.switchTrack(C.TRACK_TYPE_TEXT, textTrackIndex)
+    textTrackIdx.value = textTrackIndex
   }
 
   fun addSubtitleData(context: Context, subtitles: List<SubtitleData>) {
     viewModelScope.launch {
-      player?.addAdditionalSubtitleConfiguration(subtitles.map { context.uriToSubtitleConfiguration(it.url.toUri()) })
+      val index = player?.addAdditionalSubtitleConfiguration(subtitles.map {
+        context.uriToSubtitleConfiguration(it.url.toUri())
+          .buildUpon()
+          .setLanguage(it.languageCode ?: "unknown")
+          .setLabel(it.name)
+          .build()
+      })
+      textTrackIdx.value = index ?: textTrackIdx.value
+      showSubtitleToast(context, index)
     }
   }
+
   fun addSubtitleUri(context: Context, uris: List<Uri>) {
     viewModelScope.launch {
-      player?.addAdditionalSubtitleConfiguration(uris.map { context.uriToSubtitleConfiguration(it) })
+      val index =
+        player?.addAdditionalSubtitleConfiguration(uris.map { context.uriToSubtitleConfiguration(it) })
+      textTrackIdx.value = index ?: textTrackIdx.value
+      showSubtitleToast(context, index)
+    }
+  }
+
+
+  private fun showSubtitleToast(context: Context, index: Int?) {
+    if (index != null) {
+      val subConfig =
+        player?.currentMediaItem?.localConfiguration?.subtitleConfigurations?.get(index)
+      context.showToast(
+        context.getString(
+          R.string.subtitles_added,
+          subConfig?.label
+        )
+      )
+    } else {
+      context.showToast(context.getString(R.string.subtitles_not_added))
     }
   }
 

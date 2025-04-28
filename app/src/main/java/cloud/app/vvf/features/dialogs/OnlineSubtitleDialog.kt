@@ -24,12 +24,13 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class OnlineSubtitleDialog : DockingDialog() {
-  override val widthPercentage: Float
-    get() = 1.0f
+  override val widthPercentage = 0.7f
   val viewmodel by viewModels<SubtitleViewModel>()
   private var binding by autoCleared<DialogOnlineSubtitleBinding>()
   private val query by lazy { arguments?.getString("query") }
   private val avpMediaItem by lazy { arguments?.getSerialized<AVPMediaItem>("avpMediaItem") }
+  private val addedSubtitles by lazy { arguments?.getSerialized<List<String>>("addedSubtitles") }
+
   val adapter by lazy {
     ArrayAdapter(
       requireContext(),
@@ -39,10 +40,11 @@ class OnlineSubtitleDialog : DockingDialog() {
   }
 
   companion object {
-    fun newInstance(query: String?, avpMediaItem: AVPMediaItem?) =
+    fun newInstance(query: String?, avpMediaItem: AVPMediaItem?, addedSubtitles: List<String>?) =
       OnlineSubtitleDialog().apply {
         arguments = Bundle().apply {
           putSerialized("avpMediaItem", avpMediaItem)
+          putSerialized("addedSubtitles", addedSubtitles)
           putString("query", query)
         }
       }
@@ -76,10 +78,11 @@ class OnlineSubtitleDialog : DockingDialog() {
       }
     }
 
-
-    observe(viewmodel.subtitles) {
+    observe(viewmodel.subtitles) { it ->
+      val newSubtitles =
+        it.filterNot { subtitleData -> addedSubtitles?.any { url -> url.contains(subtitleData.url) } == true }
       adapter.clear()
-      adapter.addAll(it)
+      adapter.addAll(newSubtitles)
       adapter.notifyDataSetChanged()
     }
     avpMediaItem?.let { viewmodel.findSubtitle(it) }

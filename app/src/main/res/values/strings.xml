@@ -297,12 +297,14 @@
   <string name="video_zoom">Video Zoom</string>
   <string name="resume_description">Choose whether to resume played videos from the point where you stopped</string>
   <string name="select_audio_track">Select Audio Track</string>
+  <string name="select_video_track">Select Video Track</string>
   <string name="select_subtitle_track">Select Subtitle Track</string>
   <string name="select_playback_speed">Select Playback Speed</string>
   <string name="go_back_img_des">Go Back</string>
   <string name="next_video">Next Video</string>
   <string name="torrent">Torrent</string>
   <string name="no_audio_tracks_found">No Audio Tracks Found</string>
+  <string name="no_video_tracks_found">No Video Tracks Found</string>
   <string name="no_subtitle_tracks_found">No Subtitle Tracks Found</string>
   <string name="open_local_subtitle">Open Local Subtitle</string>
   <string name="browse_online_subtitle">Find on internet</string>
@@ -366,5 +368,7 @@
   <string name="video_buffer_second">Video buffer</string>
   <string name="video_buffer_second_description" />
   <string name="seconds">second(s)</string>
+  <string name="subtitles_added">Loaded subtitle %s</string>
+  <string name="subtitles_not_added">Can\'t load subtitle</string>
 
 </resources>
