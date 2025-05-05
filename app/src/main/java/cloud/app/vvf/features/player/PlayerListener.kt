@@ -11,20 +11,14 @@ import androidx.media3.common.Player.DISCONTINUITY_REASON_SEEK
 import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 
 @UnstableApi
 class PlayerListener(val viewModel: PlayerViewModel) : Player.Listener {
   private val scope = CoroutineScope(Dispatchers.Main + Job())
-  private var updateJob: Job? = null
-  private val delay = 500L
 
   override fun onVideoSizeChanged(videoSize: VideoSize) {
     if (videoSize.width != 0 && videoSize.height != 0) {
@@ -41,7 +35,6 @@ class PlayerListener(val viewModel: PlayerViewModel) : Player.Listener {
     newPosition: Player.PositionInfo,
     reason: Int
   ) {
-    updateProgress()
 
     super.onPositionDiscontinuity(oldPosition, newPosition, reason)
     val oldMediaItem = oldPosition.mediaItem ?: return
@@ -52,13 +45,13 @@ class PlayerListener(val viewModel: PlayerViewModel) : Player.Listener {
         -> {
         val newMediaItem = newPosition.mediaItem
         if (newMediaItem != null && oldMediaItem != newMediaItem) {
-          viewModel.playbackPosition.value =
+          viewModel.playbackPositionMs.value =
             oldPosition.positionMs.takeIf { reason == DISCONTINUITY_REASON_SEEK } ?: C.TIME_UNSET
         }
       }
 
       DISCONTINUITY_REASON_REMOVE -> {
-        viewModel.playbackPosition.value = oldPosition.positionMs
+        viewModel.playbackPositionMs.value = oldPosition.positionMs
       }
 
       else -> return
@@ -66,25 +59,10 @@ class PlayerListener(val viewModel: PlayerViewModel) : Player.Listener {
 
   }
 
-  private fun updateProgress() {
-    viewModel.player?.let { player ->
-      viewModel.playbackPosition.value = player.currentPosition
-      updateJob?.cancel() // Cancel any existing job
-      if (player.playWhenReady && player.playbackState == ExoPlayer.STATE_READY) {
-        updateJob = scope.launch {
-          while (isActive) {
-            //viewModel.playbackPosition.value = player.currentPosition
-            delay(delay)
-          }
-        }
-      }
-    }
-  }
 
   override fun onPlaybackStateChanged(playbackState: Int) {
     viewModel.playbackState.value = playbackState
     super.onPlaybackStateChanged(playbackState)
-    updateProgress()
   }
 
   override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -114,6 +92,8 @@ class PlayerListener(val viewModel: PlayerViewModel) : Player.Listener {
     }
   }
 
+
+
   override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
     super.onMediaItemTransition(mediaItem, reason)
     if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
@@ -121,7 +101,7 @@ class PlayerListener(val viewModel: PlayerViewModel) : Player.Listener {
       return
     }
     if (mediaItem != null) {
-      viewModel.playbackPosition.value.let {
+      viewModel.playbackPositionMs.value.let {
         viewModel.seekTo(it)
       }
     }

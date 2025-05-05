@@ -14,8 +14,8 @@ import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.datastore.app.helper.BOOKMARK_FOLDER
 import cloud.app.vvf.datastore.app.helper.BookmarkItem
 import cloud.app.vvf.datastore.app.helper.PlayerSettingItem
-import cloud.app.vvf.features.player.utils.subtitle.DEF_SUBS_ELEVATION
-import cloud.app.vvf.features.player.utils.subtitle.SubtitleStyle
+import cloud.app.vvf.features.player.subtitle.DEF_SUBS_ELEVATION
+import cloud.app.vvf.features.player.subtitle.SubtitleStyle
 
 
 const val ExtensionFolder = "extensionDir"

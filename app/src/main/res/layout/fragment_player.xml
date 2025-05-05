@@ -49,7 +49,7 @@
     app:use_artwork="true"
     tools:foreground="@color/player_background" />
 
-  <cloud.app.vvf.features.player.utils.subtitle.SubtitleOffsetView
+  <cloud.app.vvf.features.player.subtitle.SubtitleOffsetView
     android:id="@+id/subtitle_offset_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"

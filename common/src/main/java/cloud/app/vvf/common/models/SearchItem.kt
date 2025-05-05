@@ -11,6 +11,8 @@ data class SearchItem(
   val searched: Boolean = false,
   @SerialName("searchedAt")
   val searchedAt: Long,
+  @SerialName("extras")
+  var extras : MutableMap<String, String?>? = null
 ) {
   fun sameAs(other: SearchItem) = query == other.query
   val id
@@ -20,3 +22,5 @@ data class SearchItem(
     .replace("[^a-z0-9\\s]".toRegex(), "") // Remove special characters
     .replace("\\s+".toRegex(), "-")
 }
+
+

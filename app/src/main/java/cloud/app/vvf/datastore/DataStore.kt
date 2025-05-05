@@ -2,8 +2,8 @@ package cloud.app.vvf.datastore
 
 import android.content.Context
 import android.content.SharedPreferences
-import cloud.app.vvf.utils.toData
-import cloud.app.vvf.utils.toJson
+import cloud.app.vvf.common.utils.toData
+import cloud.app.vvf.common.utils.toJson
 import timber.log.Timber
 import java.io.File
 

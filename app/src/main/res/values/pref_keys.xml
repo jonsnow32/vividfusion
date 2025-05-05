@@ -6,6 +6,7 @@
   <string name="pref_dns">pref_dns</string>
   <string name="pref_github">pref_github</string>
   <string name="pref_locale" translatable="false">pref_locale</string>
+  <string name="pref_subtitle_lang" translatable="false">pref_subtitle_lang</string>
 
   <!-- layout -->
   <string name="pref_layout">pref_layout</string>

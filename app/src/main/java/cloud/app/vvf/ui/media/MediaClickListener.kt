@@ -101,16 +101,17 @@ class MediaClickListener(
             fragment.navigate(
               PlayerFragment.newInstance(
                 mediaItems = localVideos,
-                subtitles = listOf(
-                  SubtitleData(
-                    name = "WebVTT positioning",
-                    mimeType = "text/vtt",
-                    languageCode = "en",
-                    origin = SubtitleOrigin.URL,
-                    url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
-                    headers = mapOf()
-                  ),
-                ),
+                //this is testing
+//                subtitles = listOf(
+//                  SubtitleData(
+//                    name = "WebVTT positioning",
+//                    mimeType = "text/vtt",
+//                    languageCode = "en",
+//                    origin = SubtitleOrigin.URL,
+//                    url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
+//                    headers = mapOf()
+//                  ),
+//                ),
                 selectedMediaIdx = localVideos.indexOfFirst { it -> it.id == item.id })
             )
 
@@ -124,16 +125,17 @@ class MediaClickListener(
           PlayerFragment.newInstance(
             mediaItems = listOf(item),
             selectedMediaIdx = 0,
-            subtitles = listOf(
-              SubtitleData(
-                name = "WebVTT positioning",
-                mimeType = "text/vtt",
-                languageCode = "en",
-                origin = SubtitleOrigin.URL,
-                url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
-                headers = mapOf()
-              ),
-            ),
+            //this is testing
+//            subtitles = listOf(
+//              SubtitleData(
+//                name = "WebVTT positioning",
+//                mimeType = "text/vtt",
+//                languageCode = "en",
+//                origin = SubtitleOrigin.URL,
+//                url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
+//                headers = mapOf()
+//              ),
+//            ),
           )
         )
       }

@@ -3,11 +3,13 @@ package cloud.app.vvf.extension.builtIn
 import android.content.Context
 import cloud.app.vvf.R
 import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
+import cloud.app.vvf.common.clients.provider.HttpHelperProvider
 import cloud.app.vvf.common.clients.provider.MessageFlowProvider
 import cloud.app.vvf.common.clients.subtitles.SubtitleClient
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.Page
 import cloud.app.vvf.common.helpers.PagedData
+import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItemsContainer
 import cloud.app.vvf.common.models.MediaItemsContainer
@@ -23,6 +25,8 @@ import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingSlider
 import cloud.app.vvf.common.settings.SettingSwitch
 import cloud.app.vvf.extension.builtIn.MediaUtils.getOldestVideoYear
+import cloud.app.vvf.extension.builtIn.providers.subtitles.DummySubtitles
+import cloud.app.vvf.extension.builtIn.providers.subtitles.SubSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -31,7 +35,9 @@ import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
 class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
-  MessageFlowProvider {
+  MessageFlowProvider, HttpHelperProvider {
+
+  private lateinit var httpHelper: HttpHelper
   override suspend fun getHomeTabs(): List<Tab> {
     return listOf(
       //Tab("AllVideos", "All Videos"),
@@ -274,77 +280,15 @@ class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
   }
 
   override suspend fun loadSubtitles(
-    mediaItem: AVPMediaItem,
-    callback: (SubtitleData) -> Unit
+    searchItem: SearchItem,
+    callback: suspend (SubtitleData) -> Unit
   ): Boolean {
-
-    val subtitles = listOf(
-      SubtitleData(
-        name = "TTML positioning",
-        mimeType = "application/ttml+xml",
-        languageCode = "en",
-        origin = SubtitleOrigin.URL,
-        url = "https://storage.googleapis.com/exoplayer-test-media-1/ttml/netflix_ttml_sample.xml",
-        headers = mapOf()
-      ),
-      SubtitleData(
-        name = "TTML Japanese features",
-        mimeType = "application/ttml+xml",
-        languageCode = "ja",
-        origin = SubtitleOrigin.URL,
-        url = "https://storage.googleapis.com/exoplayer-test-media-1/ttml/japanese-ttml.xml",
-        headers = mapOf()
-      ),
-      SubtitleData(
-        name = "TTML Netflix Japanese examples (IMSC1.1)",
-        mimeType = "application/ttml+xml",
-        languageCode = "ja",
-        origin = SubtitleOrigin.URL,
-        url = "https://storage.googleapis.com/exoplayer-test-media-1/ttml/netflix_japanese_ttml.xml",
-        headers = mapOf()
-      ),
-      SubtitleData(
-        name = "WebVTT positioning",
-        mimeType = "text/vtt",
-        languageCode = "en",
-        origin = SubtitleOrigin.URL,
-        url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
-        headers = mapOf()
-      ),
-      SubtitleData(
-        name = "WebVTT Japanese features",
-        mimeType = "text/vtt",
-        languageCode = "ja",
-        origin = SubtitleOrigin.URL,
-        url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/japanese.vtt",
-        headers = mapOf()
-      ),
-      SubtitleData(
-        name = "SubStation Alpha positioning",
-        mimeType = "text/x-ssa",
-        languageCode = "en",
-        origin = SubtitleOrigin.URL,
-        url = "https://storage.googleapis.com/exoplayer-test-media-1/ssa/test-subs-position.ass",
-        headers = mapOf()
-      ),
-      SubtitleData(
-        name = "SubStation Alpha styling",
-        mimeType = "text/x-ssa",
-        languageCode = "en",
-        origin = SubtitleOrigin.URL,
-        url = "https://storage.googleapis.com/exoplayer-test-media-1/ssa/test-subs-styling.ass",
-        headers = mapOf()
-      )
-    )
-
-
-    for (i in 1..subtitles.size) {
-      delay(10)
-      callback.invoke(subtitles.get(i - 1))
+    val subtitleProviders = listOf(SubSource())
+    for (provider in subtitleProviders) {
+      provider.loadSubtitles(httpHelper, searchItem, callback)
     }
     return true
   }
-
 
   override val defaultSettings: List<Setting>
     get() = listOf(
@@ -397,5 +341,9 @@ class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
       iconUrl = "https://www.themoviedb.org/assets/2/v4/marketing/logos/infuse_600-a28d709ee5137f75b31c4184643a22fe83ee8f64d3317509c33090922b66dbb6.png",
       types = listOf(ExtensionType.DATABASE, ExtensionType.SUBTITLE)
     )
+  }
+
+  override fun setHttpHelper(httpHelper: HttpHelper) {
+    this.httpHelper = httpHelper
   }
 }

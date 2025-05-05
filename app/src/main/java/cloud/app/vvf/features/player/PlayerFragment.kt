@@ -23,9 +23,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.Player
 import androidx.media3.common.Player.STATE_BUFFERING
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_IDLE
+import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
@@ -41,8 +43,6 @@ import cloud.app.vvf.features.gesture.BrightnessManager
 import cloud.app.vvf.features.gesture.PlayerGestureHelper
 import cloud.app.vvf.features.gesture.VolumeManager
 import cloud.app.vvf.features.player.utils.ResizeMode
-import cloud.app.vvf.features.player.utils.getDetails
-import cloud.app.vvf.features.player.utils.getName
 import cloud.app.vvf.features.player.utils.getSelected
 import cloud.app.vvf.utils.UIHelper.hideSystemUI
 import cloud.app.vvf.utils.UIHelper.showSystemUI
@@ -59,7 +59,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 @UnstableApi
@@ -143,12 +142,25 @@ class PlayerFragment : Fragment() {
       selectedMediaIdx = currentMediaIdx,
       subtitles = subtitles ?: emptyList(),
       selectedSubtitleIdx = currentSubtitleIdx,
-      initialPosition = viewModel.playbackPosition.value,
-      subtitleOffset = 0L
+      initialPosition = viewModel.playbackPositionMs.value,
+      subtitleOffsetMs = 0L
     )
 
     binding.playerView.player = viewModel.player
-
+//    viewModel.player?.addListener(object : Player.Listener {
+//      override fun onCues(cueGroup: CueGroup) {
+//        super.onCues(cueGroup)
+//        if (view != null) {
+//          val shiftedCues = cueGroup.cues.mapNotNull { cue ->
+//            cue
+//          }
+//          // Update cuesWithTiming for UI consistency (handled by parseSubtitles)
+//          if (shiftedCues.isNotEmpty()) {
+//            binding.subtitleOffsetView.updateAdapterCues(cueGroup.presentationTimeUs / 1_000)
+//          }
+//        }
+//      }
+//    })
     if (playerView?.player != null) {
       playerView?.defaultArtwork = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_music)
     }
@@ -203,7 +215,6 @@ class PlayerFragment : Fragment() {
       ) {
         viewModel.selectVideoTrack(it)
       }.show(parentFragmentManager, "VideoTrackSelectionDialog")
-
     }
     btnTextTrack.setOnClickListener {
       TextTrackSelectionDialog(
@@ -230,7 +241,8 @@ class PlayerFragment : Fragment() {
             mediaItems?.get(currentMediaIdx),
             viewModel.tracks.value?.groups?.filter { it.type == C.TRACK_TYPE_TEXT }?.map { trackGroup ->
               trackGroup.mediaTrackGroup.getFormat(0).id
-            }?.filterNotNull()
+            }?.filterNotNull(),
+            arrayOf("en", "vi")
           ).show(parentFragmentManager) {
             val selectedItems = it?.getSerialized<List<SubtitleData>>("selected_items")
             selectedItems?.let { it1 -> viewModel.addSubtitleData(requireContext(), it1) }
@@ -243,11 +255,13 @@ class PlayerFragment : Fragment() {
             viewModel.parseSubtitles(context) { result ->
               lifecycleScope.launch(Dispatchers.Main) {
                 if (result) {
+                  viewModel.registerUpdateProgress()
                   initialize(
                     viewModel.cuesWithTiming.value,
-                    viewModel.playbackPosition.value
+                    viewModel.player?.currentPosition ?: 0L,
+                    viewModel.delayedFactory.getDelayMs()
                   ) { offset ->
-                    viewModel.setSubtitleOffset(offset)
+                    viewModel.updateSubtitleOffset(context,offset)
                   }
                 } else {
                   context?.showToast(R.id.no_subtitles_loaded_notice)
@@ -322,9 +336,9 @@ class PlayerFragment : Fragment() {
       playerControlBinding.playPauseToggle.alpha = if (buffering) 0f else 1f
     }
 
-    observe(viewModel.playbackPosition) {
-      binding.subtitleOffsetView.updateAdapterCues(it)
-    }
+//    observe(viewModel.playbackPositionMs) {
+//      binding.subtitleOffsetView.updateAdapterCues(it)
+//    }
 
     observe(viewModel.tracks) { tracks ->
       if (tracks == null) return@observe

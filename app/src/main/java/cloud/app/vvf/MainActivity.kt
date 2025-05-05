@@ -41,6 +41,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import timber.log.Timber
+import java.io.File
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
@@ -48,6 +49,13 @@ import kotlin.system.exitProcess
 class MainActivity : AppCompatActivity() {
   val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
+
+
+  companion object {
+    fun deleteFileOnExit(file : File) {
+
+    }
+  }
 
   @Inject
   lateinit var sharedPreferences: SharedPreferences
@@ -267,6 +275,7 @@ class MainActivity : AppCompatActivity() {
       return currentFragment.handleKeyUp(keyCode, event)
     return super.onKeyUp(keyCode, event)
   }
+
 
 }
 

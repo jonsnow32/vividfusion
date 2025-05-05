@@ -28,20 +28,24 @@ import androidx.media3.exoplayer.SeekParameters
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.extractor.text.CuesWithTiming
 import androidx.media3.extractor.text.DefaultSubtitleParserFactory
+import androidx.media3.extractor.text.SubtitleParser.OutputOptions.allCues
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.features.player.utils.DelayedSubtitleParserFactory
+import cloud.app.vvf.features.player.subtitle.DelayedSubtitleParserFactory
 import cloud.app.vvf.features.player.utils.MediaItemUtils.toMediaItem
 import cloud.app.vvf.features.player.utils.getSelected
 import cloud.app.vvf.features.player.utils.getSubtitleMime
-import cloud.app.vvf.features.player.utils.subtitle.SubtitleCue
+import cloud.app.vvf.features.player.subtitle.SubtitleCue
 import cloud.app.vvf.features.player.utils.uriToSubtitleConfiguration
 import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -58,7 +62,7 @@ class PlayerViewModel @Inject constructor(
 
   // Public fields
   var player: ExoPlayer? = null
-  var playbackPosition = MutableStateFlow(0L)
+  var playbackPositionMs = MutableStateFlow(0L)
   var isPlaying = MutableStateFlow(false)
   var playbackState = MutableStateFlow(0)
   var videoSize = MutableStateFlow<VideoSize?>(null)
@@ -109,7 +113,7 @@ class PlayerViewModel @Inject constructor(
     subtitles: List<SubtitleData> = emptyList(),
     selectedSubtitleIdx: Int = 0,
     initialPosition: Long = 0L,
-    subtitleOffset: Long
+    subtitleOffsetMs: Long
   ) {
     if (player != null) {
       play()
@@ -132,7 +136,7 @@ class PlayerViewModel @Inject constructor(
     )
 
     delayedFactory = DelayedSubtitleParserFactory(DefaultSubtitleParserFactory())
-    delayedFactory.setDelaySeconds(subtitleOffset)
+    delayedFactory.setDelayMs(subtitleOffsetMs)
 
     val dataSourceFactory = DefaultDataSource.Factory(context)
     val cacheDataSourceFactory = CacheDataSource.Factory().setCache(simpleCache!!)
@@ -196,7 +200,6 @@ class PlayerViewModel @Inject constructor(
       }
   }
 
-  @UnstableApi
   fun parseSubtitles(context: Context, onResult: (Boolean) -> Unit) {
     val subtitleGroup =
       tracks.value?.groups?.filter { trackGroup -> trackGroup.type == C.TRACK_TYPE_TEXT }
@@ -240,7 +243,7 @@ class PlayerViewModel @Inject constructor(
           subtitleData,
           0,
           subtitleData.size,
-          androidx.media3.extractor.text.SubtitleParser.OutputOptions.allCues(),
+          allCues(),
           cues::add
         )
         cuesWithTiming.value = cues.map { cue ->
@@ -359,9 +362,52 @@ class PlayerViewModel @Inject constructor(
       context.showToast(context.getString(R.string.subtitles_not_added))
     }
   }
+  fun updateSubtitleOffset(context: Context, offsetSeconds: Long) {
+    viewModelScope.launch(Dispatchers.Main) {
+      try {
+        delayedFactory.setDelayMs(offsetSeconds)
 
-  fun setSubtitleOffset(offset: Long) {
-    delayedFactory.setDelaySeconds(offset / 1000)
+        val currentTextTrackIdx = textTrackIdx.value
+        val player = player ?: return@launch
+
+        // Force subtitle re-parsing by removing and re-adding the subtitle configuration
+        val subtitleConfigs = player.currentMediaItem?.localConfiguration?.subtitleConfigurations
+        val subtitleUri = subtitleConfigs?.getOrNull(currentTextTrackIdx ?: -1)?.uri ?: return@launch
+        val subtitleMime = subtitleUri.getSubtitleMime()
+
+        val newConfig = MediaItem.SubtitleConfiguration.Builder(subtitleUri)
+          .setMimeType(subtitleMime)
+          .setLanguage("und")
+          .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+          .build()
+
+        player.addAdditionalSubtitleConfiguration(listOf(newConfig))
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
+    }
+  }
+
+
+  private var updateJob: Job? = null
+  private val delayMs = 500L
+
+  fun registerUpdateProgress() {
+    player?.let { player ->
+      playbackPositionMs.value = player.currentPosition
+      updateJob?.cancel() // Cancel any existing job
+      if (player.playWhenReady && player.playbackState == ExoPlayer.STATE_READY) {
+        updateJob = viewModelScope.launch {
+          while (isActive) {
+            playbackPositionMs.value = player.currentPosition
+            delay(delayMs)
+          }
+        }
+      }
+    }
+  }
+  fun cancelUpdateProgress() {
+    updateJob?.cancel()
   }
 }
 

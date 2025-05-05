@@ -1,5 +1,6 @@
 package cloud.app.vvf.common.helpers.network
 
+import cloud.app.vvf.common.utils.toData
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.internal.closeQuietly
@@ -15,7 +16,6 @@ val Request.cookies: Map<String, String>
 
 class HttpResponse(
     val okhttpResponse: Response,
-    val parser: ResponseParser?
 ) {
     /** Lazy, initialized on use. Returns empty string on null. Automatically closes the body! */
     val text by lazy {
@@ -46,13 +46,13 @@ class HttpResponse(
 
     /** Same as using mapper.readValue<T>() */
     inline fun <reified T : Any> parsed(): T {
-        return parser!!.parse(this.text, T::class)
+        return this.text.toData<T>()
     }
 
     /** Same as using try { mapper.readValue<T>() } */
     inline fun <reified T : Any> parsedSafe(): T? {
         return try {
-            return parser!!.parseSafe(this.text, T::class)
+            return this.text.toData<T>()
         } catch (e: Exception) {
             e.printStackTrace()
             null

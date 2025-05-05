@@ -8,9 +8,10 @@ data class SubtitleData(
   @SerialName("name") val name: String,
   @SerialName("url") val url: String,
   @SerialName("origin") val origin: SubtitleOrigin,
-  @SerialName("mime_type") val mimeType: String,
-  @SerialName("headers") val headers: Map<String, String>,
-  @SerialName("language_code") val languageCode: String?
+  @SerialName("mime_type") val mimeType: String?,
+  @SerialName("headers") val headers: Map<String, String>?,
+  @SerialName("language_code") val languageCode: String?,
+  @SerialName("isHearingImpaired") val isHearingImpaired: Boolean = false
 ) {
   /** Internal ID for exoplayer, unique for each link*/
   fun getId(): String {

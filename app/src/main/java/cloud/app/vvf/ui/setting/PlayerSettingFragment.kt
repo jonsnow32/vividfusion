@@ -3,6 +3,7 @@ package cloud.app.vvf.ui.setting
 import android.content.Context
 import android.os.Bundle
 import androidx.annotation.OptIn
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.preference.Preference
@@ -13,8 +14,10 @@ import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.applyUiChanges
 import cloud.app.vvf.utils.MaterialListPreference
 import cloud.app.vvf.utils.MaterialSliderPreference
+import cloud.app.vvf.utils.SubtitleHelper
 import cloud.app.vvf.utils.TV
 import cloud.app.vvf.utils.isLayout
+import kotlin.math.max
 
 
 class PlayerSettingFragment : BaseSettingsFragment() {
@@ -167,6 +170,36 @@ class PlayerSettingFragment : BaseSettingsFragment() {
           onPreferenceChangeListener = uiListener {
 
           }
+          screen.addPreference(this)
+        }
+
+        MaterialListPreference(context).apply {
+          val tempLangs = appLanguages.toMutableList()
+          val current = getCurrentLocale(context)
+          val languageCodes = tempLangs.map { (_, _, iso) -> iso }
+          val languageNames = tempLangs.map { (emoji, name, iso) ->
+            val flag = emoji.ifBlank { SubtitleHelper.getFlagFromIso(iso) ?: "ERROR" }
+            "$flag $name"
+          }
+          val index = max(languageCodes.indexOf(current), 0)
+
+          key = getString(R.string.pref_subtitle_lang)
+          title = getString(R.string.subtitle_language)
+          summary = preferences.getString(key, languageNames[index])
+          layoutResource = R.layout.preference
+          isIconSpaceReserved = false
+
+          entries = languageNames.toTypedArray()
+          entryValues = languageCodes.toTypedArray()
+          value = preferences.getString(key, languageNames[index])
+          onPreferenceChangeListener = uiListener {
+            activity?.application?.applyUiChanges(
+              preferences,
+              it as String,
+              currentActivity = activity
+            )
+          }
+          icon = AppCompatResources.getDrawable(context, R.drawable.ic_baseline_public_24)
           screen.addPreference(this)
         }
       }

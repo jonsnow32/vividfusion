@@ -1,4 +1,4 @@
-package cloud.app.vvf.features.player.utils.subtitle
+package cloud.app.vvf.features.player.subtitle
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -65,7 +65,7 @@ class SubtitleCueAdapter(
 
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val subtitle = getItem(position) ?: return
-    holder.binding.subtitleText.text = subtitle.toString().trim().trim('\n').ifEmpty { "♪" }
+    holder.binding.subtitleText.text = "${subtitle.startTimeMs} - ${subtitle.toString().trim().trim('\n').ifEmpty { "♪" }}"
     holder.updateColors()
     holder.updateCurrent()
     holder.itemView.applyTranslationYAnimation(scrollAmount)

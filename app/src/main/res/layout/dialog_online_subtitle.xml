@@ -34,10 +34,9 @@
         android:nextFocusRight="@id/searchExtension"
         android:paddingStart="-10dp"
         android:textColorHint="?android:textColorHint"
-        app:closeIcon="@drawable/ic_close"
         app:iconifiedByDefault="false"
         app:queryBackground="@android:color/transparent"
-        app:queryHint="@string/search_hint"
+        app:queryHint="@string/search_subtitle_hint"
         app:searchIcon="@drawable/ic_search_outline"
         tools:ignore="RtlSymmetry">
 
@@ -52,17 +51,17 @@
     </FrameLayout>
 
     <ImageView
-      android:id="@+id/searchExtension"
+      android:id="@+id/filterLanguage"
       android:layout_width="25dp"
       android:layout_height="25dp"
       android:layout_gravity="end|center_vertical"
 
       android:layout_margin="10dp"
       android:background="?selectableItemBackgroundBorderless"
-      android:contentDescription="@string/search_filter"
+      android:contentDescription="@string/subtitle_language"
       android:nextFocusLeft="@id/mainSearch"
       android:nextFocusRight="@id/mainSearch"
-      android:src="@drawable/ic_extension_24dp"
+      android:src="@drawable/ic_baseline_public_24"
       android:tag="@string/tv_no_focus_tag" />
 
   </FrameLayout>
@@ -76,6 +75,14 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/searchBar" />
 
+  <include
+    android:id="@+id/emptyView"
+    layout="@layout/item_nothing_to_show"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:visibility="gone"
+    tools:visibility="visible" />
+
   <ListView
     android:id="@+id/listview1"
     android:layout_width="match_parent"
@@ -83,8 +90,8 @@
     android:layout_rowWeight="1"
     android:nextFocusLeft="@id/apply_btt"
     android:nextFocusRight="@id/cancel_btt"
-    android:requiresFadingEdge="vertical"
     android:paddingBottom="60dp"
+    android:requiresFadingEdge="vertical"
     tools:listitem="@layout/sort_bottom_single_choice" />
 
   <LinearLayout
@@ -93,8 +100,8 @@
     android:layout_height="60dp"
     android:layout_gravity="bottom"
     android:layout_marginTop="-60dp"
-    android:gravity="bottom|end"
     android:layout_marginEnd="10dp"
+    android:gravity="bottom|end"
     android:orientation="horizontal">
 
     <com.google.android.material.button.MaterialButton

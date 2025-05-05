@@ -19,7 +19,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class AVPMediaItem {
 
-
   @Serializable
   data class TrackItem(val track: Track) : AVPMediaItem() {
     fun getSlug(): String {

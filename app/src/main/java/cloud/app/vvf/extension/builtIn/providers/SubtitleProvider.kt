@@ -1,12 +1,13 @@
-package cloud.app.vvf.common.clients.subtitles
+package cloud.app.vvf.extension.builtIn.providers
 
-import cloud.app.vvf.common.clients.BaseClient
+import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.subtitle.SubtitleData
 
-interface SubtitleClient : BaseClient {
+interface SubtitleProvider {
   suspend fun loadSubtitles(
+    httpHelper: HttpHelper,
     searchItem: SearchItem,
     callback: suspend (SubtitleData) -> Unit
-  ): Boolean
+  )
 }

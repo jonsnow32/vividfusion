@@ -1,5 +1,6 @@
 package cloud.app.vvf.common.helpers.network
 
+import cloud.app.vvf.common.utils.toJson
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -11,12 +12,6 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import kotlin.reflect.KClass
 
-interface ResponseParser {
-  fun <T : Any> parse(text: String, kClass: KClass<T>): T
-  fun <T : Any> parseSafe(text: String, kClass: KClass<T>): T?
-  fun writeValueAsString(obj: Any): String
-}
-
 data class JsonAsString(val string: String)
 
 object RequestBodyTypes {
@@ -25,20 +20,17 @@ object RequestBodyTypes {
 }
 
 class HttpHelper(val okHttpClient: OkHttpClient) {
-
   var userAgent: String =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"
-
   suspend fun get(
     url: String,
     headers: Map<String, String>? = null,
     referer: String? = null,
-    responseParser: ResponseParser? = null
   ): HttpResponse {
     val request = buildRequest(url, headers, referer) {
       get()
     }
-    return executeRequest(request, responseParser)
+    return executeRequest(request)
   }
 
   suspend fun post(
@@ -47,13 +39,12 @@ class HttpHelper(val okHttpClient: OkHttpClient) {
     json: Any? = null,
     headers: Map<String, String>? = null,
     referer: String? = null,
-    responseParser: ResponseParser? = null
   ): HttpResponse {
-    val body = createRequestBody(data, json, responseParser) ?: FormBody.Builder().build()
+    val body = createRequestBody(data, json) ?: FormBody.Builder().build()
     val request = buildRequest(url, headers, referer) {
       post(body)
     }
-    return executeRequest(request, responseParser)
+    return executeRequest(request)
   }
 
   fun loadCookieForRequest(url: String): String? {
@@ -82,9 +73,9 @@ class HttpHelper(val okHttpClient: OkHttpClient) {
       .build()
   }
 
-  private fun executeRequest(request: Request, responseParser: ResponseParser?): HttpResponse {
+  private fun executeRequest(request: Request): HttpResponse {
     val response = okHttpClient.newCall(request).execute()
-    return HttpResponse(response, responseParser)
+    return HttpResponse(response)
   }
 
   private fun Request.Builder.applyHeaders(headers: Map<String, String>?): Request.Builder {
@@ -103,22 +94,23 @@ class HttpHelper(val okHttpClient: OkHttpClient) {
   private fun createRequestBody(
     data: Map<String, String>?,
     json: Any?,
-    responseParser: ResponseParser?
   ): RequestBody? {
     return when {
       !data.isNullOrEmpty() -> FormBody.Builder().apply {
         data.forEach { (key, value) -> addEncoded(key, value) }
       }.build()
+
       json != null -> {
         val jsonString = when (json) {
           is JsonObject, is JsonArray -> Json.encodeToString(json)
           is String -> json
           is JsonAsString -> json.string
-          else -> responseParser?.writeValueAsString(json) ?: Json.encodeToString(json)
+          else -> json.toJson()
         }
         val mediaType = if (json is String) RequestBodyTypes.TEXT else RequestBodyTypes.JSON
         jsonString.toRequestBody(mediaType.toMediaTypeOrNull())
       }
+
       else -> null
     }
   }

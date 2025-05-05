@@ -21,6 +21,8 @@
   <string name="view">View</string>
   <string name="item_video">Video Item</string>
   <string name="search_hint">Search…</string>
+  <string name="search_subtitle_hint">Search title + year or IMDB id</string>
+  <string name="search_lyric_hint">Search title</string>
   <string name="back">Back</string>
   <string name="search_filter">Search Filter</string>
   <string name="tv_no_focus_tag">tv_no_focus_tag</string>
@@ -370,5 +372,8 @@
   <string name="seconds">second(s)</string>
   <string name="subtitles_added">Loaded subtitle %s</string>
   <string name="subtitles_not_added">Can\'t load subtitle</string>
-
+  <string name="subtitles_not_available">No subtitles available</string>
+  <string name="subtitles_updated">Subtitles updated successfully</string>
+  <string name="subtitles_not_updated">Failed to update subtitles</string>
+  <string name="subtitle_language">Subtitle Languages</string>
 </resources>

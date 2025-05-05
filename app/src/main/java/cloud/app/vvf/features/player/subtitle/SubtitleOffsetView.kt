@@ -1,4 +1,4 @@
-package cloud.app.vvf.features.player.utils.subtitle
+package cloud.app.vvf.features.player.subtitle
 
 import android.content.Context
 import android.util.AttributeSet
@@ -26,7 +26,7 @@ class SubtitleOffsetView @JvmOverloads constructor(
   private val binding: ViewSubtitleOffsetBinding =
     ViewSubtitleOffsetBinding.inflate(LayoutInflater.from(context), this, true)
   private lateinit var adapter: SubtitleCueAdapter
-  private var currentOffset: Long = 0
+  private var currentOffsetMs: Long = 0
   private var currentTimeMs: Long = 0
   private var currentSubtitlePos = -1
   private var subtitleCues: List<SubtitleCue> = emptyList()
@@ -39,18 +39,15 @@ class SubtitleOffsetView @JvmOverloads constructor(
   }
 
   var callback: ((Long) -> Unit)? = null
-  override fun onDetachedFromWindow() {
-    super.onDetachedFromWindow()
-    callback?.invoke(currentOffset)
-  }
 
   override fun onAttachedToWindow() {
     super.onAttachedToWindow()
 
     binding.rvSubtitlesOffset.layoutManager = LinearLayoutManager(context)
     binding.subtitleOffsetReset.setOnClickListener {
-      currentOffset = 0
+      currentOffsetMs = 0
       binding.subtitleOffsetInput.setText("0")
+      callback?.invoke(currentOffsetMs)
     }
     val lifecycleOwner = findViewTreeLifecycleOwner()
     var job: Job? = null
@@ -68,15 +65,18 @@ class SubtitleOffsetView @JvmOverloads constructor(
 
     binding.subtitleOffsetClose.setOnClickListener {
       binding.root.isGone = true
+      callback?.invoke(currentOffsetMs)
       job?.cancel()
     }
     adapter = SubtitleCueAdapter(
       currentTimeMs = currentTimeMs,
       clickCallback = { cue ->
         if (cue.startTimeMs != Long.MAX_VALUE) {
-          currentOffset = currentTimeMs - cue.startTimeMs
-          binding.subtitleOffsetInput.setText(currentOffset.toString())
+          val detaTime = System.currentTimeMillis() - lastUpdatedMs;
+          currentOffsetMs = (currentTimeMs + detaTime) - cue.startTimeMs
+          binding.subtitleOffsetInput.setText(currentOffsetMs.toString())
           updateAdapterCues(currentTimeMs)
+          callback?.invoke(currentOffsetMs)
         }
       }
     )
@@ -84,9 +84,16 @@ class SubtitleOffsetView @JvmOverloads constructor(
     binding.rvSubtitlesOffset.adapter = adapter
   }
 
-  fun initialize(cues: List<SubtitleCue>, currentTimeMs: Long, callback: (Long) -> Unit  ) {
+  fun initialize(
+    cues: List<SubtitleCue>,
+    currentTimeMs: Long,
+    currentOffset: Long,
+    callback: (Long) -> Unit
+  ) {
     this.subtitleCues = cues
     this.currentTimeMs = currentTimeMs
+    this.currentOffsetMs = currentOffset
+    shouldAutoScroll = true
     updateVisibility()
     binding.root.isGone = false
     adapter.submitList(cues)
@@ -95,12 +102,14 @@ class SubtitleOffsetView @JvmOverloads constructor(
     updateAdapterCues(currentTimeMs)
   }
 
+  var lastUpdatedMs = 0L;
   fun updateAdapterCues(current: Long) {
     if (!isInit) return
 
     currentTimeMs = current;
+    lastUpdatedMs = System.currentTimeMillis()
     val updatedCues = subtitleCues.map { cue ->
-      cue.copy(startTimeMs = cue.startTimeMs + currentOffset)
+      cue.copy(startTimeMs = cue.startTimeMs + currentOffsetMs)
     }
 
     val currentTime = updatedCues.getOrNull(currentSubtitlePos)?.endTimeMs ?: -1

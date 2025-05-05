@@ -1,4 +1,4 @@
-package cloud.app.vvf.features.player.utils.subtitle
+package cloud.app.vvf.features.player.subtitle
 
 import androidx.annotation.FontRes
 import androidx.annotation.OptIn
