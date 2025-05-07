@@ -21,7 +21,8 @@ data class ExtensionMetadata(
 
   var enabled: Boolean = true,
   var lastUpdated: Long = -1,
-  var rating: Int = 0
+  var rating: Int = 0,
+  var preservedPackages: List<String> = emptyList()
 ) {
 
   init {
