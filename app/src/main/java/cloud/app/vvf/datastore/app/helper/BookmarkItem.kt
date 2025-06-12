@@ -45,11 +45,19 @@ sealed class BookmarkItem {
   ) : BookmarkItem()
 
   companion object {
+    // Manually list the subclass names
     fun getBookmarkItemSubclasses(): List<String> {
-      return BookmarkItem::class.sealedSubclasses.map { it.simpleName ?: "Unnamed" }
+      return listOf(
+        "Watching",
+        "Completed",
+        "OnHold",
+        "Dropped",
+        "PlanToWatch"
+      )
     }
-    fun getStringIds(bookmarkItem: BookmarkItem?) : Int{
-      return when(bookmarkItem){
+
+    fun getStringIds(bookmarkItem: BookmarkItem?): Int {
+      return when (bookmarkItem) {
         is Completed -> R.string.type_completed
         is Dropped -> R.string.type_dropped
         is OnHold -> R.string.type_on_hold
@@ -58,8 +66,9 @@ sealed class BookmarkItem {
         else -> R.string.type_none
       }
     }
-    fun getStringIds(type: String) : Int{
-      return when(type) {
+
+    fun getStringIds(type: String): Int {
+      return when (type) {
         "Watching" -> R.string.type_watching
         "Completed" -> R.string.type_completed
         "OnHold" -> R.string.type_on_hold
@@ -70,6 +79,3 @@ sealed class BookmarkItem {
     }
   }
 }
-
-
-

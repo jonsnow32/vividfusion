@@ -40,7 +40,7 @@ class PlayerSettingFragment : BaseSettingsFragment() {
           true
         }
       PreferenceCategory(context).apply {
-        title = getString(R.string.playback)
+        title = getString(R.string.player)
         key = "player_ui"
         isIconSpaceReserved = false
         layoutResource = R.layout.preference_category

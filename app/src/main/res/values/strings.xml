@@ -376,4 +376,7 @@
   <string name="subtitles_updated">Subtitles updated successfully</string>
   <string name="subtitles_not_updated">Failed to update subtitles</string>
   <string name="subtitle_language">Subtitle Languages</string>
+  <string name="privacy_policy" >Privacy Policy</string>
+  <string name="select_region">Select region</string>
+  <string name="mark_watched">Mark watched</string>
 </resources>

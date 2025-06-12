@@ -40,8 +40,8 @@
       android:layout_height="wrap_content"
       android:layout_gravity="center"
       android:backgroundTint="?colorControlNormal"
-      android:text="@string/play_now"
-      app:icon="@drawable/play_arrow_24dp" />
+      android:text="@string/action_stream"
+      app:icon="@drawable/playlist_play_24dp" />
 
     <TextView
       android:id="@+id/homePreviewInfo"

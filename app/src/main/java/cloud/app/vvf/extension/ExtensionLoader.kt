@@ -6,7 +6,7 @@ import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.models.extension.Message
-import cloud.app.vvf.extension.builtIn.BuiltInRepo
+import cloud.app.vvf.extension.builtIn.local.BuiltInRepo
 import cloud.app.vvf.extension.plugger.FileChangeListener
 import cloud.app.vvf.extension.plugger.PackageChangeListener
 import cloud.app.vvf.utils.catchWith
@@ -28,9 +28,7 @@ class ExtensionLoader(
   private val extensionsFlow: MutableStateFlow<List<Extension<*>>>,
   private val messageFlow: MutableSharedFlow<Message>,
   private val refresher: MutableSharedFlow<Boolean>,
-
   ) {
-
   private val scope = MainScope() + CoroutineName("ExtensionLoader")
   private val appListener = PackageChangeListener(context)
   public val fileListener = FileChangeListener(scope)

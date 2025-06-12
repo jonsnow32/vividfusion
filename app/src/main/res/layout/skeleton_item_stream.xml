@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cloud.app.vvf.utils.ShimmerLayoutSelf xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="12dp">
+
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="18sp"
+      android:layout_marginTop="8dp"
+      android:backgroundTint="?colorOnBackground"
+      android:background="@drawable/rounded_rectangle" />
+
+    <View
+      android:id="@+id/view"
+      android:layout_width="match_parent"
+      android:layout_height="18sp"
+      android:layout_marginTop="8dp"
+      android:backgroundTint="?colorOnBackground"
+      android:background="@drawable/rounded_rectangle" />
+  </LinearLayout>
+</cloud.app.vvf.utils.ShimmerLayoutSelf>

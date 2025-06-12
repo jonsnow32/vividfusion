@@ -23,6 +23,11 @@ fun getCurrentLocale(context: Context): String {
   return conf?.locales?.get(0)?.language ?: "en"
 }
 
+fun getCurrentRegion(context: Context): String {
+  val res = context.resources
+  val conf = res.configuration
+  return conf.locales.get(0)?.country ?: "US"
+}
 // idk, if you find a way of automating this it would be great
 // https://www.iemoji.com/view/emoji/1794/flags/antarctica
 // Emoji Character Encoding Data --> C/C++/Java Src

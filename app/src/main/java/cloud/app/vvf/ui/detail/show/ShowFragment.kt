@@ -94,7 +94,8 @@ class ShowFragment : Fragment() {
     }
     binding.header.buttonStreamingSearch.setOnClickListener {
       viewModel.fullMediaItem.value?.let {
-        navigate(StreamFragment.newInstance(it))
+//        navigate(StreamFragment.newInstance(it))
+        StreamFragment.newInstance(it).show(parentFragmentManager)
       }
     }
 

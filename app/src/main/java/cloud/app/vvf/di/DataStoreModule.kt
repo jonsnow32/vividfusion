@@ -17,18 +17,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class DataStoreModule {
-
   @Singleton
   @Provides
   fun provideJson() = Json {
     ignoreUnknownKeys = true
   }
 
-
   @Singleton
   @Provides
   fun provideDefaultSharePreferences(context: Context): SharedPreferences = context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
-
 
   @Singleton
   @Provides

@@ -17,9 +17,7 @@
   <uses-permission
     android:name="android.permission.READ_MEDIA_VIDEO"
     tools:ignore="SelectedPhotoAccess" />
-  <uses-permission
-    android:name="android.permission.READ_MEDIA_AUDIO"
-    tools:ignore="SelectedPhotoAccess" />
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
   <uses-feature
     android:name="android.hardware.touchscreen"
@@ -130,7 +128,7 @@
     <provider
       android:name="androidx.startup.InitializationProvider"
       android:authorities="${applicationId}.androidx-startup"
-      tools:node="remove"></provider>
+      tools:node="remove"/>
 
   </application>
 

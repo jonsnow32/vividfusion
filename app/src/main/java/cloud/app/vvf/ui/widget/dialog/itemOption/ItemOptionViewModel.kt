@@ -10,7 +10,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.datastore.app.helper.BookmarkItem
-import cloud.app.vvf.extension.builtIn.MediaUtils
+import cloud.app.vvf.extension.builtIn.local.MediaUtils
 import cloud.app.vvf.extension.run
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -90,6 +90,12 @@ class ItemOptionViewModel @Inject constructor(
               item
             )
           })
+    }
+  }
+
+  fun markWatched(extensionId: String, item: AVPMediaItem) {
+    viewModelScope.launch {
+
     }
   }
 

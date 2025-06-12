@@ -53,15 +53,11 @@ class SubtitleViewModel @Inject constructor(
           supervisorScope {
             subtitleExtensions.forEach { extension ->
               launch(Dispatchers.IO) {
-                try {
-                  extension.run<SubtitleClient, Boolean>(throwableFlow) {
-                    loadSubtitles(
-                      searchItem,
-                      callback = ::onSubtitleData
-                    )
-                  }
-                } catch (e: Exception) {
-                  // Exceptions are caught by throwableFlow in run(); log if needed
+                extension.run<SubtitleClient, Boolean>(throwableFlow) {
+                  loadSubtitles(
+                    searchItem,
+                    callback = ::onSubtitleData
+                  )
                 }
               }
             }

@@ -3,6 +3,7 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:background="?attr/colorSurfaceContainer"
   android:orientation="vertical">
 
@@ -18,6 +19,13 @@
     android:textSize="20sp"
     android:textStyle="bold"
     tools:text="Test" />
+
+  <View
+    android:id="@+id/appBarOutline"
+    style="@style/AppBarOutline"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/appBarLayoutCustom" />
 
   <ListView
     android:id="@+id/listview1"

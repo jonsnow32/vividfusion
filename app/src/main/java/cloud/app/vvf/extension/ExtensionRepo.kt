@@ -1,24 +1,17 @@
 package cloud.app.vvf.extension
 
 import android.content.Context
-import cloud.app.vvf.extension.plugger.AndroidPluginLoader
-import cloud.app.vvf.extension.plugger.FileManifestParser
-import cloud.app.vvf.extension.plugger.ApkManifestParser
-import cloud.app.vvf.extension.plugger.ApkPluginSource
-import cloud.app.vvf.extension.plugger.FileChangeListener
-import cloud.app.vvf.extension.plugger.FilePluginSource
-import cloud.app.vvf.extension.plugger.LazyPluginRepo
-import cloud.app.vvf.extension.plugger.LazyPluginRepoImpl
-import cloud.app.vvf.extension.plugger.LazyRepoComposer
-import cloud.app.vvf.extension.plugger.PackageChangeListener
-import cloud.app.vvf.extension.plugger.catchLazy
 import cloud.app.vvf.common.clients.BaseClient
 import cloud.app.vvf.common.clients.provider.HttpHelperProvider
 import cloud.app.vvf.common.clients.provider.MessageFlowProvider
-import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.models.extension.Message
+import cloud.app.vvf.extension.plugger.FileChangeListener
+import cloud.app.vvf.extension.plugger.LazyPluginRepo
+import cloud.app.vvf.extension.plugger.LazyRepoComposer
+import cloud.app.vvf.extension.plugger.PackageChangeListener
+import cloud.app.vvf.extension.plugger.catchLazy
 import cloud.app.vvf.utils.getSettings
 import kotlinx.coroutines.flow.MutableSharedFlow
 import tel.jeelpa.plugger.utils.mapState
@@ -33,19 +26,20 @@ class ExtensionRepo<T : BaseClient>(
   private vararg val repo: LazyPluginRepo<ExtensionMetadata, T>
 ) : LazyPluginRepo<ExtensionMetadata, T> {
   private val composed by lazy {
-    val loader = AndroidPluginLoader<T>(context)
-    val dir = context.getPluginFileDir()
-    val filePluginRepo = LazyPluginRepoImpl(
-      FilePluginSource(dir, fileChangeListener.scope, fileChangeListener.flow),
-      FileManifestParser(context.packageManager),
-      loader,
-    )
-    val appPluginRepo = LazyPluginRepoImpl(
-      ApkPluginSource(listener, context, FEATURE),
-      ApkManifestParser(ImportType.App),
-      loader
-    )
-    LazyRepoComposer(*repo, appPluginRepo, filePluginRepo)
+//    val loader = AndroidPluginLoader<T>(context)
+//    val dir = context.getPluginFileDir()
+//    val filePluginRepo = LazyPluginRepoImpl(
+//      FilePluginSource(dir, fileChangeListener.scope, fileChangeListener.flow),
+//      FileManifestParser(context.packageManager),
+//      loader,
+//    )
+//    val appPluginRepo = LazyPluginRepoImpl(
+//      ApkPluginSource(listener, context, FEATURE),
+//      ApkManifestParser(ImportType.App),
+//      loader
+//    )
+//    LazyRepoComposer(*repo, appPluginRepo, filePluginRepo)
+    LazyRepoComposer(*repo)
   }
 
   private fun injected() = composed.getAllPlugins().mapState { list ->

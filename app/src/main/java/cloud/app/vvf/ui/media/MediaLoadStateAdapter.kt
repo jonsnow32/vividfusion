@@ -25,7 +25,7 @@ import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.requestPermission
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 
-class MediaLoadStateAdapter(val listener: Listener? = null, val isAdapterForContainer: Boolean) :
+class MediaLoadStateAdapter(val listener: Listener? = null, private val isAdapterForContainer: Boolean) :
   LoadStateAdapter<MediaLoadStateAdapter.LoadStateViewHolder>() {
 
   interface Listener {

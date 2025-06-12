@@ -13,11 +13,11 @@ import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.AVPMediaItem.Companion.toMediaItem
 import cloud.app.vvf.databinding.FragmentSeasonBinding
 import cloud.app.vvf.ui.detail.bind
 import cloud.app.vvf.ui.detail.show.episode.EpisodeAdapter
 import cloud.app.vvf.ui.detail.show.episode.EpisodeAdapter.EpisodeData
+import cloud.app.vvf.ui.stream.StreamFragment
 import cloud.app.vvf.ui.widget.dialog.itemOption.ItemOptionDialog
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.autoCleared
@@ -26,7 +26,6 @@ import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import dagger.hilt.android.AndroidEntryPoint
-import timber.log.Timber
 import javax.inject.Inject
 import kotlin.getValue
 
@@ -215,12 +214,15 @@ class SeasonFragment : Fragment(), EpisodeAdapter.Listener {
     val episodes: List<EpisodeData>
   )
 
-  override fun onClick(episodeData: EpisodeData) {
-    viewModel.saveHistory(
-      episodeData.episode.toMediaItem(
-        viewModel.fullSeasonItem.value ?: shortItem
+  override fun onClick(episode: EpisodeData) {
+    StreamFragment.newInstance(
+      AVPMediaItem.EpisodeItem(
+        episode.episode,
+        seasonItem = shortItem
       )
-    )
+    ).show(parentFragmentManager) {
+
+    }
   }
 
   override fun onLongClick(episode: EpisodeData): Boolean {

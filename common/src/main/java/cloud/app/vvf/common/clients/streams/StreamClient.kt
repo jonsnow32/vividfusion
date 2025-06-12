@@ -10,6 +10,6 @@ interface StreamClient : BaseClient {
   suspend fun loadLinks(
       mediaItem: AVPMediaItem,
       subtitleCallback: (SubtitleData) -> Unit,
-      callback: (Video) -> Unit
+      callback: (Video) -> Unit,
   ): Boolean
 }

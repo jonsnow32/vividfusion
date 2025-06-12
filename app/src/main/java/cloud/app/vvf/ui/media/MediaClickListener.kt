@@ -6,7 +6,6 @@ import androidx.annotation.OptIn
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.noClient
@@ -14,10 +13,8 @@ import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.VideoItem
 import cloud.app.vvf.common.models.MediaItemsContainer
-import cloud.app.vvf.common.models.subtitle.SubtitleData
-import cloud.app.vvf.common.models.subtitle.SubtitleOrigin
 import cloud.app.vvf.common.models.video.Video
-import cloud.app.vvf.extension.builtIn.MediaUtils
+import cloud.app.vvf.extension.builtIn.local.MediaUtils
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.ui.detail.movie.MovieFragment
 import cloud.app.vvf.ui.detail.show.ShowFragment
@@ -181,7 +178,8 @@ class MediaClickListener(
       is MediaItemsContainer.PageView -> {
         val extras = holder.extras
         val selectedPosition = extras?.getInt("selected_position") ?: 0
-        fragment.navigate(StreamFragment.newInstance(container.items[selectedPosition]))
+//        fragment.navigate(StreamFragment.newInstance(container.items[selectedPosition]))
+        StreamFragment.newInstance(container.items[selectedPosition]).show(fragmentManager)
       }
     }
   }

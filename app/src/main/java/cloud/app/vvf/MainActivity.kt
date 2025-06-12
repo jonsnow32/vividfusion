@@ -25,7 +25,7 @@ import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.databinding.ActivityMainBinding
 import cloud.app.vvf.databinding.ConfirmExitDialogBinding
-import cloud.app.vvf.extension.builtIn.MediaUtils
+import cloud.app.vvf.extension.builtIn.local.MediaUtils
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.features.playerManager.PlayerManager
 import cloud.app.vvf.utils.TV
@@ -50,7 +50,6 @@ class MainActivity : AppCompatActivity() {
   val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
 
-
   companion object {
     fun deleteFileOnExit(file : File) {
 
@@ -59,7 +58,6 @@ class MainActivity : AppCompatActivity() {
 
   @Inject
   lateinit var sharedPreferences: SharedPreferences
-
   @Inject lateinit var updateUIFlow : MutableStateFlow<AVPMediaItem?>
   override fun onCreate(savedInstanceState: Bundle?) {
     PlayerManager.getInstance().setActivityResultRegistry(activityResultRegistry)

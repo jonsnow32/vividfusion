@@ -16,13 +16,17 @@ import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.extension.run
+import cloud.app.vvf.extension.tmdb.services.tmdb.popularCountriesIsoToEnglishName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,22 +35,36 @@ class StreamViewModel @Inject constructor(
   val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
   val settingsPreference: SharedPreferences,
   val dataFlow: MutableStateFlow<AppDataStore>,
-) :
-  CatchingViewModel(throwableFlow) {
-  private val _streams = MutableStateFlow<List<Video>>(emptyList())
-  val streams: StateFlow<List<Video>> = _streams.asStateFlow()
+) : CatchingViewModel(throwableFlow) {
+  private val _streams = MutableStateFlow<List<Video>?>(null)
+  val streams: StateFlow<List<Video>?> = _streams.asStateFlow()
 
   private val _subtitles = MutableStateFlow<List<SubtitleData>>(emptyList())
   val subtitles: StateFlow<List<SubtitleData>> = _subtitles.asStateFlow()
+
+  private val _isLoading = MutableStateFlow(false)
+  val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
   var mediaItem: AVPMediaItem? = null
 
   var extension: MutableStateFlow<StreamClient?> = MutableStateFlow(null)
 
+  var region: MutableStateFlow<String?> = MutableStateFlow(null)
+
+  private var loadStreamJob: Job? = null
+
+  init {
+    region.value = settingsPreference.getString("region", "us")
+  }
 
   fun loadStream(avpMediaItem: AVPMediaItem?) {
-    viewModelScope.launch(Dispatchers.IO) {
-      extensionFlow.collect { extensions ->
+    // Cancel any existing loading job
+    loadStreamJob?.cancel()
+
+    // Start new loading job
+    loadStreamJob = viewModelScope.launch(Dispatchers.IO) {
+      _isLoading.value = true
+      try {
         var item = avpMediaItem
         if (avpMediaItem is AVPMediaItem.ShowItem) {
           val lastEpisode = dataFlow.value.getLatestPlaybackProgress(avpMediaItem)
@@ -59,31 +77,47 @@ class StreamViewModel @Inject constructor(
                   title = "S01E01",
                   originalTitle = "S01E01"
                 ),
-                showOriginTitle = avpMediaItem.generalInfo?.originalTitle ?: avpMediaItem.title ?: "",
+                showOriginTitle = avpMediaItem.generalInfo?.originalTitle
+                  ?: avpMediaItem.title ?: "",
                 showIds = avpMediaItem.show.ids,
                 ids = Ids()
-              ), seasonItem = AVPMediaItem.SeasonItem(
+              ),
+              seasonItem = AVPMediaItem.SeasonItem(
                 season = avpMediaItem.show.seasons?.first() ?: Season(
                   number = 1,
-                  generalInfo = GeneralInfo(title = "Season 1", originalTitle = "Season 1"),
+                  generalInfo = GeneralInfo(
+                    title = "Season 1",
+                    originalTitle = "Season 1"
+                  ),
                   episodes = null,
                   showIds = avpMediaItem.show.ids,
-                  showOriginTitle = avpMediaItem.generalInfo?.originalTitle ?: avpMediaItem.title,
+                  showOriginTitle = avpMediaItem.generalInfo?.originalTitle
+                    ?: avpMediaItem.title,
                   releaseDateMsUTC = null
                 ),
                 showItem = avpMediaItem
               )
             )
-          } else
+          } else {
             item = lastEpisode
+          }
         }
 
-        item ?: return@collect
+        if (item == null) return@launch
 
-        extensions?.forEach {
-          viewModelScope.launch(Dispatchers.IO) {
-            if(it.metadata.types.contains(ExtensionType.STREAM)) {
-              it.run<StreamClient, Boolean>(throwableFlow) {
+        val extensions = extensionFlow.first() ?: emptyList()
+        val subtitleExtensions = extensions.filter {
+          it.metadata.types.contains(ExtensionType.STREAM)
+        }
+
+        if (subtitleExtensions.isEmpty()) {
+          return@launch
+        }
+
+        supervisorScope {
+          subtitleExtensions.forEach { ext ->
+            launch(Dispatchers.IO) {
+              ext.run<StreamClient, Boolean>(throwableFlow) {
                 loadLinks(
                   item,
                   subtitleCallback = ::onSubtitleReceived,
@@ -93,9 +127,12 @@ class StreamViewModel @Inject constructor(
             }
           }
         }
+      } finally {
+        _isLoading.value = false
+        if(_streams.value == null)
+          _streams.value = emptyList()
       }
     }
-
   }
 
   fun onSubtitleReceived(subtitleData: SubtitleData) {
@@ -103,6 +140,10 @@ class StreamViewModel @Inject constructor(
   }
 
   fun onLinkReceived(streamData: Video) {
-    _streams.value += streamData
+    _streams.value = (_streams.value ?: emptyList()) + streamData
+  }
+
+  fun getSupportRegion(): Map<String, String> {
+    return popularCountriesIsoToEnglishName
   }
 }

@@ -145,7 +145,7 @@ class ItemOptionDialog : DockingDialog() {
     is AVPMediaItem.EpisodeItem -> {
       listOfNotNull(ItemAction.Resource(R.drawable.play_arrow_24dp, R.string.play_now) {
         //playerViewModel.play(extensionId, item, 0)
-      }, ItemAction.Resource(R.drawable.ic_more_horiz, R.string.action_goto_show) {
+      }, ItemAction.Resource(R.drawable.baseline_keyboard_return_24, R.string.action_goto_show) {
         val movieFragment = ShowFragment();
         val bundle = Bundle()
         bundle.putString("extensionId", extensionId)
@@ -181,6 +181,23 @@ class ItemOptionDialog : DockingDialog() {
       listOfNotNull(ItemAction.Resource(R.drawable.ic_delete, R.string.action_delete) {
         viewModel.deleteItem(requireActivity(), item)
       })
+    }
+
+    is AVPMediaItem.SeasonItem -> {
+      listOf(
+        ItemAction.Resource(R.drawable.baseline_keyboard_return_24, R.string.action_goto_show) {
+          val movieFragment = ShowFragment();
+          val bundle = Bundle()
+          bundle.putString("extensionId", extensionId)
+          bundle.putSerialized("mediaItem", item.showItem)
+          movieFragment.arguments = bundle
+          requireActivity().navigate(
+            movieFragment
+          )
+        },
+        ItemAction.Resource(R.drawable.round_playlist_add_check_24, R.string.mark_watched) {
+          viewModel.markWatched(extensionId, item)
+        })
     }
 
     else -> listOf()

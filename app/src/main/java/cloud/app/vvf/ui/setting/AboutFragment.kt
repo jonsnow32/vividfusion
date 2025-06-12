@@ -51,6 +51,18 @@ class AboutFragment : BaseSettingsFragment() {
         icon = AppCompatResources.getDrawable(context, R.drawable.ic_github_logo)
         screen.addPreference(this)
       }
+      Preference(context).apply {
+        key = getString(R.string.pref_privacy_policy)
+        title = getString(R.string.privacy_policy)
+        summary = preferences.getString(key, "https://jonsnow32.github.io/vividfusion/privacy.html")
+        layoutResource = R.layout.preference
+        onPreferenceClickListener = Preference.OnPreferenceClickListener {
+          Utils.launchBrowser(context, summary.toString())
+          true
+        }
+        icon = AppCompatResources.getDrawable(context, R.drawable.round_privacy_tip_24)
+        screen.addPreference(this)
+      }
     }
   }
 }

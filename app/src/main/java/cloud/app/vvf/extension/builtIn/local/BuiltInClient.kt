@@ -1,4 +1,4 @@
-package cloud.app.vvf.extension.builtIn
+package cloud.app.vvf.extension.builtIn.local
 
 import android.content.Context
 import cloud.app.vvf.R
@@ -19,16 +19,13 @@ import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.common.models.extension.Tab
 import cloud.app.vvf.common.models.subtitle.SubtitleData
-import cloud.app.vvf.common.models.subtitle.SubtitleOrigin
 import cloud.app.vvf.common.settings.PrefSettings
 import cloud.app.vvf.common.settings.Setting
 import cloud.app.vvf.common.settings.SettingSlider
 import cloud.app.vvf.common.settings.SettingSwitch
-import cloud.app.vvf.extension.builtIn.MediaUtils.getOldestVideoYear
-import cloud.app.vvf.extension.builtIn.providers.subtitles.DummySubtitles
+import cloud.app.vvf.extension.builtIn.local.MediaUtils.getOldestVideoYear
 import cloud.app.vvf.extension.builtIn.providers.subtitles.SubSource
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.withContext
 import java.util.Calendar

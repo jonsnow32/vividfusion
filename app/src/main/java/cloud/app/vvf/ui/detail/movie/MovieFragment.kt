@@ -86,7 +86,9 @@ class MovieFragment : Fragment() {
 
     binding.header.buttonStreamingSearch.setOnClickListener {
       viewModel.fullMediaItem.value?.let {
-        navigate(StreamFragment.newInstance(it))
+        StreamFragment.newInstance(it).show(parentFragmentManager) {
+
+        }
       }
     }
   }

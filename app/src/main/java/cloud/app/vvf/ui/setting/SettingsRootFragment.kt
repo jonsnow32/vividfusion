@@ -51,13 +51,13 @@ class SettingsRootFragment : BaseSettingsFragment() {
         summary = getString(R.string.general_setting)
         icon = AppCompatResources.getDrawable(context, R.drawable.general_device_24dp)
       }
-
-      TransitionPreference(context).add {
-        title = getString(R.string.extensions)
-        key = "extension"
-        summary = getString(R.string.extension_summary)
-        icon = AppCompatResources.getDrawable(context, R.drawable.ic_extension_24dp)
-      }
+//
+//      TransitionPreference(context).add {
+//        title = getString(R.string.extensions)
+//        key = "extension"
+//        summary = getString(R.string.extension_summary)
+//        icon = AppCompatResources.getDrawable(context, R.drawable.ic_extension_24dp)
+//      }
 
       TransitionPreference(context).add {
         title = getString(R.string.ui)

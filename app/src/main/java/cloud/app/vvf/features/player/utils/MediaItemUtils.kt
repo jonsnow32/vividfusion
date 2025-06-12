@@ -7,7 +7,7 @@ import androidx.media3.common.MediaMetadata
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.music.Track
 import cloud.app.vvf.common.models.video.Video
-import cloud.app.vvf.extension.builtIn.MediaUtils
+import cloud.app.vvf.extension.builtIn.local.MediaUtils
 
 
 object MediaItemUtils {

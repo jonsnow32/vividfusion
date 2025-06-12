@@ -6,12 +6,16 @@ import android.content.Context
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.paging.LoadState
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.databinding.ItemStreamBinding
+import cloud.app.vvf.ui.media.MediaEmptyAdapter
+import cloud.app.vvf.ui.media.MediaLoadStateAdapter
 import cloud.app.vvf.utils.loadInto
 
 class StreamAdapter(val listener: ItemClickListener) :
@@ -25,6 +29,8 @@ class StreamAdapter(val listener: ItemClickListener) :
     )
     return view
   }
+
+
 
   override fun onBindViewHolder(holder: ViewHolder, position: Int) {
     val item = getItem(position)

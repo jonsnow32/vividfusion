@@ -183,6 +183,7 @@
 
   <style name="CheckLabel" parent="@style/NoCheckLabel">
     <item name="drawableStartCompat">@drawable/dot_indicator</item>
+    <item name="android:checkMarkTintMode">src_in</item>
   </style>
 
 
@@ -263,7 +264,7 @@
     <item name="android:windowExitAnimation">@anim/slide_out_left</item>
   </style>
 
-  <style name="BottomMaterialDialogAnimation">
+  <style name="BottomMaterialDialogAnimation" parent="BaseMaterialDialogAnimation">
     <item name="android:windowEnterAnimation">@anim/slide_in_bottom</item>
     <item name="android:windowExitAnimation">@anim/slide_out_bottom</item>
   </style>
