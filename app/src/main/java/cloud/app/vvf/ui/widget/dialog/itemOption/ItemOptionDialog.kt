@@ -8,7 +8,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isGone
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ConcatAdapter
@@ -36,6 +39,7 @@ import cloud.app.vvf.utils.putSerialized
 import cloud.app.vvf.utils.shareItem
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.fragment.app.FragmentManager
 
 @AndroidEntryPoint
 class ItemOptionDialog : DockingDialog() {
@@ -56,6 +60,19 @@ class ItemOptionDialog : DockingDialog() {
     }
   }
 
+  private fun getOrCreateMediaDeleteFragment(): MediaDeleteFragment {
+    val tag = "MediaDeleteFragment"
+    val fm: FragmentManager = requireActivity().supportFragmentManager
+    val existing = fm.findFragmentByTag(tag)
+    return if (existing is MediaDeleteFragment) {
+      existing
+    } else {
+      val fragment = MediaDeleteFragment()
+      fm.beginTransaction().add(fragment, tag).commitNow()
+      fragment
+    }
+  }
+
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {
@@ -66,9 +83,19 @@ class ItemOptionDialog : DockingDialog() {
   @SuppressLint("UseCompatLoadingForDrawables")
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     binding.itemContainer.run {
-      if (item.backdrop != null)
-        item.backdrop.loadWith(binding.imageView)
-      binding.itemContainer.isGone = item.backdrop == null
+      // Use poster for VideoItem and TrackItem since they don't have backdrop
+      val imageToLoad = when (item) {
+        is AVPMediaItem.VideoItem, is AVPMediaItem.TrackItem -> item.poster
+        else -> item.backdrop ?: item.poster
+      }
+
+      if (imageToLoad != null) {
+        imageToLoad.loadWith(binding.imageView)
+        binding.itemContainer.isGone = false
+      } else {
+        binding.itemContainer.isGone = true
+      }
+
       viewModel.getItemDetails(item, extensionId)
     }
 
@@ -171,15 +198,41 @@ class ItemOptionDialog : DockingDialog() {
 
     is AVPMediaItem.TrackItem -> {
       listOfNotNull(ItemAction.Resource(R.drawable.ic_delete, R.string.action_delete) {
-        viewModel.deleteItem(requireActivity(), item)
+        getOrCreateMediaDeleteFragment().deleteMediaWithPermission(requireActivity(), item) { success ->
+          // Check if fragment is still attached before accessing views/context
+          if (isAdded && !isDetached && !isRemoving && context != null && view != null) {
+            if (success) {
+              createSnack(getString(R.string.file_deleted_successfully, item.title))
+              // Refresh UI by notifying parent or triggering data reload
+              // You can add specific UI refresh logic here based on your app structure
+              dismiss() // Close the dialog after successful deletion
+            } else {
+              createSnack(getString(R.string.file_delete_failed, item.title))
+            }
+          }
+        }
       }, ItemAction.Resource(R.drawable.edit_24dp, R.string.action_rename) {
-        viewModel.renameItem(requireActivity(), item, "")
+        showRenameDialog(item)
       })
     }
 
     is AVPMediaItem.VideoItem -> {
       listOfNotNull(ItemAction.Resource(R.drawable.ic_delete, R.string.action_delete) {
-        viewModel.deleteItem(requireActivity(), item)
+        getOrCreateMediaDeleteFragment().deleteMediaWithPermission(requireActivity(), item) { success ->
+          // Check if fragment is still attached before accessing views/context
+          if (isAdded && !isDetached && !isRemoving && context != null && view != null) {
+            if (success) {
+              createSnack(getString(R.string.file_deleted_successfully, item.title))
+              // Refresh UI by notifying parent or triggering data reload
+              // You can add specific UI refresh logic here based on your app structure
+              dismiss() // Close the dialog after successful deletion
+            } else {
+              createSnack(getString(R.string.file_delete_failed, item.title))
+            }
+          }
+        }
+      }, ItemAction.Resource(R.drawable.edit_24dp, R.string.action_rename) {
+        showRenameDialog(item)
       })
     }
 
@@ -247,6 +300,66 @@ class ItemOptionDialog : DockingDialog() {
         }
     } else
       null
+  }
+
+  private fun showRenameDialog(item: AVPMediaItem) {
+    val context = requireContext()
+    val currentName = when (item) {
+      is AVPMediaItem.VideoItem -> {
+        // Remove file extension from current name for editing
+        val name = item.video.title ?: "Unknown Video"
+        val lastDotIndex = name.lastIndexOf('.')
+        if (lastDotIndex > 0) name.substring(0, lastDotIndex) else name
+      }
+      is AVPMediaItem.TrackItem -> {
+        // Remove file extension from current name for editing
+        val name = item.track.title ?: "Unknown Track"
+        val lastDotIndex = name.lastIndexOf('.')
+        if (lastDotIndex > 0) name.substring(0, lastDotIndex) else name
+      }
+      else -> {
+        // Handle nullable title safely
+        val title = item.title ?: "Unknown"
+        val lastDotIndex = title.lastIndexOf('.')
+        if (lastDotIndex > 0) title.substring(0, lastDotIndex) else title
+      }
+    }
+
+    val editText = EditText(context).apply {
+      setText(currentName)
+      selectAll() // Select all text for easy editing
+    }
+
+    MaterialAlertDialogBuilder(context)
+      .setTitle(R.string.action_rename)
+      .setMessage(getString(R.string.rename_file_message, item.title))
+      .setView(editText)
+      .setPositiveButton(R.string.rename) { _, _ ->
+        val newName = editText.text.toString().trim()
+        if (newName.isNotEmpty() && newName != currentName) {
+          // Check if fragment is still attached before calling requireActivity()
+          if (isAdded && !isDetached && !isRemoving && context != null && view != null) {
+            viewModel.renameItem(requireActivity(), item, newName) { success ->
+              // Check if fragment is still attached before accessing views/context
+              if (isAdded && !isDetached && !isRemoving && context != null && view != null) {
+                if (success) {
+                  createSnack(getString(R.string.file_renamed_successfully, newName))
+                  dismiss() // Close the dialog after successful rename
+                } else {
+                  createSnack(getString(R.string.file_rename_failed, item.title))
+                }
+              }
+            }
+          }
+        } else if (newName.isEmpty()) {
+          // Only show error if fragment is still attached
+          if (isAdded && !isDetached && !isRemoving && context != null && view != null) {
+            createSnack(getString(R.string.filename_cannot_be_empty))
+          }
+        }
+      }
+      .setNegativeButton(R.string.cancel, null)
+      .show()
   }
 
   sealed class ItemAction {

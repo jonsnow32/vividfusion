@@ -176,7 +176,7 @@
   <string name="extension_installed">Extension Installed</string>
   <string name="downloading_update_for_extension">Downloading Update for %1$s</string>
   <string name="allow_opening_links">Allow Opening Links</string>
-  <string name="open_links_instruction">To allow opening these links, you need to:\n- Scroll down and click on \"Open by Default\"\n- Click on \"+ Add Link\"</string>
+  <string name="open_links_instruction">To allow opening these links, you need to:\n- Scroll down and click on "Open by Default"\n- Click on \"+ Add Link\"</string>
   <string name="enable">Enable</string>
   <string name="enabled">Enabled</string>
   <string name="disabled">Disabled</string>
@@ -328,6 +328,13 @@
   <string name="action_delete">Delete</string>
   <string name="action_add_to_playlist">Add to Playlist</string>
   <string name="action_rename">Rename</string>
+  <string name="rename_file_message">Enter a new name for "%1$s"</string>
+  <string name="rename">Rename</string>
+  <string name="file_renamed_successfully">File renamed to "%1$s" successfully</string>
+  <string name="file_rename_failed">Failed to rename "%1$s"</string>
+  <string name="filename_cannot_be_empty">Filename cannot be empty</string>
+  <string name="file_deleted_successfully">%s deleted successfully</string>
+  <string name="file_delete_failed">Failed to delete %s</string>
   <string name="pref_min_media_duration_summary">Set the minimum duration for media files (in milliseconds). Only media with duration greater than this value will be displayed.</string>
   <string name="min_media_duration">Minimum Media Duration</string>
   <string name="video_permission_required_summary">Video access permission is required to continue.</string>

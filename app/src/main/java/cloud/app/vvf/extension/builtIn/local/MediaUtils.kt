@@ -1,9 +1,11 @@
 package cloud.app.vvf.extension.builtIn.local
 
 import android.Manifest
+import android.app.RecoverableSecurityException
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
+import android.content.IntentSender
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -92,7 +94,7 @@ object MediaUtils {
     sortOrder: String?,
     page: Int,
     pageSize: Int,
-    processRow: (cursor: android.database.Cursor) -> Any?
+    processRow: (cursor: android.database.Cursor, contentUri: Uri) -> Any?
   ): List<Any> {
     val items = mutableListOf<Any>()
     val uris = getContentUris(type)
@@ -108,7 +110,7 @@ object MediaUtils {
           if (cursor.moveToPosition(startPosition)) {
             var currentPosition = startPosition
             do {
-              val item = processRow(cursor) ?: continue
+              val item = processRow(cursor, uri) ?: continue
               items.add(item)
               currentPosition++
             } while (currentPosition < endPosition && cursor.moveToNext())
@@ -139,7 +141,7 @@ object MediaUtils {
 
     return queryMediaStore(
       context, "video", videoProjection, selection, selectionArgs, sortOrder, page, pageSize
-    ) { cursor ->
+    ) { cursor, uri ->
       val id = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID))
         ?: return@queryMediaStore null
       val title =
@@ -159,10 +161,8 @@ object MediaUtils {
       val width = cursor.getIntOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH))
       val height = cursor.getIntOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT))
 
-      val thumbnailUri = ContentUris.withAppendedId(
-        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-        id.toLong()
-      ).toString()
+      // Use the correct content URI based on which volume the video was found
+      val thumbnailUri = ContentUris.withAppendedId(uri, id.toLong()).toString()
 
       LocalVideo(
         id = id,
@@ -263,10 +263,8 @@ object MediaUtils {
               val width = cursor.getIntOrNull(widthColumn)
               val height = cursor.getIntOrNull(heightColumn)
 
-              val thumbnailUri = ContentUris.withAppendedId(
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                id.toLong()
-              ).toString()
+              // Use the correct content URI based on which volume the video was found
+              val thumbnailUri = ContentUris.withAppendedId(uri, id.toLong()).toString()
 
               val video = LocalVideo(
                 id = id,
@@ -330,7 +328,7 @@ object MediaUtils {
 
     return queryMediaStore(
       context, "video", videoProjection, selection, selectionArgs, sortOrder, page, pageSize
-    ) { cursor ->
+    ) { cursor, uri ->
       val id = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID))
         ?: return@queryMediaStore null
       val title =
@@ -350,10 +348,8 @@ object MediaUtils {
       val width = cursor.getIntOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH))
       val height = cursor.getIntOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT))
 
-      val thumbnailUri = ContentUris.withAppendedId(
-        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-        id.toLong()
-      ).toString()
+      // Use the correct content URI based on which volume the video was found
+      val thumbnailUri = ContentUris.withAppendedId(uri, id.toLong()).toString()
 
       LocalVideo(
         id = id,
@@ -456,7 +452,7 @@ object MediaUtils {
 
     return queryMediaStore(
       context, "video", videoProjection, selection, selectionArgs, sortOrder, page, pageSize
-    ) { cursor ->
+    ) { cursor, uri ->
       val id = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID))
         ?: return@queryMediaStore null
       val title =
@@ -476,10 +472,8 @@ object MediaUtils {
       val width = cursor.getIntOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH))
       val height = cursor.getIntOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT))
 
-      val thumbnailUri = ContentUris.withAppendedId(
-        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-        id.toLong()
-      ).toString()
+      // Use the correct content URI based on which volume the video was found
+      val thumbnailUri = ContentUris.withAppendedId(uri, id.toLong()).toString()
 
       LocalVideo(
         id = id,
@@ -530,7 +524,7 @@ object MediaUtils {
 
     return queryMediaStore(
       context, "audio", audioProjection, selection, selectionArgs, sortOrder, page, pageSize
-    ) { cursor ->
+    ) { cursor, uri ->
       val id = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
         ?: return@queryMediaStore null
       val title =
@@ -701,7 +695,7 @@ object MediaUtils {
 
     return queryMediaStore(
       context, "video", videoProjection, selection, selectionArgs, sortOrder, page, pageSize
-    ) { cursor ->
+    ) { cursor, uri ->
       val id = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID))
         ?: return@queryMediaStore null
       val title =
@@ -721,10 +715,8 @@ object MediaUtils {
       val width = cursor.getIntOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.WIDTH))
       val height = cursor.getIntOrNull(cursor.getColumnIndexOrThrow(MediaStore.Video.Media.HEIGHT))
 
-      val thumbnailUri = ContentUris.withAppendedId(
-        MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-        id.toLong()
-      ).toString()
+      // Use the correct content URI based on which volume the video was found
+      val thumbnailUri = ContentUris.withAppendedId(uri, id.toLong()).toString()
 
       LocalVideo(
         id = id,
@@ -739,6 +731,77 @@ object MediaUtils {
         height = height
       )
     } as List<LocalVideo>
+  }
+
+  fun searchTracks(
+    context: Context,
+    query: String,
+    page: Int = 1,
+    pageSize: Int = 20,
+    minDuration: Long = 0
+  ): List<Track> {
+    require(page >= 1) { "Page number must be 1 or greater (1-based indexing)" }
+    require(pageSize > 0) { "Page size must be positive" }
+    require(minDuration >= 0) { "Minimum duration must be non-negative" }
+
+    val selection = if (minDuration > 0) {
+      "(${MediaStore.Audio.Media.DISPLAY_NAME} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?) AND ${MediaStore.Audio.Media.DURATION} > ?"
+    } else {
+      "${MediaStore.Audio.Media.DISPLAY_NAME} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ?"
+    }
+    val selectionArgs = if (minDuration > 0) {
+      arrayOf("%$query%", "%$query%", "%$query%", minDuration.toString())
+    } else {
+      arrayOf("%$query%", "%$query%", "%$query%")
+    }
+    val sortOrder = "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
+
+    return queryMediaStore(
+      context, "audio", audioProjection, selection, selectionArgs, sortOrder, page, pageSize
+    ) { cursor, uri ->
+      val id = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
+        ?: return@queryMediaStore null
+      val title =
+        cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME))
+          ?: "Unknown Title"
+      val data = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
+        ?: return@queryMediaStore null
+      val duration =
+        cursor.getLongOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)) ?: 0L
+      val artistName =
+        cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
+          ?: "Unknown Artist"
+      val album = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM))
+        ?: "Unknown Album"
+      val dateAdded =
+        cursor.getLongOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED))
+          ?.times(1000) ?: 0L
+
+      val artist = Artist(
+        id = artistName.hashCode().toString(),
+        name = artistName,
+        cover = null,
+        followers = null,
+        description = null,
+        banners = listOf(),
+        isFollowing = false,
+        subtitle = null,
+        extras = mapOf()
+      )
+
+      Track(
+        id = id,
+        uri = data,
+        title = title,
+        artists = listOf(artist),
+        album = album,
+        cover = null,
+        duration = duration,
+        plays = null,
+        releaseDate = dateAdded,
+        description = null
+      )
+    } as List<Track>
   }
 
   fun refreshMediaStore(context: Context) {
@@ -896,7 +959,11 @@ object MediaUtils {
     }
   }
 
-  fun deleteMedia(context: Context, media: AVPMediaItem): Boolean {
+  fun deleteMedia(
+    context: Context,
+    media: AVPMediaItem,
+    onRecoverableSecurityException: ((IntentSender) -> Unit)? = null
+  ): Boolean {
     val (id, uri, mediaType) = when (media) {
       is AVPMediaItem.VideoItem -> {
         if (media.video is LocalVideo) Triple(
@@ -937,16 +1004,29 @@ object MediaUtils {
             null
           )?.use { cursor -> cursor.count > 0 } ?: false
 
-          if (!exists) {
-            Timber.w("No $mediaType found in MediaStore with ID: $id on $contentUri")
-            continue
-          }
-
-          val deletedRows = context.contentResolver.delete(contentUri, selection, selectionArgs)
-
-          if (deletedRows > 0) {
-            Timber.d("Deleted $mediaType successfully via MediaStore (ID: $id) on $contentUri")
-            return true
+          if (exists) {
+            val itemUri = ContentUris.withAppendedId(contentUri, id.toLong())
+            try {
+              Timber.d("Attempting to delete $mediaType (ID: $id) from $itemUri")
+              val deletedRows = context.contentResolver.delete(itemUri, null, null)
+              if (deletedRows > 0) {
+                Timber.d("Deleted $mediaType successfully via MediaStore (ID: $id) on $itemUri")
+                return true
+              } else {
+                Timber.e("Failed to delete $mediaType from MediaStore (ID: $id) on $itemUri")
+                return false
+              }
+            } catch (e: RecoverableSecurityException) {
+              Timber.w(
+                e,
+                "RecoverableSecurityException caught: requesting user consent to delete $mediaType (ID: $id)"
+              )
+              onRecoverableSecurityException?.invoke(e.userAction.actionIntent.intentSender)
+              return false
+            } catch (e: Exception) {
+              Timber.e(e, "Unexpected exception during delete operation for $mediaType (ID: $id)")
+              return false
+            }
           }
         }
 
@@ -987,144 +1067,5 @@ object MediaUtils {
       Timber.e(e, "Error deleting $mediaType: ${e.message}")
       return false
     }
-  }
-
-  fun searchTracks(
-    context: Context,
-    query: String,
-    page: Int = 1,
-    pageSize: Int = 20,
-    minDuration: Long = 0
-  ): List<Track> {
-    require(page >= 1) { "Page number must be 1 or greater (1-based indexing)" }
-    require(pageSize > 0) { "Page size must be positive" }
-    require(minDuration >= 0) { "Minimum duration must be non-negative" }
-
-    val selection = if (minDuration > 0) {
-      "(${MediaStore.Audio.Media.DISPLAY_NAME} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ?) AND ${MediaStore.Audio.Media.DURATION} > ?"
-    } else {
-      "${MediaStore.Audio.Media.DISPLAY_NAME} LIKE ? OR ${MediaStore.Audio.Media.ALBUM} LIKE ? OR ${MediaStore.Audio.Media.ARTIST} LIKE ?"
-    }
-    val selectionArgs = if (minDuration > 0) {
-      arrayOf("%$query%", "%$query%", "%$query%", minDuration.toString())
-    } else {
-      arrayOf("%$query%", "%$query%", "%$query%")
-    }
-    val sortOrder = "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
-
-    return queryMediaStore(
-      context, "audio", audioProjection, selection, selectionArgs, sortOrder, page, pageSize
-    ) { cursor ->
-      val id = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
-        ?: return@queryMediaStore null
-      val title =
-        cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME))
-          ?: "Unknown Title"
-      val data = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
-        ?: return@queryMediaStore null
-      val duration =
-        cursor.getLongOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)) ?: 0L
-      val artistName =
-        cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
-          ?: "Unknown Artist"
-      val album = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM))
-        ?: "Unknown Album"
-      val dateAdded =
-        cursor.getLongOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED))
-          ?.times(1000) ?: 0L
-
-      val artist = Artist(
-        id = artistName.hashCode().toString(),
-        name = artistName,
-        cover = null,
-        followers = null,
-        description = null,
-        banners = listOf(),
-        isFollowing = false,
-        subtitle = null,
-        extras = mapOf()
-      )
-
-      // Fetch album art and convert to ImageHolder
-      val cover = getAlbumArt(context, album)
-
-      Track(
-        id = id,
-        uri = data,
-        title = title,
-        artists = listOf(artist),
-        album = album,
-        cover = cover, // Set the album art
-        duration = duration,
-        plays = null,
-        releaseDate = dateAdded,
-        description = null
-      )
-    } as List<Track>
-  }
-
-  fun getTracksByMinDuration(
-    context: Context,
-    minDuration: Long,
-    page: Int = 1,
-    pageSize: Int = 20
-  ): List<Track> {
-    require(page >= 1) { "Page number must be 1 or greater (1-based indexing)" }
-    require(pageSize > 0) { "Page size must be positive" }
-    require(minDuration >= 0) { "Minimum duration must be non-negative" }
-
-    val selection = "${MediaStore.Audio.Media.DURATION} > ?"
-    val selectionArgs = arrayOf(minDuration.toString())
-    val sortOrder = "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
-
-    return queryMediaStore(
-      context, "audio", audioProjection, selection, selectionArgs, sortOrder, page, pageSize
-    ) { cursor ->
-      val id = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID))
-        ?: return@queryMediaStore null
-      val title =
-        cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME))
-          ?: "Unknown Title"
-      val data = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA))
-        ?: return@queryMediaStore null
-      val duration =
-        cursor.getLongOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)) ?: 0L
-      val artistName =
-        cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST))
-          ?: "Unknown Artist"
-      val album = cursor.getStringOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM))
-        ?: "Unknown Album"
-      val dateAdded =
-        cursor.getLongOrNull(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_ADDED))
-          ?.times(1000) ?: 0L
-
-      val artist = Artist(
-        id = artistName.hashCode().toString(),
-        name = artistName,
-        cover = null,
-        followers = null,
-        description = null,
-        banners = listOf(),
-        isFollowing = false,
-        subtitle = null,
-        extras = mapOf()
-      )
-
-      // Fetch album art and convert to ImageHolder
-      val cover = getAlbumArt(context, album)
-
-      Track(
-        id = id,
-        uri = data,
-        title = title,
-        artists = listOf(artist),
-        album = album,
-        cover = cover, // Set the album art
-        duration = duration,
-        plays = null,
-        releaseDate = dateAdded,
-        description = null
-      )
-    } as List<Track>
   }
 }

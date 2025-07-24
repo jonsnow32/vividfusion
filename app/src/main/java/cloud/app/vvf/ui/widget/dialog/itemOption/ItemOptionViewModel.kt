@@ -112,21 +112,23 @@ class ItemOptionViewModel @Inject constructor(
     }
   }
 
-  fun renameItem(context: Context, item: AVPMediaItem, newName: String) {
+  fun renameItem(context: Context, item: AVPMediaItem, newName: String, callback: (Boolean) -> Unit) {
     when (item) {
       is AVPMediaItem.TrackItem,
       is AVPMediaItem.VideoItem -> {
         viewModelScope.launch(Dispatchers.IO) {
-          MediaUtils.renameMedia(context, item, newName)
+          val success = MediaUtils.renameMedia(context, item, newName)
+          launch(Dispatchers.Main) {
+            callback(success)
+          }
         }
       }
 
       else -> {
-        throw NotImplementedError()
+        callback(false)
       }
     }
   }
 
 
 }
-
