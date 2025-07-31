@@ -12,11 +12,15 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.applyUiChanges
+import cloud.app.vvf.features.player.torrent.TorrentManager
 import cloud.app.vvf.utils.MaterialListPreference
 import cloud.app.vvf.utils.MaterialSliderPreference
 import cloud.app.vvf.utils.SubtitleHelper
 import cloud.app.vvf.utils.TV
 import cloud.app.vvf.utils.isLayout
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 import kotlin.math.max
 
 
@@ -24,8 +28,11 @@ class PlayerSettingFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.playback)
   override val transitionName = "player_settings"
   override val container = { UiPreference() }
-
+  @AndroidEntryPoint
   class UiPreference : PreferenceFragmentCompat() {
+
+    @Inject
+    lateinit var torrentManager: TorrentManager
     @OptIn(UnstableApi::class)
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val context = preferenceManager.context
@@ -202,6 +209,125 @@ class PlayerSettingFragment : BaseSettingsFragment() {
           icon = AppCompatResources.getDrawable(context, R.drawable.ic_baseline_public_24)
           screen.addPreference(this)
         }
+      }
+
+      PreferenceCategory(context).apply {
+        title = getString(R.string.torrent)
+        key = "player_torrent"
+        isIconSpaceReserved = false
+        layoutResource = R.layout.preference_category
+        screen.addPreference(this)
+
+        // Define the preference key as a constant
+        val enableTorrentKey = "enable_torrent_support"
+
+        // First, add the main enable switch WITHOUT dependencies
+        val enableTorrentPreference = SwitchPreferenceCompat(context).apply {
+          key = enableTorrentKey
+          title = getString(R.string.enable_torrent_support)
+          summary = getString(R.string.enable_torrent_support_description)
+          layoutResource = R.layout.preference_switch
+          isIconSpaceReserved = false
+          setDefaultValue(true)
+        }
+        addPreference(enableTorrentPreference)
+
+        // Now add dependent preferences using the same key
+        SwitchPreferenceCompat(context).apply {
+          key = "torrent_auto_detect"
+          title = getString(R.string.torrent_auto_detect)
+          summary = getString(R.string.torrent_auto_detect_description)
+          layoutResource = R.layout.preference_switch
+          isIconSpaceReserved = false
+          setDefaultValue(true)
+          //dependency = enableTorrentKey
+          addPreference(this)
+        }
+
+        MaterialSliderPreference(context, 8080, 8090, 1, allowOverride = true).apply {
+          key = "torrent_server_port"
+          title = getString(R.string.torrent_server_port)
+          summary = getString(R.string.torrent_server_port_description)
+          suffixSummary = ""
+          isIconSpaceReserved = false
+          setDefaultValue(8080)
+          //dependency = enableTorrentKey
+          addPreference(this)
+        }
+
+        MaterialSliderPreference(context, 30, 300, 10, allowOverride = true).apply {
+          key = "torrent_timeout"
+          title = getString(R.string.torrent_timeout)
+          summary = getString(R.string.torrent_timeout_description)
+          suffixSummary = getString(R.string.seconds)
+          isIconSpaceReserved = false
+          setDefaultValue(60)
+          //dependency = enableTorrentKey
+          addPreference(this)
+        }
+
+        MaterialSliderPreference(context, 100, 2000, 50, allowOverride = true).apply {
+          key = "torrent_cache_size"
+          title = getString(R.string.torrent_cache_size)
+          summary = getString(R.string.torrent_cache_size_description)
+          suffixSummary = "MB"
+          isIconSpaceReserved = false
+          setDefaultValue(500)
+          //dependency = enableTorrentKey
+          addPreference(this)
+        }
+
+        MaterialListPreference(context).apply {
+          key = "torrent_stream_selection"
+          title = getString(R.string.torrent_stream_selection)
+          summary = getString(R.string.torrent_stream_selection_description)
+          layoutResource = R.layout.preference
+          isIconSpaceReserved = false
+          entries = context.resources.getStringArray(R.array.torrent_stream_selection_names)
+          entryValues = context.resources.getStringArray(R.array.torrent_stream_selection_values)
+          value = preferences.getString(key, "largest_file").toString()
+          //dependency = enableTorrentKey
+          addPreference(this)
+        }
+
+        SwitchPreferenceCompat(context).apply {
+          key = "torrent_sequential_download"
+          title = getString(R.string.torrent_sequential_download)
+          summary = getString(R.string.torrent_sequential_download_description)
+          layoutResource = R.layout.preference_switch
+          isIconSpaceReserved = false
+          setDefaultValue(true)
+          //dependency = enableTorrentKey
+          addPreference(this)
+        }
+
+        SwitchPreferenceCompat(context).apply {
+          key = "torrent_show_progress"
+          title = getString(R.string.torrent_show_progress)
+          summary = getString(R.string.torrent_show_progress_description)
+          layoutResource = R.layout.preference_switch
+          isIconSpaceReserved = false
+          setDefaultValue(true)
+          //dependency = enableTorrentKey
+        }
+
+        Preference(context).apply {
+          key = "torrent_clear_cache"
+          title = getString(R.string.torrent_clear_cache)
+          summary = getString(R.string.torrent_clear_cache_description)
+          layoutResource = R.layout.preference
+          isIconSpaceReserved = false
+          //dependency = enableTorrentKey
+          onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            // Clear torrent cache
+            torrentManager.deleteAllFiles(context)
+            android.widget.Toast.makeText(context, "Torrent cache cleared", android.widget.Toast.LENGTH_SHORT).show()
+            true
+          }
+          screen.addPreference(this)
+        }
+
+
       }
     }
   }

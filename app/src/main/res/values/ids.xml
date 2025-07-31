@@ -4,6 +4,7 @@
   <item name="navView" type="id"/>
   <item name="aboutFragment" type="id"/>
   <item name="settingsFragment" type="id"/>
+  <item name="networkStreamFragment" type="id"/>
   <item name="mainFragment" type="id"/>
   <item name="mainActivity" type="id"/>
   <item name="movieFragment" type="id"/>

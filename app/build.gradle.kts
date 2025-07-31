@@ -78,6 +78,10 @@ dependencies {
   implementation(libs.androidx.hilt.work)
   ksp(libs.androidx.hilt.compiler)
 
+  // Torrent Support
+  implementation(libs.torrentserver)
+
+
   //UI
   implementation(libs.material)
   implementation(libs.glide)

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Torrent Stream Selection Options -->
+    <string-array name="torrent_stream_selection_names">
+        <item>Largest File</item>
+        <item>First Video File</item>
+        <item>Ask Every Time</item>
+        <item>All Files</item>
+    </string-array>
+
+    <string-array name="torrent_stream_selection_values">
+        <item>largest_file</item>
+        <item>first_video</item>
+        <item>ask_user</item>
+        <item>all_files</item>
+    </string-array>
+</resources>
+

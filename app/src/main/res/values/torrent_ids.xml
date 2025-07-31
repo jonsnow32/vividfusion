@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tag IDs for storing references in views -->
+    <item name="torrent_helper_tag" type="id" />
+</resources>
+

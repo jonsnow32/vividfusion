@@ -13,10 +13,9 @@ sealed class Video : Streamable{
   abstract val description: String?
   abstract val duration: Long?
   abstract val thumbnailUri: String?
-
   @Serializable
   data class LocalVideo(
-    override val uri: String,
+    override var uri: String,
     override val title: String,
     override val description: String? = null,
     override val duration: Long,
@@ -31,7 +30,7 @@ sealed class Video : Streamable{
 
   @Serializable
   data class RemoteVideo(
-    override val uri: String,
+    override var uri: String,
     override val title: String? = null,
     override val description: String? = null,
     override val duration: Long? = null,

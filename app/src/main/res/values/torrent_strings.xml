@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Torrent Settings - using existing torrent string from main strings.xml -->
+
+    <!-- Main Torrent Settings -->
+    <string name="pref_enable_torrent_support">enable_torrent_support</string>
+    <string name="enable_torrent_support">Enable Torrent Support</string>
+    <string name="enable_torrent_support_description">Allow streaming content from magnet links and torrent files</string>
+
+    <string name="pref_torrent_auto_detect">torrent_auto_detect</string>
+    <string name="torrent_auto_detect">Auto-detect Torrents</string>
+    <string name="torrent_auto_detect_description">Automatically detect and process magnet links and .torrent files</string>
+
+    <!-- Server Configuration -->
+    <string name="pref_torrent_server_port">torrent_server_port</string>
+    <string name="torrent_server_port">Server Port</string>
+    <string name="torrent_server_port_description">Port for the local torrent server (8080-8090)</string>
+
+    <string name="pref_torrent_timeout">torrent_timeout</string>
+    <string name="torrent_timeout">Connection Timeout</string>
+    <string name="torrent_timeout_description">Maximum time to wait for torrent metadata</string>
+
+    <!-- Cache Settings -->
+    <string name="pref_torrent_cache_size">torrent_cache_size</string>
+    <string name="torrent_cache_size">Cache Size</string>
+    <string name="torrent_cache_size_description">Maximum disk space for torrent cache</string>
+
+    <!-- Stream Selection -->
+    <string name="pref_torrent_stream_selection">torrent_stream_selection</string>
+    <string name="torrent_stream_selection">File Selection</string>
+    <string name="torrent_stream_selection_description">Which file to stream from multi-file torrents</string>
+
+    <!-- Download Options -->
+    <string name="pref_torrent_sequential_download">torrent_sequential_download</string>
+    <string name="torrent_sequential_download">Sequential Download</string>
+    <string name="torrent_sequential_download_description">Download pieces in order for better streaming experience</string>
+
+    <!-- UI Options -->
+    <string name="pref_torrent_show_progress">torrent_show_progress</string>
+    <string name="torrent_show_progress">Show Download Progress</string>
+    <string name="torrent_show_progress_description">Display torrent download progress in player</string>
+
+    <!-- Utility Actions -->
+    <string name="torrent_clear_cache">Clear Torrent Cache</string>
+    <string name="torrent_clear_cache_description">Remove all cached torrent files and data</string>
+
+    <string name="torrent_test_functionality">Test Torrent System</string>
+    <string name="torrent_test_functionality_description">Run diagnostics to verify torrent functionality</string>
+</resources>

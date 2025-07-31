@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+
+  android:layout_height="match_parent"
+  android:layout_margin="8dp"
+  android:orientation="vertical">
+
+  <TextView
+    style="@style/TextAppearance.MaterialComponents.Headline4"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/network_stream"
+    android:textColor="?attr/colorPrimary" />
+
+  <LinearLayout
+    android:id="@+id/linearLayout4"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <EditText
+      android:id="@+id/etStreamUrl"
+      android:inputType="textUri"
+      android:clickable="true"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:drawableEnd="@drawable/outline_folder_open_24"
+      android:hint="@string/enter_url_or_file" />
+
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/btnStreaming"
+      style="@style/Widget.Material3.Button.OutlinedButton"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_horizontal"
+      android:drawableStart="@drawable/play_arrow_24dp"
+      android:text="@string/streaming" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/btnDownload"
+      style="@style/Widget.Material3.Button.OutlinedButton"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_horizontal"
+      android:drawableStart="@drawable/download_2_24dp"
+      android:text="@string/download" />
+
+    <TextView
+      android:id="@+id/textView3"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/history" />
+
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/rvStreams"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:clipToPadding="false" />
+
+  </LinearLayout>
+
+</LinearLayout>

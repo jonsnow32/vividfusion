@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Track(
-  override val uri: String,
+  override var uri: String,
   val id: String,
   val title: String,
   val artists: List<Artist> = listOf(),

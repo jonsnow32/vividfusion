@@ -13,6 +13,7 @@ import cloud.app.vvf.R
 import cloud.app.vvf.databinding.FragmentMainBinding
 import cloud.app.vvf.ui.main.home.HomeFragment
 import cloud.app.vvf.ui.main.library.LibraryFragment
+import cloud.app.vvf.ui.main.networkstream.NetworkStreamFragment
 import cloud.app.vvf.ui.main.search.SearchFragment
 import cloud.app.vvf.ui.setting.SettingsRootFragment
 import cloud.app.vvf.utils.autoCleared
@@ -96,6 +97,7 @@ class MainFragment : Fragment() {
       R.id.searchFragment -> SearchFragment()
       R.id.libraryFragment -> LibraryFragment()
       R.id.settingsFragment -> SettingsRootFragment()
+      R.id.networkStreamFragment -> NetworkStreamFragment()
       else -> {
         throw IllegalArgumentException("Invalid position")
       }
