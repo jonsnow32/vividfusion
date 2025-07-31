@@ -155,4 +155,8 @@ class TorrentManager @Inject constructor(private val apiFactory: TorrentServerAp
   fun deleteAllFiles(context: Context) {
     //todo
   }
+
+  companion object {
+    var hasAcceptedTorrentForThisSession: Boolean = false
+  }
 }

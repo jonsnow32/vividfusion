@@ -3,6 +3,7 @@ package cloud.app.vvf.features.player
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
@@ -15,6 +16,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
@@ -24,11 +26,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
-import androidx.media3.common.Player
 import androidx.media3.common.Player.STATE_BUFFERING
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_IDLE
-import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
@@ -43,11 +43,10 @@ import cloud.app.vvf.features.dialogs.TextTrackSelectionDialog
 import cloud.app.vvf.features.gesture.BrightnessManager
 import cloud.app.vvf.features.gesture.PlayerGestureHelper
 import cloud.app.vvf.features.gesture.VolumeManager
-import cloud.app.vvf.features.player.torrent.TorrentPlayerState
+import cloud.app.vvf.features.player.torrent.TorrentManager
+import cloud.app.vvf.features.player.torrent.TorrentPlayerViewModel
 import cloud.app.vvf.features.player.utils.ResizeMode
 import cloud.app.vvf.features.player.utils.getSelected
-import cloud.app.vvf.features.player.torrent.TorrentPlayerViewModel
-import cloud.app.vvf.features.player.torrent.TorrentState
 import cloud.app.vvf.network.api.torrentserver.TorrentStatus
 import cloud.app.vvf.utils.UIHelper.hideSystemUI
 import cloud.app.vvf.utils.UIHelper.showSystemUI
@@ -55,16 +54,17 @@ import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.putSerialized
+import cloud.app.vvf.utils.setDefaultFocus
 import cloud.app.vvf.utils.setTextWithVisibility
 import cloud.app.vvf.utils.showToast
 import cloud.app.vvf.utils.toPx
 import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @AndroidEntryPoint
 @UnstableApi
@@ -149,6 +149,17 @@ class PlayerFragment : Fragment() {
     // --- Begin torrent/magnet integration ---
     val mediaItem = mediaItems.getOrNull(currentMediaIdx)
     if (mediaItem != null) {
+      val url = when (mediaItem) {
+        is AVPMediaItem.VideoItem -> mediaItem.video.uri
+        is AVPMediaItem.TrackItem -> mediaItem.track.uri
+        else -> null
+      }
+      if (url != null && (url.startsWith("magnet:") || url.endsWith(".torrent", ignoreCase = true))) {
+        if (!TorrentManager.hasAcceptedTorrentForThisSession) {
+          showTorrentConsentDialog(mediaItems, subtitles)
+          return
+        }
+      }
       lifecycleScope.launch {
         val transformedMediaItem = torrentPlayerViewModel.processMediaItem(mediaItem)
         if (transformedMediaItem != null) {
@@ -194,7 +205,6 @@ class PlayerFragment : Fragment() {
     val audioManager = currentActivity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
     // Initialize torrent support using ViewModel
-    observeTorrentState()
     volumeManager = VolumeManager(audioManager)
     brightnessManager = BrightnessManager(currentActivity)
     playerGestureHelper = PlayerGestureHelper(this, volumeManager, brightnessManager)
@@ -360,6 +370,14 @@ class PlayerFragment : Fragment() {
 //      binding.subtitleOffsetView.updateAdapterCues(it)
 //    }
 
+    observe(torrentPlayerViewModel.torrentStatus) {
+      if (it == null) {
+        playerControlBinding.torrent.isGone = true
+      } else {
+        playerControlBinding.torrent.isGone = false
+        showDownloadProgress(it)
+      }
+    }
     observe(viewModel.tracks) { tracks ->
       if (tracks == null) return@observe
 
@@ -372,25 +390,6 @@ class PlayerFragment : Fragment() {
     }
   }
 
-  private fun observeTorrentState() {
-    lifecycleScope.launch {
-      torrentPlayerViewModel.torrentState.collect { state ->
-        handleTorrentStateChange(state)
-      }
-    }
-
-    lifecycleScope.launch {
-      torrentPlayerViewModel.downloadProgress.collect { progress ->
-        updateTorrentProgress(progress)
-      }
-    }
-
-    lifecycleScope.launch {
-      torrentPlayerViewModel.bufferingState.collect { isBuffering ->
-        updateTorrentBuffering(isBuffering)
-      }
-    }
-  }
 
   private fun resize(mode: ResizeMode, showToast: Boolean) {
     playerGestureHelper.resetExoContentFrameWidthAndHeight()
@@ -556,58 +555,10 @@ class PlayerFragment : Fragment() {
     super.onDestroyView()
   }
 
-
-  private fun handleTorrentStateChange(state: TorrentPlayerState) {
-//    when (state) {
-//      TorrentPlayerState.Idle -> {
-//        binding.playingIndicator.isGone = true
-//        playerControlBinding.playPauseToggle.isEnabled = true
-//      }
-//      TorrentPlayerState.InitializingServer -> {
-//        binding.playingIndicator.isGone = false
-//        binding.playingIndicator.alpha = 0.5f
-//        playerControlBinding.playPauseToggle.isEnabled = false
-//      }
-//      TorrentPlayerState.Ready -> {
-//        binding.playingIndicator.isGone = false
-//        binding.playingIndicator.alpha = 1f
-//        playerControlBinding.playPauseToggle.isEnabled = true
-//      }
-//      is TorrentPlayerState.Error -> {
-//        currentActivity.showToast(state.message)
-//      }
-//
-//      else -> {
-//        // Handle other states if needed
-//        Timber.d("Unhandled torrent state: $state")
-//      }
-//    }
-  }
-  private fun updateTorrentProgress(progress: Float) {
-//    binding.playingIndicator.alpha = progress
-//    playerControlBinding.playPauseToggle.isEnabled = progress >= 1f
-//    if (progress >= 1f) {
-//      binding.playingIndicator.isGone = true
-//      playerControlBinding.playPauseToggle.isChecked = true
-//    } else {
-//      binding.playingIndicator.isGone = false
-//    }
-  }
-  private fun updateTorrentBuffering(isBuffering: Boolean) {
-//    binding.playingIndicator.alpha = if (isBuffering) 0.5f else 1f
-//    playerControlBinding.playPauseToggle.isEnabled = !isBuffering
-//    if (!isBuffering) {
-//      binding.playingIndicator.isGone = true
-//      playerControlBinding.playPauseToggle.isChecked = true
-//    } else {
-//      binding.playingIndicator.isGone = false
-//    }
-  }
-
   private fun showDownloadProgress(status: TorrentStatus) {
-
     status.torrentSize ?: return
     status.bytesRead ?: return
+    status.downloadSpeed ?: return
 
     activity?.runOnUiThread {
       playerControlBinding.downloadedProgress.apply {
@@ -630,7 +581,7 @@ class PlayerFragment : Fragment() {
         )
       )
       val downloadSpeed =
-        formatShortFileSize(context, status.downloadSpeed?.toLong()!!)
+        formatShortFileSize(context, status.downloadSpeed.toLong())
       playerControlBinding.downloadedProgressSpeedText.text =
         // todo string fmt
         status.activePeers?.let { connections ->
@@ -641,6 +592,28 @@ class PlayerFragment : Fragment() {
       playerControlBinding.downloadedProgressSpeedText.isGone =
         status.bytesRead != 0L && status.bytesRead - 1024 >= status.torrentSize
     }
+  }
+
+  fun showTorrentConsentDialog(mediaItems: List<AVPMediaItem>, subtitles: List<SubtitleData>? = null) {
+    val context = context ?: return
+    MaterialAlertDialogBuilder(context)
+      .setTitle(R.string.torrent_warning)
+      .setMessage(R.string.torrent_warning_description)
+      .setIcon(R.drawable.outline_warning_24) // Ensure you have a warning icon in your drawable resources
+      .setCancelable(false)
+      .setPositiveButton(R.string.ok) { _, _ ->
+        TorrentManager.hasAcceptedTorrentForThisSession = true
+        initializePlayer(mediaItems, subtitles)
+      }
+      .setNegativeButton(R.string.back) { _, _ ->
+        TorrentManager.hasAcceptedTorrentForThisSession = false
+        parentFragmentManager.popBackStack()
+      }
+      .setOnCancelListener {
+        val errorMessage = context.getString(R.string.torrent_not_accepted)
+        context.showToast(errorMessage)
+      }
+      .show().setDefaultFocus()
   }
   fun handleKeyDown(keyCode: Int, event: KeyEvent?): Boolean = false
   fun handleKeyUp(keyCode: Int, event: KeyEvent?): Boolean = false

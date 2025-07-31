@@ -305,6 +305,7 @@
   <string name="go_back_img_des">Go Back</string>
   <string name="next_video">Next Video</string>
   <string name="torrent">Torrent</string>
+  <string name="torrent_warning">Torrent warning</string>
   <string name="no_audio_tracks_found">No Audio Tracks Found</string>
   <string name="no_video_tracks_found">No Video Tracks Found</string>
   <string name="no_subtitle_tracks_found">No Subtitle Tracks Found</string>
@@ -392,4 +393,6 @@
   <string name="network_stream">Start streaming with your link</string>
   <string name="torrent_singular">Torrent</string>
   <string name="download_size_format" formatted="true" translatable="false">%s / %s</string>
+  <string name="torrent_not_accepted">Restart app and accept Stream Torrent pop-up to proceed.</string>
+  <string name="torrent_warning_description">Streaming videos via torrents can expose you to malware, phishing attacks, and potential tracking by third parties, compromising your privacy. Ensure you use trusted sources, robust security software, and a VPN to protect your device and data. Always respect copyright laws to avoid legal penalties.</string>
 </resources>
