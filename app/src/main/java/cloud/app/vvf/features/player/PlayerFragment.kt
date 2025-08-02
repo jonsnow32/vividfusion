@@ -559,7 +559,7 @@ class PlayerFragment : Fragment() {
     super.onPause()
   }
 
-  override fun onDestroyView() {
+  override fun onDestroyView(){
     playerView = null
     currentActivity.showSystemUI()
     hideControllerJob?.cancel()
@@ -574,6 +574,9 @@ class PlayerFragment : Fragment() {
     status.downloadSpeed ?: return
 
     activity?.runOnUiThread {
+
+      playerControlBinding.playerVideoTitle.setTextWithVisibility(status.name ?: status.title)
+
       playerControlBinding.downloadedProgress.apply {
         val indeterminate = status.torrentSize <= 0 || status.bytesRead <= 0
         isIndeterminate = indeterminate
