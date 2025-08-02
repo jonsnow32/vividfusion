@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:cardview="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_margin="2dp"
+  android:clickable="true"
+  android:focusable="true"
+  cardview:cardBackgroundColor="?attr/colorSurfaceContainer"
+  cardview:cardCornerRadius="8dp"
+  cardview:cardElevation="4dp">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_gravity="center_vertical">
+    <ImageView
+      android:layout_margin="4dp"
+      android:id="@+id/imgUriType"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:src="@drawable/ic_stream_outline_24"
+      android:layout_gravity="center_vertical"/>
+    <TextView
+      android:id="@+id/tvUriHistory"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:background="?attr/selectableItemBackground"
+      android:maxLines="1"
+      android:padding="8dp"
+      android:ellipsize="end"
+      android:textColor="?attr/colorSecondary"
+      android:textAppearance="?attr/textAppearanceBody1" />
+
+    <ImageButton
+      android:id="@+id/btnDeleteHistory"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="end"
+      android:background="?attr/selectableItemBackgroundBorderless"
+      android:contentDescription="@string/action_delete"
+      android:padding="8dp"
+      android:src="@drawable/ic_delete" />
+  </LinearLayout>
+
+
+</androidx.cardview.widget.CardView>
+

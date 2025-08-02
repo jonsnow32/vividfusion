@@ -154,7 +154,11 @@ class PlayerFragment : Fragment() {
         is AVPMediaItem.TrackItem -> mediaItem.track.uri
         else -> null
       }
-      if (url != null && (url.startsWith("magnet:") || url.endsWith(".torrent", ignoreCase = true))) {
+      if (url != null && (url.startsWith("magnet:") || url.endsWith(
+          ".torrent",
+          ignoreCase = true
+        ))
+      ) {
         if (!TorrentManager.hasAcceptedTorrentForThisSession) {
           showTorrentConsentDialog(mediaItems, subtitles)
           return
@@ -453,8 +457,17 @@ class PlayerFragment : Fragment() {
     }
 
     playerView?.apply {
-      if (isShow) showController()
-      else postDelayed({ hideController() }, HIDE_DELAY_MILLIS)
+      if (isShow) {
+        showController()
+        if (TorrentManager.hasAcceptedTorrentForThisSession)
+          torrentPlayerViewModel.startStatusPolling()
+      } else {
+        postDelayed({
+          hideController()
+        }, HIDE_DELAY_MILLIS)
+        if (TorrentManager.hasAcceptedTorrentForThisSession)
+          torrentPlayerViewModel.stopStatusPolling()
+      }
     }
 
     with(playerControlBinding) {
@@ -594,7 +607,10 @@ class PlayerFragment : Fragment() {
     }
   }
 
-  fun showTorrentConsentDialog(mediaItems: List<AVPMediaItem>, subtitles: List<SubtitleData>? = null) {
+  fun showTorrentConsentDialog(
+    mediaItems: List<AVPMediaItem>,
+    subtitles: List<SubtitleData>? = null
+  ) {
     val context = context ?: return
     MaterialAlertDialogBuilder(context)
       .setTitle(R.string.torrent_warning)
@@ -615,6 +631,7 @@ class PlayerFragment : Fragment() {
       }
       .show().setDefaultFocus()
   }
+
   fun handleKeyDown(keyCode: Int, event: KeyEvent?): Boolean = false
   fun handleKeyUp(keyCode: Int, event: KeyEvent?): Boolean = false
 }

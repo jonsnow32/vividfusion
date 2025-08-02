@@ -38,9 +38,8 @@ class TorrentPlayerViewModel @Inject constructor(
     }
     return if (url != null && isTorrentUrl(url)) {
       try {
-        val (streamUrl, status) = torrentManager.transformLink(url, context.cacheDir)
+        val (streamUrl, status) = torrentManager.transformLink(url, context.cacheDir, context)
         currentTorrentHash = status.hash
-        startStatusPolling()
         Timber.i("Torrent ready for streaming: $streamUrl")
         // Return a copy of the mediaItem with the new url
         when (mediaItem) {
@@ -63,7 +62,7 @@ class TorrentPlayerViewModel @Inject constructor(
     }
   }
 
-  private fun startStatusPolling() {
+  fun startStatusPolling() {
     statusJob?.cancel()
     val hash = currentTorrentHash ?: return
     statusJob = viewModelScope.launch {
@@ -78,7 +77,8 @@ class TorrentPlayerViewModel @Inject constructor(
     }
   }
 
-  private fun stopStatusPolling() {
+
+  fun stopStatusPolling() {
     statusJob?.cancel()
     statusJob = null
     _torrentStatus.value = null

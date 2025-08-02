@@ -1,7 +1,6 @@
 package cloud.app.vvf.ui.main.networkstream
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,6 +12,7 @@ import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.media3.common.util.UnstableApi
+import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.video.Video
@@ -20,13 +20,17 @@ import cloud.app.vvf.databinding.FragmentNetworkStreamBinding
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.navigate
+import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
+import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class NetworkStreamFragment : Fragment() {
-  private val parent get() = parentFragment as Fragment
+  private val parent by lazy {  parentFragment as Fragment }
   private var binding by autoCleared<FragmentNetworkStreamBinding>()
+  private val viewModel: NetworkStreamViewModel by viewModels({ requireParentFragment() })
+  private lateinit var uriHistoryAdapter: UriHistoryAdapter
   private val openFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
     uri?.let {
       // Set the selected file's URI as the stream URL (or handle as needed)
@@ -44,36 +48,45 @@ class NetworkStreamFragment : Fragment() {
   @SuppressLint("ClickableViewAccessibility")
   @OptIn(UnstableApi::class)
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    val viewModel by parent.viewModels<NetworkStreamViewModel>()
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
-    applyInsetsMain(binding.root, binding.rvStreams)
-    binding.etStreamUrl.setText("magnet:?xt=urn:btih:53A4A411DECDAF7E1BE919607B7A4187987BF0BB&dn=Ballerina%20From%20the%20World%20of%20John%20Wick%202025%20576p%20WEBRip%20x265-SSN&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337&tr=udp%3A%2F%2Fopen.stealth.si%3A80%2Fannounce&tr=udp%3A%2F%2Ftracker.torrent.eu.org%3A451%2Fannounce&tr=udp%3A%2F%2Ftracker.bittor.pw%3A1337%2Fannounce&tr=udp%3A%2F%2Fpublic.popcorn-tracker.org%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.dler.org%3A6969%2Fannounce&tr=udp%3A%2F%2Fexodus.desync.com%3A6969&tr=udp%3A%2F%2Fopen.demonii.com%3A1337%2Fannounce")
-    binding.btnStreaming.setOnClickListener {
-      val streamUrl = binding.etStreamUrl.text.toString()
-      if (streamUrl.isNotBlank()) {
-        // Navigate to PlayerFragment to play the stream
-        val video = Video.RemoteVideo(uri = streamUrl, title = streamUrl)
-        val mediaItem = AVPMediaItem.VideoItem(video)
-        parent.navigate(
-          PlayerFragment.newInstance(
-            mediaItems = listOf(mediaItem),
-            selectedMediaIdx = 0,
-            //this is testing
-//            subtitles = listOf(
-//              SubtitleData(
-//                name = "WebVTT positioning",
-//                mimeType = "text/vtt",
-//                languageCode = "en",
-//                origin = SubtitleOrigin.URL,
-//                url = "https://storage.googleapis.com/exoplayer-test-media-1/webvtt/numeric-lines.vtt",
-//                headers = mapOf()
-//              ),
-//            ),
-          )
-        )
+    applyInsetsMain(binding.root, binding.rvUriHistory)
+
+
+    uriHistoryAdapter = UriHistoryAdapter(
+      emptyList(),
+      onClick ={ selectedItem ->
+        binding.etStreamUrl.setText(selectedItem.uri)
+      },
+      onLongClick = {
+        context?.showToast(it.uri)
+      },
+      onDelete = {
+        viewModel.deleteHistory(it)
+        viewModel.refresh()
+      }
+    )
+    binding.rvUriHistory.adapter = uriHistoryAdapter
+    if (binding.rvUriHistory.layoutManager == null) {
+      binding.rvUriHistory.layoutManager = LinearLayoutManager(requireContext())
+    }
+    observe(viewModel.streamUris) {
+      if (it.isNullOrEmpty()) {
+        binding.rvUriHistory.visibility = View.GONE
+        binding.txtHistory.visibility = View.GONE
+      } else {
+        binding.rvUriHistory.visibility = View.VISIBLE
+        binding.txtHistory.visibility = View.VISIBLE
+        uriHistoryAdapter.updateItems(it)
       }
     }
+    viewModel.refresh()
+    binding.etStreamUrl.setText("magnet:?xt=urn:btih:53A4A411DECDAF7E1BE919607B7A4187987BF0BB")
+//    binding.etStreamUrl.setText("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+    binding.btnStreaming.setOnClickListener {
+      stream(binding.etStreamUrl.text.toString().trim())
+    }
+
 
     binding.btnDownload.setOnClickListener {
       //todo add to download queue
@@ -95,7 +108,23 @@ class NetworkStreamFragment : Fragment() {
       false
     }
   }
-
+  @UnstableApi
+  fun stream(uri: String){
+    val streamUrl = uri
+    if (streamUrl.isNotBlank()) {
+      // Navigate to PlayerFragment to play the stream
+      val video = Video.RemoteVideo(uri = streamUrl, title = streamUrl)
+      val mediaItem = AVPMediaItem.VideoItem(video)
+      viewModel.saveToUriHistory(streamUrl) // Save the stream URL to history
+      viewModel.refresh()
+      parent.navigate(
+        PlayerFragment.newInstance(
+          mediaItems = listOf(mediaItem),
+          selectedMediaIdx = 0,
+        )
+      )
+    }
+  }
   fun addNetworkStream(stream: String) {
     val viewModel by parent.viewModels<NetworkStreamViewModel>()
   }

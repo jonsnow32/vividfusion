@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical">
+
+  <com.google.android.material.appbar.AppBarLayout
+    android:id="@+id/appBarLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurfaceContainer"
+    android:touchscreenBlocksFocus="false">
+
+    <com.google.android.material.appbar.MaterialToolbar
+      android:id="@+id/toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="?actionBarSize"
+      android:touchscreenBlocksFocus="false"
+      app:layout_scrollFlags="scroll|enterAlways"
+      app:title="@string/settings" />
+
+    <View
+      android:id="@+id/toolbarOutline"
+      style="@style/AppBarOutline"
+      app:layout_anchor="@id/appBarLayout" />
+  </com.google.android.material.appbar.AppBarLayout>
+
+  <androidx.core.widget.NestedScrollView
+    android:id="@+id/contentPanel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginHorizontal="8dp"
+      android:orientation="vertical">
+      <!-- Upload into section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/path"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvUploadPath"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="16sp"
+        tools:text="/storage/emulated/0/Download/SPlayer" />
+
+      <!-- Size and File count section -->
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:orientation="vertical">
+
+          <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:text="@string/size"
+
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+          <TextView
+            android:id="@+id/tvTorrentSize"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:textColor="?attr/colorSecondary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="276 MB" />
+
+          <TextView
+            android:id="@+id/tvFreeSpace"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="?colorSecondary"
+            android:textSize="14sp"
+            tools:text="125 GB free" />
+
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:orientation="vertical">
+
+          <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:text="@string/file_count"
+
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+          <TextView
+            android:id="@+id/tvFileCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorSecondary"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="3" />
+
+        </LinearLayout>
+
+      </LinearLayout>
+
+      <!-- Hash sum section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/hash_sum"
+
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvHashSum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:fontFamily="monospace"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c" />
+
+      <!-- Created section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/created"
+
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvCreated"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="16sp"
+        tools:text="31 Th3, 2017 06:30:01" />
+
+      <!-- Comment section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/comments"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvComment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="@tools:sample/first_names" />
+
+      <!-- Created in program section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="@string/created_in_program"
+
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvCreatedInProgram"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="@tools:sample/first_names">
+
+
+      </TextView>
+
+      <!-- Announce section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Announce URL"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvAnnounce"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="https://tracker.example.com/announce" />
+
+      <!-- Announce List section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Announce List"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvAnnounceList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="https://tracker1.example.com/announce, https://tracker2.example.com/announce" />
+
+      <!-- Piece Length section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Piece Length"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvPieceLength"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="524288" />
+
+      <!-- Pieces section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Pieces"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvPieces"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="16384 bytes" />
+
+      <!-- Private section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Private Torrent"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvPrivate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="No" />
+
+      <!-- Encoding section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Encoding"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+      <TextView
+        android:id="@+id/tvEncoding"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="14sp"
+        tools:text="UTF-8" />
+
+      <!-- Torrent file list section -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:text="Torrent Files"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+      <!-- Torrent file list section as simple text -->
+      <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvTorrentFilesText"
+        android:layout_marginBottom="24dp"
+        android:textColor="?attr/colorSecondary"
+        android:textSize="13sp"
+        android:background="@android:color/transparent"
+        android:padding="4dp"
+        android:maxLines="8"
+        android:ellipsize="end"
+        tools:text="file1.mp4 (123 MB)\nfile2.srt (2 KB)\nfile3.jpg (1 MB)" />
+    </LinearLayout>
+
+  </androidx.core.widget.NestedScrollView>
+
+  <LinearLayout
+    android:id="@+id/layoutButtons"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:orientation="horizontal"
+    android:background="?appBackground"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent">
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/btnStream"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="8dp"
+      android:layout_weight="1"
+      android:text="@string/stream"
+      android:textAllCaps="false" />
+
+    <com.google.android.material.button.MaterialButton
+      android:id="@+id/btnDownload"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:layout_weight="1"
+      android:text="@string/download"
+      android:textAllCaps="false" />
+  </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

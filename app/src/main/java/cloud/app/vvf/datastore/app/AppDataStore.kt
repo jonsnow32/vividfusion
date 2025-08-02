@@ -14,6 +14,7 @@ import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.datastore.app.helper.BOOKMARK_FOLDER
 import cloud.app.vvf.datastore.app.helper.BookmarkItem
 import cloud.app.vvf.datastore.app.helper.PlayerSettingItem
+import cloud.app.vvf.datastore.app.helper.UriHistoryItem
 import cloud.app.vvf.features.player.subtitle.DEF_SUBS_ELEVATION
 import cloud.app.vvf.features.player.subtitle.SubtitleStyle
 
@@ -21,6 +22,7 @@ import cloud.app.vvf.features.player.subtitle.SubtitleStyle
 const val ExtensionFolder = "extensionDir"
 const val FAVORITE_FOLDER = "favorites"
 const val SEARCH_HISTORY_FOLDER = "search_history"
+const val URI_HISTORY_FOLDER = "uri_history"
 const val PLAYER_SETTING_FOLDER = "player_setting"
 const val USERS_FOLDER = "users"
 const val PlaybackProgressFolder = "history_progress"
@@ -193,6 +195,20 @@ class AppDataStore(val context: Context, val account: Account) :
     return set("$SEARCH_HISTORY_FOLDER/${item.id}", item)
   }
 
+  fun saveUriHistory(item: UriHistoryItem) {
+    return set("$URI_HISTORY_FOLDER/${item.id}", item)
+  }
+  fun getUriHistory(): List<UriHistoryItem>? {
+    return getAll<UriHistoryItem>(
+      "$URI_HISTORY_FOLDER/"
+    )?.sortedByDescending { it.lastUpdated }
+  }
+  fun deleteUriHistory(item: UriHistoryItem) {
+    return removeKey("$URI_HISTORY_FOLDER/${item.id}")
+  }
+  fun cleanUriHistory() {
+    return removeKey("$URI_HISTORY_FOLDER/")
+  }
 
   fun getCurrentUser(id: String?): User? {
     return get<User>("$USERS_FOLDER/${id}")

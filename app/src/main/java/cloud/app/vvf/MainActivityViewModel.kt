@@ -75,6 +75,22 @@ class MainActivityViewModel @Inject constructor(
     }
 
 
+    fun Fragment.applySystemInsets(
+      appBar: View,
+      child: View,
+      block: MainActivityViewModel.(Insets) -> Unit = {}
+    ) {
+      val mainActivityViewModel by activityViewModels<MainActivityViewModel>()
+      observe(mainActivityViewModel.systemInsets) { insets ->
+        child.applyInsets(insets)
+        appBar.updatePaddingRelative(
+          top = insets.top,
+          start = insets.start,
+          end = insets.end
+        )
+        mainActivityViewModel.block(insets)
+      }
+    }
 
     fun Fragment.applyInsetsMain(
       appBar: View,

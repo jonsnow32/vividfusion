@@ -1,65 +1,136 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
 
-  android:layout_height="match_parent"
-  android:layout_margin="8dp"
-  android:orientation="vertical">
-
-  <TextView
-    style="@style/TextAppearance.MaterialComponents.Headline4"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="@string/network_stream"
-    android:textColor="?attr/colorPrimary" />
+  android:layout_height="match_parent">
 
   <LinearLayout
-    android:id="@+id/linearLayout4"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+
+    android:layout_height="match_parent"
+    android:layout_margin="8dp"
     android:orientation="vertical">
 
-    <EditText
-      android:id="@+id/etStreamUrl"
-      android:inputType="textUri"
-      android:clickable="true"
+    <TextView
+      style="@style/TextAppearance.MaterialComponents.Headline2"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:drawableEnd="@drawable/outline_folder_open_24"
-      android:hint="@string/enter_url_or_file" />
+      android:layout_margin="8dp"
+      android:text="@string/network_stream"
+      android:textColor="?attr/colorPrimary" />
 
 
-    <com.google.android.material.button.MaterialButton
-      android:id="@+id/btnStreaming"
-      style="@style/Widget.Material3.Button.OutlinedButton"
-      android:layout_width="wrap_content"
+    <LinearLayout
+      android:id="@+id/linearLayout4"
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_gravity="center_horizontal"
-      android:drawableStart="@drawable/play_arrow_24dp"
-      android:text="@string/streaming" />
+      android:background="@drawable/outline"
+      android:orientation="vertical"
+      android:padding="4dp">
 
-    <com.google.android.material.button.MaterialButton
-      android:id="@+id/btnDownload"
-      style="@style/Widget.Material3.Button.OutlinedButton"
-      android:layout_width="wrap_content"
+      <EditText
+        android:id="@+id/etStreamUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:drawableEnd="@drawable/outline_folder_open_24"
+        android:drawablePadding="4dp"
+        android:focusable="true"
+        android:hint="@string/enter_url_or_file"
+        android:inputType="textUri"
+        android:maxLines="4"
+        android:padding="16dp"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="16sp" />
+
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btnStreaming"
+          style="@style/Widget.Material3.Button.OutlinedButton"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:drawableStart="@drawable/play_arrow_24dp"
+          android:text="@string/streaming" />
+
+        <com.google.android.material.button.MaterialButton
+          android:id="@+id/btnDownload"
+          style="@style/Widget.Material3.Button.OutlinedButton"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center_horizontal"
+          android:drawableStart="@drawable/download_2_24dp"
+          android:text="@string/download" />
+      </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_gravity="center_horizontal"
-      android:drawableStart="@drawable/download_2_24dp"
-      android:text="@string/download" />
+      android:layout_marginVertical="24dp"
+      android:gravity="center_horizontal"
+      android:orientation="horizontal">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:background="@drawable/outline"
+        android:drawablePadding="4dp"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:text="@string/http_link"
+        app:drawableStartCompat="@drawable/link_4_svgrepo_com" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:background="@drawable/outline"
+        android:drawablePadding="4dp"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:text="@string/magnet_link"
+        app:drawableStartCompat="@drawable/magnet_svgrepo_com" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:background="@drawable/outline"
+        android:drawablePadding="4dp"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:text="@string/torrent_file"
+        app:drawableStartCompat="@drawable/utorrent_logotype_svgrepo_com" />
+    </LinearLayout>
 
     <TextView
-      android:id="@+id/textView3"
+      android:id="@+id/txtHistory"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
       android:text="@string/history" />
 
-    <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/rvStreams"
+    <com.google.android.material.divider.MaterialDivider
       android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:clipToPadding="false" />
+      android:layout_height="2dp">
 
+    </com.google.android.material.divider.MaterialDivider>
+
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/rvUriHistory"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:clipToPadding="false" />
   </LinearLayout>
 
-</LinearLayout>
+</androidx.core.widget.NestedScrollView>

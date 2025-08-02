@@ -1,10 +1,12 @@
 package cloud.app.vvf.features.player.torrent
 
 import android.content.Context
+import android.net.Uri
 import cloud.app.vvf.network.api.torrentserver.TorrentRequest
 import cloud.app.vvf.network.api.torrentserver.TorrentServerApi
 import cloud.app.vvf.network.api.torrentserver.TorrentStatus
 import cloud.app.vvf.network.di.TorrentServerApiFactory
+import cloud.app.vvf.utils.KUniFile
 import java.io.File
 import java.net.URLEncoder
 import javax.inject.Inject
@@ -84,7 +86,15 @@ class TorrentManager @Inject constructor(private val apiFactory: TorrentServerAp
   }
 
   suspend fun add(url: String): TorrentStatus? = withContext(Dispatchers.IO) {
-    val response = api.addTorrent(TorrentRequest(action = "add", link = url))
+    val request = if (url.startsWith("/") && File(url).exists()) {
+      // For local file paths, try sending the file path directly first
+      Timber.d("Sending torrent file path: $url")
+      TorrentRequest(action = "add", link = "file://$url")
+    } else {
+      // For URLs (magnet links, http torrents), send as link
+      TorrentRequest(action = "add", link = url)
+    }
+    val response = api.addTorrent(request)
     response.body()
   }
 
@@ -143,14 +153,56 @@ class TorrentManager @Inject constructor(private val apiFactory: TorrentServerAp
   )
 
   // Add more methods as needed, e.g., transformLink, setup, etc.
-  suspend fun transformLink(link: String, cacheDir: File): Pair<String, TorrentStatus> = withContext(Dispatchers.IO) {
+  suspend fun transformLink(link: String, cacheDir: File, context: Context): Pair<String, TorrentStatus> = withContext(Dispatchers.IO) {
     val defaultDirectory = File(cacheDir, "torrent_tmp")
     defaultDirectory.mkdirs()
     if (!setup(defaultDirectory.absolutePath)) {
         throw Exception("Unable to setup the torrent server")
     }
-    val status = add(link) ?: throw Exception("Failed to add torrent")
-    status.streamUrl("http://127.0.0.1:${serverPort}", link) to status
+
+    // Handle content:// URIs by copying to local file
+    val actualLink = if (link.startsWith("content://")) {
+      try {
+        val uri = Uri.parse(link)
+        Timber.d("Attempting to access content URI: $uri")
+
+        val kuniFile = KUniFile.fromUri(context, uri)
+        val localFile = File(defaultDirectory, "temp_torrent_${System.currentTimeMillis()}.torrent")
+
+        if (kuniFile != null && kuniFile.exists() && kuniFile.canRead()) {
+          // Use KUniFile if it works
+          Timber.d("Using KUniFile for URI: $uri")
+          kuniFile.openInputStream().use { input ->
+            localFile.outputStream().use { output ->
+              input.copyTo(output)
+            }
+          }
+        } else {
+          // Fallback to ContentResolver for custom providers like Zalo
+          Timber.d("KUniFile failed, using ContentResolver fallback for URI: $uri")
+          context.contentResolver.openInputStream(uri)?.use { input ->
+            localFile.outputStream().use { output ->
+              input.copyTo(output)
+            }
+          } ?: throw Exception("Cannot open input stream for URI: $uri")
+        }
+
+        if (!localFile.exists() || localFile.length() == 0L) {
+          throw Exception("Failed to copy torrent file or file is empty")
+        }
+
+        Timber.d("Successfully copied torrent file. Size: ${localFile.length()} bytes")
+        localFile.absolutePath
+      } catch (e: Exception) {
+        Timber.e(e, "Error handling content URI: $link")
+        throw Exception("Cannot access torrent file: ${e.message}")
+      }
+    } else {
+      link
+    }
+
+    val status = add(actualLink) ?: throw Exception("Failed to add torrent")
+    status.streamUrl("http://127.0.0.1:${serverPort}", actualLink) to status
   }
   fun deleteAllFiles(context: Context) {
     //todo

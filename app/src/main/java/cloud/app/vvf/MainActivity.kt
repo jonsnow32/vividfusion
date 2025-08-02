@@ -29,6 +29,7 @@ import cloud.app.vvf.extension.builtIn.local.MediaUtils
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.features.playerManager.PlayerManager
 import cloud.app.vvf.utils.TV
+import cloud.app.vvf.utils.IntentHandler
 import cloud.app.vvf.utils.Utils.isAndroidTV
 import cloud.app.vvf.utils.isLayout
 import cloud.app.vvf.utils.openItemFragmentFromUri
@@ -59,6 +60,9 @@ class MainActivity : AppCompatActivity() {
   @Inject
   lateinit var sharedPreferences: SharedPreferences
   @Inject lateinit var updateUIFlow : MutableStateFlow<AVPMediaItem?>
+
+  private lateinit var intentHandler: IntentHandler
+
   override fun onCreate(savedInstanceState: Bundle?) {
     PlayerManager.getInstance().setActivityResultRegistry(activityResultRegistry)
     lifecycle.addObserver(PlayerManager.getInstance())
@@ -70,6 +74,9 @@ class MainActivity : AppCompatActivity() {
         sharedPreferences,
         this
       ) // call after activity injected
+
+    // Initialize intent handler
+    intentHandler = IntentHandler(this)
 
     setContentView(binding.root)
 
@@ -186,12 +193,7 @@ class MainActivity : AppCompatActivity() {
 
   private fun onIntent(intent: Intent?) {
     this.intent = null
-    intent ?: return
-    val uri = intent.data
-    when (uri?.scheme) {
-      "vvf" -> openItemFragmentFromUri(uri)
-      "file" -> openExtensionInstaller(uri)
-    }
+    intentHandler.handleIntent(intent)
   }
 
   private fun centerView(view: View?) {
@@ -276,4 +278,3 @@ class MainActivity : AppCompatActivity() {
 
 
 }
-

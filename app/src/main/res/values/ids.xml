@@ -7,6 +7,7 @@
   <item name="networkStreamFragment" type="id"/>
   <item name="mainFragment" type="id"/>
   <item name="mainActivity" type="id"/>
+  <item name="torrentInfoFragment" type="id"/>
   <item name="movieFragment" type="id"/>
   <item name="showFragment" type="id"/>
   <item name="homeFragment" type="id"/>
