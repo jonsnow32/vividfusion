@@ -25,6 +25,7 @@ import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 
+@UnstableApi
 @AndroidEntryPoint
 class NetworkStreamFragment : Fragment() {
   private val parent by lazy {  parentFragment as Fragment }
@@ -35,6 +36,15 @@ class NetworkStreamFragment : Fragment() {
     uri?.let {
       // Set the selected file's URI as the stream URL (or handle as needed)
       binding.etStreamUrl.setText(it.toString())
+
+      // Check if it's a torrent file and launch in torrent player
+      val mimeType = requireContext().contentResolver.getType(it)
+      val fileName = it.lastPathSegment?.lowercase() ?: ""
+
+      if (mimeType == "application/x-bittorrent" || fileName.endsWith(".torrent")) {
+        // Launch torrent file directly in the player
+        streamTorrentFile(it.toString())
+      }
     }
   }
 
@@ -125,6 +135,26 @@ class NetworkStreamFragment : Fragment() {
       )
     }
   }
+
+  @UnstableApi
+  private fun streamTorrentFile(torrentUri: String) {
+    // Create a video item for the torrent file
+    val video = Video.RemoteVideo(uri = torrentUri, title = "Torrent File")
+    val mediaItem = AVPMediaItem.VideoItem(video)
+
+    // Save to history
+    viewModel.saveToUriHistory(torrentUri)
+    viewModel.refresh()
+
+    // Navigate to PlayerFragment which will handle torrent processing
+    parent.navigate(
+      PlayerFragment.newInstance(
+        mediaItems = listOf(mediaItem),
+        selectedMediaIdx = 0,
+      )
+    )
+  }
+
   fun addNetworkStream(stream: String) {
     val viewModel by parent.viewModels<NetworkStreamViewModel>()
   }
