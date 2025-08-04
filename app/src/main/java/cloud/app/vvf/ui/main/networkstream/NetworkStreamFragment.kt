@@ -28,25 +28,26 @@ import dagger.hilt.android.AndroidEntryPoint
 @UnstableApi
 @AndroidEntryPoint
 class NetworkStreamFragment : Fragment() {
-  private val parent by lazy {  parentFragment as Fragment }
+  private val parent by lazy { parentFragment as Fragment }
   private var binding by autoCleared<FragmentNetworkStreamBinding>()
   private val viewModel: NetworkStreamViewModel by viewModels({ requireParentFragment() })
   private lateinit var uriHistoryAdapter: UriHistoryAdapter
-  private val openFileLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
-    uri?.let {
-      // Set the selected file's URI as the stream URL (or handle as needed)
-      binding.etStreamUrl.setText(it.toString())
+  private val openFileLauncher =
+    registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+      uri?.let {
+        // Set the selected file's URI as the stream URL (or handle as needed)
+        binding.etStreamUrl.setText(it.toString())
 
-      // Check if it's a torrent file and launch in torrent player
-      val mimeType = requireContext().contentResolver.getType(it)
-      val fileName = it.lastPathSegment?.lowercase() ?: ""
+        // Check if it's a torrent file and launch in torrent player
+        val mimeType = requireContext().contentResolver.getType(it)
+        val fileName = it.lastPathSegment?.lowercase() ?: ""
 
-      if (mimeType == "application/x-bittorrent" || fileName.endsWith(".torrent")) {
-        // Launch torrent file directly in the player
-        streamTorrentFile(it.toString())
+        if (mimeType == "application/x-bittorrent" || fileName.endsWith(".torrent")) {
+          // Launch torrent file directly in the player
+          streamTorrentFile(it.toString())
+        }
       }
     }
-  }
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -65,7 +66,7 @@ class NetworkStreamFragment : Fragment() {
 
     uriHistoryAdapter = UriHistoryAdapter(
       emptyList(),
-      onClick ={ selectedItem ->
+      onClick = { selectedItem ->
         binding.etStreamUrl.setText(selectedItem.uri)
       },
       onLongClick = {
@@ -99,7 +100,19 @@ class NetworkStreamFragment : Fragment() {
 
 
     binding.btnDownload.setOnClickListener {
-      //todo add to download queue
+      val uri = binding.etStreamUrl.text.toString().trim()
+      if (uri.isNotBlank()) {
+        // Add to download queue
+        viewModel.addToDownloadQueue(uri)
+
+        // Show success message
+        context?.showToast("Added to download queue")
+
+        // Navigate to download fragment
+        navigateToDownloadFragment()
+      } else {
+        context?.showToast("Please enter a valid URL")
+      }
     }
 
     binding.etStreamUrl.setOnTouchListener { v, event ->
@@ -110,7 +123,13 @@ class NetworkStreamFragment : Fragment() {
           val openFile = editText.width - editText.paddingEnd - drawableEnd.intrinsicWidth
           if (event.x >= openFile) {
             // Open file browser to select a file (e.g., torrent)
-            openFileLauncher.launch(arrayOf("application/x-bittorrent", "application/octet-stream", "*/*"))
+            openFileLauncher.launch(
+              arrayOf(
+                "application/x-bittorrent",
+                "application/octet-stream",
+                "*/*"
+              )
+            )
             return@setOnTouchListener true
           }
         }
@@ -118,8 +137,9 @@ class NetworkStreamFragment : Fragment() {
       false
     }
   }
+
   @UnstableApi
-  fun stream(uri: String){
+  fun stream(uri: String) {
     val streamUrl = uri
     if (streamUrl.isNotBlank()) {
       // Navigate to PlayerFragment to play the stream
@@ -157,6 +177,16 @@ class NetworkStreamFragment : Fragment() {
 
   fun addNetworkStream(stream: String) {
     val viewModel by parent.viewModels<NetworkStreamViewModel>()
+  }
+
+  private fun navigateToDownloadFragment() {
+    try {
+      // Navigate to downloads fragment
+      parent.navigate(cloud.app.vvf.ui.download.DownloadsFragment())
+    } catch (e: Exception) {
+      // Fallback: show toast if navigation fails
+      context?.showToast("Please check downloads in the downloads section")
+    }
   }
 
 }

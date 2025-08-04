@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Download Status Colors -->
+    <color name="download_status_completed">#4CAF50</color>
+    <color name="download_status_downloading">#2196F3</color>
+    <color name="download_status_failed">#F44336</color>
+    <color name="download_status_cancelled">#9E9E9E</color>
+    <color name="download_status_default">#757575</color>
+</resources>
+

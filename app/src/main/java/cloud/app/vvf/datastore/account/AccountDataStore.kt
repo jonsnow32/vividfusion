@@ -56,7 +56,7 @@ class AccountDataStore(val context: Context) :
     return getAll<Account>("$ACCOUNTS_FOLDER/")
   }
 
-  fun createDefaultAccount(): Account {
+  private fun createDefaultAccount(): Account {
     val defaultAccount = Account(
       id = 0,
       name = "Default",

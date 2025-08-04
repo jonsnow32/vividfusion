@@ -2,6 +2,7 @@ package cloud.app.vvf.di
 
 import android.app.Application
 import android.content.Context
+import androidx.work.WorkManager
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.extension.Message
 import dagger.Module
@@ -18,6 +19,7 @@ class AppModule {
 
   @Provides
   fun provideAppContext(app: Application): Context = app.applicationContext
+
 
   @Provides
   @Singleton

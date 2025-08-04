@@ -6,6 +6,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.CaptionStyleCompat
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgress
+import cloud.app.vvf.common.models.DownloadItem
+import cloud.app.vvf.common.models.DownloadStatus
 import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.user.User
@@ -26,6 +28,7 @@ const val URI_HISTORY_FOLDER = "uri_history"
 const val PLAYER_SETTING_FOLDER = "player_setting"
 const val USERS_FOLDER = "users"
 const val PlaybackProgressFolder = "history_progress"
+const val DOWNLOAD_FOLDER = "downloads"
 
 class AppDataStore(val context: Context, val account: Account) :
   DataStore(context.getSharedPreferences("account_${account.getSlug()}", Context.MODE_PRIVATE)) {
@@ -243,5 +246,70 @@ class AppDataStore(val context: Context, val account: Account) :
       3 -> Color.TRANSPARENT
       else -> Color.TRANSPARENT
     }
+  }
+
+  // Download functionality methods
+  fun getAllDownloads(): List<DownloadItem>? {
+    return getAll<DownloadItem>("$DOWNLOAD_FOLDER/")?.sortedByDescending { it.updatedAt }
+  }
+
+  fun saveDownload(downloadItem: DownloadItem) {
+    val updatedItem = downloadItem.copy(updatedAt = System.currentTimeMillis())
+    set("$DOWNLOAD_FOLDER/${downloadItem.id}", updatedItem)
+  }
+
+  fun getDownload(downloadId: String): DownloadItem? {
+    return get<DownloadItem>("$DOWNLOAD_FOLDER/$downloadId")
+  }
+
+  fun removeDownload(downloadId: String) {
+    removeKey("$DOWNLOAD_FOLDER/$downloadId")
+  }
+
+  fun removeDownload(downloadItem: DownloadItem) {
+    removeKey("$DOWNLOAD_FOLDER/${downloadItem.id}")
+  }
+
+  fun updateDownloadProgress(downloadId: String, progress: Int, downloadedBytes: Long) {
+    val downloadItem = getDownload(downloadId)
+    downloadItem?.let { item ->
+      val updatedItem = item.copy(
+        progress = progress,
+        downloadedBytes = downloadedBytes,
+        updatedAt = System.currentTimeMillis()
+      )
+      saveDownload(updatedItem)
+    }
+  }
+
+  fun updateDownloadStatus(downloadId: String, status: DownloadStatus) {
+    val downloadItem = getDownload(downloadId)
+    downloadItem?.let { item ->
+      val updatedItem = item.copy(
+        status = status,
+        updatedAt = System.currentTimeMillis()
+      )
+      saveDownload(updatedItem)
+    }
+  }
+
+  fun getDownloadsByStatus(status: DownloadStatus): List<DownloadItem>? {
+    return getAllDownloads()?.filter { it.status == status }
+  }
+
+  fun getActiveDownloads(): List<DownloadItem>? {
+    return getAllDownloads()?.filter { it.isActive() }
+  }
+
+  fun getCompletedDownloads(): List<DownloadItem>? {
+    return getAllDownloads()?.filter { it.isCompleted() }
+  }
+
+  fun clearAllDownloads() {
+    removeKey("$DOWNLOAD_FOLDER/")
+  }
+
+  fun getDownloadByMediaItem(mediaItem: AVPMediaItem): DownloadItem? {
+    return getAllDownloads()?.firstOrNull { it.mediaItem.id == mediaItem.id }
   }
 }

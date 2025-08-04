@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="48dp"
+    android:layout_height="48dp">
+
+    <!-- Progress Circle Background -->
+    <View
+        android:id="@+id/view_progress_background"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="center"
+        android:background="@drawable/circle_progress_background"
+        android:visibility="gone" />
+
+    <!-- Progress Circle -->
+    <ProgressBar
+        android:id="@+id/progress_circle"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="center"
+        android:indeterminate="false"
+        android:progressDrawable="@drawable/circle_progress"
+        android:visibility="gone"
+        tools:progress="45"
+        tools:visibility="visible" />
+
+    <!-- Download Icon -->
+    <ImageButton
+        android:id="@+id/btn_download_action"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_download_24"
+        android:contentDescription="Download action" />
+
+</FrameLayout>
