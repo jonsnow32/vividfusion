@@ -32,6 +32,16 @@ class DownloadsAdapter(
         holder.bind(getItem(position))
     }
 
+    override fun onBindViewHolder(holder: DownloadViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isEmpty()) {
+            // Full update
+            super.onBindViewHolder(holder, position, payloads)
+        } else {
+            // Partial update based on payload
+            holder.bindPartial(getItem(position), payloads)
+        }
+    }
+
     class DownloadViewHolder(
         private val binding: ItemDownloadBinding,
         private val onActionClick: (DownloadAction, DownloadItem) -> Unit
@@ -61,7 +71,8 @@ class DownloadsAdapter(
                 // Handle click actions
                 btnDownloadAction.setOnClickListener {
                     val action = when (downloadItem.status) {
-                        DownloadStatus.PENDING, DownloadStatus.DOWNLOADING -> DownloadAction.PAUSE
+                        DownloadStatus.PENDING -> DownloadAction.CANCEL
+                        DownloadStatus.DOWNLOADING -> DownloadAction.PAUSE
                         DownloadStatus.PAUSED -> DownloadAction.RESUME
                         DownloadStatus.FAILED -> DownloadAction.RETRY
                         DownloadStatus.CANCELLED -> DownloadAction.RETRY
@@ -74,6 +85,33 @@ class DownloadsAdapter(
                 root.setOnLongClickListener {
                     onActionClick(DownloadAction.REMOVE, downloadItem)
                     true
+                }
+            }
+        }
+
+        fun bindPartial(downloadItem: DownloadItem, payloads: MutableList<Any>) {
+            binding.apply {
+                // Update fields based on payload
+                for (payload in payloads) {
+                    if (payload is List<*>) {
+                        for (changeType in payload) {
+                            when (changeType) {
+                                PAYLOAD_STATUS -> {
+                                    // Update status text and color
+                                    tvStatus.text = getStatusText(downloadItem)
+                                    tvStatus.setTextColor(getStatusColor(downloadItem.status))
+
+                                    // Update download button icon
+                                    setupDownloadButton(downloadItem)
+                                }
+                                PAYLOAD_PROGRESS -> {
+                                    // Update progress bar and status text
+                                    setupProgressBar(downloadItem)
+                                    tvStatus.text = getStatusText(downloadItem)
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -102,7 +140,7 @@ class DownloadsAdapter(
         private fun setupDownloadButton(downloadItem: DownloadItem) {
             binding.apply {
                 val iconRes = when (downloadItem.status) {
-                    DownloadStatus.PENDING -> R.drawable.ic_pause_24
+                    DownloadStatus.PENDING -> R.drawable.ic_close
                     DownloadStatus.DOWNLOADING -> R.drawable.ic_pause_24
                     DownloadStatus.PAUSED -> R.drawable.ic_play_arrow_24
                     DownloadStatus.COMPLETED -> R.drawable.ic_play_arrow_24
@@ -117,8 +155,18 @@ class DownloadsAdapter(
         private fun getStatusText(downloadItem: DownloadItem): String {
             return when (downloadItem.status) {
                 DownloadStatus.PENDING -> "Pending..."
-                DownloadStatus.DOWNLOADING -> "${downloadItem.getProgressPercentage()}% • ${formatFileSize(downloadItem.downloadedBytes)} / ${formatFileSize(downloadItem.fileSize)}"
-                DownloadStatus.PAUSED -> "Paused • ${downloadItem.getProgressPercentage()}%"
+                DownloadStatus.DOWNLOADING -> {
+                    val progressText = "${downloadItem.getProgressPercentage()}% • ${formatFileSize(downloadItem.downloadedBytes)} / ${formatFileSize(downloadItem.fileSize)}"
+                    val speedText = if (downloadItem.downloadSpeed > 0) " • ${downloadItem.getFormattedSpeed()}" else ""
+                    val connectionsText = if (downloadItem.connections > 1) " • ${downloadItem.connections} connections" else ""
+                    val etaText = if (downloadItem.downloadSpeed > 0) " • ETA: ${downloadItem.getEstimatedTimeRemaining()}" else ""
+                    "$progressText$speedText$connectionsText$etaText"
+                }
+                DownloadStatus.PAUSED -> {
+                    val progressText = "Paused • ${downloadItem.getProgressPercentage()}%"
+                    val connectionsText = if (downloadItem.connections > 1) " • ${downloadItem.connections} connections" else ""
+                    "$progressText$connectionsText"
+                }
                 DownloadStatus.COMPLETED -> "Completed • ${formatFileSize(downloadItem.fileSize)}"
                 DownloadStatus.FAILED -> "Failed"
                 DownloadStatus.CANCELLED -> "Cancelled"
@@ -138,7 +186,7 @@ class DownloadsAdapter(
 
         private fun getContentDescription(status: DownloadStatus): String {
             return when (status) {
-                DownloadStatus.PENDING -> "Download pending"
+                DownloadStatus.PENDING -> "Cancel download" // Thay đổi từ "Download pending"
                 DownloadStatus.DOWNLOADING -> "Pause download"
                 DownloadStatus.PAUSED -> "Resume download"
                 DownloadStatus.COMPLETED -> "Play downloaded file"
@@ -168,7 +216,34 @@ class DownloadsAdapter(
         }
 
         override fun areContentsTheSame(oldItem: DownloadItem, newItem: DownloadItem): Boolean {
-            return oldItem == newItem
+            // Compare all important fields that affect UI display
+            return oldItem.status == newItem.status &&
+                    oldItem.progress == newItem.progress &&
+                    oldItem.fileName == newItem.fileName &&
+                    oldItem.url == newItem.url &&
+                    oldItem.localPath == newItem.localPath &&
+                    oldItem.fileSize == newItem.fileSize
         }
+
+        override fun getChangePayload(oldItem: DownloadItem, newItem: DownloadItem): Any? {
+            val payload = mutableListOf<String>()
+
+            // Only add status payload if status actually changed
+            if (oldItem.status != newItem.status) {
+                payload.add(PAYLOAD_STATUS)
+            }
+
+            // Add progress payload if progress changed
+            if (oldItem.progress != newItem.progress) {
+                payload.add(PAYLOAD_PROGRESS)
+            }
+
+            return if (payload.isEmpty()) null else payload
+        }
+    }
+
+    companion object {
+        private const val PAYLOAD_STATUS = "status"
+        private const val PAYLOAD_PROGRESS = "progress"
     }
 }

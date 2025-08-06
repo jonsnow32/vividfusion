@@ -79,7 +79,7 @@ class MediaClickListener(
 
       is AVPMediaItem.PlaybackProgress -> onItemClick(extensionId, item.item, transitionView)
       is AVPMediaItem.VideoCollectionItem -> TODO()
-      is AVPMediaItem.VideoItem -> {
+      is VideoItem -> {
         fragment.viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
 
           val context = fragment.context ?: return@launch
@@ -136,6 +136,8 @@ class MediaClickListener(
           )
         )
       }
+
+      is AVPMediaItem.DownloadItem -> TODO()
     }
   }
 

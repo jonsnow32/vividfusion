@@ -63,12 +63,20 @@ class MediaDownloader @AssistedInject constructor(
             subtitle: String = "Downloading media...",
             progress: Int = 0
         ): ForegroundInfo {
+          // Ensure notification channel is created first
+            createNotificationChannel(context)
+
             val notificationBuilder = NotificationCompat.Builder(context, NotificationConstants.CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle(fileName)
+                .setContentTitle("Downloading: $fileName")
                 .setContentText(subtitle)
                 .setOngoing(true)
+                .setAutoCancel(false)
+                .setSilent(true)
+                .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setProgress(100, progress, progress == 0)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ForegroundInfo(
@@ -78,6 +86,24 @@ class MediaDownloader @AssistedInject constructor(
                 )
             } else {
                 ForegroundInfo(NotificationConstants.NOTIFICATION_ID, notificationBuilder.build())
+            }
+        }
+
+        private fun createNotificationChannel(context: Context) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val channel = NotificationChannel(
+                    NotificationConstants.CHANNEL_ID,
+                    NotificationConstants.CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_LOW
+                ).apply {
+                    description = NotificationConstants.CHANNEL_DESCRIPTION
+                    setSound(null, null)
+                    enableVibration(false)
+                    setShowBadge(false)
+                }
+
+                val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
+                manager?.createNotificationChannel(channel)
             }
         }
     }
@@ -97,7 +123,7 @@ class MediaDownloader @AssistedInject constructor(
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ForegroundInfo(
-              NotificationConstants.NOTIFICATION_ID,
+                NotificationConstants.NOTIFICATION_ID,
                 notification,
                 android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
             )
@@ -204,7 +230,7 @@ class MediaDownloader @AssistedInject constructor(
         }
     }
 
-    private fun downloadFile(
+    private suspend fun downloadFile(
         client: OkHttpClient,
         url: String,
         fileName: String,
@@ -220,7 +246,10 @@ class MediaDownloader @AssistedInject constructor(
             ))
         }
 
-        val responseBody = response.body
+        val responseBody = response.body ?: return Result.failure(workDataOf(
+            "error" to "Empty response body",
+            "downloadId" to downloadId
+        ))
 
         // Determine file extension based on media type
         val fileExtension = getFileExtension(fileName, response)
@@ -232,34 +261,66 @@ class MediaDownloader @AssistedInject constructor(
             ?.let { downloadsDir.createFile(fullFileName, it) }
             ?: throw IOException("Failed to create media file")
 
-        // Download the file
-        responseBody.byteStream().use { input ->
-            mediaFile.openOutputStream().use { output ->
-                val buffer = ByteArray(8 * 1024)
-                var bytesRead: Int
-                while (input.read(buffer).also { bytesRead = it } != -1) {
-                    output.write(buffer, 0, bytesRead)
+        val totalBytes = responseBody.contentLength()
+        Timber.d("Download $downloadId: Starting file write - Total bytes: $totalBytes")
+
+        // Download the file using the progress-tracked response body
+        // The ProgressInterceptor will handle progress updates automatically
+        var totalBytesWritten = 0L
+        try {
+            responseBody.byteStream().use { input ->
+                mediaFile.openOutputStream().use { output ->
+                    val buffer = ByteArray(8 * 1024)
+                    var bytesRead: Int
+                    var iterationCount = 0
+
+                    while (input.read(buffer).also { bytesRead = it } != -1) {
+                        output.write(buffer, 0, bytesRead)
+                        totalBytesWritten += bytesRead
+                        iterationCount++
+
+                        // Log every 1000 iterations to track progress
+                        if (iterationCount % 1000 == 0) {
+                            val progressPercent = if (totalBytes > 0) (totalBytesWritten * 100 / totalBytes).toInt() else 0
+                            Timber.d("Download $downloadId: File write progress - $progressPercent% ($totalBytesWritten/$totalBytes bytes) - Iteration: $iterationCount")
+                        }
+                    }
+                    output.flush()
+                    Timber.d("Download $downloadId: File write completed - Total written: $totalBytesWritten bytes")
                 }
-                output.flush()
             }
+        } catch (e: Exception) {
+            Timber.e(e, "Download $downloadId: File write failed at $totalBytesWritten/$totalBytes bytes")
+            throw e
         }
 
-        return Result.success(workDataOf(
+        // Skip final progress update to avoid potential blocking
+        // Let DownloadManager handle 100% when receiving SUCCEEDED state
+        Timber.d("Download $downloadId: Skipping final progress update to avoid blocking")
+
+        Timber.d("Download $downloadId: About to return Result.success()")
+        val result = Result.success(workDataOf(
             "downloadId" to downloadId,
             "localPath" to mediaFile.uri.toString(),
             "fileName" to fullFileName,
-            "fileSize" to responseBody.contentLength()
+            "fileSize" to totalBytes
         ))
+        Timber.d("Download $downloadId: Result.success() created, returning...")
+
+        return result
     }
 
     private fun setupNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-              NotificationConstants.CHANNEL_ID,
-              NotificationConstants.CHANNEL_NAME,
+                NotificationConstants.CHANNEL_ID,
+                NotificationConstants.CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
                 description = NotificationConstants.CHANNEL_DESCRIPTION
+                setSound(null, null)
+                enableVibration(false)
+                setShowBadge(false)
             }
             val manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
             manager?.createNotificationChannel(channel)
@@ -276,16 +337,57 @@ class MediaDownloader @AssistedInject constructor(
     }
 
     private fun getDownloadsDirectory(): KUniFile {
-        // Try to use public Downloads directory, fallback to app-specific directory
-        val publicDownloads = KUniFile.fromFile(context,
-            android.os.Environment.getExternalStoragePublicDirectory(
-                android.os.Environment.DIRECTORY_DOWNLOADS
-            )
-        )
+        return try {
+            // For Android 10+ (API 29+), use MediaStore or app-specific directory
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // Use app-specific external directory (doesn't require WRITE_EXTERNAL_STORAGE permission)
+                val appSpecificDownloads = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS)
+                if (appSpecificDownloads != null) {
+                    Timber.d("Using app-specific Downloads directory: ${appSpecificDownloads.absolutePath}")
+                    return KUniFile.fromFile(context, appSpecificDownloads)
+                        ?: throw IOException("Failed to create KUniFile from app-specific directory")
+                }
+            }
 
-        return publicDownloads ?: KUniFile.fromFile(context,
-            context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS)
-        ) ?: throw IOException("Cannot access downloads directory")
+            // For older Android versions or fallback, try public downloads if we have permission
+            if (hasWriteExternalStoragePermission()) {
+                val publicDownloads = android.os.Environment.getExternalStoragePublicDirectory(
+                    android.os.Environment.DIRECTORY_DOWNLOADS
+                )
+                if (publicDownloads != null && (publicDownloads.exists() || publicDownloads.mkdirs())) {
+                    Timber.d("Using public Downloads directory: ${publicDownloads.absolutePath}")
+                    return KUniFile.fromFile(context, publicDownloads)
+                        ?: throw IOException("Failed to create KUniFile from public directory")
+                }
+            }
+
+            // Final fallback: use internal app directory
+            val internalDownloads = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS)
+                ?: context.filesDir
+
+            Timber.d("Using fallback directory: ${internalDownloads.absolutePath}")
+            KUniFile.fromFile(context, internalDownloads)
+                ?: throw IOException("Failed to create KUniFile from fallback directory")
+
+        } catch (e: Exception) {
+            Timber.e(e, "Error accessing downloads directory, using internal storage")
+            // Last resort: use internal files directory
+            val internalDir = context.filesDir
+            KUniFile.fromFile(context, internalDir)
+                ?: throw IOException("Cannot access any storage directory")
+        }
+    }
+
+    private fun hasWriteExternalStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Android 10+ doesn't need WRITE_EXTERNAL_STORAGE for app-specific directories
+            true
+        } else {
+            ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
     }
 
     private fun getFileExtension(fileName: String, response: Response): String {

@@ -13,9 +13,8 @@ import cloud.app.vvf.services.downloader.DownloadManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
@@ -27,29 +26,60 @@ class DownloadsViewModel @Inject constructor(
   private val dataFlow: MutableStateFlow<AppDataStore>
 ) : ViewModel() {
 
-    val downloads: StateFlow<List<DownloadItem>> = combine(
-        downloadManager.downloads,
-        dataFlow.map { appDataStore -> appDataStore.getAllDownloads() ?: emptyList() }
-    ) { managerDownloads, repoDownloads ->
-        // Merge downloads from manager and repository, prioritizing manager data
-        val mergedMap = mutableMapOf<String, DownloadItem>()
-
-        // Add repository downloads first
-        repoDownloads.forEach { item ->
-            mergedMap[item.id] = item
+    val downloads: StateFlow<List<DownloadItem>> = downloadManager.downloads
+        .map { downloadsMap ->
+            val sortedList = downloadsMap.values.sortedByDescending { it.updatedAt }
+            Timber.d("DownloadsViewModel: Downloads updated - Count: ${sortedList.size}")
+            sortedList.forEach { item ->
+                Timber.d("DownloadsViewModel: Download ${item.id} - Status: ${item.status} - Progress: ${item.progress}%")
+            }
+            sortedList
         }
+        .stateIn(
+            scope = viewModelScope,
+            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
-        // Override with manager downloads (more up-to-date)
-        managerDownloads.values.forEach { item ->
-            mergedMap[item.id] = item
+    // Storage information state
+    private val _storageInfo = MutableStateFlow<StorageInfo?>(null)
+    val storageInfo: StateFlow<StorageInfo?> = _storageInfo
+
+    init {
+        // Load storage information when ViewModel is created
+        loadStorageInfo()
+    }
+
+    /**
+     * Load device storage information and update UI
+     */
+    fun loadStorageInfo() {
+        viewModelScope.launch {
+            try {
+                // Get downloads directory from Environment or app-specific directory
+                val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
+
+                // Calculate storage info
+                val storageInfo = StorageInfo.getDeviceStorageInfo(downloadsDir)
+                _storageInfo.value = storageInfo
+
+                Timber.d("Storage info loaded - Total: ${StorageInfo.formatBytes(storageInfo.totalBytes)}, " +
+                        "Used: ${StorageInfo.formatBytes(storageInfo.usedBytes)}, " +
+                        "App: ${StorageInfo.formatBytes(storageInfo.appUsedBytes)}, " +
+                        "Free: ${StorageInfo.formatBytes(storageInfo.freeBytes)}")
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to load storage information")
+                _storageInfo.value = null
+            }
         }
+    }
 
-        mergedMap.values.sortedByDescending { it.updatedAt }
-    }.stateIn(
-        scope = viewModelScope,
-        started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+    /**
+     * Refresh storage information (call this when downloads complete/are deleted)
+     */
+    fun refreshStorageInfo() {
+        loadStorageInfo()
+    }
 
     fun pauseDownload(downloadId: String) {
         viewModelScope.launch {

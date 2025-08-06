@@ -43,24 +43,58 @@ class NetworkStreamViewModel @Inject constructor(
     refresh()
   }
 
+  sealed class DownloadResult {
+    object Success : DownloadResult()
+    object AlreadyExists : DownloadResult()
+    data class Error(val message: String) : DownloadResult()
+  }
+
+  suspend fun addToDownloadQueueWithResult(uri: String): DownloadResult {
+    return try {
+      // Check if download already exists before starting
+      val existingDownload = downloadManager.downloads.value.values
+        .find { it.url == uri && (it.isActive() || it.isCompleted()) }
+
+      if (existingDownload != null) {
+        Timber.d("Download already exists for URI: $uri with status: ${existingDownload.status}")
+        return when {
+          existingDownload.isCompleted() -> DownloadResult.AlreadyExists
+          existingDownload.isActive() -> DownloadResult.AlreadyExists
+          else -> {
+            // If it's failed or cancelled, we can retry
+            val video = Video.RemoteVideo(uri = uri, title = getFileNameFromUri(uri))
+            val mediaItem = AVPMediaItem.VideoItem(video)
+            downloadManager.startDownload(mediaItem, uri, "default")
+            DownloadResult.Success
+          }
+        }
+      }
+
+      // Create a Video and MediaItem from the URI
+      val video = Video.RemoteVideo(uri = uri, title = getFileNameFromUri(uri))
+      val mediaItem = AVPMediaItem.VideoItem(video)
+
+      // Start download with DownloadManager
+      val downloadId = downloadManager.startDownload(
+        mediaItem = mediaItem,
+        downloadUrl = uri,
+        quality = "default"
+      )
+
+      Timber.d("Added to download queue: $uri with ID: $downloadId")
+      DownloadResult.Success
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to add to download queue: $uri")
+      DownloadResult.Error(e.message ?: "Unknown error")
+    }
+  }
+
+  // Keep the old method for backward compatibility but make it use the new one
   fun addToDownloadQueue(uri: String) {
     viewModelScope.launch {
-      try {
-        // Create a Video and MediaItem from the URI
-        val video = Video.RemoteVideo(uri = uri, title = getFileNameFromUri(uri))
-        val mediaItem = AVPMediaItem.VideoItem(video)
-
-        // Start download with DownloadManager (this will create and save the DownloadItem internally)
-        val downloadId = downloadManager.startDownload(
-          mediaItem = mediaItem,
-          downloadUrl = uri,
-          quality = "default"
-        )
-
-        Timber.d("Added to download queue: $uri with ID: $downloadId")
-      } catch (e: Exception) {
-        Timber.e(e, "Failed to add to download queue: $uri")
-        throwableFlow.emit(e)
+      val result = addToDownloadQueueWithResult(uri)
+      if (result is DownloadResult.Error) {
+        throwableFlow.emit(Exception(result.message))
       }
     }
   }

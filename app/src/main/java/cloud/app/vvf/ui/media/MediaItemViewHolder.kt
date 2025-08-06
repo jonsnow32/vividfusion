@@ -60,6 +60,11 @@ sealed class MediaItemViewHolder(itemView: View) :
 //        this.playIcon.visibility = View.VISIBLE
       }
 
+      is AVPMediaItem.DownloadItem -> {
+        // Handle DownloadItem by delegating to its underlying mediaItem
+        bind(item.mediaItem)
+      }
+
       is AVPMediaItem.ActorItem,
       is AVPMediaItem.EpisodeItem,
       is AVPMediaItem.VideoCollectionItem,
@@ -237,6 +242,7 @@ sealed class MediaItemViewHolder(itemView: View) :
 
     fun AVPMediaItem.icon() = when (this) {
       is AVPMediaItem.MovieItem -> R.drawable.ic_video
+      is AVPMediaItem.DownloadItem -> R.drawable.ic_video
       is AVPMediaItem.ShowItem -> R.drawable.ic_album
       is AVPMediaItem.SeasonItem -> R.drawable.ic_video
       is AVPMediaItem.EpisodeItem -> R.drawable.ic_video

@@ -407,4 +407,13 @@
   <string name="stream">Stream</string>
   <string name="path">Path</string>
   <string name="free">free</string>
+    <string name="no_downloads_yet">No downloads yet</string>
+  <string name="downloaded_media_will_appear_here">Downloaded media will appear here</string>
+  <string name="download_storage_text">Internal Storage</string>
+  <string name="select_all">Select all</string>
+
+  <!-- Storage display format strings -->
+  <string name="storage_used_format">Used • %s</string>
+  <string name="storage_app_format">App • %s</string>
+  <string name="storage_free_format">Free • %s</string>
 </resources>
