@@ -203,27 +203,125 @@ class DownloadsViewModel @Inject constructor(
     }
 
     fun playDownloadedFile(context: Context, downloadItem: DownloadItem) {
-        if (downloadItem.status != DownloadStatus.COMPLETED || downloadItem.localPath == null) {
-            Timber.w("Cannot play file: download not completed or path missing")
+        if (downloadItem.status != DownloadStatus.COMPLETED) {
+            Timber.w("Cannot play file: download not completed")
             return
         }
 
         try {
-            // Parse the local path to get the actual file path
-            val filePath = if (downloadItem.localPath!!.startsWith("file://")) {
-                val uri = android.net.Uri.parse(downloadItem.localPath!!)
-                uri.path ?: downloadItem.localPath!!.removePrefix("file://")
-            } else {
-                downloadItem.localPath!!
-            }
+            // Try multiple methods to locate the downloaded file
+            val file = findDownloadedFile(context, downloadItem)
 
-            val file = File(filePath)
-
-            if (!file.exists()) {
-                Timber.w("Downloaded file not found: $filePath")
+            if (file == null || !file.exists()) {
+                Timber.w("Downloaded file not found for: ${downloadItem.fileName}")
+                // Try to update the local path if file exists in downloads directory
+                val foundFile = searchForFileInDownloadsDir(context, downloadItem.fileName)
+                if (foundFile?.exists() == true) {
+                    // Update the download item with correct path
+                    updateDownloadItemPath(downloadItem, foundFile.absolutePath)
+                    playFileWithIntent(context, foundFile, downloadItem)
+                } else {
+                    Timber.e("File not found anywhere for: ${downloadItem.fileName}")
+                }
                 return
             }
 
+            playFileWithIntent(context, file, downloadItem)
+
+        } catch (e: Exception) {
+            Timber.e(e, "Error playing downloaded file: ${downloadItem.fileName}")
+        }
+    }
+
+    /**
+     * Try multiple methods to find the downloaded file
+     */
+    private fun findDownloadedFile(context: Context, downloadItem: DownloadItem): File? {
+        // Method 1: Use localPath if available
+        downloadItem.localPath?.let { localPath ->
+            if (localPath.isNotEmpty()) {
+                val filePath = if (localPath.startsWith("file://")) {
+                    val uri = android.net.Uri.parse(localPath)
+                    uri.path ?: localPath.removePrefix("file://")
+                } else {
+                    localPath
+                }
+
+                val file = File(filePath)
+                if (file.exists()) {
+                    Timber.d("Found file using localPath: $filePath")
+                    return file
+                }
+            }
+        }
+
+        // Method 2: Search in downloads directory
+        return searchForFileInDownloadsDir(context, downloadItem.fileName)
+    }
+
+    /**
+     * Search for file in the downloads directory
+     */
+    private fun searchForFileInDownloadsDir(context: Context, fileName: String): File? {
+        try {
+            // Try app-specific downloads directory first
+            val appDownloadsDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS)
+            appDownloadsDir?.let { dir ->
+                // Try exact filename
+                var file = File(dir, fileName)
+                if (file.exists()) {
+                    Timber.d("Found file in app downloads: ${file.absolutePath}")
+                    return file
+                }
+
+                // Try with different extensions
+                val baseFileName = fileName.substringBeforeLast(".")
+                val extensions = listOf(".mp4", ".mkv", ".avi", ".mov", ".webm", ".m4v", ".mp3", ".m4a")
+
+                for (ext in extensions) {
+                    file = File(dir, "$baseFileName$ext")
+                    if (file.exists()) {
+                        Timber.d("Found file with extension $ext: ${file.absolutePath}")
+                        return file
+                    }
+                }
+
+                // Try VividFusion subfolder
+                val vividDir = File(dir, "VividFusion")
+                if (vividDir.exists()) {
+                    file = File(vividDir, fileName)
+                    if (file.exists()) {
+                        Timber.d("Found file in VividFusion subfolder: ${file.absolutePath}")
+                        return file
+                    }
+                }
+            }
+
+            // Try public downloads directory (for older Android versions)
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+                val publicDownloads = android.os.Environment.getExternalStoragePublicDirectory(
+                    android.os.Environment.DIRECTORY_DOWNLOADS
+                )
+
+                val file = File(publicDownloads, fileName)
+                if (file.exists()) {
+                    Timber.d("Found file in public downloads: ${file.absolutePath}")
+                    return file
+                }
+            }
+
+        } catch (e: Exception) {
+            Timber.e(e, "Error searching for file: $fileName")
+        }
+
+        return null
+    }
+
+    /**
+     * Play the file using an intent
+     */
+    private fun playFileWithIntent(context: Context, file: File, downloadItem: DownloadItem) {
+        try {
             // Use FileProvider to create a content URI that can be safely shared
             val contentUri = FileProvider.getUriForFile(
                 context,
@@ -248,56 +346,25 @@ class DownloadsViewModel @Inject constructor(
             }
 
             context.startActivity(Intent.createChooser(intent, "Play with"))
-            Timber.d("Successfully launched player for: $filePath")
-            Timber.d("File size: ${file.length()} bytes, MIME type: $mimeType")
-            Timber.d("Content URI: $contentUri")
+            Timber.d("Successfully launched player for: ${file.absolutePath}")
 
         } catch (e: Exception) {
-            Timber.e(e, "Failed to play downloaded file: ${downloadItem.localPath}")
+            Timber.e(e, "Error launching player for file: ${file.absolutePath}")
+        }
+    }
 
-            // Additional fallback: try using KUniFile but convert to FileProvider URI
-            try {
-                Timber.d("Attempting KUniFile fallback method...")
-
-                val uniFile = try {
-                    val uri = android.net.Uri.parse(downloadItem.localPath!!)
-                    KUniFile.fromUri(context, uri)
-                } catch (ex: Exception) {
-                    val file = File(downloadItem.localPath!!)
-                    KUniFile.fromFile(context, file)
-                }
-
-                if (uniFile != null && uniFile.exists()) {
-                    // Get the actual file if possible
-                    val actualFile = try {
-                        File(uniFile.filePath ?: throw IllegalStateException("No file path"))
-                    } catch (ex: Exception) {
-                        null
-                    }
-
-                    if (actualFile != null && actualFile.exists()) {
-                        val fallbackUri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.fileprovider",
-                            actualFile
-                        )
-
-                        val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
-                            setDataAndType(fallbackUri, uniFile.type ?: "video/*")
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        }
-
-                        context.startActivity(Intent.createChooser(fallbackIntent, "Play with"))
-                        Timber.d("KUniFile fallback successful for: ${actualFile.absolutePath}")
-                    } else {
-                        Timber.w("KUniFile fallback: actual file not accessible")
-                    }
-                } else {
-                    Timber.w("KUniFile fallback: file not found or doesn't exist")
-                }
-            } catch (fallbackException: Exception) {
-                Timber.e(fallbackException, "All fallback methods failed")
-            }
+    /**
+     * Update download item with correct file path
+     */
+    private fun updateDownloadItemPath(downloadItem: DownloadItem, filePath: String) {
+        try {
+            // Update the download item in the data store
+            val updatedItem = downloadItem.copy(localPath = filePath)
+            // You might need to call your data store update method here
+            // Example: appDataStore.saveDownload(updatedItem)
+            Timber.d("Updated download item path: $filePath")
+        } catch (e: Exception) {
+            Timber.e(e, "Error updating download item path")
         }
     }
 

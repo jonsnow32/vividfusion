@@ -352,8 +352,43 @@ class DownloadManager @Inject constructor(
                     .addTag("HTTP")
                     .build()
             }
-            // Add other download types as needed
-            else -> throw IllegalArgumentException("Unsupported download type: $downloadType")
+            DownloadType.HLS -> {
+                OneTimeWorkRequestBuilder<HlsDownloader>()
+                    .setInputData(workDataOf(
+                        HlsDownloader.HlsDownloadParams.KEY_DOWNLOAD_ID to downloadId,
+                        HlsDownloader.HlsDownloadParams.KEY_HLS_URL to downloadUrl,
+                        HlsDownloader.HlsDownloadParams.KEY_FILE_NAME to fileName,
+                        HlsDownloader.HlsDownloadParams.KEY_QUALITY to quality
+                    ))
+                    .addTag(DOWNLOAD_WORK_TAG)
+                    .addTag(downloadId)
+                    .addTag("HLS")
+                    .build()
+            }
+            DownloadType.TORRENT -> {
+                OneTimeWorkRequestBuilder<TorrentDownloader>()
+                    .setInputData(workDataOf(
+                        TorrentDownloader.DownloadParams.KEY_DOWNLOAD_ID to downloadId,
+                        TorrentDownloader.DownloadParams.KEY_TORRENT_URL to downloadUrl,
+                        TorrentDownloader.DownloadParams.KEY_FILE_NAME to fileName
+                    ))
+                    .addTag(DOWNLOAD_WORK_TAG)
+                    .addTag(downloadId)
+                    .addTag("TORRENT")
+                    .build()
+            }
+            DownloadType.MAGNET -> {
+                OneTimeWorkRequestBuilder<TorrentDownloader>()
+                    .setInputData(workDataOf(
+                        TorrentDownloader.DownloadParams.KEY_DOWNLOAD_ID to downloadId,
+                        TorrentDownloader.DownloadParams.KEY_MAGNET_LINK to downloadUrl,
+                        TorrentDownloader.DownloadParams.KEY_FILE_NAME to fileName
+                    ))
+                    .addTag(DOWNLOAD_WORK_TAG)
+                    .addTag(downloadId)
+                    .addTag("MAGNET")
+                    .build()
+            }
         }
 
         workManager.enqueueUniqueWork(

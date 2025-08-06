@@ -187,6 +187,10 @@ class MediaDownloader @AssistedInject constructor(
         resumeBytes: Long,
         isResuming: Boolean
     ): Result {
+        // Track last progress update to avoid too frequent updates
+        var lastProgressUpdate = 0
+        var lastNotificationUpdate = 0L
+
         // For resume, we need different progress calculation
         val progressCalculator = if (isResuming && resumeBytes > 0) {
             // Create a progress interceptor that accounts for already downloaded bytes
@@ -197,18 +201,26 @@ class MediaDownloader @AssistedInject constructor(
                     (totalDownloaded * 100 / totalFileSize).toInt()
                 } else 0
 
-                // Update WorkManager progress with correct values
-                setProgressAsync(workDataOf(
-                    "progress" to progress,
-                    "downloadedBytes" to totalDownloaded,
-                    "totalBytes" to totalFileSize,
-                    "downloadId" to downloadId
-                ))
+                // Only update if progress changed significantly (at least 1%)
+                if (progress != lastProgressUpdate) {
+                    lastProgressUpdate = progress
 
-                // Update notification if permission granted
-                if (hasNotificationPermission) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        setForeground(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
+                    // Update WorkManager progress with correct values
+                    setProgressAsync(workDataOf(
+                        "progress" to progress,
+                        "downloadedBytes" to totalDownloaded,
+                        "totalBytes" to totalFileSize,
+                        "downloadId" to downloadId
+                    ))
+
+                    // Update notification less frequently (every 2 seconds or 5% progress change)
+                    val currentTime = System.currentTimeMillis()
+                    if (hasNotificationPermission &&
+                        (currentTime - lastNotificationUpdate > 2000 || progress % 5 == 0)) {
+                        lastNotificationUpdate = currentTime
+                        CoroutineScope(Dispatchers.Main).launch {
+                            setForeground(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
+                        }
                     }
                 }
             }
@@ -219,18 +231,26 @@ class MediaDownloader @AssistedInject constructor(
                     (downloadedBytes * 100 / totalBytes).toInt()
                 } else 0
 
-                // Update WorkManager progress
-                setProgressAsync(workDataOf(
-                    "progress" to progress,
-                    "downloadedBytes" to downloadedBytes,
-                    "totalBytes" to totalBytes,
-                    "downloadId" to downloadId
-                ))
+                // Only update if progress changed significantly (at least 1%)
+                if (progress != lastProgressUpdate) {
+                    lastProgressUpdate = progress
 
-                // Update notification if permission granted
-                if (hasNotificationPermission) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        setForeground(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
+                    // Update WorkManager progress
+                    setProgressAsync(workDataOf(
+                        "progress" to progress,
+                        "downloadedBytes" to downloadedBytes,
+                        "totalBytes" to totalBytes,
+                        "downloadId" to downloadId
+                    ))
+
+                    // Update notification less frequently (every 2 seconds or 5% progress change)
+                    val currentTime = System.currentTimeMillis()
+                    if (hasNotificationPermission &&
+                        (currentTime - lastNotificationUpdate > 2000 || progress % 5 == 0)) {
+                        lastNotificationUpdate = currentTime
+                        CoroutineScope(Dispatchers.Main).launch {
+                            setForeground(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
+                        }
                     }
                 }
             }
@@ -485,17 +505,23 @@ class MediaDownloader @AssistedInject constructor(
 
             Timber.d("Download $downloadId: File write completed - Final size: $finalSize, Expected: $expectedSize, Written: $totalBytesWritten")
 
-            // Final progress update
+            // Final progress update with correct file path
+            val filePath = mediaFile.uri.toString()
+            val localPath = mediaFile.uri.path ?: filePath
+
             setProgressAsync(workDataOf(
                 "progress" to 100,
                 "downloadedBytes" to finalSize,
                 "totalBytes" to finalSize,
-                "downloadId" to downloadId
+                "downloadId" to downloadId,
+                "filePath" to filePath,
+                "localPath" to localPath
             ))
 
             return Result.success(workDataOf(
                 "downloadId" to downloadId,
-                "filePath" to mediaFile.uri.toString(),
+                "filePath" to filePath,
+                "localPath" to localPath,
                 "fileSize" to finalSize
             ))
 

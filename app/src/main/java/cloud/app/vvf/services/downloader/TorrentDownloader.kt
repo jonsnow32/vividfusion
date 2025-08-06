@@ -28,7 +28,7 @@ class TorrentDownloader @AssistedInject constructor(
     private val torrentManager: TorrentManager
 ) : CoroutineWorker(context, workerParameters) {
 
-    object TorrentDownloadParams {
+    object DownloadParams {
         const val KEY_DOWNLOAD_ID = "key_download_id"
         const val KEY_TORRENT_URL = "key_torrent_url"
         const val KEY_MAGNET_LINK = "key_magnet_link"
@@ -39,10 +39,10 @@ class TorrentDownloader @AssistedInject constructor(
     private val isDownloadActive = AtomicBoolean(true)
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        val downloadId = inputData.getString(TorrentDownloadParams.KEY_DOWNLOAD_ID) ?: ""
-        val torrentUrl = inputData.getString(TorrentDownloadParams.KEY_TORRENT_URL)
-        val magnetLink = inputData.getString(TorrentDownloadParams.KEY_MAGNET_LINK)
-        val fileName = inputData.getString(TorrentDownloadParams.KEY_FILE_NAME) ?: ""
+        val downloadId = inputData.getString(DownloadParams.KEY_DOWNLOAD_ID) ?: ""
+        val torrentUrl = inputData.getString(DownloadParams.KEY_TORRENT_URL)
+        val magnetLink = inputData.getString(DownloadParams.KEY_MAGNET_LINK)
+        val fileName = inputData.getString(DownloadParams.KEY_FILE_NAME) ?: ""
 
         Timber.d("Starting torrent download: $downloadId | $torrentUrl | $magnetLink")
 
