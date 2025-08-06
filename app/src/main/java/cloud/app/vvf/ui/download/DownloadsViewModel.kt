@@ -10,6 +10,7 @@ import cloud.app.vvf.common.models.DownloadStatus
 import cloud.app.vvf.common.models.getMediaType
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.services.downloader.DownloadManager
+import cloud.app.vvf.utils.KUniFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
+import androidx.core.net.toUri
 
 @HiltViewModel
 class DownloadsViewModel @Inject constructor(
@@ -84,10 +86,20 @@ class DownloadsViewModel @Inject constructor(
     fun pauseDownload(downloadId: String) {
         viewModelScope.launch {
             try {
+                Timber.d("DownloadsViewModel: About to pause download: $downloadId")
+                val beforePause = downloadManager.downloads.value[downloadId]
+                Timber.d("DownloadsViewModel: Status before pause: ${beforePause?.status}")
+
                 downloadManager.pauseDownload(downloadId)
-                Timber.d("Paused download: $downloadId")
+
+                // Wait a bit and check status after pause
+                kotlinx.coroutines.delay(100)
+                val afterPause = downloadManager.downloads.value[downloadId]
+                Timber.d("DownloadsViewModel: Status after pause: ${afterPause?.status}")
+
+                Timber.d("DownloadsViewModel: Paused download: $downloadId")
             } catch (e: Exception) {
-                Timber.e(e, "Failed to pause download: $downloadId")
+                Timber.e(e, "DownloadsViewModel: Failed to pause download: $downloadId")
             }
         }
     }
@@ -166,7 +178,7 @@ class DownloadsViewModel @Inject constructor(
                 setDataAndType(
                     FileProvider.getUriForFile(
                         context,
-                        "${context.packageName}.provider",
+                        "${context.packageName}.fileprovider",
                         downloadsDir
                     ),
                     "resource/folder"
@@ -197,32 +209,95 @@ class DownloadsViewModel @Inject constructor(
         }
 
         try {
-            val file = File(downloadItem.localPath!!) // Use non-null assertion since we checked above
+            // Parse the local path to get the actual file path
+            val filePath = if (downloadItem.localPath!!.startsWith("file://")) {
+                val uri = android.net.Uri.parse(downloadItem.localPath!!)
+                uri.path ?: downloadItem.localPath!!.removePrefix("file://")
+            } else {
+                downloadItem.localPath!!
+            }
+
+            val file = File(filePath)
+
             if (!file.exists()) {
-                Timber.w("Downloaded file not found: ${downloadItem.localPath}")
+                Timber.w("Downloaded file not found: $filePath")
                 return
             }
 
-            val uri = FileProvider.getUriForFile(
+            // Use FileProvider to create a content URI that can be safely shared
+            val contentUri = FileProvider.getUriForFile(
                 context,
-                "${context.packageName}.provider",
+                "${context.packageName}.fileprovider",
                 file
             )
 
-            val mimeType = when (downloadItem.mediaItem.getMediaType()) {
-                "movie", "episode", "video" -> "video/*"
-                "audio" -> "audio/*"
-                else -> "*/*"
+            // Get MIME type from file extension or media type
+            val mimeType = when {
+                file.extension.lowercase() in listOf("mp4", "mkv", "avi", "mov", "webm", "m4v") -> "video/*"
+                file.extension.lowercase() in listOf("mp3", "m4a", "wav", "flac", "ogg") -> "audio/*"
+                else -> when (downloadItem.mediaItem.getMediaType()) {
+                    "movie", "episode", "video" -> "video/*"
+                    "audio" -> "audio/*"
+                    else -> "*/*"
+                }
             }
 
             val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, mimeType)
+                setDataAndType(contentUri, mimeType)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
 
             context.startActivity(Intent.createChooser(intent, "Play with"))
+            Timber.d("Successfully launched player for: $filePath")
+            Timber.d("File size: ${file.length()} bytes, MIME type: $mimeType")
+            Timber.d("Content URI: $contentUri")
+
         } catch (e: Exception) {
             Timber.e(e, "Failed to play downloaded file: ${downloadItem.localPath}")
+
+            // Additional fallback: try using KUniFile but convert to FileProvider URI
+            try {
+                Timber.d("Attempting KUniFile fallback method...")
+
+                val uniFile = try {
+                    val uri = android.net.Uri.parse(downloadItem.localPath!!)
+                    KUniFile.fromUri(context, uri)
+                } catch (ex: Exception) {
+                    val file = File(downloadItem.localPath!!)
+                    KUniFile.fromFile(context, file)
+                }
+
+                if (uniFile != null && uniFile.exists()) {
+                    // Get the actual file if possible
+                    val actualFile = try {
+                        File(uniFile.filePath ?: throw IllegalStateException("No file path"))
+                    } catch (ex: Exception) {
+                        null
+                    }
+
+                    if (actualFile != null && actualFile.exists()) {
+                        val fallbackUri = FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.fileprovider",
+                            actualFile
+                        )
+
+                        val fallbackIntent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(fallbackUri, uniFile.type ?: "video/*")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+
+                        context.startActivity(Intent.createChooser(fallbackIntent, "Play with"))
+                        Timber.d("KUniFile fallback successful for: ${actualFile.absolutePath}")
+                    } else {
+                        Timber.w("KUniFile fallback: actual file not accessible")
+                    }
+                } else {
+                    Timber.w("KUniFile fallback: file not found or doesn't exist")
+                }
+            } catch (fallbackException: Exception) {
+                Timber.e(fallbackException, "All fallback methods failed")
+            }
         }
     }
 

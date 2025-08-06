@@ -47,6 +47,10 @@ class MediaDownloader @AssistedInject constructor(
         const val KEY_FILE_NAME = "key_file_name"
         const val KEY_QUALITY = "key_quality"
         const val KEY_DOWNLOAD_TYPE = "key_download_type"
+        // Resume parameters
+        const val KEY_RESUME_PROGRESS = "resume_progress"
+        const val KEY_RESUME_BYTES = "resume_bytes"
+        const val KEY_RESUME_FROM_PAUSE = "resume_from_pause"
     }
 
     object NotificationConstants {
@@ -139,7 +143,12 @@ class MediaDownloader @AssistedInject constructor(
         val fileName = inputData.getString(DownloadParams.KEY_FILE_NAME) ?: ""
         val downloadType = inputData.getString(DownloadParams.KEY_DOWNLOAD_TYPE) ?: "HTTP"
 
-        Timber.d("Starting download: $downloadId | $downloadUrl | $fileName | Type: $downloadType")
+        // Get resume parameters
+        val resumeProgress = inputData.getInt(DownloadParams.KEY_RESUME_PROGRESS, 0)
+        val resumeBytes = inputData.getLong(DownloadParams.KEY_RESUME_BYTES, 0L)
+        val isResuming = inputData.getBoolean(DownloadParams.KEY_RESUME_FROM_PAUSE, false)
+
+        Timber.d("Starting download: $downloadId | $downloadUrl | $fileName | Type: $downloadType | Resume: $isResuming (${resumeProgress}%, ${resumeBytes} bytes)")
 
         if (downloadId.isEmpty() || downloadUrl.isEmpty() || fileName.isEmpty()) {
             return Result.failure(workDataOf("error" to "Missing required parameters"))
@@ -151,7 +160,8 @@ class MediaDownloader @AssistedInject constructor(
         // Check notification permission and set foreground if available
         val hasNotificationPermission = checkNotificationPermission()
         if (hasNotificationPermission) {
-            setForeground(createDownloadForegroundInfo(context, fileName, "Starting download...", 0))
+            val statusText = if (isResuming) "Resuming download..." else "Starting download..."
+            setForeground(createDownloadForegroundInfo(context, fileName, statusText, resumeProgress))
         }
 
         // Route to appropriate downloader based on type
@@ -161,10 +171,10 @@ class MediaDownloader @AssistedInject constructor(
                 downloadHlsInline(downloadUrl, fileName, downloadId)
             }
             "HTTP", "HTTPS" -> {
-                downloadHttpFile(downloadUrl, fileName, downloadId, hasNotificationPermission)
+                downloadHttpFile(downloadUrl, fileName, downloadId, hasNotificationPermission, resumeBytes, isResuming)
             }
             else -> {
-                downloadHttpFile(downloadUrl, fileName, downloadId, hasNotificationPermission)
+                downloadHttpFile(downloadUrl, fileName, downloadId, hasNotificationPermission, resumeBytes, isResuming)
             }
         }
     }
@@ -173,11 +183,38 @@ class MediaDownloader @AssistedInject constructor(
         downloadUrl: String,
         fileName: String,
         downloadId: String,
-        hasNotificationPermission: Boolean
+        hasNotificationPermission: Boolean,
+        resumeBytes: Long,
+        isResuming: Boolean
     ): Result {
-        // Configure OkHttp client with progress tracking
-        val client = OkHttpClient.Builder()
-            .addNetworkInterceptor(ProgressInterceptor { downloadedBytes, totalBytes ->
+        // For resume, we need different progress calculation
+        val progressCalculator = if (isResuming && resumeBytes > 0) {
+            // Create a progress interceptor that accounts for already downloaded bytes
+            ProgressInterceptor { downloadedInSession, remainingBytes ->
+                val totalDownloaded = resumeBytes + downloadedInSession
+                val totalFileSize = resumeBytes + remainingBytes
+                val progress = if (totalFileSize > 0) {
+                    (totalDownloaded * 100 / totalFileSize).toInt()
+                } else 0
+
+                // Update WorkManager progress with correct values
+                setProgressAsync(workDataOf(
+                    "progress" to progress,
+                    "downloadedBytes" to totalDownloaded,
+                    "totalBytes" to totalFileSize,
+                    "downloadId" to downloadId
+                ))
+
+                // Update notification if permission granted
+                if (hasNotificationPermission) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        setForeground(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
+                    }
+                }
+            }
+        } else {
+            // Normal progress interceptor for fresh downloads
+            ProgressInterceptor { downloadedBytes, totalBytes ->
                 val progress = if (totalBytes > 0) {
                     (downloadedBytes * 100 / totalBytes).toInt()
                 } else 0
@@ -196,11 +233,16 @@ class MediaDownloader @AssistedInject constructor(
                         setForeground(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
                     }
                 }
-            })
+            }
+        }
+
+        // Configure OkHttp client with appropriate progress tracking
+        val client = OkHttpClient.Builder()
+            .addNetworkInterceptor(progressCalculator)
             .build()
 
         return try {
-            downloadFile(client, downloadUrl, fileName, downloadId)
+            downloadFile(client, downloadUrl, fileName, downloadId, resumeBytes, isResuming)
         } catch (e: Exception) {
             Timber.e(e, "Download failed for $downloadId")
             Result.failure(workDataOf(
@@ -234,22 +276,61 @@ class MediaDownloader @AssistedInject constructor(
         client: OkHttpClient,
         url: String,
         fileName: String,
-        downloadId: String
+        downloadId: String,
+        resumeBytes: Long = 0L,
+        isResuming: Boolean = false
     ): Result {
-        val request = Request.Builder().url(url).build()
+        // Check if work is stopped before starting
+        if (isStopped) {
+            Timber.d("Download $downloadId: Work is stopped, returning early")
+            return Result.failure(workDataOf(
+                "error" to "Download was stopped",
+                "downloadId" to downloadId
+            ))
+        }
+
+        val requestBuilder = Request.Builder().url(url)
+
+        // Add Range header for resuming downloads
+        if (isResuming && resumeBytes > 0) {
+            requestBuilder.addHeader("Range", "bytes=$resumeBytes-")
+            Timber.d("Download $downloadId: Resuming from byte $resumeBytes")
+        }
+
+        val request = requestBuilder.build()
         val response = client.newCall(request).execute()
 
+        // Check if work is stopped after HTTP request
+        if (isStopped) {
+            response.close()
+            Timber.d("Download $downloadId: Work stopped after HTTP request")
+            return Result.failure(workDataOf(
+                "error" to "Download was stopped",
+                "downloadId" to downloadId
+            ))
+        }
+
+        // For resume requests, expect 206 Partial Content or 200 OK
+        // Some servers might return 200 OK even for range requests
         if (!response.isSuccessful) {
+            if (isResuming && response.code == 416) {
+                // Range not satisfiable - file might be already complete
+                Timber.w("Download $downloadId: Range not satisfiable, file might be complete")
+                return Result.success(workDataOf("downloadId" to downloadId))
+            }
             return Result.failure(workDataOf(
                 "error" to "HTTP ${response.code}",
                 "downloadId" to downloadId
             ))
         }
 
-        val responseBody = response.body ?: return Result.failure(workDataOf(
-            "error" to "Empty response body",
-            "downloadId" to downloadId
-        ))
+        val responseBody = response.body
+        if (responseBody == null) {
+            return Result.failure(workDataOf(
+                "error" to "Empty response body",
+                "downloadId" to downloadId
+            ))
+        }
 
         // Determine file extension based on media type
         val fileExtension = getFileExtension(fileName, response)
@@ -257,57 +338,203 @@ class MediaDownloader @AssistedInject constructor(
 
         // Create downloads directory
         val downloadsDir = getDownloadsDirectory()
-        val mediaFile = responseBody.contentType()?.toString()
-            ?.let { downloadsDir.createFile(fullFileName, it) }
-            ?: throw IOException("Failed to create media file")
 
-        val totalBytes = responseBody.contentLength()
-        Timber.d("Download $downloadId: Starting file write - Total bytes: $totalBytes")
+        // Handle file creation/append for resume
+        val mediaFile = if (isResuming && resumeBytes > 0) {
+            // Try to find existing file for resume
+            try {
+                val existingFile = downloadsDir.findFile(fullFileName)
+                if (existingFile != null) {
+                    val existingSize = existingFile.length()
+                    Timber.d("Download $downloadId: Found existing file, size: $existingSize, expected resume from: $resumeBytes")
 
-        // Download the file using the progress-tracked response body
-        // The ProgressInterceptor will handle progress updates automatically
-        var totalBytesWritten = 0L
-        try {
-            responseBody.byteStream().use { input ->
-                mediaFile.openOutputStream().use { output ->
-                    val buffer = ByteArray(8 * 1024)
-                    var bytesRead: Int
-                    var iterationCount = 0
-
-                    while (input.read(buffer).also { bytesRead = it } != -1) {
-                        output.write(buffer, 0, bytesRead)
-                        totalBytesWritten += bytesRead
-                        iterationCount++
-
-                        // Log every 1000 iterations to track progress
-                        if (iterationCount % 1000 == 0) {
-                            val progressPercent = if (totalBytes > 0) (totalBytesWritten * 100 / totalBytes).toInt() else 0
-                            Timber.d("Download $downloadId: File write progress - $progressPercent% ($totalBytesWritten/$totalBytes bytes) - Iteration: $iterationCount")
+                    if (existingSize >= resumeBytes) {
+                        // File exists and has expected size or more
+                        if (existingSize > resumeBytes) {
+                            Timber.w("Download $downloadId: Existing file is larger than expected resume point, truncating to $resumeBytes")
+                            // Truncate file to resume point if it's larger
+                            truncateFile(existingFile, resumeBytes)
                         }
+                        existingFile
+                    } else {
+                        Timber.w("Download $downloadId: Existing file is smaller than resume point, starting fresh")
+                        // Delete corrupted file and start fresh
+                        existingFile.delete()
+                        responseBody.contentType()?.toString()
+                            ?.let { downloadsDir.createFile(fullFileName, it) }
+                            ?: throw IOException("Failed to create media file")
                     }
-                    output.flush()
-                    Timber.d("Download $downloadId: File write completed - Total written: $totalBytesWritten bytes")
+                } else {
+                    Timber.w("Download $downloadId: No existing file found for resume, starting fresh")
+                    responseBody.contentType()?.toString()
+                        ?.let { downloadsDir.createFile(fullFileName, it) }
+                        ?: throw IOException("Failed to create media file")
                 }
+            } catch (e: Exception) {
+                Timber.w(e, "Download $downloadId: Error accessing existing file, creating new one")
+                responseBody.contentType()?.toString()
+                    ?.let { downloadsDir.createFile(fullFileName, it) }
+                    ?: throw IOException("Failed to create media file")
             }
-        } catch (e: Exception) {
-            Timber.e(e, "Download $downloadId: File write failed at $totalBytesWritten/$totalBytes bytes")
-            throw e
+        } else {
+            // Create new file for fresh download
+            responseBody.contentType()?.toString()
+                ?.let { downloadsDir.createFile(fullFileName, it) }
+                ?: throw IOException("Failed to create media file")
         }
 
-        // Skip final progress update to avoid potential blocking
-        // Let DownloadManager handle 100% when receiving SUCCEEDED state
-        Timber.d("Download $downloadId: Skipping final progress update to avoid blocking")
+        // Calculate total file size
+        val contentLength = responseBody.contentLength()
+        val totalBytes = if (isResuming && resumeBytes > 0 && response.code == 206) {
+            // For partial content (206), total size = resume point + remaining content
+            resumeBytes + contentLength
+        } else if (response.code == 200) {
+            // For full content (200), total size = content length
+            contentLength
+        } else {
+            contentLength
+        }
 
-        Timber.d("Download $downloadId: About to return Result.success()")
-        val result = Result.success(workDataOf(
-            "downloadId" to downloadId,
-            "localPath" to mediaFile.uri.toString(),
-            "fileName" to fullFileName,
-            "fileSize" to totalBytes
-        ))
-        Timber.d("Download $downloadId: Result.success() created, returning...")
+        Timber.d("Download $downloadId: Starting file write - Response code: ${response.code}, Content length: $contentLength, Total bytes: $totalBytes, Resume from: $resumeBytes")
 
-        return result
+        // Download the remaining content with cancellation checks
+        var totalBytesWritten = 0L
+        var shouldAppend = false
+        try {
+            responseBody.byteStream().use { input ->
+                // For resume, we need to append to existing file
+                shouldAppend = isResuming && resumeBytes > 0 && response.code == 206
+
+                if (shouldAppend) {
+                    mediaFile.openOutputStream(true).use { output -> // true for append mode
+                        val buffer = ByteArray(8 * 1024)
+                        var bytesRead: Int
+                        var iterationCount = 0
+
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            // Check for cancellation every few iterations to be responsive
+                            if (iterationCount % 100 == 0 && isStopped) {
+                                Timber.d("Download $downloadId: Work stopped during file write (resume mode)")
+                                return Result.failure(workDataOf(
+                                    "error" to "Download was stopped",
+                                    "downloadId" to downloadId
+                                ))
+                            }
+
+                            output.write(buffer, 0, bytesRead)
+                            totalBytesWritten += bytesRead
+                            iterationCount++
+
+                            // Update progress more frequently for better UX
+                            if (iterationCount % 50 == 0) {
+                                val actualTotal = resumeBytes + totalBytesWritten
+                                val progressPercent = if (totalBytes > 0) (actualTotal * 100 / totalBytes).toInt() else 0
+
+                                // Update WorkManager progress
+                                setProgressAsync(workDataOf(
+                                    "progress" to progressPercent,
+                                    "downloadedBytes" to actualTotal,
+                                    "totalBytes" to totalBytes,
+                                    "downloadId" to downloadId
+                                ))
+                            }
+                        }
+                        output.flush()
+                    }
+                } else {
+                    // Fresh download or server doesn't support range requests
+                    mediaFile.openOutputStream().use { output ->
+                        val buffer = ByteArray(8 * 1024)
+                        var bytesRead: Int
+                        var iterationCount = 0
+
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            // Check for cancellation every few iterations to be responsive
+                            if (iterationCount % 100 == 0 && isStopped) {
+                                Timber.d("Download $downloadId: Work stopped during file write (normal mode)")
+                                return Result.failure(workDataOf(
+                                    "error" to "Download was stopped",
+                                    "downloadId" to downloadId
+                                ))
+                            }
+
+                            output.write(buffer, 0, bytesRead)
+                            totalBytesWritten += bytesRead
+                            iterationCount++
+
+                            // Update progress more frequently for better UX
+                            if (iterationCount % 50 == 0) {
+                                val progressPercent = if (totalBytes > 0) (totalBytesWritten * 100 / totalBytes).toInt() else 0
+
+                                // Update WorkManager progress
+                                setProgressAsync(workDataOf(
+                                    "progress" to progressPercent,
+                                    "downloadedBytes" to totalBytesWritten,
+                                    "totalBytes" to totalBytes,
+                                    "downloadId" to downloadId
+                                ))
+                            }
+                        }
+                        output.flush()
+                    }
+                }
+            }
+
+            val finalSize = mediaFile.length()
+            val expectedSize = if (shouldAppend) resumeBytes + totalBytesWritten else totalBytesWritten
+
+            Timber.d("Download $downloadId: File write completed - Final size: $finalSize, Expected: $expectedSize, Written: $totalBytesWritten")
+
+            // Final progress update
+            setProgressAsync(workDataOf(
+                "progress" to 100,
+                "downloadedBytes" to finalSize,
+                "totalBytes" to finalSize,
+                "downloadId" to downloadId
+            ))
+
+            return Result.success(workDataOf(
+                "downloadId" to downloadId,
+                "filePath" to mediaFile.uri.toString(),
+                "fileSize" to finalSize
+            ))
+
+        } catch (e: Exception) {
+            Timber.e(e, "Download $downloadId: Error during file write")
+            return Result.failure(workDataOf(
+                "error" to (e.message ?: "File write error"),
+                "downloadId" to downloadId
+            ))
+        } finally {
+            responseBody.close()
+        }
+    }
+
+    /**
+     * Truncate file to specified size
+     */
+    private fun truncateFile(file: cloud.app.vvf.utils.KUniFile, targetSize: Long) {
+        try {
+            // For KUniFile, we need to read the content up to targetSize and rewrite
+            val tempBuffer = ByteArray(targetSize.toInt())
+            var bytesRead = 0
+
+            file.openInputStream().use { input ->
+                bytesRead = input.read(tempBuffer, 0, targetSize.toInt())
+            }
+
+            if (bytesRead > 0) {
+                file.openOutputStream().use { output ->
+                    output.write(tempBuffer, 0, bytesRead)
+                    output.flush()
+                }
+            }
+
+            Timber.d("Truncated file to $targetSize bytes")
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to truncate file")
+            throw e
+        }
     }
 
     private fun setupNotificationChannel() {

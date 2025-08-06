@@ -228,10 +228,10 @@ class DownloadsAdapter(
         override fun getChangePayload(oldItem: DownloadItem, newItem: DownloadItem): Any? {
             val payload = mutableListOf<String>()
 
-            // Only add status payload if status actually changed
-            if (oldItem.status != newItem.status) {
-                payload.add(PAYLOAD_STATUS)
-            }
+//            // Only add status payload if status actually changed
+//            if (oldItem.status != newItem.status) {
+//                payload.add(PAYLOAD_STATUS)
+//            }
 
             // Add progress payload if progress changed
             if (oldItem.progress != newItem.progress) {

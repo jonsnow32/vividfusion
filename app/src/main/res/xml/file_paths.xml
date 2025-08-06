@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
   <cache-path name="cache" path="." />
+  <!-- App's external files directory for downloads -->
+  <external-files-path name="external_files" path="." />
+  <!-- Downloads subdirectory specifically -->
+  <external-files-path name="downloads" path="Download" />
+  <!-- Public external storage downloads (fallback) -->
+  <external-path name="external_downloads" path="Download" />
+  <!-- Internal files directory (additional fallback) -->
+  <files-path name="files" path="." />
 </paths>

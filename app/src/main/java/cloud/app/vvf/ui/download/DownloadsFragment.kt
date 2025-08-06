@@ -11,8 +11,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.databinding.FragmentDownloadsBinding
+import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class DownloadsFragment : Fragment() {
@@ -39,6 +41,7 @@ class DownloadsFragment : Fragment() {
       binding.appBarLayout.setPadding(0, it.top, 0, 0)
       binding.rvDownloads.setPadding(0, 0, 0, it.bottom)
     }
+    setupTransition(view)
     setupRecyclerView()
     setupClickListeners()
     observeDownloads()
@@ -80,9 +83,14 @@ class DownloadsFragment : Fragment() {
           showEmptyState()
         } else {
           showDownloadsList()
-          // Submit list directly without forcing new instance
-          // DiffUtil will handle the comparison automatically
-          downloadsAdapter.submitList(downloads.sortedByDescending { it.createdAt })
+          // Force new list creation to ensure DiffUtil detects changes
+          val sortedList = downloads.sortedByDescending { it.createdAt }.toList()
+          downloadsAdapter.submitList(sortedList)
+
+          // Log for debugging
+          sortedList.forEach { download ->
+            Timber.d("DownloadsFragment: Submitting download ${download.id} with status ${download.status}")
+          }
         }
 
         // Refresh storage info when downloads change

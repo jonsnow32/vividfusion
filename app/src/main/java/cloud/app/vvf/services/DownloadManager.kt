@@ -9,114 +9,77 @@ import androidx.work.workDataOf
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.DownloadItem
 import cloud.app.vvf.common.models.DownloadStatus
-import cloud.app.vvf.common.models.isDownloadable
 import cloud.app.vvf.datastore.app.AppDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import timber.log.Timber
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.abs
 
 @Singleton
 class DownloadManager @Inject constructor(
     @ApplicationContext private val context: Context,
     private val workManager: WorkManager,
-    private val appDataStore: MutableStateFlow<AppDataStore> // Inject AppDataStore để sync
+    private val appDataStore: MutableStateFlow<AppDataStore>
 ) {
-    private val _downloads = MutableStateFlow<Map<String, DownloadItem>>(emptyMap())
-    val downloads: StateFlow<Map<String, DownloadItem>> = _downloads.asStateFlow()
 
-    private val _activeDownloads = MutableStateFlow<Set<String>>(emptySet())
-    val activeDownloads: StateFlow<Set<String>> = _activeDownloads.asStateFlow()
+    // Central controller for download state management
+    private val downloadController = DownloadController()
 
-    // Track active work IDs to prevent duplicates
-    private val activeWorkIds = mutableSetOf<String>()
+    // Expose downloads from controller
+    val downloads: StateFlow<Map<String, DownloadItem>> = downloadController.downloads
+
+    // Active downloads computed from controller
+    val activeDownloads: StateFlow<Set<String>> = downloadController.downloads
+        .map { downloads ->
+            downloads.values.filter { it.isActive() }.map { it.id }.toSet()
+        }
+        .stateIn(
+            scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default),
+            started = kotlinx.coroutines.flow.SharingStarted.Eagerly,
+            initialValue = emptySet()
+        )
 
     init {
         // Clean up old work first
         cleanupOldWork()
+        // Load existing downloads and initialize controller
+        loadDownloadsFromDataStore()
         // Monitor work manager for download progress updates
         observeWorkManagerUpdates()
-        // Load existing downloads from AppDataStore on startup
-        loadDownloadsFromDataStore()
     }
 
     /**
      * Clean up old/cancelled work to prevent accumulation
      */
     private fun cleanupOldWork() {
-        // Cancel all previous download work to start fresh
         workManager.cancelAllWorkByTag(DOWNLOAD_WORK_TAG)
         Timber.d("Cleaned up all previous download work")
     }
 
     /**
-     * Load downloads from AppDataStore to sync with persistent storage
+     * Load downloads from AppDataStore and initialize controller
      */
     private fun loadDownloadsFromDataStore() {
         val existingDownloads = appDataStore.value.getAllDownloads() ?: emptyList()
-        val downloadsMap = existingDownloads.associateBy { it.id }
-        _downloads.value = downloadsMap
-
-        // Update active downloads based on current status
-        val activeIds = existingDownloads
-            .filter { it.isActive() }
-            .map { it.id }
-            .toSet()
-        _activeDownloads.value = activeIds
-
+        downloadController.initializeFromPersistedData(existingDownloads)
         Timber.d("Loaded ${existingDownloads.size} downloads from AppDataStore")
     }
 
     /**
      * Start downloading media content with automatic type detection
-     */    fun startDownload(
-      mediaItem: AVPMediaItem,
-      downloadUrl: String,
-
+     */
+    fun startDownload(
+        mediaItem: AVPMediaItem,
+        downloadUrl: String,
         quality: String = "default"
     ): String {
         val downloadType = DownloadType.fromUrl(downloadUrl)
         return startDownloadWithType(mediaItem, downloadUrl, downloadType, quality)
-    }
-
-    /**
-     * Start downloading HLS stream
-     */
-    fun startHlsDownload(
-        mediaItem: AVPMediaItem,
-        hlsUrl: String,
-        quality: String = "default"
-    ): String {
-        return startDownloadWithType(mediaItem, hlsUrl, DownloadType.HLS, quality)
-    }
-
-    /**
-     * Start downloading from torrent file URL
-     */
-    fun startTorrentDownload(
-        mediaItem: AVPMediaItem,
-        torrentUrl: String,
-        quality: String = "default"
-    ): String {
-        return startDownloadWithType(mediaItem, torrentUrl, DownloadType.TORRENT, quality)
-    }
-
-    /**
-     * Start downloading from magnet link
-     */
-    fun startMagnetDownload(
-        mediaItem: AVPMediaItem,
-        magnetLink: String,
-        quality: String = "default"
-    ): String {
-        return startDownloadWithType(mediaItem, magnetLink, DownloadType.MAGNET, quality)
     }
 
     /**
@@ -129,17 +92,14 @@ class DownloadManager @Inject constructor(
         quality: String = "default"
     ): String {
         val downloadId = generateDownloadId(mediaItem, downloadUrl)
+        val fileName = generateFileName(mediaItem, quality)
 
         // Check if download already exists
-        val existingDownload = _downloads.value[downloadId]
+        val existingDownload = downloads.value[downloadId]
         if (existingDownload != null) {
             when (existingDownload.status) {
-                DownloadStatus.DOWNLOADING -> {
+                DownloadStatus.DOWNLOADING, DownloadStatus.PENDING -> {
                     Timber.d("Download already in progress: $downloadId")
-                    return downloadId
-                }
-                DownloadStatus.PENDING -> {
-                    Timber.d("Download already queued: $downloadId")
                     return downloadId
                 }
                 DownloadStatus.COMPLETED -> {
@@ -158,8 +118,7 @@ class DownloadManager @Inject constructor(
             }
         }
 
-        val fileName = generateFileName(mediaItem, quality)
-
+        // Create new download item
         val downloadItem = DownloadItem(
             id = downloadId,
             mediaItem = mediaItem,
@@ -168,227 +127,133 @@ class DownloadManager @Inject constructor(
             status = DownloadStatus.PENDING
         )
 
-        // Add to downloads map
-        updateDownloadItem(downloadItem)
+        // Add to controller and persist
+        downloadController.addDownloadItem(downloadItem)
+        appDataStore.value.saveDownload(downloadItem)
 
-        // Create appropriate work request based on download type
-        val workRequest = when (downloadType) {
-            DownloadType.HLS -> {
-                OneTimeWorkRequestBuilder<HlsDownloader>()
-                    .setInputData(workDataOf(
-                        HlsDownloader.HlsDownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                        HlsDownloader.HlsDownloadParams.KEY_HLS_URL to downloadUrl,
-                        HlsDownloader.HlsDownloadParams.KEY_FILE_NAME to fileName,
-                        HlsDownloader.HlsDownloadParams.KEY_QUALITY to quality
-                    ))
-                    .addTag(DOWNLOAD_WORK_TAG)
-                    .addTag(downloadId)
-                    .addTag("HLS")
-                    .build()
-            }
-            DownloadType.TORRENT -> {
-                OneTimeWorkRequestBuilder<TorrentDownloader>()
-                    .setInputData(workDataOf(
-                        TorrentDownloader.TorrentDownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                        TorrentDownloader.TorrentDownloadParams.KEY_TORRENT_URL to downloadUrl,
-                        TorrentDownloader.TorrentDownloadParams.KEY_FILE_NAME to fileName
-                    ))
-                    .addTag(DOWNLOAD_WORK_TAG)
-                    .addTag(downloadId)
-                    .addTag("TORRENT")
-                    .build()
-            }
-            DownloadType.MAGNET -> {
-                OneTimeWorkRequestBuilder<TorrentDownloader>()
-                    .setInputData(workDataOf(
-                        TorrentDownloader.TorrentDownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                        TorrentDownloader.TorrentDownloadParams.KEY_MAGNET_LINK to downloadUrl,
-                        TorrentDownloader.TorrentDownloadParams.KEY_FILE_NAME to fileName
-                    ))
-                    .addTag(DOWNLOAD_WORK_TAG)
-                    .addTag(downloadId)
-                    .addTag("MAGNET")
-                    .build()
-            }
-            DownloadType.HTTP -> {
-                OneTimeWorkRequestBuilder<MediaDownloader>()
-                    .setInputData(workDataOf(
-                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_URL to downloadUrl,
-                        MediaDownloader.DownloadParams.KEY_FILE_NAME to fileName,
-                        MediaDownloader.DownloadParams.KEY_QUALITY to quality,
-                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_TYPE to "HTTP"
-                    ))
-                    .addTag(DOWNLOAD_WORK_TAG)
-                    .addTag(downloadId)
-                    .addTag("HTTP")
-                    .build()
-            }
+        // Execute start command
+        val command = DownloadCommand.Start(downloadId, downloadUrl, fileName)
+        if (downloadController.executeCommand(command)) {
+            // Create and enqueue WorkManager request
+            enqueueWorkRequest(downloadId, downloadType, downloadUrl, fileName, quality)
+            Timber.d("Started ${downloadType.name} download: $downloadId")
+        } else {
+            Timber.e("Failed to start download: $downloadId")
         }
 
-        // Enqueue work with unique name to prevent duplicates
-        val uniqueWorkName = "download_$downloadId"
-
-        // Cancel any existing work for this download first
-        workManager.cancelUniqueWork(uniqueWorkName)
-
-        // Enqueue new work with REPLACE policy to ensure only one instance
-        workManager.enqueueUniqueWork(
-            uniqueWorkName,
-            ExistingWorkPolicy.REPLACE, // Replace any existing work
-            workRequest
-        )
-
-        _activeDownloads.value = _activeDownloads.value + downloadId
-        activeWorkIds.add(downloadId)
-
-        Timber.d("Started ${downloadType.name} download for ${mediaItem.title} with ID: $downloadId, Unique work name: $uniqueWorkName")
         return downloadId
     }
 
     /**
-     * Cancel an active download
-     */
-    fun cancelDownload(downloadId: String) {
-        Timber.d("Cancelling download: $downloadId - Reason: User requested")
-        workManager.cancelUniqueWork("download_$downloadId")
-
-        val currentItem = _downloads.value[downloadId]
-        if (currentItem != null) {
-            Timber.d("Download $downloadId status before cancel: ${currentItem.status}, progress: ${currentItem.progress}%")
-            updateDownloadItem(currentItem.copy(
-                status = DownloadStatus.CANCELLED,
-                updatedAt = System.currentTimeMillis()
-            ))
-        }
-
-        _activeDownloads.value = _activeDownloads.value - downloadId
-        activeWorkIds.remove(downloadId)
-        Timber.d("Cancelled download: $downloadId")
-    }
-
-    /**
-     * Pause a download (implementation depends on underlying downloader capabilities)
+     * Pause a download
      */
     fun pauseDownload(downloadId: String) {
-        // For now, we'll cancel and mark as paused
-        // In a more sophisticated implementation, you'd implement resumable downloads
-        workManager.cancelUniqueWork("download_$downloadId")
+        Timber.d("DownloadManager.pauseDownload called for: $downloadId")
 
-        val currentItem = _downloads.value[downloadId]
-        if (currentItem != null) {
-            updateDownloadItem(currentItem.copy(
-                status = DownloadStatus.PAUSED,
-                updatedAt = System.currentTimeMillis()
-            ))
+        if (!downloadController.canPause(downloadId)) {
+            Timber.w("DownloadManager: Cannot pause download: $downloadId")
+            return
         }
 
-        _activeDownloads.value = _activeDownloads.value - downloadId
-        activeWorkIds.remove(downloadId)
-        Timber.d("Paused download: $downloadId")
+        Timber.d("DownloadManager: About to execute Pause command for: $downloadId")
+        val command = DownloadCommand.Pause(downloadId)
+        if (downloadController.executeCommand(command)) {
+            Timber.d("DownloadManager: Pause command executed successfully for: $downloadId")
+            // Cancel WorkManager task
+            workManager.cancelUniqueWork("download_$downloadId")
+            Timber.d("DownloadManager: Cancelled WorkManager task for: $downloadId")
+        } else {
+            Timber.e("DownloadManager: Failed to execute Pause command for: $downloadId")
+        }
     }
 
     /**
      * Resume a paused download
      */
     fun resumeDownload(downloadId: String) {
-        val downloadItem = _downloads.value[downloadId] ?: return
+        if (!downloadController.canResume(downloadId)) {
+            Timber.w("Cannot resume download: $downloadId")
+            return
+        }
 
-        if (downloadItem.status == DownloadStatus.PAUSED) {
-            // Update status to pending first
-            updateDownloadItem(downloadItem.copy(
-                status = DownloadStatus.PENDING,
-                updatedAt = System.currentTimeMillis()
-            ))
+        val downloadItem = downloads.value[downloadId] ?: return
 
-            // Resume with existing download item data using the correct downloader classes
-            val downloadType = DownloadType.fromUrl(downloadItem.url)
-            val workRequest = when (downloadType) {
-                DownloadType.HLS -> {
-                    OneTimeWorkRequestBuilder<HlsDownloader>()
-                        .setInputData(workDataOf(
-                            HlsDownloader.HlsDownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                            HlsDownloader.HlsDownloadParams.KEY_HLS_URL to downloadItem.url,
-                            HlsDownloader.HlsDownloadParams.KEY_FILE_NAME to downloadItem.fileName,
-                            HlsDownloader.HlsDownloadParams.KEY_QUALITY to "default"
-                        ))
-                        .addTag(DOWNLOAD_WORK_TAG)
-                        .addTag(downloadId)
-                        .addTag("HLS")
-                        .build()
-                }
+        // Calculate actual downloaded bytes from file if it exists
+        val actualDownloadedBytes = getActualDownloadedBytes(downloadItem.fileName)
 
-                DownloadType.TORRENT -> {
-                    OneTimeWorkRequestBuilder<TorrentDownloader>()
-                        .setInputData(workDataOf(
-                            TorrentDownloader.TorrentDownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                            TorrentDownloader.TorrentDownloadParams.KEY_TORRENT_URL to downloadItem.url,
-                            TorrentDownloader.TorrentDownloadParams.KEY_FILE_NAME to downloadItem.fileName
-                        ))
-                        .addTag(DOWNLOAD_WORK_TAG)
-                        .addTag(downloadId)
-                        .addTag("TORRENT")
-                        .build()
-                }
-
-                DownloadType.MAGNET -> {
-                    OneTimeWorkRequestBuilder<TorrentDownloader>()
-                        .setInputData(workDataOf(
-                            TorrentDownloader.TorrentDownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                            TorrentDownloader.TorrentDownloadParams.KEY_MAGNET_LINK to downloadItem.url,
-                            TorrentDownloader.TorrentDownloadParams.KEY_FILE_NAME to downloadItem.fileName
-                        ))
-                        .addTag(DOWNLOAD_WORK_TAG)
-                        .addTag(downloadId)
-                        .addTag("MAGNET")
-                        .build()
-                }
-
-                DownloadType.HTTP -> {
-                    OneTimeWorkRequestBuilder<MediaDownloader>()
-                        .setInputData(workDataOf(
-                            MediaDownloader.DownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                            MediaDownloader.DownloadParams.KEY_DOWNLOAD_URL to downloadItem.url,
-                            MediaDownloader.DownloadParams.KEY_FILE_NAME to downloadItem.fileName,
-                            MediaDownloader.DownloadParams.KEY_QUALITY to "default",
-                            MediaDownloader.DownloadParams.KEY_DOWNLOAD_TYPE to "HTTP"
-                        ))
-                        .addTag(DOWNLOAD_WORK_TAG)
-                        .addTag(downloadId)
-                        .addTag("HTTP")
-                        .build()
-                }
-            }
-
-            // Enqueue work to resume download
-            workManager.enqueueUniqueWork(
-                "download_$downloadId",
-                ExistingWorkPolicy.REPLACE, // Replace existing work
-                workRequest
+        // Update download item with actual file size if different
+        if (actualDownloadedBytes != downloadItem.downloadedBytes && actualDownloadedBytes > 0) {
+            val updatedItem = downloadItem.copy(
+                downloadedBytes = actualDownloadedBytes,
+                progress = if (downloadItem.fileSize > 0) {
+                    ((actualDownloadedBytes * 100) / downloadItem.fileSize).toInt()
+                } else downloadItem.progress
             )
+            // Save updated item to datastore - the controller will sync on resume
+            appDataStore.value.saveDownload(updatedItem)
+            Timber.d("Updated download $downloadId with actual downloaded bytes: $actualDownloadedBytes")
+        }
 
-            _activeDownloads.value = _activeDownloads.value + downloadId
-            activeWorkIds.add(downloadId)
-            Timber.d("Resumed download: $downloadId")
+        val command = DownloadCommand.Resume(downloadId)
+
+        if (downloadController.executeCommand(command)) {
+            // Re-enqueue work request with resume parameters
+            val downloadType = DownloadType.fromUrl(downloadItem.url)
+            val finalDownloadedBytes = if (actualDownloadedBytes > 0) actualDownloadedBytes else downloadItem.downloadedBytes
+
+            enqueueWorkRequest(
+                downloadId = downloadId,
+                downloadType = downloadType,
+                downloadUrl = downloadItem.url,
+                fileName = downloadItem.fileName,
+                quality = "default",
+                resumeBytes = finalDownloadedBytes,
+                resumeProgress = downloadItem.progress,
+                isResuming = true
+            )
+            Timber.d("Resumed download: $downloadId from ${finalDownloadedBytes} bytes (${downloadItem.progress}%)")
         }
     }
 
     /**
-     * Retry a failed download
+     * Get actual downloaded bytes from file system
      */
-    fun retryDownload(downloadId: String) {
-        val downloadItem = _downloads.value[downloadId] ?: return
+    private fun getActualDownloadedBytes(fileName: String): Long {
+        return try {
+            val downloadsDir = getDownloadsDirectory()
+            val file = downloadsDir.findFile(fileName)
+            file?.length() ?: 0L
+        } catch (e: Exception) {
+            Timber.w(e, "Failed to get actual downloaded bytes for: $fileName")
+            0L
+        }
+    }
 
-        if (downloadItem.canRetry()) {
-            // Reset status and restart
-            updateDownloadItem(downloadItem.copy(
-                status = DownloadStatus.PENDING,
-                progress = 0,
-                downloadedBytes = 0,
-                updatedAt = System.currentTimeMillis()
-            ))
+    /**
+     * Get downloads directory
+     */
+    private fun getDownloadsDirectory(): cloud.app.vvf.utils.KUniFile {
+        return try {
+            val downloadsFolder = java.io.File(context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS), "VividFusion")
+            if (!downloadsFolder.exists()) {
+                downloadsFolder.mkdirs()
+            }
+            cloud.app.vvf.utils.KUniFile.fromFile(context, downloadsFolder)
+                ?: throw Exception("Failed to create KUniFile")
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to get downloads directory")
+            throw e
+        }
+    }
 
-            startDownload(downloadItem.mediaItem, downloadItem.url)
+    /**
+     * Cancel an active download
+     */
+    fun cancelDownload(downloadId: String) {
+        val command = DownloadCommand.Cancel(downloadId)
+        if (downloadController.executeCommand(command)) {
+            workManager.cancelUniqueWork("download_$downloadId")
+            Timber.d("Cancelled download: $downloadId")
         }
     }
 
@@ -396,50 +261,36 @@ class DownloadManager @Inject constructor(
      * Remove a download from the list
      */
     fun removeDownload(downloadId: String) {
-        Timber.d("Removing download: $downloadId - Starting cleanup process")
-
-        // Cancel the WorkManager task first
-        val uniqueWorkName = "download_$downloadId"
-        workManager.cancelUniqueWork(uniqueWorkName)
-
-        // Also cancel by tag as backup
-        workManager.cancelAllWorkByTag(downloadId)
-
-        // Update download status to cancelled before removing
-        val currentItem = _downloads.value[downloadId]
-        if (currentItem != null) {
-            Timber.d("Download $downloadId status before removal: ${currentItem.status}, progress: ${currentItem.progress}%")
-            updateDownloadItem(currentItem.copy(
-                status = DownloadStatus.CANCELLED,
-                updatedAt = System.currentTimeMillis()
-            ))
+        val command = DownloadCommand.Remove(downloadId)
+        if (downloadController.executeCommand(command)) {
+            workManager.cancelUniqueWork("download_$downloadId")
+            appDataStore.value.removeDownload(downloadId)
+            downloadController.removeDownload(downloadId)
+            Timber.d("Removed download: $downloadId")
         }
-
-        // Remove from tracking sets
-        _activeDownloads.value = _activeDownloads.value - downloadId
-        activeWorkIds.remove(downloadId)
-
-        // Clean up caches
-        lastUpdateTimes.remove(downloadId)
-        cachedProgressData.remove(downloadId)
-
-        // Remove from in-memory storage
-        val currentDownloads = _downloads.value.toMutableMap()
-        currentDownloads.remove(downloadId)
-        _downloads.value = currentDownloads
-
-        // Remove from persistent storage (AppDataStore)
-        appDataStore.value.removeDownload(downloadId)
-
-        Timber.d("Removed download: $downloadId - Cancelled work: $uniqueWorkName, cleaned up all references")
     }
 
     /**
-     * Get download progress as a flow
+     * Retry a failed download
+     */
+    fun retryDownload(downloadId: String) {
+        val downloadItem = downloads.value[downloadId] ?: return
+
+        if (downloadItem.status == DownloadStatus.FAILED || downloadItem.status == DownloadStatus.CANCELLED) {
+            // Start a new download for retry
+            startDownload(downloadItem.mediaItem, downloadItem.url)
+            Timber.d("Retrying download: $downloadId")
+        } else {
+            Timber.w("Cannot retry download $downloadId: current status is ${downloadItem.status}")
+        }
+    }
+
+    /**
+     * Get download progress as a flow for a specific download
      */
     fun getDownloadProgress(downloadId: String): Flow<Int> {
         return downloads.map { downloadMap ->
-            downloadMap[downloadId]?.getProgressPercentage() ?: 0
+            downloadMap[downloadId]?.progress ?: 0
         }
     }
 
@@ -447,7 +298,7 @@ class DownloadManager @Inject constructor(
      * Get all downloads for a specific media item
      */
     fun getDownloadsForMediaItem(mediaItem: AVPMediaItem): List<DownloadItem> {
-        return _downloads.value.values.filter {
+        return downloads.value.values.filter {
             it.mediaItem.id == mediaItem.id
         }
     }
@@ -456,7 +307,7 @@ class DownloadManager @Inject constructor(
      * Check if a media item is currently being downloaded
      */
     fun isDownloading(mediaItem: AVPMediaItem): Boolean {
-        return _downloads.value.values.any {
+        return downloads.value.values.any {
             it.mediaItem.id == mediaItem.id && it.isActive()
         }
     }
@@ -465,281 +316,111 @@ class DownloadManager @Inject constructor(
      * Check if a media item has been downloaded
      */
     fun isDownloaded(mediaItem: AVPMediaItem): Boolean {
-        return _downloads.value.values.any {
-            it.mediaItem.id == mediaItem.id && it.isCompleted()
+        return downloads.value.values.any {
+            it.mediaItem.id == mediaItem.id && it.status == DownloadStatus.COMPLETED
         }
-    }
-
-    private fun observeWorkManagerUpdates() {
-        // Observe work info changes for download updates with better filtering
-        Timber.d("Setting up WorkManager observer for tag: $DOWNLOAD_WORK_TAG")
-        workManager.getWorkInfosByTagLiveData(DOWNLOAD_WORK_TAG).observeForever { workInfos ->
-            val filteredWorkInfos = workInfos?.filter { workInfo ->
-                // Only process work that's currently active or relevant
-                val downloadIdFromProgress = workInfo.progress.getString("downloadId")
-
-                // Use the same improved downloadId extraction logic as updateDownloadFromWorkInfo
-                val downloadIdFromTags = workInfo.tags.find { tag ->
-                    tag != DOWNLOAD_WORK_TAG && // Exclude main work tag
-                    !tag.matches(Regex("(HLS|TORRENT|MAGNET|HTTP)")) && // Exclude download type tags
-                    !tag.contains("cloud.app.vvf") && // Exclude class names
-                    !tag.contains(".") && // Exclude any other class/package names
-                    tag.isNotEmpty() && // Ensure tag is not empty
-                    tag.length > 10 // Download IDs should be reasonably long
-                }
-
-                val downloadId = downloadIdFromProgress ?: downloadIdFromTags
-
-                // Filter conditions:
-                // 1. Work must have a valid downloadId
-                // 2. Include all relevant states (RUNNING, ENQUEUED, SUCCEEDED, FAILED, CANCELLED)
-                // 3. Either the work is in a relevant state OR we have this download in our tracking
-                downloadId != null && (
-                    workInfo.state in listOf(
-                        WorkInfo.State.RUNNING,
-                        WorkInfo.State.ENQUEUED,
-                        WorkInfo.State.SUCCEEDED,
-                        WorkInfo.State.FAILED,
-                        WorkInfo.State.CANCELLED
-                    ) ||
-                    activeWorkIds.contains(downloadId) ||
-                    _downloads.value.containsKey(downloadId)
-                )
-            } ?: emptyList()
-
-            Timber.d("WorkManager observer triggered - Total WorkInfos: ${workInfos?.size ?: 0}, Filtered: ${filteredWorkInfos.size}")
-
-            filteredWorkInfos.forEach { workInfo ->
-                val downloadIdFromProgress = workInfo.progress.getString("downloadId")
-                val downloadIdFromTags = workInfo.tags.find { tag ->
-                    tag != DOWNLOAD_WORK_TAG && // Exclude main work tag
-                    !tag.matches(Regex("(HLS|TORRENT|MAGNET|HTTP)")) && // Exclude download type tags
-                    !tag.contains("cloud.app.vvf") && // Exclude class names
-                    !tag.contains(".") && // Exclude any other class/package names
-                    tag.isNotEmpty() && // Ensure tag is not empty
-                    tag.length > 10 // Download IDs should be reasonably long
-                }
-                val downloadId = downloadIdFromProgress ?: downloadIdFromTags
-
-                Timber.d("Processing filtered WorkInfo - ID: ${workInfo.id}, DownloadId: $downloadId, State: ${workInfo.state}")
-                updateDownloadFromWorkInfo(workInfo)
-            }
-        }
-    }
-
-    // Cache to track last update times and prevent excessive UI updates
-    private val lastUpdateTimes = mutableMapOf<String, Long>()
-    private val progressUpdateThrottle = 1000L // Only update progress every 1 second
-
-    // Cache to store latest progress data without triggering UI updates
-    private val cachedProgressData = mutableMapOf<String, DownloadItem>()
-
-    private fun updateDownloadFromWorkInfo(workInfo: WorkInfo) {
-        // Try to get downloadId from progress data first, then from tags
-        val downloadIdFromProgress = workInfo.progress.getString("downloadId")
-
-        // If not in progress data, look for downloadId in tags
-        // Exclude system tags, class names, and download type tags
-        val downloadIdFromTags = workInfo.tags.find { tag ->
-            tag != DOWNLOAD_WORK_TAG && // Exclude main work tag
-            !tag.matches(Regex("(HLS|TORRENT|MAGNET|HTTP)")) && // Exclude download type tags
-            !tag.contains("cloud.app.vvf") && // Exclude class names
-            !tag.contains(".") && // Exclude any other class/package names
-            tag.isNotEmpty() && // Ensure tag is not empty
-            tag.length > 10 // Download IDs should be reasonably long
-        }
-
-        val downloadId = downloadIdFromProgress ?: downloadIdFromTags
-
-        if (downloadId == null) {
-            Timber.w("Could not find downloadId in WorkInfo - Progress: $downloadIdFromProgress, Available tags: ${workInfo.tags}")
-            return
-        }
-
-        val currentItem = _downloads.value[downloadId]
-        if (currentItem == null) {
-            Timber.w("No download item found for $downloadId - Available downloads: ${_downloads.value.keys}")
-            return
-        }
-
-        val currentTime = System.currentTimeMillis()
-
-        Timber.d("Processing WorkInfo for $downloadId - State: ${workInfo.state}")
-
-        when (workInfo.state) {
-            WorkInfo.State.ENQUEUED -> {
-                updateDownloadItem(currentItem.copy(
-                    status = DownloadStatus.PENDING,
-                    updatedAt = currentTime
-                ))
-            }
-            WorkInfo.State.RUNNING -> {
-                val progress = workInfo.progress.getInt("progress", 0)
-                val downloadedBytes = workInfo.progress.getLong("downloadedBytes", 0L)
-                val totalBytes = workInfo.progress.getLong("totalBytes", 0L)
-
-                // Create updated item with latest data
-                val updatedItem = currentItem.copy(
-                    status = DownloadStatus.DOWNLOADING,
-                    progress = progress,
-                    downloadedBytes = downloadedBytes,
-                    fileSize = if (totalBytes > 0) totalBytes else currentItem.fileSize,
-                    updatedAt = currentTime
-                )
-
-                // Cache the latest data
-                cachedProgressData[downloadId] = updatedItem
-
-                // Check if download is actually completed (100% but still in RUNNING state)
-                if (progress == 100 && downloadedBytes == totalBytes && totalBytes > 0) {
-                    Timber.d("Detected 100% completion in RUNNING state for $downloadId - Force completing")
-
-                    // Force completion since WorkManager might not send SUCCEEDED state
-                    val completedItem = updatedItem.copy(
-                        status = DownloadStatus.COMPLETED,
-                        progress = 100,
-                        downloadedBytes = totalBytes,
-                        fileSize = totalBytes,
-                        updatedAt = currentTime
-                    )
-
-                    updateDownloadItem(completedItem)
-
-                    // Log 100% UI update for consistency
-                    Timber.d("Download $downloadId UI update: 100% ($totalBytes/$totalBytes bytes) - FORCE COMPLETED")
-
-                    _activeDownloads.value = _activeDownloads.value - downloadId
-                    activeWorkIds.remove(downloadId)
-                    lastUpdateTimes.remove(downloadId)
-                    cachedProgressData.remove(downloadId)
-                    Timber.d("Download $downloadId force completed successfully - UI should show COMPLETED")
-                    return
-                }
-
-                // Throttle UI updates to reduce lag
-                val lastUpdateTime = lastUpdateTimes[downloadId] ?: 0
-                val timeSinceLastUpdate = currentTime - lastUpdateTime
-                val shouldUpdate = timeSinceLastUpdate >= progressUpdateThrottle ||
-                                 progress == 100 || // Always update for completion
-                                 progress == 0 ||   // Always update for start
-                                 currentItem.status != DownloadStatus.DOWNLOADING || // First time entering DOWNLOADING state
-                                 abs(currentItem.progress - progress) >= 1 // Significant progress change (1%)
-
-                if (shouldUpdate) {
-                    // Update UI with cached data
-                    updateDownloadItem(updatedItem)
-                    lastUpdateTimes[downloadId] = currentTime
-                    Timber.d("Download $downloadId UI update: $progress% ($downloadedBytes/$totalBytes bytes)")
-                }
-                // If not updating UI, we still have the latest data in cache
-            }
-            WorkInfo.State.SUCCEEDED -> {
-                Timber.d("Processing SUCCEEDED state for $downloadId")
-                val localPath = workInfo.outputData.getString("localPath")
-                val fileSize = workInfo.outputData.getLong("fileSize", 0L)
-
-                // Use cached data if available, otherwise use current item
-                val latestData = cachedProgressData[downloadId] ?: currentItem
-
-                val completedItem = latestData.copy(
-                    status = DownloadStatus.COMPLETED,
-                    progress = 100,
-                    downloadedBytes = fileSize,
-                    fileSize = fileSize,
-                    localPath = localPath,
-                    updatedAt = currentTime
-                )
-
-                Timber.d("DownloadManager: About to update item to COMPLETED for $downloadId")
-                updateDownloadItem(completedItem)
-
-                // Log 100% UI update for consistency
-                Timber.d("Download $downloadId UI update: 100% ($fileSize/$fileSize bytes)")
-
-                _activeDownloads.value = _activeDownloads.value - downloadId
-                activeWorkIds.remove(downloadId)
-                lastUpdateTimes.remove(downloadId) // Clean up cache
-                cachedProgressData.remove(downloadId) // Clean up progress cache
-                Timber.d("Download $downloadId completed successfully - UI should show COMPLETED")
-            }
-            WorkInfo.State.FAILED -> {
-                val error = workInfo.outputData.getString("error")
-                updateDownloadItem(currentItem.copy(
-                    status = DownloadStatus.FAILED,
-                    updatedAt = currentTime
-                ))
-
-                _activeDownloads.value -= downloadId
-                activeWorkIds.remove(downloadId)
-                lastUpdateTimes.remove(downloadId) // Clean up cache
-                cachedProgressData.remove(downloadId) // Clean up progress cache
-                Timber.e("Download $downloadId failed: $error")
-            }
-            WorkInfo.State.CANCELLED -> {
-                updateDownloadItem(currentItem.copy(
-                    status = DownloadStatus.CANCELLED,
-                    updatedAt = currentTime
-                ))
-
-                _activeDownloads.value = _activeDownloads.value - downloadId
-                activeWorkIds.remove(downloadId)
-                lastUpdateTimes.remove(downloadId) // Clean up cache
-                cachedProgressData.remove(downloadId) // Clean up progress cache
-                Timber.d("Download $downloadId cancelled")
-            }
-            WorkInfo.State.BLOCKED -> {
-                // Handle blocked state if needed
-                Timber.w("Download $downloadId is blocked")
-            }
-        }
-    }
-
-    private fun updateDownloadItem(downloadItem: DownloadItem) {
-        // Update in-memory storage
-        val currentDownloads = _downloads.value.toMutableMap()
-        currentDownloads[downloadItem.id] = downloadItem
-        _downloads.value = currentDownloads
-
-        // Sync with persistent storage (AppDataStore)
-        appDataStore.value.saveDownload(downloadItem)
-
-        Timber.d("Updated download item: ${downloadItem.id} - Status: ${downloadItem.status} - Progress: ${downloadItem.progress}% (synced to AppDataStore)")
     }
 
     /**
-     * Sync downloads between DownloadManager and AppDataStore
-     * Called when AppDataStore data changes externally
+     * Enqueue WorkManager request
      */
-    fun syncWithAppDataStore() {
-        val persistedDownloads = appDataStore.value.getAllDownloads() ?: emptyList()
-        val currentDownloads = _downloads.value.toMutableMap()
-
-        // Update downloads from AppDataStore
-        persistedDownloads.forEach { persistedDownload ->
-            val currentDownload = currentDownloads[persistedDownload.id]
-
-            // If download exists in AppDataStore but not in memory, or if it's more recent
-            if (currentDownload == null || persistedDownload.updatedAt > currentDownload.updatedAt) {
-                currentDownloads[persistedDownload.id] = persistedDownload
+    private fun enqueueWorkRequest(
+        downloadId: String,
+        downloadType: DownloadType,
+        downloadUrl: String,
+        fileName: String,
+        quality: String,
+        resumeBytes: Long = 0L,
+        resumeProgress: Int = 0,
+        isResuming: Boolean = false
+    ) {
+        val workRequest = when (downloadType) {
+            DownloadType.HTTP -> {
+                OneTimeWorkRequestBuilder<MediaDownloader>()
+                    .setInputData(workDataOf(
+                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_ID to downloadId,
+                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_URL to downloadUrl,
+                        MediaDownloader.DownloadParams.KEY_FILE_NAME to fileName,
+                        MediaDownloader.DownloadParams.KEY_QUALITY to quality,
+                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_TYPE to "HTTP",
+                        MediaDownloader.DownloadParams.KEY_RESUME_PROGRESS to resumeProgress,
+                        MediaDownloader.DownloadParams.KEY_RESUME_BYTES to resumeBytes,
+                        MediaDownloader.DownloadParams.KEY_RESUME_FROM_PAUSE to isResuming
+                    ))
+                    .addTag(DOWNLOAD_WORK_TAG)
+                    .addTag(downloadId)
+                    .addTag("HTTP")
+                    .build()
             }
+            // Add other download types as needed
+            else -> throw IllegalArgumentException("Unsupported download type: $downloadType")
         }
 
-        // Remove downloads that no longer exist in AppDataStore
-        val persistedIds = persistedDownloads.map { it.id }.toSet()
-        currentDownloads.keys.removeAll { id -> id !in persistedIds }
-
-        _downloads.value = currentDownloads
-
-        // Update active downloads
-        val activeIds = persistedDownloads
-            .filter { it.isActive() }
-            .map { it.id }
-            .toSet()
-        _activeDownloads.value = activeIds
-
-        Timber.d("DownloadManager: Synced ${persistedDownloads.size} downloads with AppDataStore")
+        workManager.enqueueUniqueWork(
+            "download_$downloadId",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
     }
 
+    /**
+     * Observe WorkManager updates and convert to events
+     */
+    private fun observeWorkManagerUpdates() {
+        Timber.d("Setting up WorkManager observer")
+        workManager.getWorkInfosByTagLiveData(DOWNLOAD_WORK_TAG).observeForever { workInfos ->
+            workInfos?.forEach { workInfo ->
+                val downloadId = extractDownloadId(workInfo)
+                if (downloadId != null) {
+                    val event = workInfo.toDownloadEvent(downloadId)
+                    if (event != null) {
+                        handleWorkEvent(event)
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Handle WorkManager events through controller
+     */
+    private fun handleWorkEvent(event: DownloadEvent) {
+        if (downloadController.handleWorkEvent(event)) {
+            // Sync to persistent storage if needed
+            val downloadId = when (event) {
+                is DownloadEvent.WorkEnqueued -> event.downloadId
+                is DownloadEvent.WorkStarted -> event.downloadId
+                is DownloadEvent.ProgressUpdated -> event.downloadId
+                is DownloadEvent.WorkCompleted -> event.downloadId
+                is DownloadEvent.WorkFailed -> event.downloadId
+                is DownloadEvent.WorkCancelled -> event.downloadId
+            }
+
+            downloads.value[downloadId]?.let { downloadItem ->
+                appDataStore.value.saveDownload(downloadItem)
+            }
+        }
+    }
+
+    /**
+     * Extract download ID from WorkInfo
+     */
+    private fun extractDownloadId(workInfo: WorkInfo): String? {
+        // Try progress data first
+        workInfo.progress.getString("downloadId")?.let { return it }
+
+        // Try tags
+        return workInfo.tags.find { tag ->
+            tag != DOWNLOAD_WORK_TAG &&
+            !tag.matches(Regex("(HLS|TORRENT|MAGNET|HTTP)")) &&
+            !tag.contains("cloud.app.vvf") &&
+            !tag.contains(".") &&
+            tag.isNotEmpty() &&
+            tag.length > 10
+        }
+    }
+
+    // Utility methods remain the same
     private fun generateDownloadId(mediaItem: AVPMediaItem, downloadUrl: String): String {
         // Create deterministic ID based on media item and URL to prevent duplicates
         val mediaId = when (mediaItem) {
@@ -805,48 +486,6 @@ class DownloadManager @Inject constructor(
         return if (quality != "default") "${cleanName}_${quality}" else cleanName ?: "download_${System.currentTimeMillis()}"
     }
 
-    /**
-     * Debug method to get current WorkManager status
-     */
-    fun getWorkManagerDebugInfo(): String {
-        val allWorkInfos = workManager.getWorkInfosByTag(DOWNLOAD_WORK_TAG).get()
-        val debugInfo = StringBuilder()
-
-        debugInfo.appendLine("=== WorkManager Debug Info ===")
-        debugInfo.appendLine("Total WorkInfos with tag '$DOWNLOAD_WORK_TAG': ${allWorkInfos.size}")
-        debugInfo.appendLine("Active downloads tracking: ${activeWorkIds.size}")
-        debugInfo.appendLine("Downloads in memory: ${_downloads.value.size}")
-        debugInfo.appendLine()
-
-        allWorkInfos.groupBy { it.state }.forEach { (state, workInfos) ->
-            debugInfo.appendLine("$state: ${workInfos.size} workers")
-            workInfos.forEach { workInfo ->
-                val downloadId = workInfo.progress.getString("downloadId")
-                    ?: workInfo.tags.find { it != DOWNLOAD_WORK_TAG && !it.matches(Regex("(HLS|TORRENT|MAGNET|HTTP)")) }
-                debugInfo.appendLine("  - WorkId: ${workInfo.id}, DownloadId: $downloadId, Tags: ${workInfo.tags}")
-            }
-        }
-
-        return debugInfo.toString()
-    }
-
-    /**
-     * Force cleanup all old work - call this if you have too many workers
-     */
-    fun forceCleanupAllWork() {
-        Timber.d("DownloadManager: Force cleaning up all work")
-        workManager.cancelAllWorkByTag(DOWNLOAD_WORK_TAG)
-        activeWorkIds.clear()
-
-        // Reset active downloads to only those that are actually downloading
-        val actuallyActive = _downloads.value.values
-            .filter { it.status == DownloadStatus.DOWNLOADING || it.status == DownloadStatus.PENDING }
-            .map { it.id }
-            .toSet()
-        _activeDownloads.value = actuallyActive
-
-        Timber.d("DownloadManager: Force cleanup completed - Active downloads reset to: $actuallyActive")
-    }
 
     companion object {
         private const val DOWNLOAD_WORK_TAG = "media_download"

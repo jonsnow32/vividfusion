@@ -141,6 +141,56 @@
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="application/x-bittorrent" />
       </intent-filter>
+
+      <!-- Handle video files by MIME type -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="video/*" />
+      </intent-filter>
+
+      <!-- Handle audio files by MIME type -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="audio/*" />
+      </intent-filter>
+
+      <!-- Handle specific video file extensions -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="file" />
+        <data android:scheme="content" />
+        <data android:pathPattern=".*\\.mp4" />
+        <data android:pathPattern=".*\\.mkv" />
+        <data android:pathPattern=".*\\.avi" />
+        <data android:pathPattern=".*\\.mov" />
+        <data android:pathPattern=".*\\.webm" />
+        <data android:pathPattern=".*\\.m4v" />
+      </intent-filter>
+
+      <!-- Handle specific audio file extensions -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="file" />
+        <data android:scheme="content" />
+        <data android:pathPattern=".*\\.mp3" />
+        <data android:pathPattern=".*\\.m4a" />
+        <data android:pathPattern=".*\\.wav" />
+        <data android:pathPattern=".*\\.flac" />
+        <data android:pathPattern=".*\\.ogg" />
+      </intent-filter>
+
+      <!-- Handle media playback intents -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <action android:name="android.intent.action.SEND" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:mimeType="video/*" />
+        <data android:mimeType="audio/*" />
+      </intent-filter>
     </activity>
     <activity
       android:name=".ExceptionActivity"

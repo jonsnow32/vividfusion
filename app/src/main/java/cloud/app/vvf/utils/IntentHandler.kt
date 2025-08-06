@@ -4,11 +4,15 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import androidx.annotation.OptIn
 import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import timber.log.Timber
 import androidx.core.net.toUri
+import androidx.media3.common.util.UnstableApi
 import cloud.app.vvf.MainActivity
 import cloud.app.vvf.ui.detail.torrent.TorrentInfoFragment
+import cloud.app.vvf.features.player.PlayerFragment
+import cloud.app.vvf.common.models.AVPMediaItem
 
 /**
  * Handles various types of intents and URIs for the application
@@ -148,6 +152,18 @@ class IntentHandler(private val mainActivity: MainActivity) {
         handleExtension(uri)
       }
 
+      // Handle video files
+      isVideoFile(path) -> {
+        Timber.d("Handling video file: $path")
+        handleMediaFile(uri, "video")
+      }
+
+      // Handle audio files
+      isAudioFile(path) -> {
+        Timber.d("Handling audio file: $path")
+        handleMediaFile(uri, "audio")
+      }
+
       else -> {
         Timber.d("Handling generic file: $path")
         handleGenericFile(uri)
@@ -174,6 +190,18 @@ class IntentHandler(private val mainActivity: MainActivity) {
         handleExtension(uri)
       }
 
+      // Handle video files from content provider
+      isVideoFile(path) || isVideoFile(lastPathSegment) -> {
+        Timber.d("Handling video file from content provider: $uri")
+        handleMediaFile(uri, "video")
+      }
+
+      // Handle audio files from content provider
+      isAudioFile(path) || isAudioFile(lastPathSegment) -> {
+        Timber.d("Handling audio file from content provider: $uri")
+        handleMediaFile(uri, "audio")
+      }
+
       else -> {
         Timber.d("Handling generic content: $uri")
         handleGenericFile(uri)
@@ -183,20 +211,48 @@ class IntentHandler(private val mainActivity: MainActivity) {
 
   private fun handleGenericFile(uri: Uri) {
     Timber.i("Generic file received: $uri")
-    // TODO: Implement generic file handling
-    // Examples:
-    // - Check MIME type
-    // - Handle video/audio files
-    // - Handle subtitle files
-    // - Show file info dialog
+
+    // Try to determine if it's a media file by checking content resolver
+    try {
+      val contentResolver = mainActivity.contentResolver
+      val mimeType = contentResolver.getType(uri)
+
+      when {
+        mimeType?.startsWith("video/") == true -> {
+          Timber.d("Detected video file via MIME type: $mimeType")
+          handleMediaFile(uri, "video")
+        }
+        mimeType?.startsWith("audio/") == true -> {
+          Timber.d("Detected audio file via MIME type: $mimeType")
+          handleMediaFile(uri, "audio")
+        }
+        else -> {
+          Timber.d("Unknown file type - MIME: $mimeType, URI: $uri")
+          // Could show a dialog asking user what to do with the file
+        }
+      }
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to determine file type for: $uri")
+    }
   }
 
   private fun handleMimeTypeIntent(intent: Intent, mimeType: String) {
     Timber.d("Handling MIME type: $mimeType")
     when {
-      mimeType.startsWith("video/") || mimeType.startsWith("audio/") -> {
-        // Handle media files
-        intent.data?.let { handleGenericFile(it) }
+      mimeType.startsWith("video/") -> {
+        // Handle video files
+        intent.data?.let {
+          Timber.d("Handling video file with MIME type: $mimeType")
+          handleMediaFile(it, "video")
+        }
+      }
+
+      mimeType.startsWith("audio/") -> {
+        // Handle audio files
+        intent.data?.let {
+          Timber.d("Handling audio file with MIME type: $mimeType")
+          handleMediaFile(it, "audio")
+        }
       }
 
       mimeType == "application/x-bittorrent" -> {
@@ -262,5 +318,192 @@ class IntentHandler(private val mainActivity: MainActivity) {
     Timber.w("Unsupported scheme or URI: $uri")
     // TODO: Optionally show a toast or dialog to inform user
     // Toast.makeText(context, "Unsupported link type", Toast.LENGTH_SHORT).show()
+  }
+
+  /**
+   * Handle media file playback (video/audio)
+   */
+  @OptIn(UnstableApi::class)
+  private fun handleMediaFile(uri: Uri, mediaType: String) {
+    try {
+      Timber.i("Opening $mediaType file: $uri")
+
+      // Create a temporary AVPMediaItem from the URI for PlayerFragment
+      val mediaItem = createMediaItemFromUri(uri, mediaType)
+
+      // Navigate to PlayerFragment instead of PlayerActivity
+      val playerFragment = PlayerFragment.newInstance(
+        mediaItems = listOf(mediaItem),
+        selectedMediaIdx = 0,
+        subtitles = null,
+        selectedSubtitleIdx = 0
+      )
+
+      mainActivity.navigate(playerFragment)
+      Timber.d("Successfully navigated to PlayerFragment for $mediaType file")
+
+    } catch (e: Exception) {
+      Timber.e(e, "Failed to open $mediaType file: $uri")
+      // Could show an error dialog or toast to the user
+    }
+  }
+
+  /**
+   * Create a temporary AVPMediaItem from URI for local files
+   */
+  private fun createMediaItemFromUri(uri: Uri, mediaType: String): AVPMediaItem {
+    val fileName = getFileNameFromUri(uri) ?: "Unknown File"
+    val fileSize = getFileSizeFromUri(uri)
+
+    return when (mediaType) {
+      "video" -> {
+        // Create a VideoItem for video files using LocalVideo
+        AVPMediaItem.VideoItem(
+          video = cloud.app.vvf.common.models.video.Video.LocalVideo(
+            id = uri.toString().hashCode().toString(),
+            title = fileName,
+            uri = uri.toString(),
+            duration = 0L, // Will be determined by the player
+            thumbnailUri = "",
+            fileSize = fileSize,
+            dateAdded = System.currentTimeMillis(),
+            album = "Downloaded Videos",
+            description = "Local video file"
+          )
+        )
+      }
+      "audio" -> {
+        // Create a TrackItem for audio files
+        AVPMediaItem.TrackItem(
+          track = cloud.app.vvf.common.models.music.Track(
+            id = uri.toString().hashCode().toString(),
+            title = fileName,
+            uri = uri.toString(),
+            duration = null, // Will be determined by the player
+            album = "Downloaded Audio",
+            description = "Local audio file"
+          )
+        )
+      }
+      else -> {
+        // Default to video item for unknown types using LocalVideo
+        AVPMediaItem.VideoItem(
+          video = cloud.app.vvf.common.models.video.Video.LocalVideo(
+            id = uri.toString().hashCode().toString(),
+            title = fileName,
+            uri = uri.toString(),
+            duration = 0L,
+            thumbnailUri = "",
+            fileSize = fileSize,
+            dateAdded = System.currentTimeMillis(),
+            album = "Downloaded Files",
+            description = "Local media file"
+          )
+        )
+      }
+    }
+  }
+
+  /**
+   * Extract filename from URI
+   */
+  private fun getFileNameFromUri(uri: Uri): String? {
+    return try {
+      when (uri.scheme) {
+        "content" -> {
+          // Try to get display name from content resolver
+          mainActivity.contentResolver.query(
+            uri,
+            arrayOf(android.provider.OpenableColumns.DISPLAY_NAME),
+            null,
+            null,
+            null
+          )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+              val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+              if (nameIndex >= 0) cursor.getString(nameIndex) else null
+            } else null
+          }
+        }
+        "file" -> {
+          // Extract filename from file path
+          uri.lastPathSegment
+        }
+        else -> {
+          uri.lastPathSegment ?: "Unknown File"
+        }
+      } ?: "Unknown File"
+    } catch (e: Exception) {
+      Timber.w(e, "Failed to extract filename from URI: $uri")
+      "Unknown File"
+    }
+  }
+
+  /**
+   * Get file size from URI
+   */
+  private fun getFileSizeFromUri(uri: Uri): Long {
+    return try {
+      when (uri.scheme) {
+        "content" -> {
+          mainActivity.contentResolver.query(
+            uri,
+            arrayOf(android.provider.OpenableColumns.SIZE),
+            null,
+            null,
+            null
+          )?.use { cursor ->
+            if (cursor.moveToFirst()) {
+              val sizeIndex = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE)
+              if (sizeIndex >= 0) cursor.getLong(sizeIndex) else 0L
+            } else 0L
+          } ?: 0L
+        }
+        "file" -> {
+          try {
+            val file = java.io.File(uri.path ?: "")
+            if (file.exists()) file.length() else 0L
+          } catch (e: Exception) {
+            0L
+          }
+        }
+        else -> 0L
+      }
+    } catch (e: Exception) {
+      Timber.w(e, "Failed to get file size from URI: $uri")
+      0L
+    }
+  }
+
+  /**
+   * Check if the file path indicates a video file
+   */
+  private fun isVideoFile(path: String?): Boolean {
+    if (path == null) return false
+
+    val videoExtensions = setOf(
+      "mp4", "mkv", "avi", "mov", "wmv", "flv", "webm", "m4v",
+      "3gp", "3g2", "ts", "mts", "m2ts", "vob", "asf", "rm",
+      "rmvb", "divx", "xvid", "f4v", "mpg", "mpeg", "m1v", "m2v"
+    )
+
+    val extension = path.substringAfterLast('.', "").lowercase()
+    return extension in videoExtensions
+  }
+
+  /**
+   * Check if the file path indicates an audio file
+   */
+  private fun isAudioFile(path: String?): Boolean {
+    if (path == null) return false
+
+    val audioExtensions = setOf(
+      "mp3", "m4a", "aac", "ogg", "wav", "flac", "wma", "opus",
+      "ape", "wv", "tta", "tak", "dts", "ac3", "eac3", "mka",
+      "aiff", "aif", "au", "ra", "3ga", "amr", "awb"
+    )
+
+    val extension = path.substringAfterLast('.', "").lowercase()
+    return extension in audioExtensions
   }
 }
