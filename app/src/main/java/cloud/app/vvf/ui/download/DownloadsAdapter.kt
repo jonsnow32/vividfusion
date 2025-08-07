@@ -7,19 +7,19 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.DownloadItem
-import cloud.app.vvf.common.models.DownloadStatus
 import cloud.app.vvf.common.models.getDownloadDisplayName
-import cloud.app.vvf.common.models.getDownloadThumbnail
 import cloud.app.vvf.databinding.ItemDownloadHttpBinding
 import cloud.app.vvf.databinding.ItemDownloadHlsBinding
 import cloud.app.vvf.databinding.ItemDownloadTorrentBinding
-import com.bumptech.glide.Glide
+import cloud.app.vvf.services.downloader.DownloadData
+import cloud.app.vvf.services.downloader.DownloadStatus
+import cloud.app.vvf.services.downloader.DownloadType
+import kotlinx.serialization.Serializable
 import java.util.Locale
 
 class DownloadsAdapter(
-    private val onActionClick: (DownloadAction, DownloadItem) -> Unit
-) : ListAdapter<DownloadItem, DownloadsAdapter.BaseDownloadViewHolder>(DownloadDiffCallback()) {
+    private val onActionClick: (DownloadAction, DownloadData) -> Unit
+) : ListAdapter<DownloadData, DownloadsAdapter.BaseDownloadViewHolder>(DownloadDiffCallback()) {
 
     companion object {
         const val VIEW_TYPE_HTTP = 1
@@ -31,10 +31,10 @@ class DownloadsAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (getItem(position)) {
-            is DownloadItem.HttpDownload -> VIEW_TYPE_HTTP
-            is DownloadItem.HlsDownload -> VIEW_TYPE_HLS
-            is DownloadItem.TorrentDownload -> VIEW_TYPE_TORRENT
+        return when (getItem(position).type) {
+            DownloadType.HTTP -> VIEW_TYPE_HTTP
+            DownloadType.HLS  -> VIEW_TYPE_HLS
+            DownloadType.TORRENT  -> VIEW_TYPE_TORRENT
         }
     }
 
@@ -77,11 +77,11 @@ class DownloadsAdapter(
     // Base ViewHolder cho common functionality
     abstract class BaseDownloadViewHolder(
         itemView: View,
-        protected val onActionClick: (DownloadAction, DownloadItem) -> Unit
+        protected val onActionClick: (DownloadAction, DownloadData) -> Unit
     ) : RecyclerView.ViewHolder(itemView) {
 
-        abstract fun bind(downloadItem: DownloadItem)
-        abstract fun bindPartial(downloadItem: DownloadItem, payloads: MutableList<Any>)
+        abstract fun bind(data: DownloadData)
+        abstract fun bindPartial(data: DownloadData, payloads: MutableList<Any>)
 
         protected fun getStatusColor(status: DownloadStatus): Int {
             val context = itemView.context
@@ -131,55 +131,53 @@ class DownloadsAdapter(
     // HTTP Download ViewHolder
     class HttpDownloadViewHolder(
         private val binding: ItemDownloadHttpBinding,
-        onActionClick: (DownloadAction, DownloadItem) -> Unit
+        onActionClick: (DownloadAction, DownloadData) -> Unit
     ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
-        override fun bind(downloadItem: DownloadItem) {
-            val httpDownload = downloadItem as DownloadItem.HttpDownload
+        override fun bind(data: DownloadData) {
 
             binding.apply {
                 // Basic info
-                tvTitle.text = downloadItem.mediaItem.getDownloadDisplayName()
+                tvTitle.text = data.mediaItem?.getDownloadDisplayName() ?: data.fileName ?: data.url
                 tvDownloadType.text = "HTTP"
 
                 // HTTP-specific info
-                tvConnections.text = "Connections: ${httpDownload.connections}"
-                tvResumeSupport.text = if (httpDownload.resumeSupported) "Resume: Yes" else "Resume: No"
+                tvConnections.text = "Connections: ${data.connections}"
+                tvResumeSupport.text = if (data.resumeSupported) "Resume: Yes" else "Resume: No"
                 tvResumeSupport.setTextColor(
-                    if (httpDownload.resumeSupported)
+                    if (data.resumeSupported)
                         root.context.getColor(R.color.download_status_completed)
                     else
                         root.context.getColor(R.color.download_status_cancelled)
                 )
 
                 // Status and progress
-                updateProgress(httpDownload)
+                updateProgress(data)
 
                 // Setup download button widget
-                setupDownloadButtonWidget(downloadItem)
+                setupDownloadButtonWidget(data)
 
                 // Long click for remove
                 root.setOnLongClickListener {
-                    onActionClick(DownloadAction.REMOVE, downloadItem)
+                    onActionClick(DownloadAction.REMOVE, data)
                     true
                 }
             }
         }
 
-        override fun bindPartial(downloadItem: DownloadItem, payloads: MutableList<Any>) {
-            val httpDownload = downloadItem as DownloadItem.HttpDownload
+        override fun bindPartial(data: DownloadData, payloads: MutableList<Any>) {
 
             for (payload in payloads) {
                 if (payload is List<*>) {
                     for (changeType in payload) {
                         when (changeType) {
                             PAYLOAD_STATUS -> {
-                                binding.downloadButtonWidget.updateState(downloadItem.status, httpDownload.getProgressPercentage())
-                                updateProgress(httpDownload)
+                                binding.downloadButtonWidget.updateState(data.status, data.progressPercent)
+                                updateProgress(data)
                             }
                             PAYLOAD_PROGRESS -> {
-                                binding.downloadButtonWidget.updateState(downloadItem.status, httpDownload.getProgressPercentage())
-                                updateProgress(httpDownload)
+                                binding.downloadButtonWidget.updateState(data.status, data.progressPercent)
+                                updateProgress(data)
                             }
                         }
                     }
@@ -187,67 +185,66 @@ class DownloadsAdapter(
             }
         }
 
-        private fun setupDownloadButtonWidget(downloadItem: DownloadItem) {
-            val httpDownload = downloadItem as DownloadItem.HttpDownload
+        private fun setupDownloadButtonWidget(data: DownloadData) {
 
             binding.downloadButtonWidget.apply {
                 // Update the widget state
-                updateState(downloadItem.status, httpDownload.getProgressPercentage())
+                updateState(data.status, data.progressPercent)
 
                 // Set up click handlers based on download status
                 onDownloadClick = {
-                    onActionClick(DownloadAction.RETRY, downloadItem)
+                    onActionClick(DownloadAction.RETRY, data)
                 }
 
                 onPauseClick = {
-                    onActionClick(DownloadAction.PAUSE, downloadItem)
+                    onActionClick(DownloadAction.PAUSE, data)
                 }
 
                 onResumeClick = {
-                    onActionClick(DownloadAction.RESUME, downloadItem)
+                    onActionClick(DownloadAction.RESUME, data)
                 }
 
                 onCancelClick = {
-                    onActionClick(DownloadAction.CANCEL, downloadItem)
+                    onActionClick(DownloadAction.CANCEL, data)
                 }
 
                 onPlayClick = {
-                    onActionClick(DownloadAction.PLAY, downloadItem)
+                    onActionClick(DownloadAction.PLAY, data)
                 }
             }
         }
 
-        private fun updateProgress(httpDownload: DownloadItem.HttpDownload) {
+        private fun updateProgress(data: DownloadData) {
             binding.apply {
-                when (httpDownload.status) {
+                when (data.status) {
                     DownloadStatus.DOWNLOADING -> {
-                        val progressText = "${httpDownload.getProgressPercentage()}%"
-                        val sizeText = "${formatFileSize(httpDownload.downloadedBytes)} / ${formatFileSize(httpDownload.fileSize)}"
-                        val speedText = if (httpDownload.downloadSpeed > 0) httpDownload.getFormattedSpeed() else "0 B/s"
-                        val etaText = if (httpDownload.downloadSpeed > 0) "ETA: ${httpDownload.getEstimatedTimeRemaining()}" else ""
+                        val progressText = "${data.progressPercent}%"
+                        val sizeText = "${formatFileSize(data.downloadedBytes)} / ${formatFileSize(data.totalBytes)}"
+                        val speedText = if (data.downloadSpeed > 0) data.downloadSpeedFormatted else "0 B/s"
+                        val etaText = if (data.downloadSpeed > 0) "ETA: ${data.getEstimatedTimeRemaining()}" else ""
 
                         tvStatus.text = "$progressText • $sizeText"
                         tvSpeed.text = speedText
                         tvEta.text = etaText
-                        tvStatus.setTextColor(getStatusColor(httpDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     DownloadStatus.PAUSED -> {
-                        tvStatus.text = "Paused • ${httpDownload.getProgressPercentage()}%"
+                        tvStatus.text = "Paused • ${data.progressPercent}%"
                         tvSpeed.text = ""
                         tvEta.text = ""
-                        tvStatus.setTextColor(getStatusColor(httpDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     DownloadStatus.COMPLETED -> {
-                        tvStatus.text = "Completed • ${formatFileSize(httpDownload.fileSize)}"
+                        tvStatus.text = "Completed • ${formatFileSize(data.totalBytes)}"
                         tvSpeed.text = ""
                         tvEta.text = ""
-                        tvStatus.setTextColor(getStatusColor(httpDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     else -> {
-                        tvStatus.text = httpDownload.status.name.lowercase().replaceFirstChar { it.uppercase() }
+                        tvStatus.text = data.status.name.lowercase().replaceFirstChar { it.uppercase() }
                         tvSpeed.text = ""
                         tvEta.text = ""
-                        tvStatus.setTextColor(getStatusColor(httpDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                 }
             }
@@ -257,56 +254,55 @@ class DownloadsAdapter(
     // HLS Download ViewHolder
     class HlsDownloadViewHolder(
         private val binding: ItemDownloadHlsBinding,
-        onActionClick: (DownloadAction, DownloadItem) -> Unit
+        onActionClick: (DownloadAction, DownloadData) -> Unit
     ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
-        override fun bind(downloadItem: DownloadItem) {
-            val hlsDownload = downloadItem as DownloadItem.HlsDownload
+        override fun bind(data: DownloadData) {
+
 
             binding.apply {
                 // Basic info
-                tvTitle.text = downloadItem.mediaItem.getDownloadDisplayName()
+                tvTitle.text = data.mediaItem?.getDownloadDisplayName() ?: data.fileName ?: data.url
                 tvDownloadType.text = "HLS"
 
                 // HLS-specific info
-                tvQuality.text = "Quality: ${hlsDownload.quality}"
-                tvSegments.text = hlsDownload.getSegmentProgress()
-                if (hlsDownload.encryption != null) {
-                    tvEncryption.text = "Encrypted: ${hlsDownload.encryption}"
+                tvQuality.text = "Quality: ${data.quality}"
+                tvSegments.text = data.getSegmentProgress()
+                if (data.encryption != null) {
+                    tvEncryption.text = "Encrypted: ${data.encryption}"
                     tvEncryption.visibility = View.VISIBLE
                 } else {
                     tvEncryption.visibility = View.GONE
                 }
 
                 // Status and progress
-                updateProgress(hlsDownload)
+                updateProgress(data)
 
                 // Setup download button widget
-                setupDownloadButtonWidget(downloadItem)
+                setupDownloadButtonWidget(data)
 
                 // Long click for remove
                 root.setOnLongClickListener {
-                    onActionClick(DownloadAction.REMOVE, downloadItem)
+                    onActionClick(DownloadAction.REMOVE, data)
                     true
                 }
             }
         }
 
-        override fun bindPartial(downloadItem: DownloadItem, payloads: MutableList<Any>) {
-            val hlsDownload = downloadItem as DownloadItem.HlsDownload
+        override fun bindPartial(data: DownloadData, payloads: MutableList<Any>) {
 
             for (payload in payloads) {
                 if (payload is List<*>) {
                     for (changeType in payload) {
                         when (changeType) {
                             PAYLOAD_STATUS -> {
-                                binding.downloadButtonWidget.updateState(downloadItem.status, hlsDownload.getProgressPercentage())
-                                updateProgress(hlsDownload)
+                                binding.downloadButtonWidget.updateState(data.status, data.progressPercent)
+                                updateProgress(data)
                             }
                             PAYLOAD_PROGRESS -> {
-                                binding.downloadButtonWidget.updateState(downloadItem.status, hlsDownload.getProgressPercentage())
-                                updateProgress(hlsDownload)
-                                binding.tvSegments.text = hlsDownload.getSegmentProgress()
+                                binding.downloadButtonWidget.updateState(data.status, data.progressPercent)
+                                updateProgress(data)
+                                binding.tvSegments.text = data.getSegmentProgress()
                             }
                         }
                     }
@@ -314,61 +310,60 @@ class DownloadsAdapter(
             }
         }
 
-        private fun setupDownloadButtonWidget(downloadItem: DownloadItem) {
-            val hlsDownload = downloadItem as DownloadItem.HlsDownload
+        private fun setupDownloadButtonWidget(data: DownloadData) {
 
             binding.downloadButtonWidget.apply {
                 // Update the widget state
-                updateState(downloadItem.status, hlsDownload.getProgressPercentage())
+                updateState(data.status, data.progressPercent)
 
                 // Set up click handlers based on download status
                 onDownloadClick = {
-                    onActionClick(DownloadAction.RETRY, downloadItem)
+                    onActionClick(DownloadAction.RETRY, data)
                 }
 
                 onPauseClick = {
-                    onActionClick(DownloadAction.PAUSE, downloadItem)
+                    onActionClick(DownloadAction.PAUSE, data)
                 }
 
                 onResumeClick = {
-                    onActionClick(DownloadAction.RESUME, downloadItem)
+                    onActionClick(DownloadAction.RESUME, data)
                 }
 
                 onCancelClick = {
-                    onActionClick(DownloadAction.CANCEL, downloadItem)
+                    onActionClick(DownloadAction.CANCEL, data)
                 }
 
                 onPlayClick = {
-                    onActionClick(DownloadAction.PLAY, downloadItem)
+                    onActionClick(DownloadAction.PLAY, data)
                 }
             }
         }
 
-        private fun updateProgress(hlsDownload: DownloadItem.HlsDownload) {
+        private fun updateProgress(data: DownloadData) {
             binding.apply {
-                when (hlsDownload.status) {
+                when (data.status) {
                     DownloadStatus.DOWNLOADING -> {
-                        val progressText = "${hlsDownload.getProgressPercentage()}%"
-                        val speedText = if (hlsDownload.downloadSpeed > 0) hlsDownload.getFormattedSpeed() else "0 B/s"
+                        val progressText = "${data.progressPercent}%"
+                        val speedText = if (data.downloadSpeed > 0) data.downloadSpeedFormatted else "0 B/s"
 
                         tvStatus.text = "Downloading • $progressText"
                         tvSpeed.text = speedText
-                        tvStatus.setTextColor(getStatusColor(hlsDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     DownloadStatus.PAUSED -> {
-                        tvStatus.text = "Paused • ${hlsDownload.getProgressPercentage()}%"
+                        tvStatus.text = "Paused • ${data.progressPercent}%"
                         tvSpeed.text = ""
-                        tvStatus.setTextColor(getStatusColor(hlsDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     DownloadStatus.COMPLETED -> {
-                        tvStatus.text = "Completed • ${formatFileSize(hlsDownload.fileSize)}"
+                        tvStatus.text = "Completed • ${formatFileSize(data.totalBytes)}"
                         tvSpeed.text = ""
-                        tvStatus.setTextColor(getStatusColor(hlsDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     else -> {
-                        tvStatus.text = hlsDownload.status.name.lowercase().replaceFirstChar { it.uppercase() }
+                        tvStatus.text = data.status.name.lowercase().replaceFirstChar { it.uppercase() }
                         tvSpeed.text = ""
-                        tvStatus.setTextColor(getStatusColor(hlsDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                 }
             }
@@ -378,37 +373,35 @@ class DownloadsAdapter(
     // Torrent Download ViewHolder
     class TorrentDownloadViewHolder(
         private val binding: ItemDownloadTorrentBinding,
-        onActionClick: (DownloadAction, DownloadItem) -> Unit
+        onActionClick: (DownloadAction, DownloadData) -> Unit
     ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
         // Cache for real-time torrent data from WorkManager
         private var realTimeTorrentData: Map<String, Any> = emptyMap()
 
-        override fun bind(downloadItem: DownloadItem) {
-            val torrentDownload = downloadItem as DownloadItem.TorrentDownload
+        override fun bind(data: DownloadData) {
 
             binding.apply {
                 // Basic info
-                tvTitle.text = downloadItem.mediaItem.getDownloadDisplayName()
-                tvDownloadType.text = if (torrentDownload.isMagnetLink()) "MAGNET" else "TORRENT"
+                tvTitle.text = data.mediaItem?.getDownloadDisplayName() ?: data.fileName ?: data.url
+                tvDownloadType.text = if (data.isTorrentDownload) "MAGNET" else "TORRENT"
 
                 // Initialize with model data, will be updated by real-time data
-                updateTorrentInfo(torrentDownload)
-                updateProgress(torrentDownload)
+                updateTorrentInfo(data)
+                updateProgress(data)
 
                 // Setup download button widget
-                setupDownloadButtonWidget(downloadItem)
+                setupDownloadButtonWidget(data)
 
                 // Long click for remove
                 root.setOnLongClickListener {
-                    onActionClick(DownloadAction.REMOVE, downloadItem)
+                    onActionClick(DownloadAction.REMOVE, data)
                     true
                 }
             }
         }
 
-        override fun bindPartial(downloadItem: DownloadItem, payloads: MutableList<Any>) {
-            val torrentDownload = downloadItem as DownloadItem.TorrentDownload
+        override fun bindPartial(data: DownloadData, payloads: MutableList<Any>) {
 
             for (payload in payloads) {
                 if (payload is List<*>) {
@@ -417,20 +410,20 @@ class DownloadsAdapter(
                             PAYLOAD_STATUS -> {
                                 // Update widget state with real progress from WorkManager
                                 val realProgress = realTimeTorrentData["progress"] as? Int
-                                    ?: torrentDownload.getProgressPercentage()
-                                binding.downloadButtonWidget.updateState(downloadItem.status, realProgress)
-                                updateProgress(torrentDownload)
+                                    ?: data.progressPercent
+                                binding.downloadButtonWidget.updateState(data.status, realProgress)
+                                updateProgress(data)
                             }
                             PAYLOAD_PROGRESS -> {
                                 // Cache real-time data from WorkManager
-                                cacheRealTimeData(downloadItem)
+                                cacheRealTimeData(data)
 
                                 // Update UI with real-time data
                                 val realProgress = realTimeTorrentData["progress"] as? Int
-                                    ?: torrentDownload.getProgressPercentage()
-                                binding.downloadButtonWidget.updateState(downloadItem.status, realProgress)
-                                updateProgress(torrentDownload)
-                                updateTorrentInfo(torrentDownload)
+                                    ?: data.progressPercent
+                                binding.downloadButtonWidget.updateState(data.status, realProgress)
+                                updateProgress(data)
+                                updateTorrentInfo(data)
                             }
                         }
                     }
@@ -438,32 +431,29 @@ class DownloadsAdapter(
             }
         }
 
-        private fun cacheRealTimeData(downloadItem: DownloadItem) {
-            // Extract real-time data from WorkManager progress if available
-            // This would typically come from your ViewModel/Repository that observes WorkManager progress
-            val torrentDownload = downloadItem as DownloadItem.TorrentDownload
+        private fun cacheRealTimeData(data: DownloadData) {
 
             // For now, we'll use the model data, but this should be replaced with actual WorkManager data
             // You would typically get this from: WorkManager.getInstance().getWorkInfosByTagLiveData(downloadId)
             realTimeTorrentData = mapOf(
-                "progress" to torrentDownload.getProgressPercentage(),
-                "downloadSpeed" to torrentDownload.downloadSpeed,
-                "uploadSpeed" to torrentDownload.uploadSpeed,
-                "peers" to torrentDownload.peersConnected,
-                "seeds" to torrentDownload.seedsConnected,
-                "shareRatio" to torrentDownload.shareRatio,
-                "downloadedBytes" to torrentDownload.downloadedBytes,
-                "totalBytes" to torrentDownload.fileSize
+                "progress" to data.progressPercent,
+                "downloadSpeed" to data.downloadSpeed,
+                "uploadSpeed" to data.uploadSpeed,
+                "peers" to data.totalPeers,
+                "seeds" to data.seeds,
+                "shareRatio" to data.shareRatio,
+                "downloadedBytes" to data.downloadedBytes,
+                "totalBytes" to data.totalBytes
             )
         }
 
-        private fun updateTorrentInfo(torrentDownload: DownloadItem.TorrentDownload) {
+        private fun updateTorrentInfo(data: DownloadData) {
             binding.apply {
                 // Use real-time data if available, fallback to model data
-                val peers = realTimeTorrentData["peers"] as? Int ?: (torrentDownload.peersConnected ?: 0)
-                val seeds = realTimeTorrentData["seeds"] as? Int ?: (torrentDownload.seedsConnected ?: 0)
+                val peers = realTimeTorrentData["peers"] as? Int ?: data.peers
+                val seeds = realTimeTorrentData["seeds"] as? Int ?: data.seeds
                 val totalPeers = realTimeTorrentData["totalPeers"] as? Int ?: peers
-                val shareRatio = realTimeTorrentData["shareRatio"] as? Float ?: (torrentDownload.shareRatio ?: 0.0f)
+                val shareRatio = realTimeTorrentData["shareRatio"] as? Float ?: data.shareRatio
 
                 // Update peers info with real-time data
                 tvPeers.text = "$peers peers, $seeds seeds"
@@ -479,57 +469,56 @@ class DownloadsAdapter(
                 )
 
                 // For pieces, we'll use model data since it's not in WorkManager progress yet
-                tvPieces.text = torrentDownload.getPieceProgress()
+                tvPieces.text = "data.getPieceProgress()"
             }
         }
 
-        private fun setupDownloadButtonWidget(downloadItem: DownloadItem) {
-            val torrentDownload = downloadItem as DownloadItem.TorrentDownload
+        private fun setupDownloadButtonWidget(data: DownloadData) {
 
             binding.downloadButtonWidget.apply {
                 // Use real-time progress if available
                 val realProgress = realTimeTorrentData["progress"] as? Int
-                    ?: torrentDownload.getProgressPercentage()
-                updateState(downloadItem.status, realProgress)
+                    ?: data.progressPercent
+                updateState(data.status, realProgress)
 
                 // Set up click handlers based on download status
                 onDownloadClick = {
-                    onActionClick(DownloadAction.RETRY, downloadItem)
+                    onActionClick(DownloadAction.RETRY, data)
                 }
 
                 onPauseClick = {
-                    onActionClick(DownloadAction.PAUSE, downloadItem)
+                    onActionClick(DownloadAction.PAUSE, data)
                 }
 
                 onResumeClick = {
-                    onActionClick(DownloadAction.RESUME, downloadItem)
+                    onActionClick(DownloadAction.RESUME, data)
                 }
 
                 onCancelClick = {
-                    onActionClick(DownloadAction.CANCEL, downloadItem)
+                    onActionClick(DownloadAction.CANCEL, data)
                 }
 
                 onPlayClick = {
-                    onActionClick(DownloadAction.PLAY, downloadItem)
+                    onActionClick(DownloadAction.PLAY, data)
                 }
             }
         }
 
-        private fun updateProgress(torrentDownload: DownloadItem.TorrentDownload) {
+        private fun updateProgress(data: DownloadData) {
             binding.apply {
-                when (torrentDownload.status) {
+                when (data.status) {
                     DownloadStatus.DOWNLOADING -> {
                         // Use real-time data if available
                         val realProgress = realTimeTorrentData["progress"] as? Int
-                            ?: torrentDownload.getProgressPercentage()
+                            ?: data.progressPercent
                         val realDownloadSpeed = realTimeTorrentData["downloadSpeed"] as? Long
-                            ?: torrentDownload.downloadSpeed
+                            ?: data.downloadSpeed
                         val realUploadSpeed = realTimeTorrentData["uploadSpeed"] as? Long
-                            ?: torrentDownload.uploadSpeed
+                            ?: data.uploadSpeed
                         val realDownloadedBytes = realTimeTorrentData["downloadedBytes"] as? Long
-                            ?: torrentDownload.downloadedBytes
+                            ?: data.downloadedBytes
                         val realTotalBytes = realTimeTorrentData["totalBytes"] as? Long
-                            ?: torrentDownload.fileSize
+                            ?: data.totalBytes
 
                         val progressText = "$realProgress%"
                         val downSpeed = if (realDownloadSpeed > 0) "↓ ${formatSpeed(realDownloadSpeed)}" else "↓ 0 B/s"
@@ -537,29 +526,29 @@ class DownloadsAdapter(
 
                         tvStatus.text = "Downloading • $progressText • ${formatFileSize(realDownloadedBytes)} / ${formatFileSize(realTotalBytes)}"
                         tvSpeeds.text = "$downSpeed • $upSpeed"
-                        tvStatus.setTextColor(getStatusColor(torrentDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     DownloadStatus.PAUSED -> {
                         val realProgress = realTimeTorrentData["progress"] as? Int
-                            ?: torrentDownload.getProgressPercentage()
+                            ?: data.progressPercent
                         tvStatus.text = "Paused • $realProgress%"
                         tvSpeeds.text = ""
-                        tvStatus.setTextColor(getStatusColor(torrentDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     DownloadStatus.COMPLETED -> {
                         val realTotalBytes = realTimeTorrentData["totalBytes"] as? Long
-                            ?: torrentDownload.fileSize
+                            ?: data.totalBytes
                         tvStatus.text = "Completed • ${formatFileSize(realTotalBytes)}"
                         val realUploadSpeed = realTimeTorrentData["uploadSpeed"] as? Long
-                            ?: torrentDownload.uploadSpeed
+                            ?: data.uploadSpeed
                         val upSpeed = if (realUploadSpeed > 0) "↑ ${formatSpeed(realUploadSpeed)}" else ""
                         tvSpeeds.text = upSpeed
-                        tvStatus.setTextColor(getStatusColor(torrentDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                     else -> {
-                        tvStatus.text = torrentDownload.status.name.lowercase().replaceFirstChar { it.uppercase() }
+                        tvStatus.text = data.status.name.lowercase().replaceFirstChar { it.uppercase() }
                         tvSpeeds.text = ""
-                        tvStatus.setTextColor(getStatusColor(torrentDownload.status))
+                        tvStatus.setTextColor(getStatusColor(data.status))
                     }
                 }
             }
@@ -576,16 +565,16 @@ class DownloadsAdapter(
     }
 }
 
-class DownloadDiffCallback : DiffUtil.ItemCallback<DownloadItem>() {
-    override fun areItemsTheSame(oldItem: DownloadItem, newItem: DownloadItem): Boolean {
+class DownloadDiffCallback : DiffUtil.ItemCallback<DownloadData>() {
+    override fun areItemsTheSame(oldItem: DownloadData, newItem: DownloadData): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: DownloadItem, newItem: DownloadItem): Boolean {
+    override fun areContentsTheSame(oldItem: DownloadData, newItem: DownloadData): Boolean {
         return oldItem == newItem
     }
 
-    override fun getChangePayload(oldItem: DownloadItem, newItem: DownloadItem): Any? {
+    override fun getChangePayload(oldItem: DownloadData, newItem: DownloadData): Any? {
         val changes = mutableListOf<String>()
 
 //        if (oldItem.status != newItem.status) {
@@ -600,4 +589,13 @@ class DownloadDiffCallback : DiffUtil.ItemCallback<DownloadItem>() {
 
         return if (changes.isNotEmpty()) changes else null
     }
+}
+@Serializable
+enum class DownloadAction {
+    CANCEL,
+    PAUSE,
+    RESUME,
+    RETRY,
+    PLAY,
+    REMOVE
 }

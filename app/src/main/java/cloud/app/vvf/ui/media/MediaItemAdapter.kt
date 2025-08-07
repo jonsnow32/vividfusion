@@ -62,7 +62,6 @@ class MediaItemAdapter(
       is AVPMediaItem.VideoItem -> 9
       is AVPMediaItem.VideoCollectionItem -> 10
       is AVPMediaItem.TrackItem -> 11
-      is AVPMediaItem.DownloadItem -> 12 // Add missing DownloadItem case
     }
   }
 

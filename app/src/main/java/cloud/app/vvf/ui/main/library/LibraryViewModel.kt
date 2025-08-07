@@ -8,7 +8,7 @@ import cloud.app.vvf.common.clients.mvdatabase.DatabaseClient
 import cloud.app.vvf.common.helpers.Page
 import cloud.app.vvf.common.helpers.PagedData
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.DownloadStatus
+import cloud.app.vvf.services.downloader.DownloadStatus
 import cloud.app.vvf.common.models.MediaItemsContainer
 import cloud.app.vvf.common.models.MediaItemsContainer.Companion.toPaged
 import cloud.app.vvf.common.models.extension.Tab
@@ -93,22 +93,6 @@ class LibraryViewModel @Inject constructor(
 //          Page(items, null)
 //        }.toFlow()
 
-      }
-
-      "Downloads" -> {
-        PagedData.Continuous<MediaItemsContainer> { it ->
-          val data = dataFlow.value.getActiveDownloads()
-          val items = mutableListOf<MediaItemsContainer.Category>()
-          if (!data.isNullOrEmpty()) {
-            items.add(
-              MediaItemsContainer.Category(
-                title = "Downloads",
-                more = data.map { it.mediaItem }.toPaged() // Fix: Extract mediaItem first, then use toPaged()
-              )
-            )
-          }
-          Page(items, null)
-        }.toFlow()
       }
       else -> null
     }

@@ -6,7 +6,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import cloud.app.vvf.R
 import cloud.app.vvf.utils.KUniFile
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -214,7 +213,7 @@ class HlsDownloader @AssistedInject constructor(
     }
 
     private fun createForegroundInfo(fileName: String): ForegroundInfo {
-        return MediaDownloader.createDownloadForegroundInfo(
+        return HttpDownloader.createDownloadForegroundInfo(
             context,
             fileName,
             "Downloading HLS stream...",

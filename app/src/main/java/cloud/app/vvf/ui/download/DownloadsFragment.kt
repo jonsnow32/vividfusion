@@ -11,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.databinding.FragmentDownloadsBinding
+import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -19,8 +20,7 @@ import timber.log.Timber
 @AndroidEntryPoint
 class DownloadsFragment : Fragment() {
 
-  private var _binding: FragmentDownloadsBinding? = null
-  private val binding get() = _binding!!
+  private var binding by autoCleared<FragmentDownloadsBinding>()
 
   private val viewModel: DownloadsViewModel by viewModels()
   private lateinit var downloadsAdapter: DownloadsAdapter
@@ -30,7 +30,7 @@ class DownloadsFragment : Fragment() {
     container: ViewGroup?,
     savedInstanceState: Bundle?
   ): View {
-    _binding = FragmentDownloadsBinding.inflate(inflater, container, false)
+    binding = FragmentDownloadsBinding.inflate(inflater, container, false)
     return binding.root
   }
 
@@ -60,6 +60,16 @@ class DownloadsFragment : Fragment() {
       }
     }
 
+    downloadsAdapter = DownloadsAdapter() { action: DownloadAction, downloadItem ->
+      when (action) {
+        DownloadAction.PAUSE -> viewModel.pauseDownload(downloadItem.id)
+        DownloadAction.RESUME -> viewModel.resumeDownload(downloadItem.id)
+        DownloadAction.CANCEL -> viewModel.cancelDownload(downloadItem.id)
+        DownloadAction.RETRY -> viewModel.retryDownload(downloadItem.id)
+        DownloadAction.REMOVE -> viewModel.removeDownload(downloadItem.id)
+        DownloadAction.PLAY -> viewModel.playDownloadedFile(requireContext(), downloadItem)
+      }
+    }
     binding.rvDownloads.apply {
       layoutManager = LinearLayoutManager(requireContext())
       adapter = downloadsAdapter
@@ -175,8 +185,4 @@ class DownloadsFragment : Fragment() {
     viewModel.refreshStorageInfo()
   }
 
-  override fun onDestroyView() {
-    super.onDestroyView()
-    _binding = null
-  }
 }

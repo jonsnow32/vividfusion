@@ -136,8 +136,6 @@ class MediaClickListener(
           )
         )
       }
-
-      is AVPMediaItem.DownloadItem -> TODO()
     }
   }
 

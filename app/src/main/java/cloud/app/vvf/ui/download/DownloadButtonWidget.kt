@@ -7,7 +7,7 @@ import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ProgressBar
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.DownloadStatus
+import cloud.app.vvf.services.downloader.DownloadStatus
 
 class DownloadButtonWidget @JvmOverloads constructor(
   context: Context,

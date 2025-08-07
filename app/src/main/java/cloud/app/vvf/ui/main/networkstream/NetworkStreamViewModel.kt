@@ -3,14 +3,15 @@ package cloud.app.vvf.ui.main.networkstream
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.DownloadItem
 import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.datastore.app.helper.UriHistoryItem
-import cloud.app.vvf.services.downloader.DownloadManager
+import cloud.app.vvf.services.downloader.DownloadData
+import cloud.app.vvf.services.DownloadManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.UUID
@@ -25,6 +26,8 @@ class NetworkStreamViewModel @Inject constructor(
 
   private val _streamUris = MutableStateFlow<List<UriHistoryItem>?>(null)
   val streamUris get() = _streamUris
+
+  val downloads: StateFlow<Map<String, DownloadData>> = downloadManager.downloads
 
   fun saveToUriHistory(streamUrl: String) {
     dataFlow.value.saveUriHistory(UriHistoryItem(streamUrl))

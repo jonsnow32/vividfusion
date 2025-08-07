@@ -52,7 +52,6 @@ class ItemOptionViewModel @Inject constructor(
           is AVPMediaItem.VideoCollectionItem,
           is AVPMediaItem.VideoItem,
           is AVPMediaItem.TrackItem,
-          is AVPMediaItem.DownloadItem,
           is AVPMediaItem.PlaybackProgress -> async {
             dataFlow.value.getFavoritesData(
               detailItem.value?.id?.toString()

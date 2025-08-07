@@ -1,6 +1,5 @@
 package cloud.app.vvf.services.downloader
 
-import cloud.app.vvf.common.models.DownloadItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,15 +9,16 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Central controller for managing download states
  * This is the single source of truth for download state
+ * Now uses DownloadData as unified data structure
  */
 class DownloadController {
 
   // State machines for each download
   private val stateMachines = ConcurrentHashMap<String, DownloadStateMachine>()
 
-  // Current download items exposed to UI
-  private val _downloads = MutableStateFlow<Map<String, DownloadItem>>(emptyMap())
-  val downloads: StateFlow<Map<String, DownloadItem>> = _downloads.asStateFlow()
+  // Current download data exposed to UI
+  private val _downloads = MutableStateFlow<Map<String, DownloadData>>(emptyMap())
+  val downloads: StateFlow<Map<String, DownloadData>> = _downloads.asStateFlow()
 
   /**
    * Execute a download command
@@ -47,7 +47,7 @@ class DownloadController {
 
     val newState = stateMachine.executeCommand(command)
     if (newState != null) {
-      updateDownloadItem(downloadId, newState)
+      updateDownloadData(downloadId, newState)
       return true
     }
 
@@ -69,14 +69,13 @@ class DownloadController {
 
     val stateMachine = stateMachines[downloadId]
     if (stateMachine == null) {
-      // Timber.w("No state machine found for work event: $event")
       // Silently ignore events for downloads without state machines (old downloads)
       return false
     }
 
     val newState = stateMachine.handleEvent(event)
     if (newState != null) {
-      updateDownloadItem(downloadId, newState)
+      updateDownloadData(downloadId, newState)
       return true
     }
 
@@ -84,101 +83,84 @@ class DownloadController {
   }
 
   /**
-   * Update the DownloadItem based on current state
+   * Update the DownloadData based on current state
    */
-  private fun updateDownloadItem(downloadId: String, state: DownloadState) {
+  private fun updateDownloadData(downloadId: String, state: DownloadState) {
     val currentDownloads = _downloads.value.toMutableMap()
-    val existingItem = currentDownloads[downloadId]
+    val existingData = currentDownloads[downloadId]
 
-    if (existingItem == null) {
-      Timber.w("No existing DownloadItem for $downloadId")
+    if (existingData == null) {
+      Timber.w("No existing DownloadData for $downloadId")
       return
     }
 
-    val stateMachine = stateMachines[downloadId] ?: return
-
-    val extra = stateMachine.getExtraInfo() ?: emptyMap<String, Any>()
-
-    val updatedItem = when (state) {
+    val updatedData = when (state) {
       is DownloadState.Running -> {
-        val (progress, downloadedBytes, totalBytes) = stateMachine.getProgress() ?: Triple(
-          0,
-          0L,
-          0L
+        val downloadData = state.downloadData
+
+        // Merge the state downloadData with existing data, preserving ID and metadata
+        downloadData.copy(
+          id = existingData.id,
+          mediaItem = existingData.mediaItem,
+          url = existingData.url,
+          status = state.toDownloadStatus(),
+          createdAt = existingData.createdAt,
+          updatedAt = System.currentTimeMillis(),
+          type = existingData.type,
+
+          // Merge type-specific data
+          typeSpecificData = existingData.typeSpecificData + downloadData.typeSpecificData
         )
-
-        when (existingItem) {
-          is DownloadItem.HttpDownload -> existingItem.copyWith(
-            status = state.toDownloadStatus(),
-            progress = progress,
-            downloadedBytes = downloadedBytes,
-            fileSize = totalBytes,
-            updatedAt = System.currentTimeMillis()
-          )
-
-          is DownloadItem.TorrentDownload -> existingItem.copyWith(
-            status = state.toDownloadStatus(),
-            progress = progress,
-            downloadedBytes = downloadedBytes,
-            fileSize = totalBytes,
-            updatedAt = System.currentTimeMillis(),
-          )
-
-          is DownloadItem.HlsDownload -> existingItem.copyWith(
-            status = state.toDownloadStatus(),
-            progress = progress,
-            downloadedBytes = downloadedBytes,
-            fileSize = totalBytes,
-            updatedAt = System.currentTimeMillis()
-          )
-        }
       }
 
       is DownloadState.Completed -> {
-        val (localPath, fileSize) = stateMachine.getCompletionInfo() ?: Pair("", 0L)
-        existingItem.copyWith(
+        val downloadData = state.downloadData
+        existingData.copy(
           status = state.toDownloadStatus(),
           progress = 100,
-          downloadedBytes = fileSize,
-          fileSize = fileSize,
-          localPath = localPath,
-          updatedAt = System.currentTimeMillis()
+          downloadedBytes = state.fileSize,
+          totalBytes = state.fileSize,
+          localPath = state.localPath,
+          updatedAt = System.currentTimeMillis(),
+          downloadSpeed = downloadData?.downloadSpeed ?: 0L
         )
       }
 
       is DownloadState.Failed -> {
-        val error = stateMachine.getError()
-        existingItem.copyWith(
+        val downloadData = state.downloadData
+        existingData.copy(
           status = state.toDownloadStatus(),
-          updatedAt = System.currentTimeMillis()
+          updatedAt = System.currentTimeMillis(),
+          progress = downloadData?.progress ?: existingData.progress,
+          downloadedBytes = downloadData?.downloadedBytes ?: existingData.downloadedBytes
         )
       }
 
       else -> {
-        existingItem.copyWith(
+        existingData.copy(
           status = state.toDownloadStatus(),
           updatedAt = System.currentTimeMillis()
         )
       }
     }
 
-    currentDownloads[downloadId] = updatedItem
+    currentDownloads[downloadId] = updatedData
     _downloads.value = currentDownloads
 
-    Timber.d("Updated DownloadItem $downloadId: ${updatedItem.status} (${updatedItem.progress}%)")
+    Timber.d("Updated DownloadData $downloadId: ${updatedData.status} (${updatedData.progress}%)")
   }
 
   /**
-   * Add a new download item (called when starting new download)
+   * Add a new download data (called when starting new download)
    */
-  fun addDownloadItem(downloadItem: DownloadItem) {
+  fun addDownloadData(downloadData: DownloadData) {
     val currentDownloads = _downloads.value.toMutableMap()
-    currentDownloads[downloadItem.id] = downloadItem
+    currentDownloads[downloadData.id] = downloadData
     _downloads.value = currentDownloads
 
     // Create state machine if not exists
-    if (!stateMachines.containsKey(downloadItem.id)) {
-      stateMachines[downloadItem.id] = DownloadStateMachine(downloadItem.id)
+    if (!stateMachines.containsKey(downloadData.id)) {
+      stateMachines[downloadData.id] = DownloadStateMachine(downloadData.id)
     }
   }
 
@@ -228,30 +210,28 @@ class DownloadController {
   /**
    * Initialize from persisted data
    */
-  fun initializeFromPersistedData(downloadItems: List<DownloadItem>) {
-    val downloadsMap = downloadItems.associateBy { it.id }
+  fun initializeFromPersistedData(downloadDataList: List<DownloadData>) {
+    val downloadsMap = downloadDataList.associateBy { it.id }
     _downloads.value = downloadsMap
 
     // Create state machines based on persisted status
-    downloadItems.forEach { item ->
-      val initialState = when (item.status) {
-        cloud.app.vvf.common.models.DownloadStatus.PENDING -> DownloadState.Queued
-        cloud.app.vvf.common.models.DownloadStatus.DOWNLOADING -> DownloadState.Running(
-          item.progress, item.downloadedBytes, item.fileSize
+    downloadDataList.forEach { data ->
+      val initialState = when (data.status) {
+        DownloadStatus.PENDING -> DownloadState.Queued
+        DownloadStatus.DOWNLOADING -> {
+          DownloadState.Running(data)
+        }
+        DownloadStatus.PAUSED -> DownloadState.Paused
+        DownloadStatus.COMPLETED -> DownloadState.Completed(
+          data.localPath ?: "", data.totalBytes, data
         )
-
-        cloud.app.vvf.common.models.DownloadStatus.PAUSED -> DownloadState.Paused
-        cloud.app.vvf.common.models.DownloadStatus.COMPLETED -> DownloadState.Completed(
-          item.localPath ?: "", item.fileSize
-        )
-
-        cloud.app.vvf.common.models.DownloadStatus.FAILED -> DownloadState.Failed("Previous error")
-        cloud.app.vvf.common.models.DownloadStatus.CANCELLED -> DownloadState.Cancelled
+        DownloadStatus.FAILED -> DownloadState.Failed("Previous error", data)
+        DownloadStatus.CANCELLED -> DownloadState.Cancelled
       }
 
-      stateMachines[item.id] = DownloadStateMachine(item.id, initialState)
+      stateMachines[data.id] = DownloadStateMachine(data.id, initialState)
     }
 
-    Timber.d("Initialized DownloadController with ${downloadItems.size} downloads")
+    Timber.d("Initialized DownloadController with ${downloadDataList.size} downloads")
   }
 }

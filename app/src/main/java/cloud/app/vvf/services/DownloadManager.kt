@@ -1,4 +1,4 @@
-package cloud.app.vvf.services.downloader
+package cloud.app.vvf.services
 
 import android.content.Context
 import androidx.work.ExistingWorkPolicy
@@ -7,9 +7,18 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.DownloadItem
-import cloud.app.vvf.common.models.DownloadStatus
 import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.services.downloader.DownloadController
+import cloud.app.vvf.services.downloader.DownloadCommand
+import cloud.app.vvf.services.downloader.DownloadData
+import cloud.app.vvf.services.downloader.DownloadType
+import cloud.app.vvf.services.downloader.DownloadEvent
+import cloud.app.vvf.services.downloader.DownloadStatus
+import cloud.app.vvf.services.downloader.HlsDownloader
+import cloud.app.vvf.services.downloader.TorrentDownloader
+import cloud.app.vvf.services.downloader.toDownloadEvent
+import cloud.app.vvf.services.downloader.HttpDownloader
+import cloud.app.vvf.utils.KUniFile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,7 +40,7 @@ class DownloadManager @Inject constructor(
     private val downloadController = DownloadController()
 
     // Expose downloads from controller
-    val downloads: StateFlow<Map<String, DownloadItem>> = downloadController.downloads
+    val downloads: StateFlow<Map<String, DownloadData>> = downloadController.downloads
 
     // Active downloads computed from controller
     val activeDownloads: StateFlow<Set<String>> = downloadController.downloads
@@ -78,8 +87,20 @@ class DownloadManager @Inject constructor(
         downloadUrl: String,
         quality: String = "default"
     ): String {
-        val downloadType = DownloadType.fromUrl(downloadUrl)
+        val downloadType = detectDownloadType(downloadUrl)
         return startDownloadWithType(mediaItem, downloadUrl, downloadType, quality)
+    }
+
+    /**
+     * Detect download type from URL
+     */
+    private fun detectDownloadType(url: String): DownloadType {
+        return when {
+            url.contains(".m3u8") || url.contains("m3u8") -> DownloadType.HLS
+            url.startsWith("magnet:") -> DownloadType.TORRENT
+            url.endsWith(".torrent") -> DownloadType.TORRENT
+            else -> DownloadType.HTTP
+        }
     }
 
     /**
@@ -118,39 +139,45 @@ class DownloadManager @Inject constructor(
             }
         }
 
-        // Create new download item based on type
-        val downloadItem = when (downloadType) {
-            DownloadType.HTTP -> DownloadItem.createHttpDownload(
-                id = downloadId,
-                mediaItem = mediaItem,
-                url = downloadUrl,
-                fileName = fileName
-            )
-            DownloadType.HLS -> DownloadItem.createHlsDownload(
-                id = downloadId,
-                mediaItem = mediaItem,
-                playlistUrl = downloadUrl,
-                fileName = fileName,
-                quality = quality
-            )
-            DownloadType.TORRENT -> DownloadItem.createTorrentDownload(
-                id = downloadId,
-                mediaItem = mediaItem,
-                url = downloadUrl,
-                fileName = fileName
-            )
-            DownloadType.MAGNET -> DownloadItem.createTorrentDownload(
-                id = downloadId,
-                mediaItem = mediaItem,
-                url = downloadUrl,
-                fileName = fileName,
-                magnetLink = downloadUrl
-            )
+        // Create new download data based on type
+        val downloadData = when (downloadType) {
+            DownloadType.HTTP -> DownloadData.Companion.DownloadDataBuilder()
+                .id(downloadId)
+                .mediaItem(mediaItem)
+                .url(downloadUrl)
+                .fileName(fileName)
+                .type(DownloadType.HTTP)
+                .status(DownloadStatus.PENDING)
+                .build()
+
+            DownloadType.HLS -> DownloadData.Companion.DownloadDataBuilder()
+                .id(downloadId)
+                .mediaItem(mediaItem)
+                .url(downloadUrl)
+                .fileName(fileName)
+                .type(DownloadType.HLS)
+                .quality(quality)
+                .status(DownloadStatus.PENDING)
+                .build()
+
+            DownloadType.TORRENT -> DownloadData.Companion.DownloadDataBuilder()
+                .id(downloadId)
+                .mediaItem(mediaItem)
+                .url(downloadUrl)
+                .fileName(fileName)
+                .type(DownloadType.TORRENT)
+                .status(DownloadStatus.PENDING)
+                .apply {
+                    if (downloadUrl.startsWith("magnet:")) {
+                        magnetLink(downloadUrl)
+                    }
+                }
+                .build()
         }
 
         // Add to controller and persist
-        downloadController.addDownloadItem(downloadItem)
-        appDataStore.value.saveDownload(downloadItem)
+        downloadController.addDownloadData(downloadData)
+        appDataStore.value.saveDownload(downloadData)
 
         // Execute start command
         val command = DownloadCommand.Start(downloadId, downloadUrl, fileName)
@@ -176,10 +203,8 @@ class DownloadManager @Inject constructor(
             return
         }
 
-        Timber.d("DownloadManager: About to execute Pause command for: $downloadId")
         val command = DownloadCommand.Pause(downloadId)
         if (downloadController.executeCommand(command)) {
-            Timber.d("DownloadManager: Pause command executed successfully for: $downloadId")
             // Cancel WorkManager task
             workManager.cancelUniqueWork("download_$downloadId")
             Timber.d("DownloadManager: Cancelled WorkManager task for: $downloadId")
@@ -197,38 +222,23 @@ class DownloadManager @Inject constructor(
             return
         }
 
-        val downloadItem = downloads.value[downloadId] ?: return
+        val downloadData = downloads.value[downloadId] ?: return
 
         // Calculate actual downloaded bytes from file if it exists
-        val actualDownloadedBytes = getActualDownloadedBytes(downloadItem.fileName)
+        val actualDownloadedBytes = getActualDownloadedBytes(downloadData.fileName ?: "")
 
-        // Update download item with actual file size if different
-        if (actualDownloadedBytes != downloadItem.downloadedBytes && actualDownloadedBytes > 0) {
-            val updatedItem = when (downloadItem) {
-                is DownloadItem.HttpDownload -> downloadItem.copy(
-                    downloadedBytes = actualDownloadedBytes,
-                    progress = if (downloadItem.fileSize > 0) {
-                        ((actualDownloadedBytes * 100) / downloadItem.fileSize).toInt()
-                    } else downloadItem.progress,
-                    updatedAt = System.currentTimeMillis()
-                )
-                is DownloadItem.HlsDownload -> downloadItem.copy(
-                    downloadedBytes = actualDownloadedBytes,
-                    progress = if (downloadItem.fileSize > 0) {
-                        ((actualDownloadedBytes * 100) / downloadItem.fileSize).toInt()
-                    } else downloadItem.progress,
-                    updatedAt = System.currentTimeMillis()
-                )
-                is DownloadItem.TorrentDownload -> downloadItem.copy(
-                    downloadedBytes = actualDownloadedBytes,
-                    progress = if (downloadItem.fileSize > 0) {
-                        ((actualDownloadedBytes * 100) / downloadItem.fileSize).toInt()
-                    } else downloadItem.progress,
-                    updatedAt = System.currentTimeMillis()
-                )
-            }
-            // Save updated item to datastore - the controller will sync on resume
-            appDataStore.value.saveDownload(updatedItem)
+        // Update download data with actual file size if different
+        if (actualDownloadedBytes != downloadData.downloadedBytes && actualDownloadedBytes > 0) {
+            val updatedData = downloadData.copy(
+                downloadedBytes = actualDownloadedBytes,
+                progress = if (downloadData.totalBytes > 0) {
+                    ((actualDownloadedBytes * 100) / downloadData.totalBytes).toInt()
+                } else downloadData.progress,
+                updatedAt = System.currentTimeMillis()
+            )
+
+            // Save updated data to datastore
+            appDataStore.value.saveDownload(updatedData)
             Timber.d("Updated download $downloadId with actual downloaded bytes: $actualDownloadedBytes")
         }
 
@@ -236,23 +246,20 @@ class DownloadManager @Inject constructor(
 
         if (downloadController.executeCommand(command)) {
             // Re-enqueue work request with resume parameters
-            val downloadType = DownloadType.fromUrl(downloadItem.url)
-            val finalDownloadedBytes = if (actualDownloadedBytes > 0) actualDownloadedBytes else downloadItem.downloadedBytes
+            val downloadType = detectDownloadType(downloadData.url)
+            val finalDownloadedBytes = if (actualDownloadedBytes > 0) actualDownloadedBytes else downloadData.downloadedBytes
 
             enqueueWorkRequest(
                 downloadId = downloadId,
                 downloadType = downloadType,
-                downloadUrl = downloadItem.url,
-                fileName = downloadItem.fileName,
-                quality = when (downloadItem) {
-                    is DownloadItem.HlsDownload -> downloadItem.quality
-                    else -> "default"
-                },
+                downloadUrl = downloadData.url,
+                fileName = downloadData.fileName ?: "",
+                quality = downloadData.quality,
                 resumeBytes = finalDownloadedBytes,
-                resumeProgress = downloadItem.progress,
+                resumeProgress = downloadData.progress,
                 isResuming = true
             )
-            Timber.d("Resumed download: $downloadId from ${finalDownloadedBytes} bytes (${downloadItem.progress}%)")
+            Timber.d("Resumed download: $downloadId from ${finalDownloadedBytes} bytes (${downloadData.progress}%)")
         }
     }
 
@@ -273,13 +280,13 @@ class DownloadManager @Inject constructor(
     /**
      * Get downloads directory
      */
-    private fun getDownloadsDirectory(): cloud.app.vvf.utils.KUniFile {
+    private fun getDownloadsDirectory(): KUniFile {
         return try {
             val downloadsFolder = java.io.File(context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS), "VividFusion")
             if (!downloadsFolder.exists()) {
                 downloadsFolder.mkdirs()
             }
-            cloud.app.vvf.utils.KUniFile.fromFile(context, downloadsFolder)
+            KUniFile.fromFile(context, downloadsFolder)
                 ?: throw Exception("Failed to create KUniFile")
         } catch (e: Exception) {
             Timber.e(e, "Failed to get downloads directory")
@@ -315,14 +322,16 @@ class DownloadManager @Inject constructor(
      * Retry a failed download
      */
     fun retryDownload(downloadId: String) {
-        val downloadItem = downloads.value[downloadId] ?: return
+        val downloadData = downloads.value[downloadId] ?: return
 
-        if (downloadItem.status == DownloadStatus.FAILED || downloadItem.status == DownloadStatus.CANCELLED) {
+        if (downloadData.status == DownloadStatus.FAILED || downloadData.status == DownloadStatus.CANCELLED) {
             // Start a new download for retry
-            startDownload(downloadItem.mediaItem, downloadItem.url)
+            downloadData.mediaItem?.let { mediaItem ->
+                startDownload(mediaItem, downloadData.url)
+            }
             Timber.d("Retrying download: $downloadId")
         } else {
-            Timber.w("Cannot retry download $downloadId: current status is ${downloadItem.status}")
+            Timber.w("Cannot retry download $downloadId: current status is ${downloadData.status}")
         }
     }
 
@@ -338,10 +347,8 @@ class DownloadManager @Inject constructor(
     /**
      * Get all downloads for a specific media item
      */
-    fun getDownloadsForMediaItem(mediaItem: AVPMediaItem): List<DownloadItem> {
-        return downloads.value.values.filter {
-            it.mediaItem.id == mediaItem.id
-        }
+    fun getDownloadsForMediaItem(mediaItem: AVPMediaItem): List<DownloadData> {
+        return downloads.value.values.filter { it.mediaItem?.id == mediaItem.id }
     }
 
     /**
@@ -349,7 +356,7 @@ class DownloadManager @Inject constructor(
      */
     fun isDownloading(mediaItem: AVPMediaItem): Boolean {
         return downloads.value.values.any {
-            it.mediaItem.id == mediaItem.id && it.isActive()
+            it.mediaItem?.id == mediaItem.id && it.isActive()
         }
     }
 
@@ -358,7 +365,7 @@ class DownloadManager @Inject constructor(
      */
     fun isDownloaded(mediaItem: AVPMediaItem): Boolean {
         return downloads.value.values.any {
-            it.mediaItem.id == mediaItem.id && it.status == DownloadStatus.COMPLETED
+            it.mediaItem?.id == mediaItem.id && it.status == DownloadStatus.COMPLETED
         }
     }
 
@@ -377,16 +384,16 @@ class DownloadManager @Inject constructor(
     ) {
         val workRequest = when (downloadType) {
             DownloadType.HTTP -> {
-                OneTimeWorkRequestBuilder<MediaDownloader>()
+                OneTimeWorkRequestBuilder<HttpDownloader>()
                     .setInputData(workDataOf(
-                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_URL to downloadUrl,
-                        MediaDownloader.DownloadParams.KEY_FILE_NAME to fileName,
-                        MediaDownloader.DownloadParams.KEY_QUALITY to quality,
-                        MediaDownloader.DownloadParams.KEY_DOWNLOAD_TYPE to "HTTP",
-                        MediaDownloader.DownloadParams.KEY_RESUME_PROGRESS to resumeProgress,
-                        MediaDownloader.DownloadParams.KEY_RESUME_BYTES to resumeBytes,
-                        MediaDownloader.DownloadParams.KEY_RESUME_FROM_PAUSE to isResuming
+                        HttpDownloader.DownloadParams.KEY_DOWNLOAD_ID to downloadId,
+                        HttpDownloader.DownloadParams.KEY_DOWNLOAD_URL to downloadUrl,
+                        HttpDownloader.DownloadParams.KEY_FILE_NAME to fileName,
+                        HttpDownloader.DownloadParams.KEY_QUALITY to quality,
+                        HttpDownloader.DownloadParams.KEY_DOWNLOAD_TYPE to "HTTP",
+                        HttpDownloader.DownloadParams.KEY_RESUME_PROGRESS to resumeProgress,
+                        HttpDownloader.DownloadParams.KEY_RESUME_BYTES to resumeBytes,
+                        HttpDownloader.DownloadParams.KEY_RESUME_FROM_PAUSE to isResuming
                     ))
                     .addTag(DOWNLOAD_WORK_TAG)
                     .addTag(downloadId)
@@ -416,18 +423,6 @@ class DownloadManager @Inject constructor(
                     .addTag(DOWNLOAD_WORK_TAG)
                     .addTag(downloadId)
                     .addTag("TORRENT")
-                    .build()
-            }
-            DownloadType.MAGNET -> {
-                OneTimeWorkRequestBuilder<TorrentDownloader>()
-                    .setInputData(workDataOf(
-                        TorrentDownloader.DownloadParams.KEY_DOWNLOAD_ID to downloadId,
-                        TorrentDownloader.DownloadParams.KEY_MAGNET_LINK to downloadUrl,
-                        TorrentDownloader.DownloadParams.KEY_FILE_NAME to fileName
-                    ))
-                    .addTag(DOWNLOAD_WORK_TAG)
-                    .addTag(downloadId)
-                    .addTag("MAGNET")
                     .build()
             }
         }

@@ -6,8 +6,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.CaptionStyleCompat
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgress
-import cloud.app.vvf.common.models.DownloadItem
-import cloud.app.vvf.common.models.DownloadStatus
 import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.user.User
@@ -19,6 +17,8 @@ import cloud.app.vvf.datastore.app.helper.PlayerSettingItem
 import cloud.app.vvf.datastore.app.helper.UriHistoryItem
 import cloud.app.vvf.features.player.subtitle.DEF_SUBS_ELEVATION
 import cloud.app.vvf.features.player.subtitle.SubtitleStyle
+import cloud.app.vvf.services.downloader.DownloadData
+import cloud.app.vvf.services.downloader.DownloadStatus
 
 
 const val ExtensionFolder = "extensionDir"
@@ -249,61 +249,61 @@ class AppDataStore(val context: Context, val account: Account) :
   }
 
   // Download functionality methods
-  fun getAllDownloads(): List<DownloadItem>? {
-    return getAll<DownloadItem>("$DOWNLOAD_FOLDER/")?.sortedByDescending { it.updatedAt }
+  fun getAllDownloads(): List<DownloadData>? {
+    return getAll<DownloadData>("$DOWNLOAD_FOLDER/")?.sortedByDescending { it.updatedAt }
   }
 
-  fun saveDownload(downloadItem: DownloadItem) {
-    val updateItem = downloadItem.copyWith(
+  fun saveDownload(downloadData: DownloadData) {
+    val updateData = downloadData.copy(
       updatedAt = System.currentTimeMillis()
     )
-    set("$DOWNLOAD_FOLDER/${updateItem.id}", updateItem)
+    set("$DOWNLOAD_FOLDER/${updateData.id}", updateData)
   }
 
-  fun getDownload(downloadId: String): DownloadItem? {
-    return get<DownloadItem>("$DOWNLOAD_FOLDER/$downloadId")
+  fun getDownload(downloadId: String): DownloadData? {
+    return get<DownloadData>("$DOWNLOAD_FOLDER/$downloadId")
   }
 
   fun removeDownload(downloadId: String) {
     removeKey("$DOWNLOAD_FOLDER/$downloadId")
   }
 
-  fun removeDownload(downloadItem: DownloadItem) {
-    removeKey("$DOWNLOAD_FOLDER/${downloadItem.id}")
+  fun removeDownload(downloadData: DownloadData) {
+    removeKey("$DOWNLOAD_FOLDER/${downloadData.id}")
   }
 
   fun updateDownloadProgress(downloadId: String, progress: Int, downloadedBytes: Long) {
-    val downloadItem = getDownload(downloadId)
-    downloadItem?.let { item ->
-      val updatedItem = item.copyWith(
+    val downloadData = getDownload(downloadId)
+    downloadData?.let { data ->
+      val updatedData = data.copy(
         progress = progress,
         downloadedBytes = downloadedBytes,
         updatedAt = System.currentTimeMillis()
       )
-      saveDownload(updatedItem)
+      saveDownload(updatedData)
     }
   }
 
   fun updateDownloadStatus(downloadId: String, status: DownloadStatus) {
-    val downloadItem = getDownload(downloadId)
-    downloadItem?.let { item ->
-      val updatedItem = item.copyWith(
+    val downloadData = getDownload(downloadId)
+    downloadData?.let { data ->
+      val updatedData = data.copy(
         status = status,
         updatedAt = System.currentTimeMillis()
       )
-      saveDownload(updatedItem)
+      saveDownload(updatedData)
     }
   }
 
-  fun getDownloadsByStatus(status: DownloadStatus): List<DownloadItem>? {
+  fun getDownloadsByStatus(status: DownloadStatus): List<DownloadData>? {
     return getAllDownloads()?.filter { it.status == status }
   }
 
-  fun getActiveDownloads(): List<DownloadItem>? {
+  fun getActiveDownloads(): List<DownloadData>? {
     return getAllDownloads()?.filter { it.isActive() }
   }
 
-  fun getCompletedDownloads(): List<DownloadItem>? {
+  fun getCompletedDownloads(): List<DownloadData>? {
     return getAllDownloads()?.filter { it.isCompleted() }
   }
 
@@ -311,7 +311,7 @@ class AppDataStore(val context: Context, val account: Account) :
     removeKey("$DOWNLOAD_FOLDER/")
   }
 
-  fun getDownloadByMediaItem(mediaItem: AVPMediaItem): DownloadItem? {
-    return getAllDownloads()?.firstOrNull { it.mediaItem.id == mediaItem.id }
+  fun getDownloadByMediaItem(mediaItem: AVPMediaItem): DownloadData? {
+    return getAllDownloads()?.firstOrNull { it.mediaItem?.id == mediaItem.id }
   }
 }

@@ -38,20 +38,18 @@ class DownloadStateMachine(
     }
 
     /**
-     * Handle events from WorkManager
+     * Handle events from WorkManager with rich data
      * This is separate from commands to avoid conflicts
      */
     fun handleEvent(event: DownloadEvent): DownloadState? {
         val newState = when (event) {
             is DownloadEvent.WorkEnqueued -> handleWorkEnqueued()
             is DownloadEvent.WorkStarted -> handleWorkStarted()
-            is DownloadEvent.ProgressUpdated -> handleProgressUpdated(
-                event.progress, event.downloadedBytes, event.totalBytes
-            )
+            is DownloadEvent.ProgressUpdated -> handleProgressUpdated(event.downloadData)
             is DownloadEvent.WorkCompleted -> handleWorkCompleted(
-                event.localPath, event.fileSize
+                event.localPath, event.fileSize, event.downloadData
             )
-            is DownloadEvent.WorkFailed -> handleWorkFailed(event.error)
+            is DownloadEvent.WorkFailed -> handleWorkFailed(event.error, event.downloadData)
             is DownloadEvent.WorkCancelled -> handleWorkCancelled()
         }
 
@@ -75,7 +73,7 @@ class DownloadStateMachine(
     }
 
     private fun handlePause(): DownloadState? {
-        return when (val state = _currentState) {
+        return when (_currentState) {
             is DownloadState.Queued -> DownloadState.Paused
             is DownloadState.Running -> DownloadState.Paused
             else -> null
@@ -113,38 +111,38 @@ class DownloadStateMachine(
 
     private fun handleWorkStarted(): DownloadState? {
         return when (_currentState) {
-            is DownloadState.Queued -> DownloadState.Running()
+            is DownloadState.Queued -> {
+                // Create empty DownloadData for initial state
+                val emptyData = DownloadData.Companion.DownloadDataBuilder().build()
+                DownloadState.Running(emptyData)
+            }
             else -> null
         }
     }
 
-    private fun handleProgressUpdated(
-        progress: Int,
-        downloadedBytes: Long,
-        totalBytes: Long,
+    private fun handleProgressUpdated(downloadData: DownloadData): DownloadState? {
+        return when (_currentState) {
+            is DownloadState.Running -> DownloadState.Running(downloadData)
+            is DownloadState.Queued -> DownloadState.Running(downloadData)
+            else -> null
+        }
+    }
+
+    private fun handleWorkCompleted(
+        localPath: String,
+        fileSize: Long,
+        downloadData: DownloadData?
     ): DownloadState? {
         return when (_currentState) {
-            is DownloadState.Running -> DownloadState.Running(
-                progress, downloadedBytes, totalBytes
-            )
-            is DownloadState.Queued -> DownloadState.Running(
-                progress, downloadedBytes, totalBytes
-            )
+            is DownloadState.Running -> DownloadState.Completed(localPath, fileSize, downloadData)
             else -> null
         }
     }
 
-    private fun handleWorkCompleted(localPath: String, fileSize: Long): DownloadState? {
-        return when (_currentState) {
-            is DownloadState.Running -> DownloadState.Completed(localPath, fileSize)
-            else -> null
-        }
-    }
-
-    private fun handleWorkFailed(error: String): DownloadState? {
+    private fun handleWorkFailed(error: String, downloadData: DownloadData?): DownloadState? {
         return when (_currentState) {
             is DownloadState.Queued,
-            is DownloadState.Running -> DownloadState.Failed(error)
+            is DownloadState.Running -> DownloadState.Failed(error, downloadData)
             // Don't override PAUSED state with FAILED when work fails due to pause
             is DownloadState.Paused -> null
             else -> null

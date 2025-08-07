@@ -331,7 +331,7 @@ class TorrentDownloader @AssistedInject constructor(
     }
 
     private fun createForegroundInfo(fileName: String): ForegroundInfo {
-        return MediaDownloader.createDownloadForegroundInfo(
+        return HttpDownloader.createDownloadForegroundInfo(
             context,
             fileName,
             "Processing torrent...",
