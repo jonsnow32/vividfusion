@@ -163,4 +163,9 @@
   <color name="red">#E7B6B4</color>
   <color name="blue">#00BCD4</color>
   <color name="gray">#B8B8B8</color>
+
+  <!-- Download type specific colors -->
+  <color name="hls_progress_color">#FF9800</color>
+  <color name="torrent_progress_color">#9C27B0</color>
+
 </resources>
