@@ -129,9 +129,7 @@ class ApkDownloader @AssistedInject constructor(
         setProgressAsync(workDataOf("progress" to progress))
         // Update notification progress if permission is granted
         if (hasNotificationPermission) {
-          CoroutineScope(Dispatchers.Main).launch {
-            setForeground(createForegroundInfo(progress))
-          }
+          setForegroundAsync(createForegroundInfo(progress))
         }
       })
       .build()

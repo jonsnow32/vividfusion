@@ -118,14 +118,35 @@ class DownloadManager @Inject constructor(
             }
         }
 
-        // Create new download item
-        val downloadItem = DownloadItem(
-            id = downloadId,
-            mediaItem = mediaItem,
-            url = downloadUrl,
-            fileName = fileName,
-            status = DownloadStatus.PENDING
-        )
+        // Create new download item based on type
+        val downloadItem = when (downloadType) {
+            DownloadType.HTTP -> DownloadItem.createHttpDownload(
+                id = downloadId,
+                mediaItem = mediaItem,
+                url = downloadUrl,
+                fileName = fileName
+            )
+            DownloadType.HLS -> DownloadItem.createHlsDownload(
+                id = downloadId,
+                mediaItem = mediaItem,
+                playlistUrl = downloadUrl,
+                fileName = fileName,
+                quality = quality
+            )
+            DownloadType.TORRENT -> DownloadItem.createTorrentDownload(
+                id = downloadId,
+                mediaItem = mediaItem,
+                url = downloadUrl,
+                fileName = fileName
+            )
+            DownloadType.MAGNET -> DownloadItem.createTorrentDownload(
+                id = downloadId,
+                mediaItem = mediaItem,
+                url = downloadUrl,
+                fileName = fileName,
+                magnetLink = downloadUrl
+            )
+        }
 
         // Add to controller and persist
         downloadController.addDownloadItem(downloadItem)
@@ -183,12 +204,29 @@ class DownloadManager @Inject constructor(
 
         // Update download item with actual file size if different
         if (actualDownloadedBytes != downloadItem.downloadedBytes && actualDownloadedBytes > 0) {
-            val updatedItem = downloadItem.copy(
-                downloadedBytes = actualDownloadedBytes,
-                progress = if (downloadItem.fileSize > 0) {
-                    ((actualDownloadedBytes * 100) / downloadItem.fileSize).toInt()
-                } else downloadItem.progress
-            )
+            val updatedItem = when (downloadItem) {
+                is DownloadItem.HttpDownload -> downloadItem.copy(
+                    downloadedBytes = actualDownloadedBytes,
+                    progress = if (downloadItem.fileSize > 0) {
+                        ((actualDownloadedBytes * 100) / downloadItem.fileSize).toInt()
+                    } else downloadItem.progress,
+                    updatedAt = System.currentTimeMillis()
+                )
+                is DownloadItem.HlsDownload -> downloadItem.copy(
+                    downloadedBytes = actualDownloadedBytes,
+                    progress = if (downloadItem.fileSize > 0) {
+                        ((actualDownloadedBytes * 100) / downloadItem.fileSize).toInt()
+                    } else downloadItem.progress,
+                    updatedAt = System.currentTimeMillis()
+                )
+                is DownloadItem.TorrentDownload -> downloadItem.copy(
+                    downloadedBytes = actualDownloadedBytes,
+                    progress = if (downloadItem.fileSize > 0) {
+                        ((actualDownloadedBytes * 100) / downloadItem.fileSize).toInt()
+                    } else downloadItem.progress,
+                    updatedAt = System.currentTimeMillis()
+                )
+            }
             // Save updated item to datastore - the controller will sync on resume
             appDataStore.value.saveDownload(updatedItem)
             Timber.d("Updated download $downloadId with actual downloaded bytes: $actualDownloadedBytes")
@@ -206,7 +244,10 @@ class DownloadManager @Inject constructor(
                 downloadType = downloadType,
                 downloadUrl = downloadItem.url,
                 fileName = downloadItem.fileName,
-                quality = "default",
+                quality = when (downloadItem) {
+                    is DownloadItem.HlsDownload -> downloadItem.quality
+                    else -> "default"
+                },
                 resumeBytes = finalDownloadedBytes,
                 resumeProgress = downloadItem.progress,
                 isResuming = true

@@ -358,13 +358,69 @@ class DownloadsViewModel @Inject constructor(
      */
     private fun updateDownloadItemPath(downloadItem: DownloadItem, filePath: String) {
         try {
-            // Update the download item in the data store
-            val updatedItem = downloadItem.copy(localPath = filePath)
-            // You might need to call your data store update method here
-            // Example: appDataStore.saveDownload(updatedItem)
+            // Update the download item based on its type
+            val updatedItem = when (downloadItem) {
+                is DownloadItem.HttpDownload -> downloadItem.copy(
+                    localPath = filePath,
+                    updatedAt = System.currentTimeMillis()
+                )
+                is DownloadItem.HlsDownload -> downloadItem.copy(
+                    localPath = filePath,
+                    updatedAt = System.currentTimeMillis()
+                )
+                is DownloadItem.TorrentDownload -> downloadItem.copy(
+                    localPath = filePath,
+                    updatedAt = System.currentTimeMillis()
+                )
+            }
+
+            // Save to datastore
+            dataFlow.value.saveDownload(updatedItem)
             Timber.d("Updated download item path: $filePath")
         } catch (e: Exception) {
             Timber.e(e, "Error updating download item path")
+        }
+    }
+
+    /**
+     * Get download type as string for UI display
+     */
+    fun getDownloadTypeString(downloadItem: DownloadItem): String {
+        return when (downloadItem) {
+            is DownloadItem.HttpDownload -> "HTTP"
+            is DownloadItem.HlsDownload -> "HLS"
+            is DownloadItem.TorrentDownload -> if (downloadItem.isMagnetLink()) "MAGNET" else "TORRENT"
+        }
+    }
+
+    /**
+     * Get additional download info for UI
+     */
+    fun getDownloadInfo(downloadItem: DownloadItem): String {
+        return when (downloadItem) {
+            is DownloadItem.HttpDownload -> {
+                "Connections: ${downloadItem.connections}" +
+                if (downloadItem.resumeSupported) " • Resume supported" else ""
+            }
+            is DownloadItem.HlsDownload -> {
+                "Quality: ${downloadItem.quality}" +
+                if (downloadItem.segmentsTotal > 0) " • ${downloadItem.getSegmentProgress()}" else ""
+            }
+            is DownloadItem.TorrentDownload -> {
+                "${downloadItem.getPeerInfo()}" +
+                if (downloadItem.shareRatio > 0) " �� Ratio: ${downloadItem.getShareRatioFormatted()}" else ""
+            }
+        }
+    }
+
+    /**
+     * Check if download supports resume
+     */
+    fun supportsResume(downloadItem: DownloadItem): Boolean {
+        return when (downloadItem) {
+            is DownloadItem.HttpDownload -> downloadItem.resumeSupported
+            is DownloadItem.HlsDownload -> false // HLS typically doesn't support traditional resume
+            is DownloadItem.TorrentDownload -> true // Torrents inherently support resume
         }
     }
 

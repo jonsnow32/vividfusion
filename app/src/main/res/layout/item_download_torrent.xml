@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_margin="8dp"
+  app:cardCornerRadius="12dp"
+  app:cardElevation="4dp">
+
+  <!-- Download Type Badge -->
+  <TextView
+    android:id="@+id/tvDownloadType"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="top|end"
+    android:background="@drawable/badge_torrent"
+    android:paddingHorizontal="8dp"
+    android:paddingVertical="2dp"
+    android:text="TORRENT"
+    android:textColor="@android:color/white"
+    android:textSize="10sp"
+    android:textStyle="bold"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp">
+
+    <!-- Thumbnail -->
+
+    <!-- Title -->
+    <TextView
+      android:id="@+id/tvTitle"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="8dp"
+      android:ellipsize="end"
+      android:maxLines="2"
+      android:textColor="?android:attr/textColorPrimary"
+      android:textSize="16sp"
+      android:textStyle="bold"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:text="Sample Movie 4K (2023)" />
+
+    <!-- Torrent-specific info row 1 -->
+    <LinearLayout
+      android:id="@+id/layoutTorrentInfo1"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="4dp"
+      android:layout_marginEnd="8dp"
+      android:orientation="horizontal"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
+      <TextView
+        android:id="@+id/tvPeers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="12sp"
+        tools:text="15 peers, 8 seeds" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:text="•"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="12sp" />
+
+      <TextView
+        android:id="@+id/tvShareRatio"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="12sp"
+        tools:text="Ratio: 1.25" />
+
+    </LinearLayout>
+
+    <!-- Torrent-specific info row 2 -->
+    <TextView
+      android:id="@+id/tvPieces"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:layout_marginEnd="8dp"
+      android:textColor="?android:attr/textColorSecondary"
+      android:textSize="12sp"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/layoutTorrentInfo1"
+      tools:text="1250/1500 pieces" />
+
+    <!-- Status -->
+    <TextView
+      android:id="@+id/tvStatus"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:layout_marginEnd="8dp"
+      android:textSize="14sp"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tvPieces"
+      tools:text="Downloading • 83%" />
+
+    <!-- Download/Upload Speeds -->
+    <TextView
+      android:id="@+id/tvSpeeds"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="2dp"
+      android:layout_marginEnd="8dp"
+      android:textColor="?android:attr/textColorSecondary"
+      android:textSize="12sp"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tvStatus"
+      tools:text="↓ 3.2 MB/s • ↑ 1.8 MB/s" />
+
+    <!-- Download Action Widget with integrated progress -->
+    <cloud.app.vvf.ui.download.DownloadButtonWidget
+      android:id="@+id/downloadButtonWidget"
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

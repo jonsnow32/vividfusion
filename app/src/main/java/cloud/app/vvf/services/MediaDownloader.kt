@@ -218,9 +218,7 @@ class MediaDownloader @AssistedInject constructor(
                     if (hasNotificationPermission &&
                         (currentTime - lastNotificationUpdate > 2000 || progress % 5 == 0)) {
                         lastNotificationUpdate = currentTime
-                        CoroutineScope(Dispatchers.Main).launch {
-                            setForeground(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
-                        }
+                        setForegroundAsync(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
                     }
                 }
             }
@@ -248,9 +246,7 @@ class MediaDownloader @AssistedInject constructor(
                     if (hasNotificationPermission &&
                         (currentTime - lastNotificationUpdate > 2000 || progress % 5 == 0)) {
                         lastNotificationUpdate = currentTime
-                        CoroutineScope(Dispatchers.Main).launch {
-                            setForeground(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
-                        }
+                        setForegroundAsync(createDownloadForegroundInfo(context, fileName, "Downloading...", progress))
                     }
                 }
             }

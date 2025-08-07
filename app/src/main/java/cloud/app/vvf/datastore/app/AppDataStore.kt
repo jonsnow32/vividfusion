@@ -254,8 +254,10 @@ class AppDataStore(val context: Context, val account: Account) :
   }
 
   fun saveDownload(downloadItem: DownloadItem) {
-    val updatedItem = downloadItem.copy(updatedAt = System.currentTimeMillis())
-    set("$DOWNLOAD_FOLDER/${downloadItem.id}", updatedItem)
+    val updateItem = downloadItem.copyWith(
+      updatedAt = System.currentTimeMillis()
+    )
+    set("$DOWNLOAD_FOLDER/${updateItem.id}", updateItem)
   }
 
   fun getDownload(downloadId: String): DownloadItem? {
@@ -273,7 +275,7 @@ class AppDataStore(val context: Context, val account: Account) :
   fun updateDownloadProgress(downloadId: String, progress: Int, downloadedBytes: Long) {
     val downloadItem = getDownload(downloadId)
     downloadItem?.let { item ->
-      val updatedItem = item.copy(
+      val updatedItem = item.copyWith(
         progress = progress,
         downloadedBytes = downloadedBytes,
         updatedAt = System.currentTimeMillis()
@@ -285,7 +287,7 @@ class AppDataStore(val context: Context, val account: Account) :
   fun updateDownloadStatus(downloadId: String, status: DownloadStatus) {
     val downloadItem = getDownload(downloadId)
     downloadItem?.let { item ->
-      val updatedItem = item.copy(
+      val updatedItem = item.copyWith(
         status = status,
         updatedAt = System.currentTimeMillis()
       )

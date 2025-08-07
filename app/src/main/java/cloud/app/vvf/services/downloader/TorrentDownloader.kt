@@ -7,6 +7,7 @@ import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import cloud.app.vvf.features.player.torrent.TorrentManager
+import cloud.app.vvf.network.api.torrentserver.TorrentStatus
 import cloud.app.vvf.utils.KUniFile
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -14,6 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CoroutineScope
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
@@ -94,6 +97,9 @@ class TorrentDownloader @AssistedInject constructor(
 
             Timber.d("Torrent transformed to stream URL: $streamUrl")
 
+            // Start monitoring torrent status for progress updates
+            monitorTorrentProgress(downloadId, torrentStatus)
+
             // Now download the stream using regular HTTP download
             return@withContext downloadFromStreamUrl(streamUrl, downloadId, fileName, torrentStatus)
 
@@ -101,6 +107,78 @@ class TorrentDownloader @AssistedInject constructor(
             Timber.w(e, "TorrentManager transform failed, falling back to alternative methods")
             // Fallback to our previous implementation if TorrentManager fails
             return@withContext fallbackTorrentDownload(torrentLink, downloadId, fileName)
+        }
+    }
+
+    private fun monitorTorrentProgress(downloadId: String, torrentStatus: TorrentStatus) {
+        // Monitor torrent status in background using proper coroutine scope
+        CoroutineScope(Dispatchers.IO).launch {
+            while (isDownloadActive.get() && isActive) {
+                try {
+                    // Get real torrent status from TorrentManager
+                    val currentTorrentStatus = torrentStatus.hash?.let { torrentManager.get(it) }
+
+                    if (currentTorrentStatus != null) {
+                        // Extract torrent-specific data using actual TorrentStatus properties
+                        val loadedSize = currentTorrentStatus.loadedSize ?: 0L
+                        val torrentSize = currentTorrentStatus.torrentSize ?: 0L
+                        val progress = if (torrentSize > 0) {
+                            ((loadedSize * 100) / torrentSize).toInt()
+                        } else 0
+
+                        val downloadSpeed = (currentTorrentStatus.downloadSpeed ?: 0.0).toLong()
+                        val uploadSpeed = (currentTorrentStatus.uploadSpeed ?: 0.0).toLong()
+                        val activePeers = currentTorrentStatus.activePeers ?: 0
+                        val connectedSeeders = currentTorrentStatus.connectedSeeders ?: 0
+                        val totalPeers = currentTorrentStatus.totalPeers ?: 0
+                        val bytesRead = currentTorrentStatus.bytesRead ?: 0L
+                        val bytesWritten = currentTorrentStatus.bytesWritten ?: 0L
+
+                        // Calculate share ratio
+                        val shareRatio = if (bytesRead > 0) {
+                            (bytesWritten.toFloat() / bytesRead.toFloat())
+                        } else 0.0f
+
+                        // Update progress with comprehensive torrent data
+                        setProgressAsync(workDataOf(
+                            "progress" to progress,
+                            "downloadedBytes" to loadedSize,
+                            "totalBytes" to torrentSize,
+                            "downloadId" to downloadId,
+                            "downloadSpeed" to downloadSpeed,
+                            "uploadSpeed" to uploadSpeed,
+                            "peers" to activePeers,
+                            "seeds" to connectedSeeders,
+                            "totalPeers" to totalPeers,
+                            "shareRatio" to shareRatio,
+                            "preloadedBytes" to (currentTorrentStatus.preloadedBytes ?: 0L),
+                            "torrentState" to (currentTorrentStatus.statString ?: "unknown"),
+                            "bytesRead" to bytesRead,
+                            "bytesWritten" to bytesWritten
+                        ))
+
+                        Timber.d("Torrent progress $downloadId: $progress% - D: ${downloadSpeed}B/s U: ${uploadSpeed}B/s - Peers: $activePeers/$connectedSeeders")
+                    } else {
+                        // Fallback if we can't get torrent status
+                        Timber.w("Could not retrieve torrent status for hash: ${torrentStatus.hash}")
+                        setProgressAsync(workDataOf(
+                            "progress" to 0,
+                            "downloadId" to downloadId,
+                            "downloadSpeed" to 0L,
+                            "uploadSpeed" to 0L,
+                            "peers" to 0,
+                            "seeds" to 0,
+                            "torrentState" to "error"
+                        ))
+                    }
+
+                    // Update every 3 seconds
+                    delay(3000)
+                } catch (e: Exception) {
+                    Timber.w(e, "Error monitoring torrent progress for $downloadId")
+                    delay(5000) // Wait longer on error
+                }
+            }
         }
     }
 

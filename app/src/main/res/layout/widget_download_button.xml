@@ -23,7 +23,7 @@
         android:indeterminate="false"
         android:progressDrawable="@drawable/circle_progress"
         android:visibility="gone"
-        tools:progress="45"
+        tools:progress="80"
         tools:visibility="visible" />
 
     <!-- Download Icon -->

@@ -121,7 +121,7 @@ class DownloadStateMachine(
     private fun handleProgressUpdated(
         progress: Int,
         downloadedBytes: Long,
-        totalBytes: Long
+        totalBytes: Long,
     ): DownloadState? {
         return when (_currentState) {
             is DownloadState.Running -> DownloadState.Running(
@@ -170,7 +170,6 @@ class DownloadStateMachine(
             else -> null
         }
     }
-
     /**
      * Get completion information if available
      */
