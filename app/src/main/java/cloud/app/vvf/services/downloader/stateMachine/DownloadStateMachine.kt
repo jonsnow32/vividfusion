@@ -1,5 +1,6 @@
-package cloud.app.vvf.services.downloader
+package cloud.app.vvf.services.downloader.stateMachine
 
+import cloud.app.vvf.services.downloader.DownloadData
 import timber.log.Timber
 
 /**

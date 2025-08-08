@@ -3,10 +3,12 @@ package cloud.app.vvf.services.downloader
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
-import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import cloud.app.vvf.utils.KUniFile
+import cloud.app.vvf.services.downloader.helper.DownloadFileManager
+import cloud.app.vvf.services.downloader.helper.DownloadNotificationManager
+import cloud.app.vvf.services.downloader.helper.DownloadProgressTracker
+import cloud.app.vvf.services.downloader.helper.HttpDownloadClient
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -24,35 +26,35 @@ class HlsDownloader @AssistedInject constructor(
     @Assisted workerParameters: WorkerParameters
 ) : CoroutineWorker(context, workerParameters) {
 
-    object HlsDownloadParams {
+    companion object {
         const val KEY_DOWNLOAD_ID = "key_download_id"
         const val KEY_HLS_URL = "key_hls_url"
         const val KEY_FILE_NAME = "key_file_name"
         const val KEY_QUALITY = "key_quality"
     }
 
-    private val client = OkHttpClient.Builder()
-        .followRedirects(true)
-        .followSslRedirects(true)
-        .build()
+    private val notificationManager = DownloadNotificationManager(context)
+    private val fileManager = DownloadFileManager(context)
+    private val httpClient = HttpDownloadClient()
+    private lateinit var progressTracker: DownloadProgressTracker
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        val downloadId = inputData.getString(HlsDownloadParams.KEY_DOWNLOAD_ID) ?: ""
-        val hlsUrl = inputData.getString(HlsDownloadParams.KEY_HLS_URL) ?: ""
-        val fileName = inputData.getString(HlsDownloadParams.KEY_FILE_NAME) ?: ""
-        val quality = inputData.getString(HlsDownloadParams.KEY_QUALITY) ?: "default"
-
-        Timber.d("Starting HLS download: $downloadId | $hlsUrl | $fileName")
-
-        if (downloadId.isEmpty() || hlsUrl.isEmpty() || fileName.isEmpty()) {
+        val downloadParams = extractDownloadParams()
+        if (!downloadParams.isValid()) {
             return@withContext Result.failure(workDataOf("error" to "Missing required parameters"))
         }
 
-        try {
-            // Set up foreground service for long-running download
-            setForeground(createForegroundInfo(fileName))
+        progressTracker = DownloadProgressTracker(this@HlsDownloader, notificationManager)
 
-            val result = downloadHlsStream(hlsUrl, fileName, downloadId, quality)
+        Timber.d("Starting HLS download: ${downloadParams.downloadId} | ${downloadParams.hlsUrl} | ${downloadParams.fileName}")
+
+        // Set foreground if notification permission available
+        if (notificationManager.hasPermission()) {
+            setForeground(notificationManager.createForegroundInfo(downloadParams.fileName, "Starting HLS download...", 0))
+        }
+
+        try {
+            val result = downloadHlsStream(downloadParams)
             Result.success(workDataOf(
                 "downloadId" to result["downloadId"],
                 "localPath" to result["localPath"],
@@ -61,85 +63,128 @@ class HlsDownloader @AssistedInject constructor(
                 "segmentsDownloaded" to result["segmentsDownloaded"]
             ))
         } catch (e: Exception) {
-            Timber.e(e, "HLS download failed for $downloadId")
+            Timber.e(e, "HLS download failed for ${downloadParams.downloadId}")
             Result.failure(workDataOf(
                 "error" to (e.message ?: "Unknown HLS download error"),
-                "downloadId" to downloadId
+                "downloadId" to downloadParams.downloadId
             ))
         }
     }
 
-    private suspend fun downloadHlsStream(
-        hlsUrl: String,
-        fileName: String,
-        downloadId: String,
-        quality: String
-    ): Map<String, Any> = withContext(Dispatchers.IO) {
+    private suspend fun downloadHlsStream(params: HlsDownloadParams): Map<String, Any> = withContext(Dispatchers.IO) {
         // Parse M3U8 playlist
-        val masterPlaylist = fetchPlaylist(hlsUrl)
-        val selectedVariant = selectBestVariant(masterPlaylist, quality)
+        val masterPlaylist = fetchPlaylist(params.hlsUrl)
+        val selectedVariant = selectBestVariant(masterPlaylist, params.quality)
 
         // If it's a master playlist, fetch the variant playlist
-        val segmentPlaylist = if (selectedVariant != hlsUrl) {
+        val segmentPlaylist = if (selectedVariant != params.hlsUrl) {
             fetchPlaylist(selectedVariant)
         } else {
             masterPlaylist
         }
 
-        val segments = parseSegments(segmentPlaylist, hlsUrl)
+        val segments = parseSegments(segmentPlaylist, params.hlsUrl)
         val totalSegments = segments.size
         val downloadedBytes = AtomicLong(0)
         var totalBytes = 0L
 
-        // Create output file
-        val downloadsDir = getDownloadsDirectory()
-        val outputFile = downloadsDir.createFile("$fileName.mp4", "video/mp4")
-            ?: throw IOException("Failed to create output file")
+        // Create output file using fileManager
+        val (outputFile, _) = fileManager.createOrGetFile(
+            params.fileName,
+            "video/mp4",
+            false,
+            0L
+        )
+
+        // Create HTTP client with progress callback for segment downloads
+        val client = httpClient.createClient { currentSegmentBytes, segmentSize ->
+            // Update total progress across all segments
+            val currentTotalBytes = downloadedBytes.get() + currentSegmentBytes
+            kotlinx.coroutines.runBlocking {
+                progressTracker.updateProgress(
+                    params.downloadId,
+                    params.fileName,
+                    currentTotalBytes,
+                    totalBytes
+                )
+            }
+        }
 
         // Download segments and merge
         outputFile.openOutputStream().use { outputStream ->
             segments.forEachIndexed { index, segmentUrl ->
-                val segmentData = downloadSegment(segmentUrl)
+                if (isStopped) {
+                    throw InterruptedException("Download was stopped")
+                }
+
+                // Download segment using HttpDownloadClient
+                val segmentData = downloadSegmentWithProgress(client, segmentUrl)
                 outputStream.write(segmentData)
                 outputStream.flush()
 
                 downloadedBytes.addAndGet(segmentData.size.toLong())
                 totalBytes += segmentData.size
 
-                val progress = ((index + 1) * 100 / totalSegments)
+                // Update progress after each segment
+                progressTracker.updateProgress(
+                    params.downloadId,
+                    params.fileName,
+                    downloadedBytes.get(),
+                    totalBytes
+                )
 
-                // Update progress
-                setProgressAsync(workDataOf(
-                    "progress" to progress,
-                    "downloadedBytes" to downloadedBytes.get(),
-                    "totalBytes" to totalBytes,
-                    "downloadId" to downloadId,
-                    "segmentsDownloaded" to (index + 1),
-                    "totalSegments" to totalSegments
-                ))
-
-                Timber.d("Downloaded segment ${index + 1}/$totalSegments for $downloadId")
+                Timber.d("Downloaded segment ${index + 1}/$totalSegments for ${params.downloadId}")
             }
         }
 
+        val finalSize = outputFile.length()
+        val filePath = outputFile.uri.toString()
+        val localPath = outputFile.uri.path ?: filePath
+
+        // Final progress update
+        progressTracker.updateFinalProgress(
+            params.downloadId,
+            params.fileName,
+            filePath,
+            localPath,
+            finalSize
+        )
+
         mapOf(
-            "downloadId" to downloadId,
-            "localPath" to outputFile.uri.toString(),
-            "fileName" to "$fileName.mp4",
-            "fileSize" to totalBytes,
+            "downloadId" to params.downloadId,
+            "localPath" to localPath,
+            "fileName" to "${params.fileName}.mp4",
+            "fileSize" to finalSize,
             "segmentsDownloaded" to totalSegments
         )
     }
 
     private suspend fun fetchPlaylist(url: String): String = withContext(Dispatchers.IO) {
+        // Use simple client for playlist fetching (no progress needed)
+        val simpleClient = OkHttpClient.Builder()
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build()
+
         val request = Request.Builder().url(url).build()
-        val response = client.newCall(request).execute()
+        val response = simpleClient.newCall(request).execute()
 
         if (!response.isSuccessful) {
             throw IOException("Failed to fetch playlist: HTTP ${response.code}")
         }
 
-        response.body?.string() ?: throw IOException("Empty playlist response")
+        response.body.string()
+    }
+
+    private suspend fun downloadSegmentWithProgress(client: OkHttpClient, url: String): ByteArray = withContext(Dispatchers.IO) {
+        val request = httpClient.createRequest(url)
+        val response = client.newCall(request).execute()
+
+        if (!httpClient.validateResponse(response, false)) {
+            throw IOException("Failed to download segment: HTTP ${response.code}")
+        }
+
+        response.body.bytes()
     }
 
     private fun selectBestVariant(masterPlaylist: String, quality: String): String {
@@ -189,35 +234,21 @@ class HlsDownloader @AssistedInject constructor(
             }
     }
 
-    private suspend fun downloadSegment(url: String): ByteArray = withContext(Dispatchers.IO) {
-        val request = Request.Builder().url(url).build()
-        val response = client.newCall(request).execute()
-
-        if (!response.isSuccessful) {
-            throw IOException("Failed to download segment: HTTP ${response.code}")
-        }
-
-        response.body?.bytes() ?: throw IOException("Empty segment response")
+    private fun extractDownloadParams(): HlsDownloadParams {
+        return HlsDownloadParams(
+            downloadId = inputData.getString(KEY_DOWNLOAD_ID) ?: "",
+            hlsUrl = inputData.getString(KEY_HLS_URL) ?: "",
+            fileName = inputData.getString(KEY_FILE_NAME) ?: "",
+            quality = inputData.getString(KEY_QUALITY) ?: "default"
+        )
     }
 
-    private fun getDownloadsDirectory(): KUniFile {
-        val publicDownloads = KUniFile.fromFile(context,
-            android.os.Environment.getExternalStoragePublicDirectory(
-                android.os.Environment.DIRECTORY_DOWNLOADS
-            )
-        )
-
-        return publicDownloads ?: KUniFile.fromFile(context,
-            context.getExternalFilesDir(android.os.Environment.DIRECTORY_DOWNLOADS)
-        ) ?: throw IOException("Cannot access downloads directory")
-    }
-
-    private fun createForegroundInfo(fileName: String): ForegroundInfo {
-        return HttpDownloader.createDownloadForegroundInfo(
-            context,
-            fileName,
-            "Downloading HLS stream...",
-            0
-        )
+    data class HlsDownloadParams(
+        val downloadId: String,
+        val hlsUrl: String,
+        val fileName: String,
+        val quality: String
+    ) {
+        fun isValid(): Boolean = downloadId.isNotEmpty() && hlsUrl.isNotEmpty() && fileName.isNotEmpty()
     }
 }

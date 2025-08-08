@@ -1,6 +1,8 @@
-package cloud.app.vvf.services.downloader
+package cloud.app.vvf.services.downloader.stateMachine
 
 import androidx.work.WorkInfo
+import cloud.app.vvf.services.downloader.DownloadData
+import cloud.app.vvf.services.downloader.DownloadStatus
 
 /**
  * Represents the internal state of a download operation with rich data

@@ -7,14 +7,13 @@ import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.datastore.app.helper.UriHistoryItem
 import cloud.app.vvf.services.downloader.DownloadData
-import cloud.app.vvf.services.DownloadManager
+import cloud.app.vvf.services.downloader.stateMachine.DownloadManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel

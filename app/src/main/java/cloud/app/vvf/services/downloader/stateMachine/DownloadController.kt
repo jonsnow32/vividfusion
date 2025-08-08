@@ -1,5 +1,7 @@
-package cloud.app.vvf.services.downloader
+package cloud.app.vvf.services.downloader.stateMachine
 
+import cloud.app.vvf.services.downloader.DownloadData
+import cloud.app.vvf.services.downloader.DownloadStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

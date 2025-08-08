@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
-import cloud.app.vvf.services.DownloadManager
+import cloud.app.vvf.services.downloader.stateMachine.DownloadManager
 import cloud.app.vvf.services.downloader.DownloadData
 import cloud.app.vvf.services.downloader.DownloadStatus
 import cloud.app.vvf.services.downloader.DownloadType
