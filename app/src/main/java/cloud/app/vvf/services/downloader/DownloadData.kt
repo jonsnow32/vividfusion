@@ -6,7 +6,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.floatOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.longOrNull
@@ -44,6 +43,8 @@ data class DownloadData(
   companion object {
     // Keys for type-specific data
     object Keys {
+      const val DOWNLOAD_ID = "downloadId"
+
       // Torrent-specific
       const val UPLOAD_SPEED = "uploadSpeed"
       const val PEERS = "peers"
@@ -56,7 +57,7 @@ data class DownloadData(
       const val PRELOADED_BYTES = "preloadedBytes"
       const val ETA = "eta"
       const val MAGNET_LINK = "magnetLink"
-      const val TORRENT_FILE_PATH = "torrentFilePath"
+
 
       // HLS-specific
       const val SEGMENTS_DOWNLOADED = "segmentsDownloaded"
@@ -72,8 +73,18 @@ data class DownloadData(
       const val HEADERS = "headers"
 
       // Common
+      const val PROGRESS = "progress"
+      const val DOWNLOADED_BYTES = "downloadedBytes"
+      const val TOTAL_BYTES = "totalBytes"
+      const val DOWNLOAD_SPEED = "downloadSpeed"
+      const val FILE_NAME = "fileName"
+      const val FILE_SIZE = "fileSize"
+      const val FILE_PATH = "filePath"
+      const val LOCAL_PATH = "localPath"
       const val STREAM_URL = "streamUrl"
       const val NOTE = "note"
+      const val ERROR = "error"
+
     }
 
     /**
@@ -138,7 +149,7 @@ data class DownloadData(
         apply { typeSpecificData[Keys.MAGNET_LINK] = JsonPrimitive(link) }
 
       fun torrentFilePath(path: String) =
-        apply { typeSpecificData[Keys.TORRENT_FILE_PATH] = JsonPrimitive(path) }
+        apply { typeSpecificData[Keys.FILE_PATH] = JsonPrimitive(path) }
 
       // HLS-specific builders
       fun segmentsDownloaded(count: Int) =
@@ -215,7 +226,7 @@ data class DownloadData(
     get() = (typeSpecificData[Keys.PRELOADED_BYTES] as? JsonPrimitive)?.longOrNull ?: 0L
   val eta: Long get() = (typeSpecificData[Keys.ETA] as? JsonPrimitive)?.longOrNull ?: 0L
   val magnetLink: String? get() = (typeSpecificData[Keys.MAGNET_LINK] as? JsonPrimitive)?.contentOrNull
-  val torrentFilePath: String? get() = (typeSpecificData[Keys.TORRENT_FILE_PATH] as? JsonPrimitive)?.contentOrNull
+  val torrentFilePath: String? get() = (typeSpecificData[Keys.FILE_PATH] as? JsonPrimitive)?.contentOrNull
 
   // Type-safe getters for HLS data
   val segmentsDownloaded: Int

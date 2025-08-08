@@ -162,68 +162,70 @@ fun WorkInfo.toDownloadEvent(downloadId: String): DownloadEvent? {
 private fun extractDownloadDataFromWorkInfo(workInfo: WorkInfo, isOutput: Boolean = false): DownloadData {
   val data = if (isOutput) workInfo.outputData else workInfo.progress
 
+  val k = DownloadData.Companion.Keys
+
   val builder = DownloadData.Companion.DownloadDataBuilder()
-    .progress(data.getInt("progress", 0))
-    .downloadedBytes(data.getLong("downloadedBytes", 0L))
-    .totalBytes(data.getLong("totalBytes", 0L))
-    .downloadSpeed(data.getLong("downloadSpeed", 0L))
-    .fileName(data.getString("fileName"))
+    .progress(data.getInt(k.PROGRESS, 0))
+    .downloadedBytes(data.getLong(k.DOWNLOADED_BYTES, 0L))
+    .totalBytes(data.getLong(k.TOTAL_BYTES, 0L))
+    .downloadSpeed(data.getLong(k.DOWNLOAD_SPEED, 0L))
+    .fileName(data.getString(k.FILE_NAME))
 
   // Torrent-specific data
-  val uploadSpeed = data.getLong("uploadSpeed", -1L)
+  val uploadSpeed = data.getLong(k.UPLOAD_SPEED, -1L)
   if (uploadSpeed >= 0) builder.uploadSpeed(uploadSpeed)
 
-  val peers = data.getInt("peers", -1)
+  val peers = data.getInt(k.PEERS, -1)
   if (peers >= 0) builder.peers(peers)
 
-  val seeds = data.getInt("seeds", -1)
+  val seeds = data.getInt(k.SEEDS, -1)
   if (seeds >= 0) builder.seeds(seeds)
 
-  val totalPeers = data.getInt("totalPeers", -1)
+  val totalPeers = data.getInt(k.TOTAL_PEERS, -1)
   if (totalPeers >= 0) builder.totalPeers(totalPeers)
 
-  val shareRatio = data.getFloat("shareRatio", -1f)
+  val shareRatio = data.getFloat(k.SHARE_RATIO, -1f)
   if (shareRatio >= 0) builder.shareRatio(shareRatio)
 
-  val torrentState = data.getString("torrentState")
+  val torrentState = data.getString(k.TORRENT_STATE)
   if (torrentState != null) builder.torrentState(torrentState)
 
-  val bytesRead = data.getLong("bytesRead", -1L)
+  val bytesRead = data.getLong(k.BYTES_READ, -1L)
   if (bytesRead >= 0) builder.bytesRead(bytesRead)
 
-  val bytesWritten = data.getLong("bytesWritten", -1L)
+  val bytesWritten = data.getLong(k.BYTES_WRITTEN, -1L)
   if (bytesWritten >= 0) builder.bytesWritten(bytesWritten)
 
-  val preloadedBytes = data.getLong("preloadedBytes", -1L)
+  val preloadedBytes = data.getLong(k.PRELOADED_BYTES, -1L)
   if (preloadedBytes >= 0) builder.preloadedBytes(preloadedBytes)
 
-  val eta = data.getLong("eta", -1L)
+  val eta = data.getLong(k.ETA, -1L)
   if (eta >= 0) builder.eta(eta)
 
   // HLS-specific data
-  val segmentsDownloaded = data.getInt("segmentsDownloaded", -1)
+  val segmentsDownloaded = data.getInt(k.SEGMENTS_DOWNLOADED, -1)
   if (segmentsDownloaded >= 0) builder.segmentsDownloaded(segmentsDownloaded)
 
-  val totalSegments = data.getInt("totalSegments", -1)
+  val totalSegments = data.getInt(k.TOTAL_SEGMENTS, -1)
   if (totalSegments >= 0) builder.totalSegments(totalSegments)
 
-  val quality = data.getString("quality")
+  val quality = data.getString(k.QUALITY)
   if (quality != null) builder.quality(quality)
 
-  val encryption = data.getString("encryption")
+  val encryption = data.getString(k.ENCRYPTION)
   if (encryption != null) builder.encryption(encryption)
 
   // HTTP-specific data
-  val connections = data.getInt("connections", -1)
+  val connections = data.getInt(k.CONNECTIONS, -1)
   if (connections >= 0) builder.connections(connections)
 
-  builder.resumeSupported(data.getBoolean("resumeSupported", false))
+  builder.resumeSupported(data.getBoolean(k.RESUME_SUPPORTED, false))
 
-  val contentType = data.getString("contentType")
+  val contentType = data.getString(k.CONTENT_TYPE)
   if (contentType != null) builder.contentType(contentType)
 
   // Common data
-  val streamUrl = data.getString("streamUrl")
+  val streamUrl = data.getString(k.STREAM_URL)
   if (streamUrl != null) builder.streamUrl(streamUrl)
 
 

@@ -56,12 +56,13 @@ class HttpDownloader @AssistedInject constructor(
     return try {
       downloadFile(downloadParams)
     } catch (e: Exception) {
-      Timber.Forest.e(e, "Download failed for ${downloadParams.downloadId}")
+      Timber.Forest.e(e, "Download failed for \\${downloadParams.downloadId}")
+      val keys = DownloadData.Companion.Keys
       Result.failure(
         workDataOf(
-          "error" to (e.message ?: "Unknown error"),
-          "downloadId" to downloadParams.downloadId,
-          "fileName" to downloadParams.fileName
+          keys.ERROR to (e.message ?: "Unknown error"),
+          keys.DOWNLOAD_ID to downloadParams.downloadId,
+          keys.FILE_NAME to downloadParams.fileName
         )
       )
     }
@@ -98,7 +99,7 @@ class HttpDownloader @AssistedInject constructor(
     // Validate response
     if (!httpClient.validateResponse(response, params.isResuming)) {
       response.close()
-      return Result.success(workDataOf("downloadId" to params.downloadId))
+      return Result.success(workDataOf(DownloadData.Companion.Keys.DOWNLOAD_ID to params.downloadId))
     }
 
     val responseBody = response.body
@@ -135,7 +136,7 @@ class HttpDownloader @AssistedInject constructor(
         while (input.read(buffer).also { bytesRead = it } != -1) {
           // Check for cancellation periodically
           if (iterationCount % 100 == 0 && isStopped) {
-            return Result.failure(workDataOf("error" to "Download was stopped"))
+            return Result.failure(workDataOf(DownloadData.Companion.Keys.ERROR to "Download was stopped"))
           }
 
           output.write(buffer, 0, bytesRead)
@@ -161,11 +162,11 @@ class HttpDownloader @AssistedInject constructor(
 
     return Result.success(
       workDataOf(
-        "downloadId" to params.downloadId,
-        "filePath" to filePath,
-        "localPath" to localPath,
-        "fileSize" to finalSize,
-        "fileName" to params.fileName
+        DownloadData.Companion.Keys.DOWNLOAD_ID to params.downloadId,
+        DownloadData.Companion.Keys.FILE_PATH to filePath,
+        DownloadData.Companion.Keys.LOCAL_PATH to localPath,
+        DownloadData.Companion.Keys.FILE_SIZE to finalSize,
+        DownloadData.Companion.Keys.FILE_NAME to params.fileName
       )
     )
   }

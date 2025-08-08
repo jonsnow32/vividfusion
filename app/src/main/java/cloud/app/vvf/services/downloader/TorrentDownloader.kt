@@ -65,20 +65,21 @@ class TorrentDownloader @AssistedInject constructor(
                 downloadParams.torrentUrl.isNotEmpty() -> downloadFromTorrentLink(downloadParams.torrentUrl, downloadParams)
                 else -> throw IllegalArgumentException("No valid torrent source provided")
             }
-
+            val keys = DownloadData.Companion.Keys
             Result.success(workDataOf(
-                "downloadId" to result["downloadId"],
-                "localPath" to result["localPath"],
-                "fileName" to result["fileName"],
-                "fileSize" to result["fileSize"],
-                "streamUrl" to (result["streamUrl"] ?: ""),
-                "note" to result["note"]
+                keys.DOWNLOAD_ID to result["downloadId"],
+                keys.LOCAL_PATH to result["localPath"],
+                keys.FILE_NAME to result["fileName"],
+                keys.FILE_SIZE to result["fileSize"],
+                keys.STREAM_URL to (result["streamUrl"] ?: ""),
+                keys.NOTE to result["note"]
             ))
         } catch (e: Exception) {
             Timber.e(e, "Torrent download failed for ${downloadParams.downloadId}")
+            val keys = DownloadData.Companion.Keys
             Result.failure(workDataOf(
-                "error" to (e.message ?: "Unknown torrent download error"),
-                "downloadId" to downloadParams.downloadId
+                keys.ERROR to (e.message ?: "Unknown torrent download error"),
+                keys.DOWNLOAD_ID to downloadParams.downloadId
             ))
         }
     }
@@ -143,20 +144,20 @@ class TorrentDownloader @AssistedInject constructor(
 
                         // Update progress using progressTracker with extended data
                         setProgressAsync(workDataOf(
-                            "progress" to progress,
-                            "downloadedBytes" to loadedSize,
-                            "totalBytes" to torrentSize,
-                            "downloadId" to downloadId,
-                            "downloadSpeed" to downloadSpeed,
-                            "uploadSpeed" to uploadSpeed,
-                            "peers" to activePeers,
-                            "seeds" to connectedSeeders,
-                            "totalPeers" to totalPeers,
-                            "shareRatio" to shareRatio,
-                            "preloadedBytes" to (currentTorrentStatus.preloadedBytes ?: 0L),
-                            "torrentState" to (currentTorrentStatus.statString ?: "unknown"),
-                            "bytesRead" to bytesRead,
-                            "bytesWritten" to bytesWritten
+                            DownloadData.Companion.Keys.PROGRESS to progress,
+                            DownloadData.Companion.Keys.DOWNLOADED_BYTES to loadedSize,
+                            DownloadData.Companion.Keys.TOTAL_BYTES to torrentSize,
+                            DownloadData.Companion.Keys.DOWNLOAD_ID to downloadId,
+                            DownloadData.Companion.Keys.DOWNLOAD_SPEED to downloadSpeed,
+                            DownloadData.Companion.Keys.UPLOAD_SPEED to uploadSpeed,
+                            DownloadData.Companion.Keys.PEERS to activePeers,
+                            DownloadData.Companion.Keys.SEEDS to connectedSeeders,
+                            DownloadData.Companion.Keys.TOTAL_PEERS to totalPeers,
+                            DownloadData.Companion.Keys.SHARE_RATIO to shareRatio,
+                            DownloadData.Companion.Keys.PRELOADED_BYTES to (currentTorrentStatus.preloadedBytes ?: 0L),
+                            DownloadData.Companion.Keys.TORRENT_STATE to (currentTorrentStatus.statString ?: "unknown"),
+                            DownloadData.Companion.Keys.BYTES_READ to bytesRead,
+                            DownloadData.Companion.Keys.BYTES_WRITTEN to bytesWritten
                         ))
 
                         Timber.d("Torrent progress $downloadId: $progress% - D: ${downloadSpeed}B/s U: ${uploadSpeed}B/s - Peers: $activePeers/$connectedSeeders")
@@ -164,13 +165,13 @@ class TorrentDownloader @AssistedInject constructor(
                         // Fallback if we can't get torrent status
                         Timber.w("Could not retrieve torrent status for hash: ${torrentStatus.hash}")
                         setProgressAsync(workDataOf(
-                            "progress" to 0,
-                            "downloadId" to downloadId,
-                            "downloadSpeed" to 0L,
-                            "uploadSpeed" to 0L,
-                            "peers" to 0,
-                            "seeds" to 0,
-                            "torrentState" to "error"
+                            DownloadData.Companion.Keys.PROGRESS to 0,
+                            DownloadData.Companion.Keys.DOWNLOAD_ID to downloadId,
+                            DownloadData.Companion.Keys.DOWNLOAD_SPEED to 0L,
+                            DownloadData.Companion.Keys.UPLOAD_SPEED to 0L,
+                            DownloadData.Companion.Keys.PEERS to 0,
+                            DownloadData.Companion.Keys.SEEDS to 0,
+                            DownloadData.Companion.Keys.TORRENT_STATE to "error"
                         ))
                     }
 

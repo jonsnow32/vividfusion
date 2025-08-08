@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import cloud.app.vvf.services.downloader.DownloadData
 import cloud.app.vvf.services.downloader.helper.DownloadFileManager
 import cloud.app.vvf.services.downloader.helper.DownloadNotificationManager
 import cloud.app.vvf.services.downloader.helper.DownloadProgressTracker
@@ -55,18 +56,20 @@ class HlsDownloader @AssistedInject constructor(
 
         try {
             val result = downloadHlsStream(downloadParams)
+            val keys = DownloadData.Companion.Keys
             Result.success(workDataOf(
-                "downloadId" to result["downloadId"],
-                "localPath" to result["localPath"],
-                "fileName" to result["fileName"],
-                "fileSize" to result["fileSize"],
-                "segmentsDownloaded" to result["segmentsDownloaded"]
+                keys.DOWNLOAD_ID to result["downloadId"],
+                keys.LOCAL_PATH to result["localPath"],
+                keys.FILE_NAME to result["fileName"],
+                keys.FILE_SIZE to result["fileSize"],
+                keys.SEGMENTS_DOWNLOADED to result["segmentsDownloaded"]
             ))
         } catch (e: Exception) {
             Timber.e(e, "HLS download failed for ${downloadParams.downloadId}")
+            val keys = DownloadData.Companion.Keys
             Result.failure(workDataOf(
-                "error" to (e.message ?: "Unknown HLS download error"),
-                "downloadId" to downloadParams.downloadId
+                keys.ERROR to (e.message ?: "Unknown HLS download error"),
+                keys.DOWNLOAD_ID to downloadParams.downloadId
             ))
         }
     }

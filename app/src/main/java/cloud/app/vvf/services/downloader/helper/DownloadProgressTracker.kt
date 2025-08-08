@@ -2,6 +2,7 @@ package cloud.app.vvf.services.downloader.helper
 
 import androidx.work.CoroutineWorker
 import androidx.work.workDataOf
+import cloud.app.vvf.services.downloader.DownloadData
 
 class DownloadProgressTracker(
   private val worker: CoroutineWorker,
@@ -30,14 +31,15 @@ class DownloadProgressTracker(
     if (progress != lastProgressUpdate) {
       lastProgressUpdate = progress
 
+      val keys = DownloadData.Companion.Keys
       // Update WorkManager progress
       worker.setProgressAsync(
         workDataOf(
-          "progress" to progress,
-          "downloadedBytes" to actualDownloaded,
-          "totalBytes" to actualTotal,
-          "downloadId" to downloadId,
-          "fileName" to fileName
+          keys.PROGRESS to progress,
+          keys.DOWNLOADED_BYTES to actualDownloaded,
+          keys.TOTAL_BYTES to actualTotal,
+          keys.DOWNLOAD_ID to downloadId,
+          keys.FILE_NAME to fileName
         )
       )
 
@@ -53,15 +55,18 @@ class DownloadProgressTracker(
     localPath: String,
     fileSize: Long
   ) {
+
+    val keys = DownloadData.Companion.Keys
+
     worker.setProgressAsync(
       workDataOf(
-        "progress" to 100,
-        "downloadedBytes" to fileSize,
-        "totalBytes" to fileSize,
-        "downloadId" to downloadId,
-        "filePath" to filePath,
-        "localPath" to localPath,
-        "fileName" to fileName
+        keys.PROGRESS to 100,
+        keys.DOWNLOADED_BYTES to fileSize,
+        keys.TOTAL_BYTES to fileSize,
+        keys.DOWNLOAD_ID to downloadId,
+        keys.FILE_PATH to filePath,
+        keys.LOCAL_PATH to localPath,
+        keys.FILE_NAME to fileName
       )
     )
   }
