@@ -1,5 +1,6 @@
 package cloud.app.vvf.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import androidx.preference.PreferenceManager
@@ -12,6 +13,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import androidx.core.content.edit
+import androidx.core.net.toUri
 
 // Data class to represent a single SharedPreferences entry
 @Serializable
@@ -26,7 +29,7 @@ data class SharedPrefsBackup(
   val preferences: Map<String, Map<String, PrefEntry>>
 )
 
-class BackupHelper(val context: Context) {
+class FileHelper(val context: Context) {
 
   private val json = Json { prettyPrint = true } // Configure JSON serialization
 
@@ -90,6 +93,7 @@ class BackupHelper(val context: Context) {
           File(path).parentFile?.mkdirs()
         }
       }
+
       is DocumentKUniFile -> {
         // For SAF, create parent directories recursively if possible
         file.name?.let { name ->
@@ -98,11 +102,13 @@ class BackupHelper(val context: Context) {
           parent?.createDirectory(name)
         }
       }
+
       is MediaKUniFile -> {
         // For MediaStore, ensure the relativePath includes the parent structure
         // MediaStore automatically handles this when creating files
         // No explicit mkdirs needed; relativePath is sufficient
       }
+
       else -> {
         // Assets and Resources are read-only, so no action needed
       }
@@ -162,7 +168,8 @@ class BackupHelper(val context: Context) {
    */
   fun getAllSharedPrefsNames(): List<String> {
     val prefNames = mutableListOf<String>()
-    val prefsDir = KUniFile.fromFile(context, File("${context.filesDir.parent}/shared_prefs")) ?: return emptyList()
+    val prefsDir = KUniFile.fromFile(context, File("${context.filesDir.parent}/shared_prefs"))
+      ?: return emptyList()
 
     if (prefsDir.exists() && prefsDir.isDirectory) {
       prefsDir.listFiles()?.forEach { file ->
@@ -202,9 +209,7 @@ class BackupHelper(val context: Context) {
       .apply()
 
 
-    prefs.edit()
-      .putString(context.getString(R.string.pref_backup_path_allowed), uriString)
-      .apply()
+    addAllowedPath(uri)
 
     // Return display path for UI purposes
     return KUniFile.fromUri(context, uri)
@@ -215,8 +220,27 @@ class BackupHelper(val context: Context) {
    * @param context Application context.
    * @return MutableSet of allowed path URIs.
    */
-  fun getAllowedBackupPaths(): String? {
+  fun getAllowedPaths(default: KUniFile?): List<KUniFile> {
     val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-    return prefs.getString(context.getString(R.string.pref_backup_path_allowed), null)
+    val uris = prefs.getStringSet(context.getString(R.string.pref_paths_allowed), null)
+    val list = uris?.mapNotNull { uri ->
+      KUniFile.fromUri(context, uri.toUri())
+    }?.toMutableList() ?: mutableListOf()
+    default?.let { list.add(0, it) }
+    return list
   }
+
+  @SuppressLint("MutatingSharedPrefs")
+  fun addAllowedPath(uri: Uri) {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    val allowedPaths =
+      prefs.getStringSet(context.getString(R.string.pref_paths_allowed), mutableSetOf())
+        ?: mutableSetOf()
+
+    allowedPaths.add(uri.toString())
+    prefs.edit {
+      putStringSet(context.getString(R.string.pref_paths_allowed), allowedPaths)
+    }
+  }
+
 }

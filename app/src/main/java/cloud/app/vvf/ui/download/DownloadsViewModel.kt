@@ -1,10 +1,13 @@
 package cloud.app.vvf.ui.download
 
+import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.common.models.getMediaType
 import cloud.app.vvf.datastore.app.AppDataStore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,7 +27,8 @@ import cloud.app.vvf.services.downloader.DownloadType
 @HiltViewModel
 class DownloadsViewModel @Inject constructor(
   private val downloadManager: DownloadManager,
-  private val dataFlow: MutableStateFlow<AppDataStore>
+  private val dataFlow: MutableStateFlow<AppDataStore>,
+  private val application: Application
 ) : ViewModel() {
 
   val downloads: StateFlow<List<DownloadData>> = downloadManager.downloads
@@ -180,7 +184,7 @@ class DownloadsViewModel @Inject constructor(
         setDataAndType(
           FileProvider.getUriForFile(
             context,
-            "${context.packageName}.fileprovider",
+            BuildConfig.AUTHORITY_FILE_PROVIDER,
             downloadsDir
           ),
           "resource/folder"
@@ -328,7 +332,7 @@ class DownloadsViewModel @Inject constructor(
       // Use FileProvider to create a content URI that can be safely shared
       val contentUri = FileProvider.getUriForFile(
         context,
-        "${context.packageName}.fileprovider",
+        BuildConfig.AUTHORITY_FILE_PROVIDER,
         file
       )
 
@@ -402,4 +406,44 @@ class DownloadsViewModel @Inject constructor(
         initialValue = 0
       )
     }
+
+  //
+  fun openLocation(context: Context, downloadData: DownloadData) {
+    val file = File(downloadData.localPath ?: return)
+    if (!file.exists()) {
+      Timber.w("File does not exist: ${file.absolutePath}")
+      return
+    }
+    val parentDir = file.parentFile ?: return
+    try {
+      val uri = FileProvider.getUriForFile(
+        context,
+        BuildConfig.AUTHORITY_FILE_PROVIDER,
+        parentDir
+      )
+      val intent = Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, "resource/folder")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        if (context !is Activity) {
+          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+      }
+      context.startActivity(intent)
+    } catch (e: Exception) {
+      Timber.w(e, "No app can open folder directly, fallback to file manager")
+      // Fallback: open a file manager with ACTION_GET_CONTENT
+      try {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+          setDataAndType(android.net.Uri.parse(parentDir.absolutePath), "*/*")
+          addCategory(Intent.CATEGORY_OPENABLE)
+          if (context !is Activity) {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+          }
+        }
+        context.startActivity(Intent.createChooser(intent, "Open folder with"))
+      } catch (ex: Exception) {
+        Timber.e(ex, "No file manager found to open folder")
+      }
+    }
+  }
 }

@@ -17,7 +17,7 @@ import cloud.app.vvf.services.BackupWorker
 import cloud.app.vvf.ui.update.UpdateFragment
 import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.utils.AppUpdater
-import cloud.app.vvf.utils.BackupHelper
+import cloud.app.vvf.utils.FileHelper
 import cloud.app.vvf.utils.FileFolderPicker.getChooseFileLauncher
 import cloud.app.vvf.utils.FileFolderPicker.getChooseFolderLauncher
 import cloud.app.vvf.utils.KUniFile
@@ -52,7 +52,7 @@ class BackupUpdateFragment : BaseSettingsFragment() {
     lateinit var extensionsFlow: MutableStateFlow<List<Extension<*>>>
 
     @Inject
-    lateinit var backupHelper: BackupHelper
+    lateinit var fileHelper: FileHelper
 
     @Inject
     lateinit var throwableFlow: MutableSharedFlow<Throwable>
@@ -69,7 +69,7 @@ class BackupUpdateFragment : BaseSettingsFragment() {
     private val restorePicker = getChooseFileLauncher { uri ->
       uri?.let {
         lifecycleScope.launch(Dispatchers.IO) {
-          val result = backupHelper.restoreSharedPreferencesFromJson(it)
+          val result = fileHelper.restoreSharedPreferencesFromJson(it)
           withContext(Dispatchers.Main) {
             if (result) {
               context?.showToast(R.string.restore_success)
@@ -105,7 +105,7 @@ class BackupUpdateFragment : BaseSettingsFragment() {
         onPreferenceClickListener = Preference.OnPreferenceClickListener {
           lifecycleScope.launch(Dispatchers.IO) {
             // Define backup file using KUniFile
-            val defaultDir = backupHelper.getDefaultBackupDir()
+            val defaultDir = fileHelper.getDefaultBackupDir()
             val date = SimpleDateFormat("yyyy_MM_dd_HH_mm").format(Date(System.currentTimeMillis()))
             val displayName = "vvf_backup${date}.json"
             val backupDirPath = preferences.getString(
@@ -119,9 +119,9 @@ class BackupUpdateFragment : BaseSettingsFragment() {
 
               if (backupFile != null) {
                 // Backup all SharedPreferences
-                val allPrefs = backupHelper.getAllSharedPrefsNames()
+                val allPrefs = fileHelper.getAllSharedPrefsNames()
                 val backupAllSuccess =
-                  backupHelper.backupSharedPreferencesToJson(allPrefs, backupFile)
+                  fileHelper.backupSharedPreferencesToJson(allPrefs, backupFile)
 
                 withContext(Dispatchers.Main) {
                   if (backupAllSuccess) {
@@ -195,14 +195,14 @@ class BackupUpdateFragment : BaseSettingsFragment() {
       }
 
       // Backup Path Preference
-      BackupMaterialListPreference(context) {
+      FolderMaterialListPreference(context) {
         try {
           pathPicker.launch(null)
         } catch (e: Exception) {
           Timber.e(e, "Failed to launch path picker")
         }
       }.apply {
-        val backupDirs = getBackupDirsForDisplay()
+        val backupDirs = fileHelper.getAllowedPaths(fileHelper.getDefaultBackupDir())
         layoutResource = R.layout.preference
         key = getString(R.string.pref_backup_path)
         title = getString(R.string.backup_path)
@@ -261,25 +261,16 @@ class BackupUpdateFragment : BaseSettingsFragment() {
     }
 
     private fun updateBackupPathPreference(uri: Uri) {
-      backupHelper.storeBackupPath(uri)
-      val pref = findPreference<BackupMaterialListPreference>(getString(R.string.pref_backup_path))
+      fileHelper.storeBackupPath(uri)
+      val pref = findPreference<FolderMaterialListPreference>(getString(R.string.pref_backup_path))
       pref?.let {
-        val backupDirs = getBackupDirsForDisplay()
+        val backupDirs = fileHelper.getAllowedPaths(fileHelper.getDefaultBackupDir())
         it.entries = backupDirs.map { file -> file.filePath ?: "" }.toTypedArray()
         it.entryValues = backupDirs.map { file -> file.uri.toString() }.toTypedArray()
         it.value = uri.toString()
       }
     }
 
-    private fun getBackupDirsForDisplay(): List<KUniFile> {
-      val context = context ?: return emptyList()
-      val defaultDir = backupHelper.getDefaultBackupDir()
-      val path = backupHelper.getAllowedBackupPaths();
-      val allowedPath = if (!path.isNullOrEmpty()) KUniFile.fromUri(
-        context,
-        Uri.parse(backupHelper.getAllowedBackupPaths())
-      ) else null
-      return listOfNotNull(defaultDir, allowedPath)
-    }
+
   }
 }

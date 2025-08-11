@@ -41,10 +41,11 @@
   <string name="pref_complete_percent_key">pref_complete_percent_key</string>
   <string name="pref_automatic_backup_key">pref_automatic_backup_key</string>
   <string name="pref_backup_path">pref_backup_path</string>
-  <string name="pref_backup_path_allowed">pref_backup_path_allowed</string>
+  <string name="pref_paths_allowed">pref_paths_allowed</string>
   <string name="pref_auto_check_update">pref_auto_check_update</string>
   <string name="pref_prefer_device_decoders">pref_prefer_device_decoders</string>
-    <string name="pref_privacy_policy">pref_privacy_policy</string>
+  <string name="pref_privacy_policy">pref_privacy_policy</string>
 
-
+  <!--Download-->
+  <string name="pref_download_folder">pref_download_folder</string>
 </resources>

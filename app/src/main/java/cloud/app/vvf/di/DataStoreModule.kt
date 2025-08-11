@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.datastore.account.AccountDataStore
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.utils.BackupHelper
+import cloud.app.vvf.utils.FileHelper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,5 +44,5 @@ class DataStoreModule {
 
   @Singleton
   @Provides
-  fun provideBackupHelper(context: Context) = BackupHelper(context)
+  fun provideBackupHelper(context: Context) = FileHelper(context)
 }

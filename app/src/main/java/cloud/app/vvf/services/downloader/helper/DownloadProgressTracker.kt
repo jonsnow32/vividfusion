@@ -39,7 +39,9 @@ class DownloadProgressTracker(
           keys.DOWNLOADED_BYTES to actualDownloaded,
           keys.TOTAL_BYTES to actualTotal,
           keys.DOWNLOAD_ID to downloadId,
-          keys.FILE_NAME to fileName
+          keys.FILE_NAME to fileName,
+          keys.CONNECTIONS to 1, // Assuming single connection for final update
+          keys.DOWNLOAD_SPEED to 100
         )
       )
 
@@ -66,7 +68,8 @@ class DownloadProgressTracker(
         keys.DOWNLOAD_ID to downloadId,
         keys.FILE_PATH to filePath,
         keys.LOCAL_PATH to localPath,
-        keys.FILE_NAME to fileName
+        keys.FILE_NAME to fileName,
+
       )
     )
   }

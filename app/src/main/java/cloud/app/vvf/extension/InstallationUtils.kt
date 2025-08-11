@@ -9,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
+import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.helpers.ImportType
 import cloud.app.vvf.common.models.extension.ExtensionType
@@ -67,7 +68,7 @@ suspend fun addJarFile(context: FragmentActivity, file: File): Result<Boolean> =
 
 suspend fun installApk(context: FragmentActivity, file: File): Result<Boolean> = runCatching {
   val contentUri = FileProvider.getUriForFile(
-    context, context.packageName + ".provider", file
+    context, BuildConfig.AUTHORITY_FILE_PROVIDER, file
   )
   val installIntent = Intent(Intent.ACTION_VIEW).apply {
     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)

@@ -11,19 +11,17 @@ import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ForegroundInfo
-import androidx.work.OneTimeWorkRequest
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.createNotificationChannel
-import cloud.app.vvf.utils.BackupHelper
+import cloud.app.vvf.utils.FileHelper
 import cloud.app.vvf.utils.KUniFile
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 import java.util.concurrent.TimeUnit
 
 
@@ -38,7 +36,7 @@ class BackupWorker @AssistedInject constructor(
   @Assisted val context: Context,
   @Assisted params: WorkerParameters,
   val sharedPreferences: SharedPreferences,
-  val backupHelper: BackupHelper
+  val fileHelper: FileHelper
 ) :
   CoroutineWorker(context, params) {
   companion object {
@@ -112,9 +110,9 @@ class BackupWorker @AssistedInject constructor(
 
 
       // Or backup all SharedPreferences
-      val allPrefs = backupHelper.getAllSharedPrefsNames()
+      val allPrefs = fileHelper.getAllSharedPrefsNames()
       val backupAllSuccess =
-        backupHelper.backupSharedPreferencesToJson(allPrefs, backupFile)
+        fileHelper.backupSharedPreferencesToJson(allPrefs, backupFile)
 
       if (backupAllSuccess)
         Result.success()

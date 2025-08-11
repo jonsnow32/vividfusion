@@ -84,7 +84,7 @@ class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
       val albums = MediaUtils.getMusicCollections(context, minDuration)
       albums.forEachIndexed { index, playlist ->
         val data = PagedData.Single<AVPMediaItem> {
-          playlist.tracks?.mapNotNull { track ->
+          playlist.tracks?.map { track ->
             AVPMediaItem.TrackItem(track)
           }?.sortedByDescending { item -> item.track.releaseDate ?: 0L }
             ?: emptyList()
@@ -335,7 +335,7 @@ class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
       description = "",
       version = "1.0.0",
       author = "Avp",
-      iconUrl = "https://www.themoviedb.org/assets/2/v4/marketing/logos/infuse_600-a28d709ee5137f75b31c4184643a22fe83ee8f64d3317509c33090922b66dbb6.png",
+      iconUrl = (R.mipmap.ic_launcher).toString(),
       types = listOf(ExtensionType.DATABASE, ExtensionType.SUBTITLE)
     )
   }

@@ -95,6 +95,15 @@ class NetworkStreamFragment : Fragment() {
       }
     }
     viewModel.refresh()
+    val clipboard = requireContext().getSystemService(android.content.ClipboardManager::class.java)
+    val clip = clipboard.primaryClip
+    if (clip != null && clip.itemCount > 0) {
+      val text = clip.getItemAt(0).text.toString()
+      if(checkValidUrl(text)) {
+        binding.etStreamUrl.setText(text)
+        context?.showToast("Pasted from clipboard")
+      }
+    }
 //    binding.etStreamUrl.setText("magnet:?xt=urn:btih:53A4A411DECDAF7E1BE919607B7A4187987BF0BB")
 //    binding.etStreamUrl.setText("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
     binding.btnStreaming.setOnClickListener {

@@ -72,6 +72,11 @@ class SettingsRootFragment : BaseSettingsFragment() {
         summary = getString(R.string.player_description)
         icon = AppCompatResources.getDrawable(context, R.drawable.video_settings_24dp)
       }
+      TransitionPreference(context).add {
+        title = getString(R.string.download)
+        key = "download"
+        icon = AppCompatResources.getDrawable(context, R.drawable.download_2_24dp)
+      }
 
       TransitionPreference(context).add {
         title = getString(R.string.backup_updates)
@@ -106,6 +111,7 @@ class SettingsRootFragment : BaseSettingsFragment() {
         "player" -> PlayerSettingFragment()
         "general" -> GeneralSettingsFragment()
         "backup_updates" -> BackupUpdateFragment()
+        "download" -> DownloadSettingFragment()
         else -> null
       }
       fragment ?: return false

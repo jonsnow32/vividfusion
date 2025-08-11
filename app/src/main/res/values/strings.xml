@@ -422,5 +422,11 @@
   <string name="action_play">Play</string>
   <string name="delete_confirmation_title">Delete Download</string>
   <string name="delete_confirmation_message">Are you sure you want to delete %s</string>
+  <string name="download_progress" translatable="false">%1$s • %2$s</string>
+  <string name="downloading">Downloading</string>
+  <string name="paused">Paused</string>
+  <string name="completed">Completed</string>
+  <string name="action_open_folder">Open Location</string>
+  <string name="download_path">Download Path</string>
 
 </resources>

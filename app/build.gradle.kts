@@ -17,6 +17,7 @@ android {
     versionCode = 104
     versionName = "1.0.4"
     buildConfigField("int", "VERSION_CODE", "$versionCode")
+    buildConfigField("String", "AUTHORITY_FILE_PROVIDER", "\"${applicationId}.fileprovider\"")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 

@@ -5,10 +5,9 @@ import android.net.Uri
 import androidx.preference.ListPreference
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import cloud.app.vvf.R
-import cloud.app.vvf.utils.FileFolderPicker
 import cloud.app.vvf.utils.KUniFile
 
-class BackupMaterialListPreference(context: Context, val newFolder: () -> Unit) :
+class FolderMaterialListPreference(context: Context, val newFolder: () -> Unit) :
   ListPreference(context) {
 
   override fun onSetInitialValue(defaultValue: Any?) {

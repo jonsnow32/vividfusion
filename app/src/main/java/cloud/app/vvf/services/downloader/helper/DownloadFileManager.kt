@@ -1,39 +1,65 @@
 package cloud.app.vvf.services.downloader.helper
 
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import cloud.app.vvf.R
 import cloud.app.vvf.utils.KUniFile
 import timber.log.Timber
 import java.io.IOException
+import androidx.core.content.edit
 
 class DownloadFileManager(private val context: Context) {
 
-  fun getDownloadsDirectory(): KUniFile {
-    return try {
-      // For Android 10+, use app-specific directory
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        val appSpecificDownloads = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-        if (appSpecificDownloads != null) {
-          return KUniFile.Companion.fromFile(context, appSpecificDownloads)
-            ?: throw IOException("Failed to create KUniFile from app-specific directory")
-        }
-      }
 
-      // Fallback to internal directory
-      val internalDownloads = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-        ?: context.filesDir
-
-      KUniFile.Companion.fromFile(context, internalDownloads)
-        ?: throw IOException("Failed to create KUniFile from fallback directory")
-
-    } catch (e: Exception) {
-      Timber.e(e, "Error accessing downloads directory, using internal storage")
-      val internalDir = context.filesDir
-      KUniFile.Companion.fromFile(context, internalDir)
-        ?: throw IOException("Cannot access any storage directory")
+  fun saveDownloadDirectoryPreference(uri: Uri) {
+    val sharedPreferences =
+      context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
+    sharedPreferences.edit {
+      putString(
+        context.getString(R.string.pref_download_path),
+        uri.toString()
+      )
     }
   }
+
+  fun getDownloadUri(): KUniFile {
+    val sharedPreferences =
+      context.getSharedPreferences(context.packageName, Context.MODE_PRIVATE)
+    val uri = sharedPreferences.getString(context.getString(R.string.pref_download_path), null)
+    return if (uri != null) {
+      KUniFile.fromUri(context, Uri.parse(uri))
+        ?: throw IOException("Failed to create KUniFile from saved URI")
+    } else {
+      return try {
+        // For Android 10+, use app-specific directory
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          val appSpecificDownloads = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+          if (appSpecificDownloads != null) {
+            return KUniFile.Companion.fromFile(context, appSpecificDownloads)
+              ?: throw IOException("Failed to create KUniFile from app-specific directory")
+          }
+        }
+
+        // Fallback to internal directory
+        val internalDownloads = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+          ?: context.filesDir
+
+        KUniFile.Companion.fromFile(context, internalDownloads)
+          ?: throw IOException("Failed to create KUniFile from fallback directory")
+
+      } catch (e: Exception) {
+        Timber.e(e, "Error accessing downloads directory, using internal storage")
+        val internalDir = context.filesDir
+        KUniFile.Companion.fromFile(context, internalDir)
+          ?: throw IOException("Cannot access any storage directory")
+      }
+    }
+  }
+
+
+
 
   fun createOrGetFile(
     fileName: String,
@@ -41,7 +67,7 @@ class DownloadFileManager(private val context: Context) {
     isResuming: Boolean = false,
     resumeBytes: Long = 0L
   ): Pair<KUniFile, Boolean> {
-    val downloadsDir = getDownloadsDirectory()
+    val downloadsDir = getDownloadUri()
     val fullFileName = ensureFileExtension(fileName, contentType)
 
     return if (isResuming && resumeBytes > 0) {
@@ -69,6 +95,7 @@ class DownloadFileManager(private val context: Context) {
           }
           Pair(existingFile, true)
         }
+
         else -> {
           existingFile.delete()
           val newFile = downloadsDir.createFile(fileName, "application/octet-stream")

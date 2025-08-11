@@ -62,7 +62,7 @@ class DownloadsFragment : Fragment() {
         DownloadAction.RETRY -> viewModel.retryDownload(downloadItem.id)
         DownloadAction.REMOVE -> viewModel.removeDownload(downloadItem.id)
         DownloadAction.PLAY -> viewModel.playDownloadedFile(requireContext(), downloadItem)
-        DownloadAction.UNKNOW -> showOptionDialog(downloadItem)
+        else -> showOptionDialog(downloadItem)
       }
     }
 
@@ -85,6 +85,9 @@ class DownloadsFragment : Fragment() {
     if (downloadItem.status == DownloadStatus.COMPLETED)
       items.add(IconTextItem(R.drawable.rounded_play_arrow_24, R.string.action_play))
 
+    if (downloadItem.status == DownloadStatus.COMPLETED)
+      items.add(IconTextItem(R.drawable.folder_24dp, R.string.action_open_folder))
+
 
     ActionSelectionDialog.Companion.newInstance(
       items,
@@ -94,7 +97,12 @@ class DownloadsFragment : Fragment() {
           R.string.action_delete -> {
             MaterialAlertDialogBuilder(requireContext())
               .setTitle(R.string.delete_confirmation_title)
-              .setMessage(getString(R.string.delete_confirmation_message,downloadItem.getDisplayName()))
+              .setMessage(
+                getString(
+                  R.string.delete_confirmation_message,
+                  downloadItem.getDisplayName()
+                )
+              )
               .setPositiveButton(R.string.action_delete) { dialog, _ ->
                 viewModel.removeDownload(downloadItem.id)
                 dialog.dismiss()
@@ -108,6 +116,7 @@ class DownloadsFragment : Fragment() {
           R.string.action_play -> viewModel.playDownloadedFile(requireContext(), downloadItem)
           R.string.action_pause -> viewModel.pauseDownload(downloadItem.id)
           R.string.action_resume -> viewModel.resumeDownload(downloadItem.id)
+          R.string.action_open_folder -> viewModel.openLocation(requireContext(), downloadItem)
         }
       }).show(parentFragmentManager)
 

@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.FragmentUpdateBinding
 import cloud.app.vvf.services.downloader.ApkDownloader
@@ -235,7 +236,7 @@ class UpdateFragment : Fragment() {
       setDataAndType(
         FileProvider.getUriForFile(
           requireContext(),
-          "${requireContext().packageName}.fileprovider",
+          BuildConfig.AUTHORITY_FILE_PROVIDER,
           File(apkUri.path ?: throw IllegalArgumentException("Invalid APK URI"))
         ),
         "application/vnd.android.package-archive"
