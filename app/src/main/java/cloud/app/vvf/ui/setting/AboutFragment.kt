@@ -34,6 +34,7 @@ class AboutFragment : BaseSettingsFragment() {
           .versionName
         title = getString(R.string.version)
         summary = version
+        icon = AppCompatResources.getDrawable(context, R.drawable.outline_numbers_24)
         layoutResource = R.layout.preference
         isSelectable = false
         screen.addPreference(this)

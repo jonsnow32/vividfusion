@@ -1,13 +1,17 @@
 package cloud.app.vvf.ui.main
 
+import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.IdRes
+import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
+import androidx.media3.common.util.UnstableApi
 import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.FragmentMainBinding
@@ -25,11 +29,15 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainFragment : Fragment() {
   private var binding by autoCleared<FragmentMainBinding>()
-  private val mainActivityViewModel by activityViewModels<MainActivityViewModel>()
-
+  private lateinit var mainActivityViewModel: MainActivityViewModel
   private var selectedItemId: Int = R.id.homeFragment
 
   private var navInsets: MainActivityViewModel.Insets = MainActivityViewModel.Insets(0, 0, 0, 0)
+
+  override fun onAttach(context: Context) {
+    super.onAttach(context)
+    mainActivityViewModel = ViewModelProvider(requireActivity())[MainActivityViewModel::class.java]
+  }
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -89,6 +97,8 @@ class MainFragment : Fragment() {
   }
 
   val fragments = mutableMapOf<Int, Fragment>()
+
+  @OptIn(UnstableApi::class)
   private fun createFragment(@IdRes id: Int): Fragment {
     if (fragments.containsKey(id)) return fragments[id]!!
 

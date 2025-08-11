@@ -8,4 +8,5 @@
     android:bottomRightRadius="@dimen/rounded_button_radius"
     android:topLeftRadius="@dimen/rounded_button_radius"
     android:topRightRadius="@dimen/rounded_button_radius" />
+  <solid android:color="?attr/colorSurfaceContainer" />
 </shape>

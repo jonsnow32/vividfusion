@@ -40,6 +40,10 @@ data class DownloadData(
   // Type-specific data stored as JsonElement for serialization compatibility
   val typeSpecificData: Map<String, JsonElement> = emptyMap()
 ) {
+
+  fun getDisplayName(): String {
+    return fileName ?: mediaItem?.title ?: url.substringAfterLast('/')
+  }
   companion object {
     // Keys for type-specific data
     object Keys {

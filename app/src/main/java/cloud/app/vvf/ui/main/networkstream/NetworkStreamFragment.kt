@@ -26,6 +26,7 @@ import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import androidx.core.net.toUri
 
 @UnstableApi
 @AndroidEntryPoint
@@ -95,8 +96,13 @@ class NetworkStreamFragment : Fragment() {
     }
     viewModel.refresh()
 //    binding.etStreamUrl.setText("magnet:?xt=urn:btih:53A4A411DECDAF7E1BE919607B7A4187987BF0BB")
-    binding.etStreamUrl.setText("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+//    binding.etStreamUrl.setText("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
     binding.btnStreaming.setOnClickListener {
+      val url = binding.etStreamUrl.text.toString().trim()
+      if (!checkValidUrl(url)) {
+        context?.showToast("Please enter a valid URL")
+        return@setOnClickListener
+      }
       stream(binding.etStreamUrl.text.toString().trim())
     }
 
@@ -111,9 +117,11 @@ class NetworkStreamFragment : Fragment() {
               context?.showToast("Added to download queue")
 
             }
+
             is NetworkStreamViewModel.DownloadResult.AlreadyExists -> {
               context?.showToast("This URL is already downloaded or being downloaded")
             }
+
             is NetworkStreamViewModel.DownloadResult.Error -> {
               context?.showToast("Failed to add to download queue: ${result.message}")
             }
@@ -145,6 +153,21 @@ class NetworkStreamFragment : Fragment() {
         }
       }
       false
+    }
+  }
+
+  private fun checkValidUrl(uri: String): Boolean {
+    if (uri.isBlank()) return false
+    val parsed = uri.toUri()
+    val scheme = parsed.scheme?.lowercase()
+    return when {
+        scheme == "http" || scheme == "https" -> true
+        scheme == "magnet" -> true
+        scheme == "file" -> true
+        scheme == "content" -> true // Accept content:// URIs
+        // Accept torrent file links
+        uri.endsWith(".torrent", ignoreCase = true) -> true
+        else -> false
     }
   }
 

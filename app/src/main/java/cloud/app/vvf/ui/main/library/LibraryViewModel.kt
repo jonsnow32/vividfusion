@@ -47,7 +47,7 @@ class LibraryViewModel @Inject constructor(
         Tab("Bookmarks", "Bookmarks"),
 //        Tab("Up next", "Up next"),
         Tab("Continuing", "Continuing"),
-        Tab("Downloads", "Downloads"),
+//        Tab("Downloads", "Downloads"),
       )
     }
   }

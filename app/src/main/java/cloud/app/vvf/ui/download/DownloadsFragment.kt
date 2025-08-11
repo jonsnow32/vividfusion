@@ -10,18 +10,23 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
+import cloud.app.vvf.R
 import cloud.app.vvf.databinding.FragmentDownloadsBinding
+import cloud.app.vvf.services.downloader.DownloadData
+import cloud.app.vvf.services.downloader.DownloadStatus
+import cloud.app.vvf.ui.widget.dialog.ActionSelectionDialog
+import cloud.app.vvf.ui.widget.dialog.SelectionDialog
+import cloud.app.vvf.ui.widget.dialog.actionOption.IconTextItem
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 @AndroidEntryPoint
 class DownloadsFragment : Fragment() {
-
   private var binding by autoCleared<FragmentDownloadsBinding>()
-
   private val viewModel: DownloadsViewModel by viewModels()
   private lateinit var downloadsAdapter: DownloadsAdapter
 
@@ -57,23 +62,55 @@ class DownloadsFragment : Fragment() {
         DownloadAction.RETRY -> viewModel.retryDownload(downloadItem.id)
         DownloadAction.REMOVE -> viewModel.removeDownload(downloadItem.id)
         DownloadAction.PLAY -> viewModel.playDownloadedFile(requireContext(), downloadItem)
+        DownloadAction.UNKNOW -> showOptionDialog(downloadItem)
       }
     }
 
-    downloadsAdapter = DownloadsAdapter() { action: DownloadAction, downloadItem ->
-      when (action) {
-        DownloadAction.PAUSE -> viewModel.pauseDownload(downloadItem.id)
-        DownloadAction.RESUME -> viewModel.resumeDownload(downloadItem.id)
-        DownloadAction.CANCEL -> viewModel.cancelDownload(downloadItem.id)
-        DownloadAction.RETRY -> viewModel.retryDownload(downloadItem.id)
-        DownloadAction.REMOVE -> viewModel.removeDownload(downloadItem.id)
-        DownloadAction.PLAY -> viewModel.playDownloadedFile(requireContext(), downloadItem)
-      }
-    }
     binding.rvDownloads.apply {
       layoutManager = LinearLayoutManager(requireContext())
       adapter = downloadsAdapter
     }
+  }
+
+  private fun showOptionDialog(downloadItem: DownloadData) {
+    val items = mutableListOf(
+      IconTextItem(R.drawable.ic_delete, R.string.action_delete),
+    )
+    if (downloadItem.status == DownloadStatus.PAUSED)
+      items.add(IconTextItem(R.drawable.resume_24dp, R.string.action_resume))
+
+    if (downloadItem.status == DownloadStatus.DOWNLOADING)
+      items.add(IconTextItem(R.drawable.pause_24dp, R.string.action_pause))
+
+    if (downloadItem.status == DownloadStatus.COMPLETED)
+      items.add(IconTextItem(R.drawable.rounded_play_arrow_24, R.string.action_play))
+
+
+    ActionSelectionDialog.Companion.newInstance(
+      items,
+      downloadItem.getDisplayName(),
+      callback = { selectedItem ->
+        when (selectedItem.textRes) {
+          R.string.action_delete -> {
+            MaterialAlertDialogBuilder(requireContext())
+              .setTitle(R.string.delete_confirmation_title)
+              .setMessage(getString(R.string.delete_confirmation_message,downloadItem.getDisplayName()))
+              .setPositiveButton(R.string.action_delete) { dialog, _ ->
+                viewModel.removeDownload(downloadItem.id)
+                dialog.dismiss()
+              }
+              .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+              }
+              .show()
+          }
+
+          R.string.action_play -> viewModel.playDownloadedFile(requireContext(), downloadItem)
+          R.string.action_pause -> viewModel.pauseDownload(downloadItem.id)
+          R.string.action_resume -> viewModel.resumeDownload(downloadItem.id)
+        }
+      }).show(parentFragmentManager)
+
   }
 
   private fun setupClickListeners() {
@@ -149,15 +186,18 @@ class DownloadsFragment : Fragment() {
     val freeWeight = (storageInfo.freePercentage / 100f).coerceIn(0f, 1f)
 
     // Update progress bar weights
-    val usedLayoutParams = binding.downloadUsed.layoutParams as android.widget.LinearLayout.LayoutParams
+    val usedLayoutParams =
+      binding.downloadUsed.layoutParams as android.widget.LinearLayout.LayoutParams
     usedLayoutParams.weight = usedWeight
     binding.downloadUsed.layoutParams = usedLayoutParams
 
-    val appLayoutParams = binding.downloadApp.layoutParams as android.widget.LinearLayout.LayoutParams
+    val appLayoutParams =
+      binding.downloadApp.layoutParams as android.widget.LinearLayout.LayoutParams
     appLayoutParams.weight = appWeight
     binding.downloadApp.layoutParams = appLayoutParams
 
-    val freeLayoutParams = binding.downloadFree.layoutParams as android.widget.LinearLayout.LayoutParams
+    val freeLayoutParams =
+      binding.downloadFree.layoutParams as android.widget.LinearLayout.LayoutParams
     freeLayoutParams.weight = freeWeight
     binding.downloadFree.layoutParams = freeLayoutParams
 

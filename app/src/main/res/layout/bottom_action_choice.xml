@@ -1,0 +1,15 @@
+<LinearLayout
+  layout_width="match_parent"
+  layout_height="wrap_content"
+  orientation="horizontal"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools">
+  <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    tools:text="@tools:sample/first_names" />
+
+</LinearLayout>

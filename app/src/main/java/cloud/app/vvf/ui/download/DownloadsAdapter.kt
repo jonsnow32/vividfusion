@@ -159,7 +159,7 @@ class DownloadsAdapter(
 
                 // Long click for remove
                 root.setOnLongClickListener {
-                    onActionClick(DownloadAction.REMOVE, data)
+                    onActionClick(DownloadAction.UNKNOW, data)
                     true
                 }
             }
@@ -283,7 +283,7 @@ class DownloadsAdapter(
 
                 // Long click for remove
                 root.setOnLongClickListener {
-                    onActionClick(DownloadAction.REMOVE, data)
+                    onActionClick(DownloadAction.UNKNOW, data)
                     true
                 }
             }
@@ -395,7 +395,7 @@ class DownloadsAdapter(
 
                 // Long click for remove
                 root.setOnLongClickListener {
-                    onActionClick(DownloadAction.REMOVE, data)
+                    onActionClick(DownloadAction.UNKNOW, data)
                     true
                 }
             }
@@ -564,7 +564,6 @@ class DownloadsAdapter(
         }
     }
 }
-
 class DownloadDiffCallback : DiffUtil.ItemCallback<DownloadData>() {
     override fun areItemsTheSame(oldItem: DownloadData, newItem: DownloadData): Boolean {
         return oldItem.id == newItem.id
@@ -597,5 +596,8 @@ enum class DownloadAction {
     RESUME,
     RETRY,
     PLAY,
-    REMOVE
+    REMOVE,
+
+    UNKNOW,
+
 }
