@@ -215,7 +215,20 @@ class IntentHandler(private val mainActivity: MainActivity) {
     // Try to determine if it's a media file by checking content resolver
     try {
       val contentResolver = mainActivity.contentResolver
-      val mimeType = contentResolver.getType(uri)
+      var mimeType = contentResolver.getType(uri)
+
+      // Try to guess MIME type from file extension if not found or is generic
+      if (mimeType == null || mimeType == "application/octet-stream") {
+        val fileName = getFileNameFromUri(uri)
+        val extension = fileName?.substringAfterLast('.', "")?.lowercase()
+        if (!extension.isNullOrEmpty()) {
+          val guessedMime = android.webkit.MimeTypeMap.getSingleton()
+            .getMimeTypeFromExtension(extension)
+          if (!guessedMime.isNullOrEmpty()) {
+            mimeType = guessedMime
+          }
+        }
+      }
 
       when {
         mimeType?.startsWith("video/") == true -> {
@@ -226,9 +239,17 @@ class IntentHandler(private val mainActivity: MainActivity) {
           Timber.d("Detected audio file via MIME type: $mimeType")
           handleMediaFile(uri, "audio")
         }
+        // Handle torrent files by extension
         else -> {
-          Timber.d("Unknown file type - MIME: $mimeType, URI: $uri")
-          // Could show a dialog asking user what to do with the file
+          val fileName = getFileNameFromUri(uri)
+          val extension = fileName?.substringAfterLast('.', "")?.lowercase()
+          if (extension == "torrent") {
+            Timber.d("Detected torrent file via extension")
+            handleTorrentUri(uri)
+          } else {
+            Timber.d("Unknown file type - MIME: $mimeType, URI: $uri")
+            // Could show a dialog asking user what to do with the file
+          }
         }
       }
     } catch (e: Exception) {

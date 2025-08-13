@@ -146,4 +146,15 @@ class DownloadFileManager(private val context: Context) {
       throw e
     }
   }
+
+  companion object {
+    fun String.uriToSlug(): String {
+      val fileName = substringAfterLast('/').substringBefore('?')
+      return fileName
+        .replace(Regex("[^a-zA-Z0-9]+"), "-")
+        .trim('-')
+        .lowercase()
+    }
+  }
+
 }

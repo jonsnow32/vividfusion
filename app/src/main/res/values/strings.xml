@@ -428,5 +428,7 @@
   <string name="completed">Completed</string>
   <string name="action_open_folder">Open Location</string>
   <string name="download_path">Download Path</string>
+    <string name="peers_seeds">%1$d peers, %2$d seeds</string>
+    <string name="quality">Quality: %1$s</string>
 
 </resources>

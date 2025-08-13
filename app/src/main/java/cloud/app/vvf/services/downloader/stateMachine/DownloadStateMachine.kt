@@ -48,7 +48,7 @@ class DownloadStateMachine(
             is DownloadEvent.WorkStarted -> handleWorkStarted()
             is DownloadEvent.ProgressUpdated -> handleProgressUpdated(event.downloadData)
             is DownloadEvent.WorkCompleted -> handleWorkCompleted(
-                event.localPath, event.fileSize, event.downloadData
+                event.downloadData.filePath ?: downloadId, event.downloadData.totalBytes, event.downloadData
             )
             is DownloadEvent.WorkFailed -> handleWorkFailed(event.error, event.downloadData)
             is DownloadEvent.WorkCancelled -> handleWorkCancelled()

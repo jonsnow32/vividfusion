@@ -1,6 +1,5 @@
 package cloud.app.vvf.ui.download
 
-import android.provider.Settings.Global.getString
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,7 +7,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.getDownloadDisplayName
 import cloud.app.vvf.databinding.ItemDownloadHttpBinding
 import cloud.app.vvf.databinding.ItemDownloadHlsBinding
 import cloud.app.vvf.databinding.ItemDownloadTorrentBinding
@@ -28,7 +26,7 @@ class DownloadsAdapter(
     const val VIEW_TYPE_TORRENT = 3
 
     const val PAYLOAD_STATUS = "status"
-    const val PAYLOAD_PROGRESS = "progress"
+    const val PAYLOAD_CONTENT = "content"
   }
 
   override fun getItemViewType(position: Int): Int {
@@ -142,11 +140,15 @@ class DownloadsAdapter(
     onActionClick: (DownloadAction, DownloadData) -> Unit
   ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
+    // Store current data to ensure click handlers always use latest data
+    private var currentData: DownloadData? = null
+
     override fun bind(data: DownloadData) {
+      currentData = data
 
       binding.apply {
         // Basic info
-        tvTitle.text = data.mediaItem?.getDownloadDisplayName() ?: data.fileName ?: data.url
+        tvTitle.text =  data.title ?: data.url
         tvDownloadType.text = "HTTP"
 
         // HTTP-specific info
@@ -163,17 +165,19 @@ class DownloadsAdapter(
         updateProgress(data)
 
         // Setup download button widget
-        setupDownloadButtonWidget(data)
+        setupDownloadButtonWidget()
 
         // Long click for remove
         root.setOnLongClickListener {
-          onActionClick(DownloadAction.UNKNOW, data)
+          currentData?.let { onActionClick(DownloadAction.UNKNOW, it) }
           true
         }
       }
     }
 
     override fun bindPartial(data: DownloadData, payloads: MutableList<Any>) {
+      // Update current data reference
+      currentData = data
 
       for (payload in payloads) {
         if (payload is List<*>) {
@@ -184,8 +188,9 @@ class DownloadsAdapter(
                 updateProgress(data)
               }
 
-              PAYLOAD_PROGRESS -> {
+              PAYLOAD_CONTENT -> {
                 binding.downloadButtonWidget.updateState(data.status, data.progressPercent)
+                binding.tvTitle.text = data.getDisplayName()
                 updateProgress(data)
               }
             }
@@ -194,31 +199,27 @@ class DownloadsAdapter(
       }
     }
 
-    private fun setupDownloadButtonWidget(data: DownloadData) {
-
+    private fun setupDownloadButtonWidget() {
       binding.downloadButtonWidget.apply {
-        // Update the widget state
-        updateState(data.status, data.progressPercent)
-
-        // Set up click handlers based on download status
+        // Set up click handlers that always use current data
         onDownloadClick = {
-          onActionClick(DownloadAction.RETRY, data)
+          currentData?.let { onActionClick(DownloadAction.RETRY, it) }
         }
 
         onPauseClick = {
-          onActionClick(DownloadAction.PAUSE, data)
+          currentData?.let { onActionClick(DownloadAction.PAUSE, it) }
         }
 
         onResumeClick = {
-          onActionClick(DownloadAction.RESUME, data)
+          currentData?.let { onActionClick(DownloadAction.RESUME, it) }
         }
 
         onCancelClick = {
-          onActionClick(DownloadAction.CANCEL, data)
+          currentData?.let { onActionClick(DownloadAction.CANCEL, it) }
         }
 
         onPlayClick = {
-          onActionClick(DownloadAction.PLAY, data)
+          currentData?.let { onActionClick(DownloadAction.PLAY, it) }
         }
       }
     }
@@ -271,12 +272,15 @@ class DownloadsAdapter(
     onActionClick: (DownloadAction, DownloadData) -> Unit
   ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
-    override fun bind(data: DownloadData) {
+    // Store current data to ensure click handlers always use latest data
+    private var currentData: DownloadData? = null
 
+    override fun bind(data: DownloadData) {
+      currentData = data
 
       binding.apply {
         // Basic info
-        tvTitle.text = data.mediaItem?.getDownloadDisplayName() ?: data.fileName ?: data.url
+        tvTitle.text =  data.title ?: data.url
         tvDownloadType.text = "HLS"
 
         // HLS-specific info
@@ -293,17 +297,19 @@ class DownloadsAdapter(
         updateProgress(data)
 
         // Setup download button widget
-        setupDownloadButtonWidget(data)
+        setupDownloadButtonWidget()
 
         // Long click for remove
         root.setOnLongClickListener {
-          onActionClick(DownloadAction.UNKNOW, data)
+          currentData?.let { onActionClick(DownloadAction.UNKNOW, it) }
           true
         }
       }
     }
 
     override fun bindPartial(data: DownloadData, payloads: MutableList<Any>) {
+      // Update current data reference
+      currentData = data
 
       for (payload in payloads) {
         if (payload is List<*>) {
@@ -314,10 +320,12 @@ class DownloadsAdapter(
                 updateProgress(data)
               }
 
-              PAYLOAD_PROGRESS -> {
+              PAYLOAD_CONTENT -> {
                 binding.downloadButtonWidget.updateState(data.status, data.progressPercent)
                 updateProgress(data)
                 binding.tvSegments.text = data.getSegmentProgress()
+                binding.tvTitle.text = data.getDisplayName()
+                binding.tvQuality.text = binding.root.context.getString(R.string.quality, data.quality)
               }
             }
           }
@@ -325,31 +333,27 @@ class DownloadsAdapter(
       }
     }
 
-    private fun setupDownloadButtonWidget(data: DownloadData) {
-
+    private fun setupDownloadButtonWidget() {
       binding.downloadButtonWidget.apply {
-        // Update the widget state
-        updateState(data.status, data.progressPercent)
-
-        // Set up click handlers based on download status
+        // Set up click handlers that always use current data
         onDownloadClick = {
-          onActionClick(DownloadAction.RETRY, data)
+          currentData?.let { onActionClick(DownloadAction.RETRY, it) }
         }
 
         onPauseClick = {
-          onActionClick(DownloadAction.PAUSE, data)
+          currentData?.let { onActionClick(DownloadAction.PAUSE, it) }
         }
 
         onResumeClick = {
-          onActionClick(DownloadAction.RESUME, data)
+          currentData?.let { onActionClick(DownloadAction.RESUME, it) }
         }
 
         onCancelClick = {
-          onActionClick(DownloadAction.CANCEL, data)
+          currentData?.let { onActionClick(DownloadAction.CANCEL, it) }
         }
 
         onPlayClick = {
-          onActionClick(DownloadAction.PLAY, data)
+          currentData?.let { onActionClick(DownloadAction.PLAY, it) }
         }
       }
     }
@@ -362,19 +366,28 @@ class DownloadsAdapter(
             val progressText = "${data.progressPercent}%"
             val speedText = if (data.downloadSpeed > 0) data.downloadSpeedFormatted else "0 B/s"
             tvStatus.text =
-              context.getString(R.string.download_progress, context.getString(R.string.downloading), progressText)
+              context.getString(
+                R.string.download_progress,
+                context.getString(R.string.downloading),
+                progressText
+              )
             tvSpeed.text = speedText
             tvStatus.setTextColor(getStatusColor(data.status))
           }
 
           DownloadStatus.PAUSED -> {
-            tvStatus.text =  context.getString(R.string.download_progress, context.getString(R.string.paused), "${data.progressPercent}%")
+            tvStatus.text = context.getString(
+              R.string.download_progress,
+              context.getString(R.string.paused),
+              "${data.progressPercent}%"
+            )
             tvSpeed.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
           }
 
           DownloadStatus.COMPLETED -> {
-            tvStatus.text = context.getString(R.string.download_progress, context.getString(R.string.completed),
+            tvStatus.text = context.getString(
+              R.string.download_progress, context.getString(R.string.completed),
               formatFileSize(data.totalBytes)
             )
             tvSpeed.text = ""
@@ -387,6 +400,13 @@ class DownloadsAdapter(
             tvStatus.setTextColor(getStatusColor(data.status))
           }
         }
+
+        // Update file size display
+        tvFileSize.text = if (data.totalBytes > 0) {
+          formatFileSize(data.totalBytes)
+        } else {
+          "Unknown"
+        }
       }
     }
   }
@@ -397,53 +417,42 @@ class DownloadsAdapter(
     onActionClick: (DownloadAction, DownloadData) -> Unit
   ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
-    // Cache for real-time torrent data from WorkManager
-    private var realTimeTorrentData: Map<String, Any> = emptyMap()
+    // Store current data to ensure click handlers always use latest data
+    private var currentData: DownloadData? = null
 
     override fun bind(data: DownloadData) {
+      currentData = data
 
       binding.apply {
         // Basic info
-        tvTitle.text = data.mediaItem?.getDownloadDisplayName() ?: data.fileName ?: data.url
+        tvTitle.text =  data.title ?: data.url
         tvDownloadType.text = if (data.isTorrentDownload) "MAGNET" else "TORRENT"
 
-        // Initialize with model data, will be updated by real-time data
+        // Directly use DownloadData for info
         updateTorrentInfo(data)
         updateProgress(data)
 
         // Setup download button widget
-        setupDownloadButtonWidget(data)
+        setupDownloadButtonWidget()
 
         // Long click for remove
         root.setOnLongClickListener {
-          onActionClick(DownloadAction.UNKNOW, data)
+          currentData?.let { onActionClick(DownloadAction.UNKNOW, it) }
           true
         }
       }
     }
 
     override fun bindPartial(data: DownloadData, payloads: MutableList<Any>) {
+      // Update current data reference
+      currentData = data
 
       for (payload in payloads) {
         if (payload is List<*>) {
           for (changeType in payload) {
             when (changeType) {
-              PAYLOAD_STATUS -> {
-                // Update widget state with real progress from WorkManager
-                val realProgress = realTimeTorrentData["progress"] as? Int
-                  ?: data.progressPercent
-                binding.downloadButtonWidget.updateState(data.status, realProgress)
-                updateProgress(data)
-              }
-
-              PAYLOAD_PROGRESS -> {
-                // Cache real-time data from WorkManager
-                cacheRealTimeData(data)
-
-                // Update UI with real-time data
-                val realProgress = realTimeTorrentData["progress"] as? Int
-                  ?: data.progressPercent
-                binding.downloadButtonWidget.updateState(data.status, realProgress)
+              PAYLOAD_STATUS, PAYLOAD_CONTENT -> {
+                binding.downloadButtonWidget.updateState(data.status, data.progressPercent)
                 updateProgress(data)
                 updateTorrentInfo(data)
               }
@@ -453,75 +462,36 @@ class DownloadsAdapter(
       }
     }
 
-    private fun cacheRealTimeData(data: DownloadData) {
-
-      // For now, we'll use the model data, but this should be replaced with actual WorkManager data
-      // You would typically get this from: WorkManager.getInstance().getWorkInfosByTagLiveData(downloadId)
-      realTimeTorrentData = mapOf(
-        "progress" to data.progressPercent,
-        "downloadSpeed" to data.downloadSpeed,
-        "uploadSpeed" to data.uploadSpeed,
-        "peers" to data.totalPeers,
-        "seeds" to data.seeds,
-        "shareRatio" to data.shareRatio,
-        "downloadedBytes" to data.downloadedBytes,
-        "totalBytes" to data.totalBytes
-      )
-    }
-
     private fun updateTorrentInfo(data: DownloadData) {
       binding.apply {
-        // Use real-time data if available, fallback to model data
-        val peers = realTimeTorrentData["peers"] as? Int ?: data.peers
-        val seeds = realTimeTorrentData["seeds"] as? Int ?: data.seeds
-        val totalPeers = realTimeTorrentData["totalPeers"] as? Int ?: peers
-        val shareRatio = realTimeTorrentData["shareRatio"] as? Float ?: data.shareRatio
-
-        // Update peers info with real-time data
-        tvPeers.text = "$peers peers, $seeds seeds"
-
-        // Update share ratio with real-time data
-        tvShareRatio.text = "Ratio: ${String.format("%.2f", shareRatio)}"
-        tvShareRatio.setTextColor(
-          when {
-            shareRatio >= 1.0f -> binding.root.context.getColor(R.color.download_status_completed)
-            shareRatio >= 0.5f -> binding.root.context.getColor(R.color.download_status_downloading)
-            else -> binding.root.context.getColor(R.color.download_status_failed)
-          }
-        )
-
-        // For pieces, we'll use model data since it's not in WorkManager progress yet
-        tvPieces.text = "data.getPieceProgress()"
+        val peers = data.peers
+        val seeds = data.seeds
+        tvPeers.text = binding.root.context.getString(R.string.peers_seeds, peers, seeds)
+        binding.tvTitle.text = data.getDisplayName()
       }
     }
 
-    private fun setupDownloadButtonWidget(data: DownloadData) {
-
+    private fun setupDownloadButtonWidget() {
       binding.downloadButtonWidget.apply {
-        // Use real-time progress if available
-        val realProgress = realTimeTorrentData["progress"] as? Int
-          ?: data.progressPercent
-        updateState(data.status, realProgress)
-
-        // Set up click handlers based on download status
+        // Set up click handlers that always use current data
         onDownloadClick = {
-          onActionClick(DownloadAction.RETRY, data)
+          currentData?.let { onActionClick(DownloadAction.RETRY, it) }
         }
 
         onPauseClick = {
-          onActionClick(DownloadAction.PAUSE, data)
+          currentData?.let { onActionClick(DownloadAction.PAUSE, it) }
         }
 
         onResumeClick = {
-          onActionClick(DownloadAction.RESUME, data)
+          currentData?.let { onActionClick(DownloadAction.RESUME, it) }
         }
 
         onCancelClick = {
-          onActionClick(DownloadAction.CANCEL, data)
+          currentData?.let { onActionClick(DownloadAction.CANCEL, it) }
         }
 
         onPlayClick = {
-          onActionClick(DownloadAction.PLAY, data)
+          currentData?.let { onActionClick(DownloadAction.PLAY, it) }
         }
       }
     }
@@ -530,51 +500,24 @@ class DownloadsAdapter(
       binding.apply {
         when (data.status) {
           DownloadStatus.DOWNLOADING -> {
-            // Use real-time data if available
-            val realProgress = realTimeTorrentData["progress"] as? Int
-              ?: data.progressPercent
-            val realDownloadSpeed = realTimeTorrentData["downloadSpeed"] as? Long
-              ?: data.downloadSpeed
-            val realUploadSpeed = realTimeTorrentData["uploadSpeed"] as? Long
-              ?: data.uploadSpeed
-            val realDownloadedBytes = realTimeTorrentData["downloadedBytes"] as? Long
-              ?: data.downloadedBytes
-            val realTotalBytes = realTimeTorrentData["totalBytes"] as? Long
-              ?: data.totalBytes
-
-            val progressText = "$realProgress%"
-            val downSpeed =
-              if (realDownloadSpeed > 0) "↓ ${formatSpeed(realDownloadSpeed)}" else "↓ 0 B/s"
-            val upSpeed =
-              if (realUploadSpeed > 0) "↑ ${formatSpeed(realUploadSpeed)}" else "↑ 0 B/s"
-
-            tvStatus.text =
-              "Downloading • $progressText • ${formatFileSize(realDownloadedBytes)} / ${
-                formatFileSize(realTotalBytes)
-              }"
+            val progressText = "${data.progressPercent}%"
+            val downSpeed = if (data.downloadSpeed > 0) "↓ ${formatSpeed(data.downloadSpeed)}" else "↓ 0 B/s"
+            val upSpeed = if (data.uploadSpeed > 0) "↑ ${formatSpeed(data.uploadSpeed)}" else "↑ 0 B/s"
+            tvStatus.text = "Downloading • $progressText • ${formatFileSize(data.downloadedBytes)} / ${formatFileSize(data.totalBytes)}"
             tvSpeeds.text = "$downSpeed • $upSpeed"
             tvStatus.setTextColor(getStatusColor(data.status))
           }
-
           DownloadStatus.PAUSED -> {
-            val realProgress = realTimeTorrentData["progress"] as? Int
-              ?: data.progressPercent
-            tvStatus.text = "Paused • $realProgress%"
+            tvStatus.text = "Paused • ${data.progressPercent}%"
             tvSpeeds.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
           }
-
           DownloadStatus.COMPLETED -> {
-            val realTotalBytes = realTimeTorrentData["totalBytes"] as? Long
-              ?: data.totalBytes
-            tvStatus.text = "Completed • ${formatFileSize(realTotalBytes)}"
-            val realUploadSpeed = realTimeTorrentData["uploadSpeed"] as? Long
-              ?: data.uploadSpeed
-            val upSpeed = if (realUploadSpeed > 0) "↑ ${formatSpeed(realUploadSpeed)}" else ""
+            tvStatus.text = "Completed �� ${formatFileSize(data.totalBytes)}"
+            val upSpeed = if (data.uploadSpeed > 0) "↑ ${formatSpeed(data.uploadSpeed)}" else ""
             tvSpeeds.text = upSpeed
             tvStatus.setTextColor(getStatusColor(data.status))
           }
-
           else -> {
             tvStatus.text = data.status.name.lowercase().replaceFirstChar { it.uppercase() }
             tvSpeeds.text = ""
@@ -601,21 +544,34 @@ class DownloadDiffCallback : DiffUtil.ItemCallback<DownloadData>() {
   }
 
   override fun areContentsTheSame(oldItem: DownloadData, newItem: DownloadData): Boolean {
-    return oldItem == newItem
+    // Compare only the relevant fields that affect UI display, excluding updatedAt
+    return oldItem.status == newItem.status &&
+        oldItem.progress == newItem.progress &&
+        oldItem.downloadedBytes == newItem.downloadedBytes &&
+        oldItem.totalBytes == newItem.totalBytes &&
+        oldItem.downloadSpeed == newItem.downloadSpeed &&
+        oldItem.title == newItem.title &&
+        oldItem.filePath == newItem.filePath &&
+        oldItem.segmentsDownloaded == newItem.segmentsDownloaded &&
+        oldItem.quality == newItem.quality &&
+        oldItem.typeSpecificData == newItem.typeSpecificData
   }
 
   override fun getChangePayload(oldItem: DownloadData, newItem: DownloadData): Any? {
     val changes = mutableListOf<String>()
 
-//        if (oldItem.status != newItem.status) {
-//            changes.add(DownloadsAdapter.PAYLOAD_STATUS)
-//        }
+    if (oldItem.status != newItem.status) {
+      changes.add(DownloadsAdapter.PAYLOAD_STATUS)
+    }
 
     if (oldItem.progress != newItem.progress ||
       oldItem.downloadedBytes != newItem.downloadedBytes ||
-      oldItem.downloadSpeed != newItem.downloadSpeed
+      oldItem.downloadSpeed != newItem.downloadSpeed ||
+      oldItem.quality != newItem.quality ||
+      oldItem.title != newItem.title ||
+      oldItem.segmentsDownloaded != newItem.segmentsDownloaded
     ) {
-      changes.add(DownloadsAdapter.PAYLOAD_PROGRESS)
+      changes.add(DownloadsAdapter.PAYLOAD_CONTENT)
     }
 
     return if (changes.isNotEmpty()) changes else null

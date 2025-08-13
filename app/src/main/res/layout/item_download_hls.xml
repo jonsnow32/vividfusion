@@ -83,6 +83,22 @@
           android:textSize="12sp"
           tools:text="150/200 segments" />
 
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginHorizontal="4dp"
+          android:text="•"
+          android:textColor="?android:attr/textColorSecondary"
+          android:textSize="12sp" />
+
+        <TextView
+          android:id="@+id/tvFileSize"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:textColor="?android:attr/textColorSecondary"
+          android:textSize="12sp"
+          tools:text="120 MB" />
+
       </LinearLayout>
 
         <!-- Encryption info (conditional) -->

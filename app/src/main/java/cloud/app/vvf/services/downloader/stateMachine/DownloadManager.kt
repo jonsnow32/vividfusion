@@ -149,7 +149,7 @@ class DownloadManager @Inject constructor(
         .id(downloadId)
         .mediaItem(mediaItem)
         .url(downloadUrl)
-        .fileName(fileName)
+        .displayName(fileName)
         .type(DownloadType.HTTP)
         .status(DownloadStatus.PENDING)
         .build()
@@ -158,7 +158,7 @@ class DownloadManager @Inject constructor(
         .id(downloadId)
         .mediaItem(mediaItem)
         .url(downloadUrl)
-        .fileName(fileName)
+        .displayName(fileName)
         .type(DownloadType.HLS)
         .quality(quality)
         .status(DownloadStatus.PENDING)
@@ -168,7 +168,7 @@ class DownloadManager @Inject constructor(
         .id(downloadId)
         .mediaItem(mediaItem)
         .url(downloadUrl)
-        .fileName(fileName)
+        .displayName(fileName)
         .type(DownloadType.TORRENT)
         .status(DownloadStatus.PENDING)
         .apply {
@@ -184,10 +184,10 @@ class DownloadManager @Inject constructor(
     appDataStore.value.saveDownload(downloadData)
 
     // Execute start command
-    val command = DownloadCommand.Start(downloadId, downloadUrl, fileName)
+    val command = DownloadCommand.Start(downloadId, downloadUrl)
     if (downloadController.executeCommand(command)) {
       // Create and enqueue WorkManager request
-      enqueueWorkRequest(downloadId, downloadType, downloadUrl, fileName, quality)
+      enqueueWorkRequest(downloadId, downloadType, downloadUrl, quality)
       Timber.Forest.d("Started ${downloadType.name} download: $downloadId")
     } else {
       Timber.Forest.e("Failed to start download: $downloadId")
@@ -229,7 +229,7 @@ class DownloadManager @Inject constructor(
     val downloadData = downloads.value[downloadId] ?: return
 
     // Calculate actual downloaded bytes from file if it exists
-    val actualDownloadedBytes = getActualDownloadedBytes(downloadData.fileName ?: "")
+    val actualDownloadedBytes = getActualDownloadedBytes(downloadData.title ?: "")
 
     // Update download data with actual file size if different
     if (actualDownloadedBytes != downloadData.downloadedBytes && actualDownloadedBytes > 0) {
@@ -258,7 +258,6 @@ class DownloadManager @Inject constructor(
         downloadId = downloadId,
         downloadType = downloadType,
         downloadUrl = downloadData.url,
-        fileName = downloadData.fileName ?: "",
         quality = downloadData.quality,
         resumeBytes = finalDownloadedBytes,
         resumeProgress = downloadData.progress,
@@ -384,7 +383,6 @@ class DownloadManager @Inject constructor(
     downloadId: String,
     downloadType: DownloadType,
     downloadUrl: String,
-    fileName: String,
     quality: String,
     resumeBytes: Long = 0L,
     resumeProgress: Int = 0,
@@ -397,7 +395,6 @@ class DownloadManager @Inject constructor(
               workDataOf(
                   HttpDownloader.Companion.KEY_DOWNLOAD_ID to downloadId,
                   HttpDownloader.Companion.KEY_DOWNLOAD_URL to downloadUrl,
-                  HttpDownloader.Companion.KEY_FILE_NAME to fileName,
                   HttpDownloader.Companion.KEY_DOWNLOAD_TYPE to "HTTP",
                   HttpDownloader.Companion.KEY_RESUME_PROGRESS to resumeProgress,
                   HttpDownloader.Companion.KEY_RESUME_BYTES to resumeBytes,
@@ -416,7 +413,6 @@ class DownloadManager @Inject constructor(
               workDataOf(
                   HlsDownloader.Companion.KEY_DOWNLOAD_ID to downloadId,
                   HlsDownloader.Companion.KEY_HLS_URL to downloadUrl,
-                  HlsDownloader.Companion.KEY_FILE_NAME to fileName,
                   HlsDownloader.Companion.KEY_QUALITY to quality
               )
           )
@@ -432,7 +428,6 @@ class DownloadManager @Inject constructor(
               workDataOf(
                   TorrentDownloader.Companion.KEY_DOWNLOAD_ID to downloadId,
                   TorrentDownloader.Companion.KEY_TORRENT_URL to downloadUrl,
-                  TorrentDownloader.Companion.KEY_FILE_NAME to fileName
               )
           )
           .addTag(DOWNLOAD_WORK_TAG)

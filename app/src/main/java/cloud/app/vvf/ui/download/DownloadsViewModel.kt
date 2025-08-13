@@ -210,24 +210,24 @@ class DownloadsViewModel @Inject constructor(
 
   fun playDownloadedFile(context: Context, downloadData: DownloadData) {
     if (downloadData.status != DownloadStatus.COMPLETED) {
-      Timber.w("Cannot play file: download not completed")
+      Timber.w("Cannot play file: download not completed. Current status: ${downloadData.status}")
       return
     }
 
     try {
-      // Try multiple methods to locate the downloaded file
+      // Use the passed download data for file operations
       val file = findDownloadedFile(context, downloadData)
 
       if (file == null || !file.exists()) {
-        Timber.w("Downloaded file not found for: ${downloadData.fileName}")
+        Timber.w("Downloaded file not found for: ${downloadData.title}")
         // Try to update the local path if file exists in downloads directory
-        val foundFile = searchForFileInDownloadsDir(context, downloadData.fileName)
+        val foundFile = searchForFileInDownloadsDir(context, downloadData.title)
         if (foundFile?.exists() == true) {
           // Update the download item with correct path
           updateDownloadItemPath(downloadData, foundFile.absolutePath)
           playFileWithIntent(context, foundFile, downloadData)
         } else {
-          Timber.e("File not found anywhere for: ${downloadData.fileName}")
+          Timber.e("File not found anywhere for: ${downloadData.title}")
         }
         return
       }
@@ -235,7 +235,7 @@ class DownloadsViewModel @Inject constructor(
       playFileWithIntent(context, file, downloadData)
 
     } catch (e: Exception) {
-      Timber.e(e, "Error playing downloaded file: ${downloadData.fileName}")
+      Timber.e(e, "Error playing downloaded file: ${downloadData.title}")
     }
   }
 
@@ -244,7 +244,7 @@ class DownloadsViewModel @Inject constructor(
    */
   private fun findDownloadedFile(context: Context, downloadData: DownloadData): File? {
     // Method 1: Use localPath if available
-    downloadData.localPath?.let { localPath ->
+    downloadData.filePath?.let { localPath ->
       if (localPath.isNotEmpty()) {
         val filePath = if (localPath.startsWith("file://")) {
           val uri = android.net.Uri.parse(localPath)
@@ -262,7 +262,7 @@ class DownloadsViewModel @Inject constructor(
     }
 
     // Method 2: Search in downloads directory
-    return searchForFileInDownloadsDir(context, downloadData.fileName)
+    return searchForFileInDownloadsDir(context, downloadData.title)
   }
 
   /**
@@ -368,17 +368,17 @@ class DownloadsViewModel @Inject constructor(
       // Update the download item based on its type
       val updatedItem = when (downloadData.type) {
         DownloadType.HTTP -> downloadData.copy(
-          localPath = filePath,
+          filePath = filePath,
           updatedAt = System.currentTimeMillis()
         )
 
         DownloadType.HLS -> downloadData.copy(
-          localPath = filePath,
+          filePath = filePath,
           updatedAt = System.currentTimeMillis()
         )
 
         DownloadType.TORRENT -> downloadData.copy(
-          localPath = filePath,
+          filePath = filePath,
           updatedAt = System.currentTimeMillis()
         )
       }
@@ -409,7 +409,7 @@ class DownloadsViewModel @Inject constructor(
 
   //
   fun openLocation(context: Context, downloadData: DownloadData) {
-    val file = File(downloadData.localPath ?: return)
+    val file = File(downloadData.filePath ?: return)
     if (!file.exists()) {
       Timber.w("File does not exist: ${file.absolutePath}")
       return

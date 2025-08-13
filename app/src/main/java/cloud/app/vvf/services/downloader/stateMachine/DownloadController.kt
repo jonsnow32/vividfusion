@@ -122,7 +122,7 @@ class DownloadController {
           progress = 100,
           downloadedBytes = state.fileSize,
           totalBytes = state.fileSize,
-          localPath = state.localPath,
+          filePath = state.localPath,
           updatedAt = System.currentTimeMillis(),
           downloadSpeed = downloadData?.downloadSpeed ?: 0L
         )
@@ -225,7 +225,7 @@ class DownloadController {
         }
         DownloadStatus.PAUSED -> DownloadState.Paused
         DownloadStatus.COMPLETED -> DownloadState.Completed(
-          data.localPath ?: "", data.totalBytes, data
+          data.filePath ?: "", data.totalBytes, data
         )
         DownloadStatus.FAILED -> DownloadState.Failed("Previous error", data)
         DownloadStatus.CANCELLED -> DownloadState.Cancelled

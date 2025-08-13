@@ -13,6 +13,7 @@
     android:layout_height="wrap_content"
     android:layout_rowWeight="1"
     android:layout_marginTop="20dp"
+    android:maxLines="2"
     android:layout_marginBottom="10dp"
     android:paddingStart="?android:attr/listPreferredItemPaddingStart"
     android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
@@ -38,7 +39,7 @@
     android:nextFocusRight="@id/cancel_btt"
     android:paddingTop="10dp"
     android:requiresFadingEdge="vertical"
-    tools:listitem="@layout/bottom_action_choice" />
+    tools:listitem="@layout/item_icon_text" />
 
   <LinearLayout
     android:id="@+id/apply_btt_holder"

@@ -80,7 +80,6 @@ sealed class DownloadCommand {
   data class Start(
     val downloadId: String,
     val url: String,
-    val fileName: String
   ) : DownloadCommand()
 
   data class Pause(val downloadId: String) : DownloadCommand()
@@ -108,10 +107,12 @@ sealed class DownloadEvent {
 
   data class WorkCompleted(
     val downloadId: String,
-    val localPath: String,
-    val fileSize: Long,
-    val downloadData: DownloadData? = null
-  ) : DownloadEvent()
+    val downloadData: DownloadData
+  ) : DownloadEvent() {
+    val progress: Int get() = downloadData.progress
+    val downloadedBytes: Long get() = downloadData.downloadedBytes
+    val totalBytes: Long get() = downloadData.totalBytes
+  }
 
   data class WorkFailed(
     val downloadId: String,
@@ -139,10 +140,8 @@ fun WorkInfo.toDownloadEvent(downloadId: String): DownloadEvent? {
     }
 
     WorkInfo.State.SUCCEEDED -> {
-      val localPath = this.outputData.getString("localPath") ?: ""
-      val fileSize = this.outputData.getLong("fileSize", 0L)
       val downloadData = extractDownloadDataFromWorkInfo(this, isOutput = true)
-      DownloadEvent.WorkCompleted(downloadId, localPath, fileSize, downloadData)
+      DownloadEvent.WorkCompleted(downloadId,  downloadData)
     }
 
     WorkInfo.State.FAILED -> {
@@ -169,7 +168,8 @@ private fun extractDownloadDataFromWorkInfo(workInfo: WorkInfo, isOutput: Boolea
     .downloadedBytes(data.getLong(k.DOWNLOADED_BYTES, 0L))
     .totalBytes(data.getLong(k.TOTAL_BYTES, 0L))
     .downloadSpeed(data.getLong(k.DOWNLOAD_SPEED, 0L))
-    .fileName(data.getString(k.FILE_NAME))
+    .displayName(data.getString(k.DISPLAY_NAME))
+    .filePath(data.getString(k.FILE_PATH))
 
   // Torrent-specific data
   val uploadSpeed = data.getLong(k.UPLOAD_SPEED, -1L)
@@ -181,7 +181,7 @@ private fun extractDownloadDataFromWorkInfo(workInfo: WorkInfo, isOutput: Boolea
   val seeds = data.getInt(k.SEEDS, -1)
   if (seeds >= 0) builder.seeds(seeds)
 
-  val totalPeers = data.getInt(k.TOTAL_PEERS, -1)
+  val totalPeers = data.getInt(k.PEERS, -1)
   if (totalPeers >= 0) builder.totalPeers(totalPeers)
 
   val shareRatio = data.getFloat(k.SHARE_RATIO, -1f)

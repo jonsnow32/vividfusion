@@ -22,8 +22,8 @@ data class DownloadData(
   val id: String = "",
   val mediaItem: AVPMediaItem? = null,
   val url: String = "",
-  val fileName: String? = null,
-  val localPath: String? = null,
+  val title: String? = null,
+  val filePath: String? = null,
 
   // Common fields for all downloaders
   val progress: Int = 0,
@@ -42,8 +42,9 @@ data class DownloadData(
 ) {
 
   fun getDisplayName(): String {
-    return fileName ?: mediaItem?.title ?: url.substringAfterLast('/')
+    return title ?: mediaItem?.title ?: url.substringAfterLast('/')
   }
+
   companion object {
     // Keys for type-specific data
     object Keys {
@@ -53,7 +54,6 @@ data class DownloadData(
       const val UPLOAD_SPEED = "uploadSpeed"
       const val PEERS = "peers"
       const val SEEDS = "seeds"
-      const val TOTAL_PEERS = "totalPeers"
       const val SHARE_RATIO = "shareRatio"
       const val TORRENT_STATE = "torrentState"
       const val BYTES_READ = "bytesRead"
@@ -81,10 +81,9 @@ data class DownloadData(
       const val DOWNLOADED_BYTES = "downloadedBytes"
       const val TOTAL_BYTES = "totalBytes"
       const val DOWNLOAD_SPEED = "downloadSpeed"
-      const val FILE_NAME = "fileName"
+      const val DISPLAY_NAME = "displayName"
       const val FILE_SIZE = "fileSize"
       const val FILE_PATH = "filePath"
-      const val LOCAL_PATH = "localPath"
       const val STREAM_URL = "streamUrl"
       const val NOTE = "note"
       const val ERROR = "error"
@@ -100,11 +99,11 @@ data class DownloadData(
       private var downloadedBytes: Long = 0L
       private var totalBytes: Long = 0L
       private var downloadSpeed: Long = 0L
-      private var fileName: String? = null
+      private var displayName: String? = null
       private var id: String = ""
       private var mediaItem: AVPMediaItem? = null
       private var url: String = ""
-      private var localPath: String? = null
+      private var filePath: String? = null
       private var status: DownloadStatus = DownloadStatus.PENDING
       private var createdAt: Long = System.currentTimeMillis()
       private var updatedAt: Long = System.currentTimeMillis()
@@ -114,11 +113,11 @@ data class DownloadData(
       fun downloadedBytes(bytes: Long) = apply { this.downloadedBytes = bytes }
       fun totalBytes(bytes: Long) = apply { this.totalBytes = bytes }
       fun downloadSpeed(speed: Long) = apply { this.downloadSpeed = speed }
-      fun fileName(name: String?) = apply { this.fileName = name }
+      fun displayName(name: String?) = apply { this.displayName = name }
       fun id(id: String) = apply { this.id = id }
       fun mediaItem(mediaItem: AVPMediaItem?) = apply { this.mediaItem = mediaItem }
       fun url(url: String) = apply { this.url = url }
-      fun localPath(path: String?) = apply { this.localPath = path }
+      fun filePath(path: String?) = apply { this.filePath = path }
       fun status(status: DownloadStatus) = apply { this.status = status }
       fun createdAt(timestamp: Long) = apply { this.createdAt = timestamp }
       fun updatedAt(timestamp: Long) = apply { this.updatedAt = timestamp }
@@ -131,7 +130,7 @@ data class DownloadData(
       fun peers(count: Int) = apply { typeSpecificData[Keys.PEERS] = JsonPrimitive(count) }
       fun seeds(count: Int) = apply { typeSpecificData[Keys.SEEDS] = JsonPrimitive(count) }
       fun totalPeers(count: Int) =
-        apply { typeSpecificData[Keys.TOTAL_PEERS] = JsonPrimitive(count) }
+        apply { typeSpecificData[Keys.PEERS] = JsonPrimitive(count) }
 
       fun shareRatio(ratio: Float) =
         apply { typeSpecificData[Keys.SHARE_RATIO] = JsonPrimitive(ratio) }
@@ -151,9 +150,6 @@ data class DownloadData(
       fun eta(seconds: Long) = apply { typeSpecificData[Keys.ETA] = JsonPrimitive(seconds) }
       fun magnetLink(link: String) =
         apply { typeSpecificData[Keys.MAGNET_LINK] = JsonPrimitive(link) }
-
-      fun torrentFilePath(path: String) =
-        apply { typeSpecificData[Keys.FILE_PATH] = JsonPrimitive(path) }
 
       // HLS-specific builders
       fun segmentsDownloaded(count: Int) =
@@ -192,8 +188,8 @@ data class DownloadData(
         id = id,
         mediaItem = mediaItem,
         url = url,
-        fileName = fileName,
-        localPath = localPath,
+        title = displayName,
+        filePath = filePath,
         progress = progress,
         downloadedBytes = downloadedBytes,
         totalBytes = totalBytes,
@@ -217,7 +213,7 @@ data class DownloadData(
     get() = (typeSpecificData[Keys.UPLOAD_SPEED] as? JsonPrimitive)?.longOrNull ?: 0L
   val peers: Int get() = (typeSpecificData[Keys.PEERS] as? JsonPrimitive)?.intOrNull ?: 0
   val seeds: Int get() = (typeSpecificData[Keys.SEEDS] as? JsonPrimitive)?.intOrNull ?: 0
-  val totalPeers: Int get() = (typeSpecificData[Keys.TOTAL_PEERS] as? JsonPrimitive)?.intOrNull ?: 0
+  val totalPeers: Int get() = (typeSpecificData[Keys.PEERS] as? JsonPrimitive)?.intOrNull ?: 0
   val shareRatio: Float
     get() = (typeSpecificData[Keys.SHARE_RATIO] as? JsonPrimitive)?.floatOrNull ?: 0f
   val torrentState: String
@@ -298,15 +294,23 @@ data class DownloadData(
   }
 
   fun getEstimatedTimeRemaining(): String {
-    if (downloadSpeed <= 0 || totalBytes <= downloadedBytes) return "Unknown"
+    if (downloadSpeed <= 0 || totalBytes <= 0 || downloadedBytes >= totalBytes) return "Unknown"
 
     val remainingBytes = totalBytes - downloadedBytes
     val remainingSeconds = remainingBytes / downloadSpeed
 
     return when {
       remainingSeconds < 60 -> "${remainingSeconds}s"
-      remainingSeconds < 3600 -> "${remainingSeconds / 60}m ${remainingSeconds % 60}s"
-      else -> "${remainingSeconds / 3600}h ${(remainingSeconds % 3600) / 60}m"
+      remainingSeconds < 3600 -> {
+        val minutes = remainingSeconds / 60
+        val seconds = remainingSeconds % 60
+        "${minutes}m ${seconds}s"
+      }
+      else -> {
+        val hours = remainingSeconds / 3600
+        val minutes = (remainingSeconds % 3600) / 60
+        "${hours}h ${minutes}m"
+      }
     }
   }
 

@@ -75,29 +75,8 @@
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="12sp" />
 
-      <TextView
-        android:id="@+id/tvShareRatio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="12sp"
-        tools:text="Ratio: 1.25" />
-
     </LinearLayout>
 
-    <!-- Torrent-specific info row 2 -->
-    <TextView
-      android:id="@+id/tvPieces"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="2dp"
-      android:layout_marginEnd="8dp"
-      android:textColor="?android:attr/textColorSecondary"
-      android:textSize="12sp"
-      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/layoutTorrentInfo1"
-      tools:text="1250/1500 pieces" />
 
     <!-- Status -->
     <TextView
@@ -109,7 +88,7 @@
       android:textSize="14sp"
       app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/tvPieces"
+      app:layout_constraintTop_toBottomOf="@id/layoutTorrentInfo1"
       tools:text="Downloading • 83%" />
 
     <!-- Download/Upload Speeds -->

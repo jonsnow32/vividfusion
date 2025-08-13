@@ -45,6 +45,7 @@ import cloud.app.vvf.features.player.utils.MediaItemUtils.toMediaItem
 import cloud.app.vvf.features.player.utils.getSelected
 import cloud.app.vvf.features.player.utils.getSubtitleMime
 import cloud.app.vvf.features.player.subtitle.SubtitleCue
+import cloud.app.vvf.features.player.utils.PlayerCacheProvider
 import cloud.app.vvf.features.player.utils.uriToSubtitleConfiguration
 import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -137,11 +138,7 @@ class PlayerViewModel @Inject constructor(
     // Initialize cache with ExoDatabaseProvider
     val cacheSizeBytes = currentPrefDiskSize  // Convert MB to bytes
     val databaseProvider = StandaloneDatabaseProvider(context)
-    simpleCache = SimpleCache(
-      File(context.cacheDir, "player_cache"),
-      LeastRecentlyUsedCacheEvictor(cacheSizeBytes),
-      databaseProvider
-    )
+    simpleCache = PlayerCacheProvider.getInstance(context)
 
     delayedFactory = DelayedSubtitleParserFactory(DefaultSubtitleParserFactory())
     delayedFactory.setDelayMs(subtitleOffsetMs)
@@ -304,8 +301,6 @@ class PlayerViewModel @Inject constructor(
   override fun onCleared() {
     player?.release()
     player = null
-    simpleCache?.release()
-    simpleCache = null
     playerListener.release()
     super.onCleared()
   }
