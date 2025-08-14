@@ -1,10 +1,13 @@
 package cloud.app.vvf.services.downloader
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import cloud.app.vvf.R
 import cloud.app.vvf.services.downloader.helper.DownloadFileManager
 import cloud.app.vvf.services.downloader.helper.DownloadFileManager.Companion.uriToSlug
 import cloud.app.vvf.services.downloader.helper.DownloadNotificationManager
@@ -12,13 +15,17 @@ import cloud.app.vvf.services.downloader.helper.HttpDownloadClient
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Semaphore
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import timber.log.Timber
 import java.io.IOException
 import java.net.URI
 import java.util.concurrent.atomic.AtomicLong
+import javax.inject.Inject
 import kotlin.math.pow
 
 @HiltWorker
@@ -38,6 +45,8 @@ class HlsDownloader @AssistedInject constructor(
   private val fileManager = DownloadFileManager(context)
 
   private val httpClient = HttpDownloadClient()
+
+  @Inject lateinit var sharedPreferences: SharedPreferences
 
   override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
     val downloadParams = extractDownloadParams()
@@ -62,16 +71,7 @@ class HlsDownloader @AssistedInject constructor(
     }
 
     try {
-      val result = downloadHlsStream(downloadParams)
-      val keys = DownloadData.Companion.Keys
-      Result.success(
-        workDataOf(
-          keys.DOWNLOAD_ID to result[keys.DOWNLOAD_ID],
-          keys.FILE_PATH to result[keys.FILE_PATH],
-          keys.DISPLAY_NAME to result[keys.DISPLAY_NAME],
-          keys.FILE_SIZE to result[keys.FILE_SIZE]
-        )
-      )
+      Result.success(downloadHlsStream(downloadParams))
     } catch (e: Exception) {
       Timber.e(e, "HLS download failed for ${downloadParams.downloadId}")
       val keys = DownloadData.Companion.Keys
@@ -84,19 +84,20 @@ class HlsDownloader @AssistedInject constructor(
     }
   }
 
-  private suspend fun downloadHlsStream(params: HlsDownloadParams): Map<String, Any> {
+  private suspend fun downloadHlsStream(params: HlsDownloadParams): Data {
     // Parse M3U8 playlist
     val masterPlaylist = fetchPlaylist(params.hlsUrl)
     val selectedVariant = selectBestVariant(masterPlaylist, params.quality, params.hlsUrl)
 
     // If it's a master playlist, fetch the variant playlist
-    val segmentPlaylist = if (selectedVariant != params.hlsUrl) {
-      fetchPlaylist(selectedVariant)
+    val (segmentPlaylist, playlistBaseUrl) = if (selectedVariant != params.hlsUrl) {
+      val variantPlaylist = fetchPlaylist(selectedVariant)
+      Pair(variantPlaylist, selectedVariant)
     } else {
-      masterPlaylist
+      Pair(masterPlaylist, params.hlsUrl)
     }
 
-    val segments = parseSegments(segmentPlaylist, params.hlsUrl)
+    val segments = parseSegments(segmentPlaylist, playlistBaseUrl)
     val totalSegments = segments.size
     val downloadedBytes = AtomicLong(0)
 
@@ -126,7 +127,7 @@ class HlsDownloader @AssistedInject constructor(
 
     for (segmentUrl in sampleSegments) {
       try {
-        val headRequest = Request.Builder().url(segmentUrl).head().build()
+        val headRequest = createRequestWithHeaders(segmentUrl).newBuilder().head().build()
         val headResponse = estimationClient.newCall(headRequest).execute()
         if (headResponse.isSuccessful) {
           val contentLength = headResponse.header("Content-Length")?.toLongOrNull() ?: 0L
@@ -155,8 +156,8 @@ class HlsDownloader @AssistedInject constructor(
 
     // Speed calculation variables
     val downloadStartTime = System.currentTimeMillis()
-    var lastSpeedUpdateTime = downloadStartTime
-    var lastSpeedUpdateBytes = 0L
+    val lastSpeedUpdateTime = AtomicLong(downloadStartTime)
+    val lastSpeedUpdateBytes = AtomicLong(0L)
     val speedSamples = mutableListOf<Long>() // Store recent speed samples for smoothing
     val maxSpeedSamples = 5 // Keep last 5 speed samples
 
@@ -168,76 +169,115 @@ class HlsDownloader @AssistedInject constructor(
 
     // Download segments and merge
     outputFile.openOutputStream().use { outputStream ->
-      segments.forEachIndexed { index, segmentUrl ->
+      // Download segments in parallel with batch processing
+      val batchSize = sharedPreferences.getInt(context.getString(R.string.pref_hls_download_batch_size), 3)
+      val segmentDataMap = mutableMapOf<Int, ByteArray>() // Store segments by index for ordered writing
+      val semaphore = Semaphore(batchSize) // Control concurrency
+
+      // Process segments in batches to maintain order
+      segments.chunked(batchSize).forEachIndexed { batchIndex, segmentBatch ->
         if (isStopped) {
           throw InterruptedException("Download was stopped")
         }
 
-        val segmentStartTime = System.currentTimeMillis()
+        // Download segments in current batch concurrently
+        val batchJobs = segmentBatch.mapIndexed { indexInBatch: Int, segmentUrl: String ->
+          val globalIndex = batchIndex * batchSize + indexInBatch
 
-        // Download segment
-        val request = Request.Builder().url(segmentUrl).build()
-        val response = downloadClient.newCall(request).execute()
+          withContext(Dispatchers.IO) {
+            async {
+              semaphore.acquire()
+              try {
+                val segmentStartTime = System.currentTimeMillis()
 
-        if (!response.isSuccessful) {
-          throw IOException("Failed to download segment ${index + 1}: HTTP ${response.code}")
+                // Download segment
+                val request = createRequestWithHeaders(segmentUrl)
+                val response = downloadClient.newCall(request).execute()
+
+                if (!response.isSuccessful) {
+                  throw IOException("Failed to download segment ${globalIndex + 1}: HTTP ${response.code}: segmentUrl ${segmentUrl}")
+                }
+
+                val segmentData = response.body.bytes()
+                response.close()
+
+                val segmentEndTime = System.currentTimeMillis()
+                downloadedBytes.addAndGet(segmentData.size.toLong())
+
+                // Calculate download speed (thread-safe)
+                val currentSpeed = calculateDownloadSpeed(
+                  downloadStartTime,
+                  lastSpeedUpdateTime.get(),
+                  lastSpeedUpdateBytes.get(),
+                  downloadedBytes.get(),
+                  segmentData.size.toLong(),
+                  segmentEndTime - segmentStartTime,
+                  speedSamples,
+                  maxSpeedSamples
+                )
+
+                // Update atomic variables
+                lastSpeedUpdateTime.set(segmentEndTime)
+                lastSpeedUpdateBytes.set(downloadedBytes.get())
+
+                // Update progress
+                updateProgress(
+                  params.downloadId,
+                  displayName,
+                  downloadedBytes.get(),
+                  estimatedTotalBytes,
+                  currentSpeed,
+                  quality = params.quality,
+                  segmentsDownloaded = globalIndex + 1,
+                  totalSegment = totalSegments
+                )
+
+                Timber.d("Downloaded segment ${globalIndex + 1}/$totalSegments (${segmentData.size} bytes, ${formatSpeed(currentSpeed)}) - Total: ${formatFileSize(downloadedBytes.get())}/${formatFileSize(estimatedTotalBytes)}")
+
+                // Return segment data with its index
+                Pair(globalIndex, segmentData)
+
+              } finally {
+                semaphore.release()
+              }
+            }
+          }
         }
 
-        val segmentData = response.body.bytes()
-        outputStream.write(segmentData)
-        outputStream.flush()
-        response.close()
+        // Wait for current batch to complete and write segments in order
+        val batchResults: List<Pair<Int, ByteArray>> = batchJobs.map { it.await() }
+        batchResults.forEach { (index: Int, data: ByteArray) ->
+          segmentDataMap[index] = data
+        }
 
-        val segmentEndTime = System.currentTimeMillis()
-        downloadedBytes.addAndGet(segmentData.size.toLong())
+        // Write completed segments to file in order
+        val startIndex = batchIndex * batchSize
+        val endIndex = minOf(startIndex + batchSize, totalSegments)
 
-        // Calculate download speed
-        val currentSpeed = calculateDownloadSpeed(
-          downloadStartTime,
-          lastSpeedUpdateTime,
-          lastSpeedUpdateBytes,
-          downloadedBytes.get(),
-          segmentData.size.toLong(),
-          segmentEndTime - segmentStartTime,
-          speedSamples,
-          maxSpeedSamples
-        )
-
-        lastSpeedUpdateTime = segmentEndTime
-        lastSpeedUpdateBytes = downloadedBytes.get()
-
-        // Update progress after each segment with speed
-        updateProgress(
-          params.downloadId,
-          displayName,
-          downloadedBytes.get(),
-          estimatedTotalBytes,
-          currentSpeed,
-          quality = params.quality,
-          segmentsDownloaded = index + 1,
-          totalSegment = totalSegments
-        )
-
-        Timber.d("Downloaded segment ${index + 1}/$totalSegments (${segmentData.size} bytes, ${formatSpeed(currentSpeed)}) - Total: ${formatFileSize(downloadedBytes.get())}/${formatFileSize(estimatedTotalBytes)}")
+        for (i in startIndex until endIndex) {
+          segmentDataMap[i]?.let { segmentData ->
+            outputStream.write(segmentData)
+            outputStream.flush()
+            segmentDataMap.remove(i) // Free memory after writing
+          }
+        }
       }
     }
 
     val finalSize = downloadedBytes.get() // Use actual downloaded bytes instead of outputFile.length()
     val filePath = outputFile.uri.path ?: outputFile.uri.toString()
+    notificationManager.showCompletionNotification(params.downloadId, displayName, filePath)
 
-    // Final progress update
-    updateFinalProgress(
-      params.downloadId,
-      displayName,
-      filePath,
-      finalSize
-    )
     val keys = DownloadData.Companion.Keys
-    return mapOf(
+    return workDataOf(
+      keys.PROGRESS to 100,
+      keys.DOWNLOADED_BYTES to finalSize,
+      keys.TOTAL_BYTES to finalSize, // Use actual file size as total, not estimated
       keys.DOWNLOAD_ID to params.downloadId,
-      keys.FILE_PATH to filePath,
       keys.DISPLAY_NAME to displayName,
-      keys.FILE_SIZE to finalSize
+      keys.FILE_PATH to filePath,
+      keys.FILE_SIZE to finalSize,
+      keys.SEGMENTS_DOWNLOADED to totalSegments
     )
   }
 
@@ -248,7 +288,7 @@ class HlsDownloader @AssistedInject constructor(
       .followSslRedirects(true)
       .build()
 
-    val request = Request.Builder().url(url).build()
+    val request = createRequestWithHeaders(url)
     val response = simpleClient.newCall(request).execute()
 
     if (!response.isSuccessful) {
@@ -316,17 +356,98 @@ class HlsDownloader @AssistedInject constructor(
     return bandwidthRegex.find(streamInfLine)?.groupValues?.get(1)?.toIntOrNull() ?: 0
   }
 
-  private fun parseSegments(playlist: String, baseUrl: String): List<String> {
-    val baseUri = URI.create(baseUrl)
-    return playlist.lines()
-      .filter { !it.startsWith("#") && it.isNotBlank() }
-      .map { segmentUrl ->
-        if (segmentUrl.startsWith("http")) {
-          segmentUrl
-        } else {
-          baseUri.resolve(segmentUrl).toString()
+  private suspend fun parseSegments(playlist: String, baseUrl: String): List<String> {
+    val baseUri = try {
+      URI.create(baseUrl)
+    } catch (e: Exception) {
+      Timber.w(e, "Invalid base URL: $baseUrl")
+      return emptyList()
+    }
+
+    val lines = playlist.lines()
+    val segments = mutableListOf<String>()
+
+    // Check if this is a media playlist (contains actual segments) or master playlist (contains sub-playlists)
+    val hasMediaSegments = lines.any { line ->
+      val trimmed = line.trim()
+      !trimmed.startsWith("#") && trimmed.isNotBlank() &&
+      (trimmed.endsWith(".ts") || trimmed.endsWith(".m4s") || trimmed.endsWith(".mp4"))
+    }
+
+    if (hasMediaSegments) {
+      // This is a media playlist - parse actual media segments
+      lines.forEach { line ->
+        val trimmed = line.trim()
+        if (!trimmed.startsWith("#") && trimmed.isNotBlank()) {
+          val segmentUrl = resolveUrl(trimmed, baseUri)
+          if (segmentUrl != null) {
+            segments.add(segmentUrl)
+          }
         }
       }
+    } else {
+      // This might be a master playlist or contains sub-playlists - recursively parse them
+      val subPlaylistUrls = mutableListOf<String>()
+
+      lines.forEach { line ->
+        val trimmed = line.trim()
+        if (!trimmed.startsWith("#") && trimmed.isNotBlank() && trimmed.endsWith(".m3u8")) {
+          val subPlaylistUrl = resolveUrl(trimmed, baseUri)
+          if (subPlaylistUrl != null) {
+            subPlaylistUrls.add(subPlaylistUrl)
+          }
+        }
+      }
+
+      // If we found sub-playlists, fetch and parse them recursively
+      if (subPlaylistUrls.isNotEmpty()) {
+        for (subPlaylistUrl in subPlaylistUrls) {
+          try {
+            Timber.d("Fetching sub-playlist: $subPlaylistUrl")
+            val subPlaylist = fetchPlaylist(subPlaylistUrl)
+            // Use the sub-playlist URL as base for resolving its segments
+            val subSegments = parseSegments(subPlaylist, subPlaylistUrl)
+            segments.addAll(subSegments)
+            Timber.d("Found ${subSegments.size} segments in sub-playlist: $subPlaylistUrl")
+          } catch (e: Exception) {
+            Timber.w(e, "Failed to fetch sub-playlist: $subPlaylistUrl")
+            // Continue with other sub-playlists
+          }
+        }
+      } else {
+        // No sub-playlists found, treat as regular segments (fallback)
+        lines.forEach { line ->
+          val trimmed = line.trim()
+          if (!trimmed.startsWith("#") && trimmed.isNotBlank()) {
+            val segmentUrl = resolveUrl(trimmed, baseUri)
+            if (segmentUrl != null) {
+              segments.add(segmentUrl)
+            }
+          }
+        }
+      }
+    }
+
+    Timber.d("Total segments parsed: ${segments.size} from playlist: $baseUrl")
+    return segments
+  }
+
+  /**
+   * Helper function to properly resolve relative URLs to absolute URLs
+   */
+  private fun resolveUrl(url: String, baseUri: URI): String? {
+    return try {
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        // Already absolute URL
+        url
+      } else {
+        // Relative URL - resolve against base URI
+        baseUri.resolve(url).toString()
+      }
+    } catch (e: Exception) {
+      Timber.w(e, "Failed to resolve URL: $url with base: $baseUri")
+      null
+    }
   }
 
   private fun extractDownloadParams(): HlsDownloadParams {
@@ -413,7 +534,7 @@ class HlsDownloader @AssistedInject constructor(
     return String.format(
       java.util.Locale.getDefault(),
       "%.1f %s",
-      bytes / digitGroups.toDouble().pow(),
+      bytes / 1024.0.pow(digitGroups.toDouble()),
       units[digitGroups]
     )
   }
@@ -683,5 +804,40 @@ class HlsDownloader @AssistedInject constructor(
       value,
       units[index.coerceAtMost(units.size - 1)]
     )
+  }
+
+  /**
+   * Create a request with proper headers to avoid 403 errors
+   */
+  private fun createRequestWithHeaders(url: String): Request {
+    return Request.Builder()
+      .url(url)
+      .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36")
+      .header("Accept", "*/*")
+      .header("Accept-Language", "en-US,en;q=0.9")
+      .header("Accept-Encoding", "gzip, deflate, br")
+      .header("Connection", "keep-alive")
+      .header("Cache-Control", "no-cache")
+      .header("Pragma", "no-cache")
+      .header("Referer", extractRefererFromUrl(url))
+      .header("Sec-Fetch-Dest", "empty")
+      .header("Sec-Fetch-Mode", "cors")
+      .header("Sec-Fetch-Site", "same-origin")
+      .build()
+  }
+
+  /**
+   * Extract a reasonable referer URL from the given URL
+   */
+  private fun extractRefererFromUrl(url: String): String {
+    return try {
+      val uri = URI.create(url)
+      val scheme = uri.scheme ?: "https"
+      val host = uri.host ?: "localhost"
+      val port = if (uri.port != -1) ":${uri.port}" else ""
+      "$scheme://$host$port/"
+    } catch (e: Exception) {
+      "https://www.google.com/"
+    }
   }
 }

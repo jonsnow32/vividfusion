@@ -124,7 +124,7 @@ class DownloadController {
           totalBytes = state.fileSize,
           filePath = state.localPath,
           updatedAt = System.currentTimeMillis(),
-          downloadSpeed = downloadData?.downloadSpeed ?: 0L
+          downloadSpeed = downloadData?.downloadSpeed ?: 0L,
         )
       }
 
@@ -167,15 +167,20 @@ class DownloadController {
   }
 
   /**
-   * Remove a download completely
+   * Remove a download completely from controller
    */
   fun removeDownload(downloadId: String) {
+    Timber.d("DownloadController.removeDownload called for: $downloadId")
+
+    // Remove state machine
+    stateMachines.remove(downloadId)
+
+    // Remove from downloads map
     val currentDownloads = _downloads.value.toMutableMap()
     currentDownloads.remove(downloadId)
     _downloads.value = currentDownloads
 
-    stateMachines.remove(downloadId)
-    Timber.d("Removed download $downloadId")
+    Timber.d("Removed download from controller: $downloadId")
   }
 
   /**

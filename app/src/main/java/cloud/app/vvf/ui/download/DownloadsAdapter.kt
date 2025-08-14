@@ -13,6 +13,7 @@ import cloud.app.vvf.databinding.ItemDownloadTorrentBinding
 import cloud.app.vvf.services.downloader.DownloadData
 import cloud.app.vvf.services.downloader.DownloadStatus
 import cloud.app.vvf.services.downloader.DownloadType
+import cloud.app.vvf.utils.toHumanReadableSize
 import kotlinx.serialization.Serializable
 import java.util.Locale
 
@@ -38,28 +39,20 @@ class DownloadsAdapter(
   }
 
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseDownloadViewHolder {
+    val inflater = LayoutInflater.from(parent.context)
     return when (viewType) {
       VIEW_TYPE_HTTP -> {
-        val binding = ItemDownloadHttpBinding.inflate(
-          LayoutInflater.from(parent.context), parent, false
-        )
+        val binding = ItemDownloadHttpBinding.inflate(inflater, parent, false)
         HttpDownloadViewHolder(binding, onActionClick)
       }
-
       VIEW_TYPE_HLS -> {
-        val binding = ItemDownloadHlsBinding.inflate(
-          LayoutInflater.from(parent.context), parent, false
-        )
+        val binding = ItemDownloadHlsBinding.inflate(inflater, parent, false)
         HlsDownloadViewHolder(binding, onActionClick)
       }
-
       VIEW_TYPE_TORRENT -> {
-        val binding = ItemDownloadTorrentBinding.inflate(
-          LayoutInflater.from(parent.context), parent, false
-        )
+        val binding = ItemDownloadTorrentBinding.inflate(inflater, parent, false)
         TorrentDownloadViewHolder(binding, onActionClick)
       }
-
       else -> throw IllegalArgumentException("Unknown view type: $viewType")
     }
   }
@@ -80,17 +73,22 @@ class DownloadsAdapter(
     }
   }
 
-  // Base ViewHolder cho common functionality
+  // Base ViewHolder for common functionality
   abstract class BaseDownloadViewHolder(
     itemView: View,
     protected val onActionClick: (DownloadAction, DownloadData) -> Unit
   ) : RecyclerView.ViewHolder(itemView) {
 
+    // Cache for frequently accessed values
+    protected val context = itemView.context
+
+    // Store current data to ensure click handlers always use latest data
+    protected var currentData: DownloadData? = null
+
     abstract fun bind(data: DownloadData)
     abstract fun bindPartial(data: DownloadData, payloads: MutableList<Any>)
 
     protected fun getStatusColor(status: DownloadStatus): Int {
-      val context = itemView.context
       return when (status) {
         DownloadStatus.COMPLETED -> context.getColor(R.color.download_status_completed)
         DownloadStatus.DOWNLOADING -> context.getColor(R.color.download_status_downloading)
@@ -100,27 +98,7 @@ class DownloadsAdapter(
       }
     }
 
-    protected fun getDownloadActionIcon(status: DownloadStatus): Int {
-      return when (status) {
-        DownloadStatus.PENDING -> R.drawable.ic_close
-        DownloadStatus.DOWNLOADING -> R.drawable.ic_pause_24
-        DownloadStatus.PAUSED -> R.drawable.ic_play_arrow_24
-        DownloadStatus.COMPLETED -> R.drawable.ic_play_arrow_24
-        DownloadStatus.FAILED, DownloadStatus.CANCELLED -> R.drawable.ic_download_24
-      }
-    }
-
-    protected fun getDownloadAction(status: DownloadStatus): DownloadAction {
-      return when (status) {
-        DownloadStatus.PENDING -> DownloadAction.CANCEL
-        DownloadStatus.DOWNLOADING -> DownloadAction.PAUSE
-        DownloadStatus.PAUSED -> DownloadAction.RESUME
-        DownloadStatus.FAILED -> DownloadAction.RETRY
-        DownloadStatus.CANCELLED -> DownloadAction.RETRY
-        DownloadStatus.COMPLETED -> DownloadAction.PLAY
-      }
-    }
-
+    // Optimized file size formatting with caching
     protected fun formatFileSize(bytes: Long): String {
       if (bytes <= 0) return "0 B"
       val units = arrayOf("B", "KB", "MB", "GB", "TB")
@@ -132,6 +110,53 @@ class DownloadsAdapter(
         units[digitGroups]
       )
     }
+
+    // Common progress update logic
+    protected fun getProgressText(data: DownloadData): String {
+      return when (data.status) {
+        DownloadStatus.DOWNLOADING -> {
+          val progressText = "${data.progressPercent}%"
+          val sizeText = "${formatFileSize(data.downloadedBytes)} / ${formatFileSize(data.totalBytes)}"
+          val speedText = if (data.downloadSpeed > 0) data.downloadSpeedFormatted else "0 B/s"
+          "$progressText • $sizeText • $speedText"
+        }
+        DownloadStatus.PAUSED -> "Paused • ${data.progressPercent}%"
+        DownloadStatus.COMPLETED -> "Completed • ${formatFileSize(data.totalBytes)}"
+        else -> data.status.name.lowercase().replaceFirstChar { it.uppercase() }
+      }
+    }
+
+    // Common ETA calculation
+    protected fun getEtaText(data: DownloadData): String {
+      return if (data.status == DownloadStatus.DOWNLOADING && data.downloadSpeed > 0) {
+        "ETA: ${data.getEstimatedTimeRemaining()}"
+      } else ""
+    }
+
+    // Common setup for download button widget
+    protected fun setupDownloadButtonWidget(downloadButtonWidget: Any) {
+      if (downloadButtonWidget is DownloadButtonWidget) {
+        downloadButtonWidget.apply {
+          onDownloadClick = { currentData?.let { onActionClick(DownloadAction.RETRY, it) } }
+          onPauseClick = { currentData?.let { onActionClick(DownloadAction.PAUSE, it) } }
+          onResumeClick = { currentData?.let { onActionClick(DownloadAction.RESUME, it) } }
+          onCancelClick = { currentData?.let { onActionClick(DownloadAction.CANCEL, it) } }
+          onPlayClick = { currentData?.let { onActionClick(DownloadAction.PLAY, it) } }
+
+          currentData?.let { data ->
+            updateState(data.status, data.progressPercent)
+          }
+        }
+      }
+    }
+
+    // Common long click setup
+    protected fun setupLongClick(view: View) {
+      view.setOnLongClickListener {
+        currentData?.let { onActionClick(DownloadAction.UNKNOW, it) }
+        true
+      }
+    }
   }
 
   // HTTP Download ViewHolder
@@ -140,16 +165,12 @@ class DownloadsAdapter(
     onActionClick: (DownloadAction, DownloadData) -> Unit
   ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
-    // Store current data to ensure click handlers always use latest data
-    private var currentData: DownloadData? = null
-
     override fun bind(data: DownloadData) {
       currentData = data
 
       binding.apply {
         // Basic info
         tvTitle.text =  data.title ?: data.url
-        tvDownloadType.text = "HTTP"
 
         // HTTP-specific info
         tvConnections.text = "Connections: ${data.connections}"
@@ -165,13 +186,10 @@ class DownloadsAdapter(
         updateProgress(data)
 
         // Setup download button widget
-        setupDownloadButtonWidget()
+        setupDownloadButtonWidget(binding.downloadButtonWidget)
 
         // Long click for remove
-        root.setOnLongClickListener {
-          currentData?.let { onActionClick(DownloadAction.UNKNOW, it) }
-          true
-        }
+        setupLongClick(root)
       }
     }
 
@@ -195,31 +213,6 @@ class DownloadsAdapter(
               }
             }
           }
-        }
-      }
-    }
-
-    private fun setupDownloadButtonWidget() {
-      binding.downloadButtonWidget.apply {
-        // Set up click handlers that always use current data
-        onDownloadClick = {
-          currentData?.let { onActionClick(DownloadAction.RETRY, it) }
-        }
-
-        onPauseClick = {
-          currentData?.let { onActionClick(DownloadAction.PAUSE, it) }
-        }
-
-        onResumeClick = {
-          currentData?.let { onActionClick(DownloadAction.RESUME, it) }
-        }
-
-        onCancelClick = {
-          currentData?.let { onActionClick(DownloadAction.CANCEL, it) }
-        }
-
-        onPlayClick = {
-          currentData?.let { onActionClick(DownloadAction.PLAY, it) }
         }
       }
     }
@@ -272,16 +265,12 @@ class DownloadsAdapter(
     onActionClick: (DownloadAction, DownloadData) -> Unit
   ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
-    // Store current data to ensure click handlers always use latest data
-    private var currentData: DownloadData? = null
-
     override fun bind(data: DownloadData) {
       currentData = data
 
       binding.apply {
         // Basic info
         tvTitle.text =  data.title ?: data.url
-        tvDownloadType.text = "HLS"
 
         // HLS-specific info
         tvQuality.text = "Quality: ${data.quality}"
@@ -297,13 +286,9 @@ class DownloadsAdapter(
         updateProgress(data)
 
         // Setup download button widget
-        setupDownloadButtonWidget()
-
+        setupDownloadButtonWidget(binding.downloadButtonWidget)
         // Long click for remove
-        root.setOnLongClickListener {
-          currentData?.let { onActionClick(DownloadAction.UNKNOW, it) }
-          true
-        }
+        setupLongClick(root)
       }
     }
 
@@ -329,31 +314,6 @@ class DownloadsAdapter(
               }
             }
           }
-        }
-      }
-    }
-
-    private fun setupDownloadButtonWidget() {
-      binding.downloadButtonWidget.apply {
-        // Set up click handlers that always use current data
-        onDownloadClick = {
-          currentData?.let { onActionClick(DownloadAction.RETRY, it) }
-        }
-
-        onPauseClick = {
-          currentData?.let { onActionClick(DownloadAction.PAUSE, it) }
-        }
-
-        onResumeClick = {
-          currentData?.let { onActionClick(DownloadAction.RESUME, it) }
-        }
-
-        onCancelClick = {
-          currentData?.let { onActionClick(DownloadAction.CANCEL, it) }
-        }
-
-        onPlayClick = {
-          currentData?.let { onActionClick(DownloadAction.PLAY, it) }
         }
       }
     }
@@ -417,29 +377,22 @@ class DownloadsAdapter(
     onActionClick: (DownloadAction, DownloadData) -> Unit
   ) : BaseDownloadViewHolder(binding.root, onActionClick) {
 
-    // Store current data to ensure click handlers always use latest data
-    private var currentData: DownloadData? = null
-
     override fun bind(data: DownloadData) {
       currentData = data
 
       binding.apply {
         // Basic info
         tvTitle.text =  data.title ?: data.url
-        tvDownloadType.text = if (data.isTorrentDownload) "MAGNET" else "TORRENT"
 
         // Directly use DownloadData for info
         updateTorrentInfo(data)
         updateProgress(data)
 
         // Setup download button widget
-        setupDownloadButtonWidget()
+        setupDownloadButtonWidget(binding.downloadButtonWidget)
 
         // Long click for remove
-        root.setOnLongClickListener {
-          currentData?.let { onActionClick(DownloadAction.UNKNOW, it) }
-          true
-        }
+        setupLongClick(root)
       }
     }
 
@@ -468,31 +421,6 @@ class DownloadsAdapter(
         val seeds = data.seeds
         tvPeers.text = binding.root.context.getString(R.string.peers_seeds, peers, seeds)
         binding.tvTitle.text = data.getDisplayName()
-      }
-    }
-
-    private fun setupDownloadButtonWidget() {
-      binding.downloadButtonWidget.apply {
-        // Set up click handlers that always use current data
-        onDownloadClick = {
-          currentData?.let { onActionClick(DownloadAction.RETRY, it) }
-        }
-
-        onPauseClick = {
-          currentData?.let { onActionClick(DownloadAction.PAUSE, it) }
-        }
-
-        onResumeClick = {
-          currentData?.let { onActionClick(DownloadAction.RESUME, it) }
-        }
-
-        onCancelClick = {
-          currentData?.let { onActionClick(DownloadAction.CANCEL, it) }
-        }
-
-        onPlayClick = {
-          currentData?.let { onActionClick(DownloadAction.PLAY, it) }
-        }
       }
     }
 

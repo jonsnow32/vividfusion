@@ -6,21 +6,6 @@
   android:layout_height="wrap_content"
   android:layout_margin="8dp"
   app:cardCornerRadius="8dp">
-  <!-- Download Type Badge -->
-  <TextView
-    android:id="@+id/tvDownloadType"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="top|end"
-    android:background="@drawable/badge_http"
-    android:paddingHorizontal="8dp"
-    android:paddingVertical="2dp"
-    android:text="HTTP"
-    android:textColor="@android:color/white"
-    android:textSize="10sp"
-    android:textStyle="bold"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
 
   <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"

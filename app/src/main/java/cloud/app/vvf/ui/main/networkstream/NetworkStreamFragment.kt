@@ -99,7 +99,7 @@ class NetworkStreamFragment : Fragment() {
     val clip = clipboard.primaryClip
     if (clip != null && clip.itemCount > 0) {
       val text = clip.getItemAt(0).text.toString()
-      if(checkValidUrl(text)) {
+      if (checkValidUrl(text)) {
         binding.etStreamUrl.setText(text)
         context?.showToast("Pasted from clipboard")
       }
@@ -119,28 +119,31 @@ class NetworkStreamFragment : Fragment() {
 
 
     binding.btnDownload.setOnClickListener {
-      val uri = binding.etStreamUrl.text.toString().trim()
-      if (uri.isNotBlank()) {
-        // Use lifecycleScope to handle the suspend function
-        lifecycleScope.launch {
-          when (val result = viewModel.addToDownloadQueueWithResult(uri)) {
-            is NetworkStreamViewModel.DownloadResult.Success -> {
-              context?.showToast("Added to download queue")
 
-            }
-
-            is NetworkStreamViewModel.DownloadResult.AlreadyExists -> {
-              context?.showToast("This URL is already downloaded or being downloaded")
-            }
-
-            is NetworkStreamViewModel.DownloadResult.Error -> {
-              context?.showToast("Failed to add to download queue: ${result.message}")
-            }
-          }
-          navigateToDownloadFragment()
-        }
-      } else {
+      val url = binding.etStreamUrl.text.toString().trim()
+      if (!checkValidUrl(url)) {
         context?.showToast("Please enter a valid URL")
+        return@setOnClickListener
+      }
+      viewModel.saveToUriHistory(url) // Save the stream URL to history
+      viewModel.refresh()
+
+      lifecycleScope.launch {
+        when (val result = viewModel.addToDownloadQueueWithResult(url)) {
+          is NetworkStreamViewModel.DownloadResult.Success -> {
+            context?.showToast("Added to download queue")
+
+          }
+
+          is NetworkStreamViewModel.DownloadResult.AlreadyExists -> {
+            context?.showToast("This URL is already downloaded or being downloaded")
+          }
+
+          is NetworkStreamViewModel.DownloadResult.Error -> {
+            context?.showToast("Failed to add to download queue: ${result.message}")
+          }
+        }
+        navigateToDownloadFragment()
       }
     }
 
@@ -172,13 +175,13 @@ class NetworkStreamFragment : Fragment() {
     val parsed = uri.toUri()
     val scheme = parsed.scheme?.lowercase()
     return when {
-        scheme == "http" || scheme == "https" -> true
-        scheme == "magnet" -> true
-        scheme == "file" -> true
-        scheme == "content" -> true // Accept content:// URIs
-        // Accept torrent file links
-        uri.endsWith(".torrent", ignoreCase = true) -> true
-        else -> false
+      scheme == "http" || scheme == "https" -> true
+      scheme == "magnet" -> true
+      scheme == "file" -> true
+      scheme == "content" -> true // Accept content:// URIs
+      // Accept torrent file links
+      uri.endsWith(".torrent", ignoreCase = true) -> true
+      else -> false
     }
   }
 

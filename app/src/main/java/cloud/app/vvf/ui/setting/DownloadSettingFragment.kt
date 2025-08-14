@@ -5,11 +5,16 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import cloud.app.vvf.R
 import cloud.app.vvf.services.downloader.helper.DownloadFileManager
 import cloud.app.vvf.utils.FileFolderPicker.getChooseFolderLauncher
 import cloud.app.vvf.utils.FileHelper
+import cloud.app.vvf.utils.MaterialListPreference
+import cloud.app.vvf.utils.MaterialSliderPreference
+import cloud.app.vvf.utils.TV
+import cloud.app.vvf.utils.isLayout
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import javax.inject.Inject
@@ -70,6 +75,25 @@ class DownloadSettingFragment : BaseSettingsFragment() {
           true // Allow the custom dialog to handle clicks
         }
         preferenceScreen.addPreference(this)
+      }
+
+
+      PreferenceCategory(context).apply {
+        title = getString(R.string.hls_options)
+        key = "hls_option"
+        isIconSpaceReserved = false
+        layoutResource = R.layout.preference_category
+        screen.addPreference(this)
+
+        MaterialSliderPreference(context, 1, 10, 1, allowOverride = false).apply {
+          key = getString(R.string.pref_hls_download_batch_size)
+          title = getString(R.string.hls_download_batch_size)
+          summary = getString(R.string.hls_download_batch_size_sumary)
+          suffixSummary = ""
+          isIconSpaceReserved = false
+          setDefaultValue(1)
+          addPreference(this)
+        }
       }
     }
 

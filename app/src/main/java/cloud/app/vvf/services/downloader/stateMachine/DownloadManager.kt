@@ -19,6 +19,7 @@ import cloud.app.vvf.utils.KUniFile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -61,6 +62,8 @@ class DownloadManager @Inject constructor(
     loadDownloadsFromDataStore()
     // Monitor work manager for download progress updates
     observeWorkManagerUpdates()
+    // Setup automatic cleanup of orphaned workers
+    setupAutoCleanup()
   }
 
   /**
@@ -302,78 +305,104 @@ class DownloadManager @Inject constructor(
   }
 
   /**
-   * Cancel an active download
+   * Cancel and remove a download completely
    */
   fun cancelDownload(downloadId: String) {
+    Timber.d("DownloadManager.cancelDownload called for: $downloadId")
+
+    // Cancel WorkManager task first
+    workManager.cancelUniqueWork("download_$downloadId")
+    Timber.d("Cancelled WorkManager task for: $downloadId")
+
+    // Execute cancel command through controller
     val command = DownloadCommand.Cancel(downloadId)
-    if (downloadController.executeCommand(command)) {
-      workManager.cancelUniqueWork("download_$downloadId")
-      Timber.Forest.d("Cancelled download: $downloadId")
-    }
+    downloadController.executeCommand(command)
+
+    // Remove from datastore
+    appDataStore.value.removeDownload(downloadId)
+    Timber.d("Removed download from datastore: $downloadId")
   }
 
   /**
-   * Remove a download from the list
+   * Remove a download completely (for completed/failed downloads)
    */
   fun removeDownload(downloadId: String) {
-    val command = DownloadCommand.Remove(downloadId)
-    if (downloadController.executeCommand(command)) {
-      workManager.cancelUniqueWork("download_$downloadId")
-      appDataStore.value.removeDownload(downloadId)
-      downloadController.removeDownload(downloadId)
-      Timber.Forest.d("Removed download: $downloadId")
-    }
+    Timber.d("DownloadManager.removeDownload called for: $downloadId")
+
+    // Cancel any running work
+    workManager.cancelUniqueWork("download_$downloadId")
+
+    // Remove from controller
+    downloadController.removeDownload(downloadId)
+
+    // Remove from datastore
+    appDataStore.value.removeDownload(downloadId)
+    Timber.d("Removed download: $downloadId")
   }
 
   /**
-   * Retry a failed download
+   * Clean up orphaned workers that don't have corresponding downloads in UI
    */
-  fun retryDownload(downloadId: String) {
-    val downloadData = downloads.value[downloadId] ?: return
+  fun cleanupOrphanedWorkers() {
+    Timber.d("Starting cleanup of orphaned workers")
 
-    if (downloadData.status == DownloadStatus.FAILED || downloadData.status == DownloadStatus.CANCELLED) {
-      // Start a new download for retry
-      downloadData.mediaItem?.let { mediaItem ->
-        startDownload(mediaItem, downloadData.url)
+    // Get all active download work
+    workManager.getWorkInfosByTag(DOWNLOAD_WORK_TAG).get()?.let { workInfos ->
+      val activeWorkDownloadIds = workInfos.mapNotNull { workInfo ->
+        extractDownloadId(workInfo)
+      }.toSet()
+
+      val currentDownloadIds = downloads.value.keys.toSet()
+
+      // Find orphaned workers (workers that don't have corresponding downloads)
+      val orphanedWorkers = activeWorkDownloadIds - currentDownloadIds
+
+      if (orphanedWorkers.isNotEmpty()) {
+        Timber.d("Found ${orphanedWorkers.size} orphaned workers: $orphanedWorkers")
+
+        orphanedWorkers.forEach { orphanedDownloadId ->
+          Timber.d("Cleaning up orphaned worker: $orphanedDownloadId")
+          workManager.cancelUniqueWork("download_$orphanedDownloadId")
+        }
+      } else {
+        Timber.d("No orphaned workers found")
       }
-      Timber.Forest.d("Retrying download: $downloadId")
-    } else {
-      Timber.Forest.w("Cannot retry download $downloadId: current status is ${downloadData.status}")
     }
   }
 
   /**
-   * Get download progress as a flow for a specific download
+   * Periodic cleanup of orphaned workers - call this periodically or when UI state changes
    */
-  fun getDownloadProgress(downloadId: String): Flow<Int> {
-    return downloads.map { downloadMap ->
-      downloadMap[downloadId]?.progress ?: 0
-    }
+  fun scheduleOrphanedWorkerCleanup() {
+    // Clean up immediately
+    cleanupOrphanedWorkers()
+
+    // You can also schedule periodic cleanup if needed
+    // For now, we'll rely on manual calls when UI state changes
   }
 
   /**
-   * Get all downloads for a specific media item
+   * Setup automatic cleanup of orphaned workers when download state changes
    */
-  fun getDownloadsForMediaItem(mediaItem: AVPMediaItem): List<DownloadData> {
-    return downloads.value.values.filter { it.mediaItem?.id == mediaItem.id }
-  }
+  private fun setupAutoCleanup() {
+    // Use a debounced approach to avoid too frequent cleanup calls
+    var lastCleanupTime = 0L
+    val cleanupDelay = 5000L // 5 seconds minimum between cleanups
 
-  /**
-   * Check if a media item is currently being downloaded
-   */
-  fun isDownloading(mediaItem: AVPMediaItem): Boolean {
-    return downloads.value.values.any {
-      it.mediaItem?.id == mediaItem.id && it.isActive()
-    }
-  }
+    // Monitor downloads state flow for changes
+    CoroutineScope(Dispatchers.IO).launch {
+      downloads.collect { currentDownloads ->
+        val currentTime = System.currentTimeMillis()
 
-  /**
-   * Check if a media item has been downloaded
-   */
-  fun isDownloaded(mediaItem: AVPMediaItem): Boolean {
-    return downloads.value.values.any {
-      it.mediaItem?.id == mediaItem.id && it.status == DownloadStatus.COMPLETED
+        // Only cleanup if enough time has passed since last cleanup
+        if (currentTime - lastCleanupTime > cleanupDelay) {
+          lastCleanupTime = currentTime
+          cleanupOrphanedWorkers()
+        }
+      }
     }
+
+    Timber.d("Setup automatic orphaned worker cleanup with ${cleanupDelay}ms debounce")
   }
 
   /**
@@ -450,9 +479,12 @@ class DownloadManager @Inject constructor(
   private fun observeWorkManagerUpdates() {
     Timber.Forest.d("Setting up WorkManager observer")
     workManager.getWorkInfosByTagLiveData(DOWNLOAD_WORK_TAG).observeForever { workInfos ->
+      Timber.Forest.d("WorkManager update received: ${workInfos.size} items")
       workInfos?.forEach { workInfo ->
         val downloadId = extractDownloadId(workInfo)
         if (downloadId != null) {
+          Timber.Forest.d("WorkManager update for download: $downloadId")
+          Timber.Forest.d("WorkManager update for workInfo: ${workInfo.id}")
           val event = workInfo.toDownloadEvent(downloadId)
           if (event != null) {
             handleWorkEvent(event)
@@ -572,6 +604,55 @@ class DownloadManager @Inject constructor(
       ?: "download_${System.currentTimeMillis()}"
   }
 
+
+  /**
+   * Retry a failed download
+   */
+  fun retryDownload(downloadId: String) {
+    Timber.d("DownloadManager.retryDownload called for: $downloadId")
+
+    val downloadData = downloads.value[downloadId] ?: return
+
+    // Cancel any existing work first
+    workManager.cancelUniqueWork("download_$downloadId")
+
+    // Execute start command to retry
+    val command = DownloadCommand.Start(downloadId, downloadData.url)
+    if (downloadController.executeCommand(command)) {
+      // Create and enqueue WorkManager request
+      val downloadType = detectDownloadType(downloadData.url)
+      enqueueWorkRequest(downloadId, downloadType, downloadData.url, downloadData.quality)
+      Timber.d("Retried ${downloadType.name} download: $downloadId")
+    } else {
+      Timber.e("Failed to retry download: $downloadId")
+    }
+  }
+
+  /**
+   * Get download progress for a specific download
+   */
+  fun getDownloadProgress(downloadId: String): StateFlow<Int> {
+    return downloads.map { downloadsMap ->
+      downloadsMap[downloadId]?.progress ?: 0
+    }.stateIn(
+      scope = CoroutineScope(Dispatchers.Default),
+      started = SharingStarted.Eagerly,
+      initialValue = 0
+    )
+  }
+
+  /**
+   * Get download data for a specific download
+   */
+  fun getDownloadData(downloadId: String): StateFlow<DownloadData?> {
+    return downloads.map { downloadsMap ->
+      downloadsMap[downloadId]
+    }.stateIn(
+      scope = CoroutineScope(Dispatchers.Default),
+      started = SharingStarted.Eagerly,
+      initialValue = null
+    )
+  }
 
   companion object {
     private const val DOWNLOAD_WORK_TAG = "media_download"

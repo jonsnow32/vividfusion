@@ -1,159 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_margin="8dp"
+  app:cardCornerRadius="12dp"
+  app:cardElevation="4dp">
+
+  <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    android:padding="12dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <!-- Thumbnail -->
 
-        <!-- Thumbnail -->
+    <!-- Title -->
+    <TextView
+      android:id="@+id/tvTitle"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginHorizontal="8dp"
+      android:ellipsize="end"
+      android:maxLines="2"
+      android:paddingTop="8dp"
+      android:textColor="?android:attr/textColorPrimary"
+      android:textSize="16sp"
+      android:textStyle="bold"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:text="Sample HLS Stream (720p)" />
 
-      <!-- Download Type Badge -->
+    <!-- HLS-specific info row -->
+    <LinearLayout
+      android:id="@+id/layoutHlsInfo"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginHorizontal="8dp"
+      android:layout_marginTop="4dp"
+      android:orientation="horizontal"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
       <TextView
-        android:id="@+id/tvDownloadType"
+        android:id="@+id/tvQuality"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/badge_hls"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="2dp"
-        android:text="HLS"
-        android:textColor="@android:color/white"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Title -->
-      <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:layout_marginHorizontal="8dp"
-        android:ellipsize="end"
-        android:maxLines="2"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Sample HLS Stream (720p)" />
-
-        <!-- HLS-specific info row -->
-      <LinearLayout
-        android:id="@+id/layoutHlsInfo"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:layout_marginHorizontal="8dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle">
-
-        <TextView
-          android:id="@+id/tvQuality"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:textColor="?android:attr/textColorSecondary"
-          android:textSize="12sp"
-          tools:text="Quality: 720p" />
-
-        <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginHorizontal="4dp"
-          android:text="•"
-          android:textColor="?android:attr/textColorSecondary"
-          android:textSize="12sp" />
-
-        <TextView
-          android:id="@+id/tvSegments"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:textColor="?android:attr/textColorSecondary"
-          android:textSize="12sp"
-          tools:text="150/200 segments" />
-
-        <TextView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginHorizontal="4dp"
-          android:text="•"
-          android:textColor="?android:attr/textColorSecondary"
-          android:textSize="12sp" />
-
-        <TextView
-          android:id="@+id/tvFileSize"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:textColor="?android:attr/textColorSecondary"
-          android:textSize="12sp"
-          tools:text="120 MB" />
-
-      </LinearLayout>
-
-        <!-- Encryption info (conditional) -->
-      <TextView
-        android:id="@+id/tvEncryption"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:layout_marginHorizontal="8dp"
-        android:textColor="@color/download_status_failed"
-        android:textSize="12sp"
-        android:visibility="gone"
-        app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layoutHlsInfo"
-        tools:text="Encrypted: AES-128"
-        tools:visibility="visible" />
-
-        <!-- Status -->
-      <TextView
-        android:id="@+id/tvStatus"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:layout_marginHorizontal="8dp"
-        android:textSize="14sp"
-        app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvEncryption"
-        tools:text="Downloading • 75%" />
-
-        <!-- Speed -->
-      <TextView
-        android:id="@+id/tvSpeed"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="2dp"
-        android:layout_marginHorizontal="8dp"
-        android:paddingBottom="8dp"
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="12sp"
-        app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvStatus"
-        tools:text="1.8 MB/s" />
+        tools:text="Quality: 720p" />
 
-        <!-- Download Action Widget with integrated progress -->
-      <cloud.app.vvf.ui.download.DownloadButtonWidget
-        android:id="@+id/downloadButtonWidget"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:text="•"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="12sp" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+      <TextView
+        android:id="@+id/tvSegments"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="12sp"
+        tools:text="150/200 segments" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:text="•"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="12sp" />
+
+      <TextView
+        android:id="@+id/tvFileSize"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="12sp"
+        tools:text="120 MB" />
+
+    </LinearLayout>
+
+    <!-- Encryption info (conditional) -->
+    <TextView
+      android:id="@+id/tvEncryption"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginHorizontal="8dp"
+      android:layout_marginTop="2dp"
+      android:textColor="@color/download_status_failed"
+      android:textSize="12sp"
+      android:visibility="gone"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/layoutHlsInfo"
+      tools:text="Encrypted: AES-128"
+      tools:visibility="visible" />
+
+    <!-- Status -->
+    <TextView
+      android:id="@+id/tvStatus"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginHorizontal="8dp"
+      android:layout_marginTop="2dp"
+      android:textSize="14sp"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tvEncryption"
+      tools:text="Downloading • 75%" />
+
+    <!-- Speed -->
+    <TextView
+      android:id="@+id/tvSpeed"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginHorizontal="8dp"
+      android:layout_marginVertical="2dp"
+      android:paddingBottom="8dp"
+      android:textColor="?android:attr/textColorSecondary"
+      android:textSize="12sp"
+      app:layout_constraintEnd_toStartOf="@id/downloadButtonWidget"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/tvStatus"
+      tools:text="1.8 MB/s" />
+
+    <!-- Download Action Widget with integrated progress -->
+    <cloud.app.vvf.ui.download.DownloadButtonWidget
+      android:id="@+id/downloadButtonWidget"
+      android:layout_width="48dp"
+      android:layout_height="48dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.cardview.widget.CardView>
