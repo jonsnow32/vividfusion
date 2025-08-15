@@ -52,22 +52,23 @@ class DownloadsFragment : Fragment() {
     setupTransition(view)
     setupRecyclerView()
     setupClickListeners()
-    setupBannerAd()
+    setupBannerAd() // Now enabled with proper banner container
     observeDownloads()
     observeStorageInfo()
   }
 
   private fun setupBannerAd() {
-    try {
-      val bannerAd = adManager.createBannerAd(requireContext())
-      // Add banner ad to your layout - you'll need to add an AdView container to your layout
-      // For now, I'll show you how to add it programmatically
+    lifecycleScope.launch {
+      try {
+        val success = adManager.createBannerAd(requireContext(), binding.bannerAdContainer)
+        Timber.d("Banner waterfall result in DownloadsFragment: $success")
 
-      // Note: You should add a proper container in your layout file for better control
-      // This is just an example of programmatic addition
-
-    } catch (e: Exception) {
-      Timber.w(e, "Failed to setup banner ad in DownloadsFragment")
+        // Show/hide the container based on ad load success
+        binding.bannerAdContainer.visibility = if (success) View.VISIBLE else View.GONE
+      } catch (e: Exception) {
+        Timber.w(e, "Failed to setup banner ad in DownloadsFragment")
+        binding.bannerAdContainer.visibility = View.GONE
+      }
     }
   }
 

@@ -118,4 +118,19 @@ dependencies {
   // Google AdMob
   implementation("com.google.android.gms:play-services-ads:22.6.0")
 
+  // Facebook Audience Network (Meta) - Cập nhật version
+  implementation("com.facebook.android:audience-network-sdk:6.15.0")
+
+  // Unity Ads - Cập nhật version
+  implementation("com.unity3d.ads:unity-ads:4.8.0")
+
+  // IronSource - Version ổn định hơn
+  implementation("com.ironsource.sdk:mediationsdk:7.3.1")
+
+  // AppLovin MAX - Version mới nhất
+  implementation("com.applovin:applovin-sdk:11.11.3")
+
+  // Bỏ Vungle tạm thời vì có vấn đề với repository
+  // implementation("com.vungle:vungle-android-sdk:7.1.0")
+
 }

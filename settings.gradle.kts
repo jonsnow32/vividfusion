@@ -17,6 +17,12 @@ dependencyResolutionManagement {
     google()
     mavenCentral()
     maven("https://jitpack.io")
+
+    // IronSource repository
+    maven("https://android-sdk.is.com/")
+
+    // Vungle repository
+    maven("https://s3.amazonaws.com/moat-sdk-builds")
   }
 }
 

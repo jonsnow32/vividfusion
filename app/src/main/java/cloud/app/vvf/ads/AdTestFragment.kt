@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import cloud.app.vvf.R
+import cloud.app.vvf.ads.providers.AdProvider
 import cloud.app.vvf.databinding.FragmentAdTestBinding
 import cloud.app.vvf.utils.autoCleared
 import com.google.android.gms.ads.AdView
@@ -49,16 +50,19 @@ class AdTestFragment : Fragment() {
     }
 
     private fun setupBannerAd() {
-        try {
-            bannerAd = adManager.createBannerAd(requireContext())
-            bannerAd?.let { ad ->
-                binding.bannerAdContainer.addView(ad)
-                binding.tvBannerStatus.text = "Banner: Loaded Successfully"
-                Timber.d("Banner ad added to test container")
+        lifecycleScope.launch {
+            try {
+                val success = adManager.createBannerAd(requireContext(), binding.bannerAdContainer)
+                binding.tvBannerStatus.text = if (success) {
+                    "Banner: Waterfall Success ✅"
+                } else {
+                    "Banner: All Providers Failed ❌"
+                }
+                Timber.d("Banner waterfall result: $success")
+            } catch (e: Exception) {
+                binding.tvBannerStatus.text = "Banner: Error - ${e.message}"
+                Timber.e(e, "Failed to create waterfall banner ad")
             }
-        } catch (e: Exception) {
-            binding.tvBannerStatus.text = "Banner: Failed to Load - ${e.message}"
-            Timber.e(e, "Failed to create banner ad in test fragment")
         }
     }
 
@@ -165,13 +169,15 @@ class AdTestFragment : Fragment() {
 
     private fun updateAdStatus() {
         binding.tvInterstitialStatus.text = if (adManager.isInterstitialAdReady()) {
-            "Interstitial: Ready ✅"
+            val provider = adManager.getReadyProvider(AdProvider.AdType.INTERSTITIAL)
+            "Interstitial: Ready ✅ (${provider?.providerType ?: "Unknown"})"
         } else {
             "Interstitial: Loading... ⏳"
         }
 
         binding.tvRewardedStatus.text = if (adManager.isRewardedAdReady()) {
-            "Rewarded: Ready ✅"
+            val provider = adManager.getReadyProvider(AdProvider.AdType.REWARDED)
+            "Rewarded: Ready ✅ (${provider?.providerType ?: "Unknown"})"
         } else {
             "Rewarded: Loading... ⏳"
         }
@@ -181,6 +187,22 @@ class AdTestFragment : Fragment() {
         } else {
             "Banner: Failed ❌"
         }
+
+        // Hiển thị thống kê providers
+        displayProviderStats()
+    }
+
+    private fun displayProviderStats() {
+        val stats = adManager.getProviderStats()
+        val statsText = StringBuilder("\n📊 Provider Performance:\n")
+
+        stats.entries.sortedBy { it.key.ordinal }.forEach { (providerType, stat) ->
+            val successRate = (stat.successRate * 100).toInt()
+            val fillRate = (stat.fillRate * 100).toInt()
+            statsText.append("${providerType}: ${successRate}% success, ${fillRate}% fill\n")
+        }
+
+        binding.tvActionCount.text = "${binding.tvActionCount.text}${statsText}"
     }
 
     private fun showToast(message: String) {

@@ -130,25 +130,19 @@ class AdPlacementHelper @Inject constructor(
     /**
      * Add banner ad to a container with proper sizing
      */
-    fun addBannerToContainer(
+    suspend fun addBannerToContainer(
         fragment: Fragment,
         container: ViewGroup,
         atTop: Boolean = false
-    ): AdView? {
+    ): Boolean {
         return try {
-            val bannerAd = adManager.createBannerAd(fragment.requireContext())
+            val success = adManager.createBannerAd(fragment.requireContext(), container)
 
-            if (atTop) {
-                container.addView(bannerAd, 0)
-            } else {
-                container.addView(bannerAd)
-            }
-
-            Timber.d("Banner ad added to container")
-            bannerAd
+            Timber.d("Banner ad added to container: $success")
+            success
         } catch (e: Exception) {
             Timber.w(e, "Failed to add banner ad to container")
-            null
+            false
         }
     }
 

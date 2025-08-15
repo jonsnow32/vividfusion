@@ -2,124 +2,59 @@ package cloud.app.vvf.ads
 
 import android.app.Activity
 import android.content.Context
+import android.view.ViewGroup
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.google.android.gms.ads.*
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
-import com.google.android.gms.ads.rewarded.RewardedAd
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import cloud.app.vvf.ads.providers.AdProvider
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AdManager @Inject constructor() : DefaultLifecycleObserver {
+class AdManager @Inject constructor(
+    private val waterfallManager: AdWaterfallManager
+) : DefaultLifecycleObserver {
 
     companion object {
-        // Test Ad Unit IDs - Replace with your actual IDs in production
-        const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
-        const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
-        const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
-
         private const val AD_FREQUENCY_LIMIT = 3 // Show interstitial every 3 actions
         private const val MIN_TIME_BETWEEN_ADS = 30_000L // 30 seconds
     }
-
-    private var interstitialAd: InterstitialAd? = null
-    private var rewardedAd: RewardedAd? = null
-    private var isLoadingInterstitial = false
-    private var isLoadingRewarded = false
 
     // Ad frequency control
     private var actionCount = 0
     private var lastAdShownTime = 0L
 
     fun initialize(context: Context) {
-        MobileAds.initialize(context) { initializationStatus ->
-            val statusMap = initializationStatus.adapterStatusMap
-            for (adapterClass in statusMap.keys) {
-                val status = statusMap[adapterClass]
-                Timber.d("AdMob adapter: $adapterClass, status: ${status?.initializationState}, description: ${status?.description}")
+        GlobalScope.launch {
+            try {
+                waterfallManager.initialize(context)
+                Timber.i("AdManager with waterfall initialized successfully")
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to initialize AdManager waterfall")
             }
-            Timber.i("AdMob initialized successfully")
-        }
-
-        // Preload ads
-        loadInterstitialAd(context)
-        loadRewardedAd(context)
-    }
-
-    /**
-     * Create banner ad for use in layouts
-     */
-    fun createBannerAd(context: Context): AdView {
-        return AdView(context).apply {
-            setAdSize(AdSize.BANNER)
-            adUnitId = BANNER_AD_UNIT_ID
-
-            adListener = object : AdListener() {
-                override fun onAdLoaded() {
-                    Timber.d("Banner ad loaded successfully")
-                }
-
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    Timber.w("Banner ad failed to load: ${error.message}")
-                }
-
-                override fun onAdClicked() {
-                    Timber.d("Banner ad clicked")
-                }
-            }
-
-            loadAd(AdRequest.Builder().build())
         }
     }
 
     /**
-     * Load interstitial ad
+     * Create banner ad using waterfall system
      */
-    private fun loadInterstitialAd(context: Context) {
-        if (isLoadingInterstitial || interstitialAd != null) return
-
-        isLoadingInterstitial = true
-        val adRequest = AdRequest.Builder().build()
-
-        InterstitialAd.load(context, INTERSTITIAL_AD_UNIT_ID, adRequest, object : InterstitialAdLoadCallback() {
-            override fun onAdLoaded(ad: InterstitialAd) {
-                Timber.d("Interstitial ad loaded successfully")
-                interstitialAd = ad
-                isLoadingInterstitial = false
-
-                ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-                    override fun onAdDismissedFullScreenContent() {
-                        Timber.d("Interstitial ad dismissed")
-                        interstitialAd = null
-                        loadInterstitialAd(context) // Preload next ad
-                    }
-
-                    override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                        Timber.w("Interstitial ad failed to show: ${error.message}")
-                        interstitialAd = null
-                    }
-
-                    override fun onAdShowedFullScreenContent() {
-                        Timber.d("Interstitial ad showed")
-                        lastAdShownTime = System.currentTimeMillis()
-                    }
-                }
+    suspend fun createBannerAd(context: Context, container: ViewGroup): Boolean {
+        return waterfallManager.showBannerAd(
+            context = context,
+            container = container,
+            onAdLoaded = {
+                Timber.d("Waterfall banner ad loaded successfully")
+            },
+            onAllProvidersFailed = { error ->
+                Timber.w("All waterfall providers failed for banner: $error")
             }
-
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                Timber.w("Interstitial ad failed to load: ${error.message}")
-                isLoadingInterstitial = false
-                interstitialAd = null
-            }
-        })
+        )
     }
 
     /**
-     * Show interstitial ad with frequency control
+     * Show interstitial ad with frequency control using waterfall
      */
     fun showInterstitialAd(activity: Activity, onAdClosed: (() -> Unit)? = null) {
         actionCount++
@@ -133,129 +68,79 @@ class AdManager @Inject constructor() : DefaultLifecycleObserver {
             return
         }
 
-        interstitialAd?.let { ad ->
-            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-                override fun onAdDismissedFullScreenContent() {
-                    Timber.d("Interstitial ad dismissed")
-                    interstitialAd = null
-                    actionCount = 0 // Reset counter
-                    loadInterstitialAd(activity) // Preload next ad
-                    onAdClosed?.invoke()
-                }
-
-                override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                    Timber.w("Interstitial ad failed to show: ${error.message}")
-                    interstitialAd = null
-                    onAdClosed?.invoke()
-                }
-
-                override fun onAdShowedFullScreenContent() {
-                    Timber.d("Interstitial ad showed")
+        GlobalScope.launch {
+            val success = waterfallManager.showInterstitialAd(
+                activity = activity,
+                onAdShown = {
                     lastAdShownTime = System.currentTimeMillis()
+                    Timber.d("Waterfall interstitial ad shown")
+                },
+                onAdClosed = {
+                    actionCount = 0 // Reset counter
+                    onAdClosed?.invoke()
+                    Timber.d("Waterfall interstitial ad closed")
+                },
+                onAllProvidersFailed = { error ->
+                    Timber.w("All waterfall providers failed for interstitial: $error")
+                    onAdClosed?.invoke()
                 }
+            )
+
+            if (!success) {
+                onAdClosed?.invoke()
             }
-            ad.show(activity)
-        } ?: run {
-            Timber.d("Interstitial ad not ready, loading new one")
-            loadInterstitialAd(activity)
-            onAdClosed?.invoke()
         }
     }
 
     /**
-     * Load rewarded ad
-     */
-    private fun loadRewardedAd(context: Context) {
-        if (isLoadingRewarded || rewardedAd != null) return
-
-        isLoadingRewarded = true
-        val adRequest = AdRequest.Builder().build()
-
-        RewardedAd.load(context, REWARDED_AD_UNIT_ID, adRequest, object : RewardedAdLoadCallback() {
-            override fun onAdLoaded(ad: RewardedAd) {
-                Timber.d("Rewarded ad loaded successfully")
-                rewardedAd = ad
-                isLoadingRewarded = false
-
-                ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-                    override fun onAdDismissedFullScreenContent() {
-                        Timber.d("Rewarded ad dismissed")
-                        rewardedAd = null
-                        loadRewardedAd(context) // Preload next ad
-                    }
-
-                    override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                        Timber.w("Rewarded ad failed to show: ${error.message}")
-                        rewardedAd = null
-                    }
-
-                    override fun onAdShowedFullScreenContent() {
-                        Timber.d("Rewarded ad showed")
-                    }
-                }
-            }
-
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                Timber.w("Rewarded ad failed to load: ${error.message}")
-                isLoadingRewarded = false
-                rewardedAd = null
-            }
-        })
-    }
-
-    /**
-     * Show rewarded ad
+     * Show rewarded ad using waterfall
      */
     fun showRewardedAd(
         activity: Activity,
         onUserEarnedReward: (rewardAmount: Int) -> Unit,
         onAdClosed: (() -> Unit)? = null
     ) {
-        rewardedAd?.let { ad ->
-            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
-                override fun onAdDismissedFullScreenContent() {
-                    Timber.d("Rewarded ad dismissed")
-                    rewardedAd = null
-                    loadRewardedAd(activity) // Preload next ad
+        GlobalScope.launch {
+            waterfallManager.showRewardedAd(
+                activity = activity,
+                onRewardEarned = { amount ->
+                    Timber.d("User earned reward from waterfall: $amount")
+                    onUserEarnedReward(amount)
+                },
+                onAdClosed = {
+                    onAdClosed?.invoke()
+                    Timber.d("Waterfall rewarded ad closed")
+                },
+                onAllProvidersFailed = { error ->
+                    Timber.w("All waterfall providers failed for rewarded: $error")
                     onAdClosed?.invoke()
                 }
-
-                override fun onAdFailedToShowFullScreenContent(error: AdError) {
-                    Timber.w("Rewarded ad failed to show: ${error.message}")
-                    rewardedAd = null
-                    onAdClosed?.invoke()
-                }
-
-                override fun onAdShowedFullScreenContent() {
-                    Timber.d("Rewarded ad showed")
-                }
-            }
-
-            ad.show(activity) { rewardItem ->
-                val rewardAmount = rewardItem.amount
-                Timber.d("User earned reward: $rewardAmount")
-                onUserEarnedReward(rewardAmount)
-            }
-        } ?: run {
-            Timber.d("Rewarded ad not ready, loading new one")
-            loadRewardedAd(activity)
-            onAdClosed?.invoke()
+            )
         }
     }
 
     /**
-     * Check if rewarded ad is available
+     * Check if rewarded ad is available from any provider
      */
-    fun isRewardedAdReady(): Boolean = rewardedAd != null
+    fun isRewardedAdReady(): Boolean = waterfallManager.isAdReady(AdProvider.AdType.REWARDED)
 
     /**
-     * Check if interstitial ad is available
+     * Check if interstitial ad is available from any provider
      */
-    fun isInterstitialAdReady(): Boolean = interstitialAd != null
+    fun isInterstitialAdReady(): Boolean = waterfallManager.isAdReady(AdProvider.AdType.INTERSTITIAL)
+
+    /**
+     * Get provider performance stats
+     */
+    fun getProviderStats() = waterfallManager.getProviderStats()
+
+    /**
+     * Get which provider is ready for specific ad type
+     */
+    fun getReadyProvider(adType: AdProvider.AdType) = waterfallManager.getReadyProvider(adType)
 
     override fun onDestroy(owner: LifecycleOwner) {
         super.onDestroy(owner)
-        interstitialAd = null
-        rewardedAd = null
+        waterfallManager.cleanup()
     }
 }
