@@ -47,6 +47,11 @@
     android:usesCleartextTraffic="true"
     tools:targetApi="tiramisu">
 
+    <!-- AdMob App ID (Replace with your actual AdMob App ID) -->
+    <meta-data
+      android:name="com.google.android.gms.ads.APPLICATION_ID"
+      android:value="ca-app-pub-3940256099942544~3347511713"/>
+
     <activity
       android:name=".MainActivity"
       android:exported="true"

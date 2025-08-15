@@ -15,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -33,6 +34,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import cloud.app.vvf.R
+import cloud.app.vvf.ads.AdPlacementHelper
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.databinding.CustomControllerBinding
@@ -65,6 +67,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 @UnstableApi
@@ -74,6 +77,9 @@ class PlayerFragment : Fragment() {
   internal var playerControlBinding by autoCleared<CustomControllerBinding>()
   internal val viewModel by viewModels<PlayerViewModel>()
   private val torrentPlayerViewModel: TorrentPlayerViewModel by viewModels()
+
+  @Inject
+  lateinit var adPlacementHelper: AdPlacementHelper
 
   private val mediaItems by lazy { arguments?.getSerialized<List<AVPMediaItem>>("mediaItems") }
   private val currentMediaIdx by lazy { arguments?.getInt("selectedMediaIdx") ?: 0 }
@@ -88,6 +94,7 @@ class PlayerFragment : Fragment() {
   private var hideControllerJob: Job? = null
   private var hideUnlockBtnJob: Job? = null
   private var playerView: PlayerView? = null
+  private var backPressedCallback: OnBackPressedCallback? = null
 
   companion object {
     fun newInstance(
@@ -131,12 +138,99 @@ class PlayerFragment : Fragment() {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+    setupBackPressHandling()
     mediaItems?.let { initializePlayer(it, subtitles) } ?: run {
       currentActivity.showToast(R.string.failed_loading)
       parentFragmentManager.popBackStack()
     }
   }
 
+  private fun setupBackPressHandling() {
+    backPressedCallback = object : OnBackPressedCallback(true) {
+      override fun handleOnBackPressed() {
+        handleBackKey()
+      }
+    }
+    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backPressedCallback!!)
+  }
+
+  /**
+   * Handle back key press in PlayerFragment
+   * Priority: 1. Exit fullscreen 2. Stop playback and navigate back
+   */
+  private fun handleBackKey() {
+    // If player controls are locked, unlock them first
+    if (viewModel.isControlsLocked.value) {
+      return
+    }
+
+    // If in fullscreen, exit fullscreen first
+    if (playerView?.isControllerFullyVisible == true) {
+      animateLayoutChanges(false, fromUser = true)
+      return
+    }
+
+    // If player is playing, pause it before exiting
+    viewModel.player?.let { player ->
+      if (player.isPlaying) {
+        player.pause()
+      }
+    }
+
+    // Show ad when exiting player (strategic placement)
+    if (adPlacementHelper.shouldShowAds()) {
+      adPlacementHelper.showInterstitialForPlacement(
+        requireActivity(),
+        AdPlacementHelper.AdPlacement.BACK_FROM_PLAYER
+      ) {
+        // Navigate back after ad
+        parentFragmentManager.popBackStack()
+      }
+    } else {
+      // Navigate back immediately if no ads
+      parentFragmentManager.popBackStack()
+    }
+  }
+
+  /**
+   * Handle hardware key events (for TV/remote controls)
+   */
+  fun handleKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+    return when (keyCode) {
+      KeyEvent.KEYCODE_BACK -> {
+        handleBackKey()
+        true
+      }
+
+      KeyEvent.KEYCODE_ESCAPE -> {
+        handleBackKey()
+        true
+      }
+      // Handle other keys if needed
+      KeyEvent.KEYCODE_MENU -> {
+        // Toggle player controls visibility
+        if (playerView?.isControllerFullyVisible == true) {
+          playerView?.hideController()
+        } else {
+          playerView?.showController()
+        }
+        true
+      }
+
+      else -> false
+    }
+  }
+
+  /**
+   * Handle hardware key up events (for TV/remote controls)
+   */
+  fun handleKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+    return when (keyCode) {
+      KeyEvent.KEYCODE_BACK,
+      KeyEvent.KEYCODE_ESCAPE -> true // Consume the event to prevent double handling
+      else -> false
+    }
+  }
 
   private fun initializePlayer(
     mediaItems: List<AVPMediaItem>,
@@ -559,7 +653,9 @@ class PlayerFragment : Fragment() {
     super.onPause()
   }
 
-  override fun onDestroyView(){
+  override fun onDestroyView() {
+    backPressedCallback?.remove()
+    backPressedCallback = null
     playerView = null
     currentActivity.showSystemUI()
     hideControllerJob?.cancel()
@@ -634,7 +730,4 @@ class PlayerFragment : Fragment() {
       }
       .show().setDefaultFocus()
   }
-
-  fun handleKeyDown(keyCode: Int, event: KeyEvent?): Boolean = false
-  fun handleKeyUp(keyCode: Int, event: KeyEvent?): Boolean = false
 }

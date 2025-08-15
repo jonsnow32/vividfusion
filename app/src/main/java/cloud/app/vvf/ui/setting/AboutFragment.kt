@@ -5,9 +5,12 @@ import android.os.Bundle
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.R
+import cloud.app.vvf.ads.AdTestFragment
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.utils.Utils
+import cloud.app.vvf.utils.navigate
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
@@ -63,6 +66,21 @@ class AboutFragment : BaseSettingsFragment() {
         }
         icon = AppCompatResources.getDrawable(context, R.drawable.round_privacy_tip_24)
         screen.addPreference(this)
+      }
+
+      if(BuildConfig.DEBUG) {
+        Preference(context).apply {
+          key = "ads_test"
+          title = "ads_test"
+          summary = "goto ads test fragment"
+          onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            parentFragment?.navigate(AdTestFragment.newInstance())
+            true
+          }
+          layoutResource = R.layout.preference
+          icon = AppCompatResources.getDrawable(context, R.drawable.outline_ads_click_24)
+          screen.addPreference(this)
+        }
       }
     }
   }

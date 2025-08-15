@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import cloud.app.vvf.ads.AdManager
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.extension.ExtensionLoader
@@ -29,8 +30,8 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class VVFApplication : Application(), Application.ActivityLifecycleCallbacks,
-  Configuration.Provider {
+class VVFApplication : Application(), Configuration.Provider, Application.ActivityLifecycleCallbacks {
+
   @Inject
   lateinit var workerFactory: HiltWorkerFactory
 
@@ -45,6 +46,9 @@ class VVFApplication : Application(), Application.ActivityLifecycleCallbacks,
 
   @Inject
   lateinit var httpHelper: HttpHelper
+
+  @Inject
+  lateinit var adManager: AdManager
 
   private val scope = MainScope() + CoroutineName("Application")
   private var currentActivity: Activity? = null
@@ -68,6 +72,10 @@ class VVFApplication : Application(), Application.ActivityLifecycleCallbacks,
     }
     applyUiChanges(sharedPreferences, currentActivity = currentActivity)
     extensionLoader.initialize()
+
+    // Initialize AdManager
+    adManager.initialize(this)
+    // Note: AdManager lifecycle will be managed through activity lifecycle callbacks
   }
 
 

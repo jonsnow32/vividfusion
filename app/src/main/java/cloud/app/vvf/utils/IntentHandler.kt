@@ -295,11 +295,15 @@ class IntentHandler(private val mainActivity: MainActivity) {
 
   private fun handleOtherIntent(intent: Intent) {
     when (intent.action) {
-      Intent.ACTION_MAIN -> {
+      Intent.ACTION_VIEW -> {
         // App launched normally
         Timber.d("App launched normally")
+        // Check for navigation extra to DownloadsFragment
+        if (intent.getStringExtra("navigate_to") == "downloads") {
+          Timber.d("Navigating to DownloadsFragment due to intent extra")
+          mainActivity.navigateToDownloadsFragment()
+        }
       }
-
       Intent.ACTION_SEND -> {
         // Handle shared content
         Timber.d("Handling shared content")

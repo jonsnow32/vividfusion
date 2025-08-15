@@ -4,12 +4,17 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import androidx.annotation.OptIn
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
 import cloud.app.vvf.BuildConfig
+import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.getMediaType
+import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.datastore.app.AppDataStore
+import cloud.app.vvf.features.player.PlayerFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +28,7 @@ import cloud.app.vvf.services.downloader.stateMachine.DownloadManager
 import cloud.app.vvf.services.downloader.DownloadData
 import cloud.app.vvf.services.downloader.DownloadStatus
 import cloud.app.vvf.services.downloader.DownloadType
+import cloud.app.vvf.utils.navigate
 
 @HiltViewModel
 class DownloadsViewModel @Inject constructor(
@@ -208,7 +214,7 @@ class DownloadsViewModel @Inject constructor(
     }
   }
 
-  fun playDownloadedFile(context: Context, downloadData: DownloadData) {
+  fun openWith(context: Context, downloadData: DownloadData) {
     if (downloadData.status != DownloadStatus.COMPLETED) {
       Timber.w("Cannot play file: download not completed. Current status: ${downloadData.status}")
       return
@@ -233,6 +239,37 @@ class DownloadsViewModel @Inject constructor(
       }
 
       playFileWithIntent(context, file, downloadData)
+
+    } catch (e: Exception) {
+      Timber.e(e, "Error playing downloaded file: ${downloadData.title}")
+    }
+  }
+  fun play(fragment: DownloadsFragment, downloadData: DownloadData) {
+    if (downloadData.status != DownloadStatus.COMPLETED) {
+      Timber.w("Cannot play file: download not completed. Current status: ${downloadData.status}")
+      return
+    }
+
+    val context = fragment.context ?: return
+    try {
+      // Use the passed download data for file operations
+      val file = findDownloadedFile(fragment.requireContext(), downloadData)
+
+      if (file == null || !file.exists()) {
+        Timber.w("Downloaded file not found for: ${downloadData.title}")
+        // Try to update the local path if file exists in downloads directory
+        val foundFile = searchForFileInDownloadsDir(context, downloadData.title)
+        if (foundFile?.exists() == true) {
+          // Update the download item with correct path
+          updateDownloadItemPath(downloadData, foundFile.absolutePath)
+          playWithInternalPlayer(fragment, foundFile, downloadData)
+        } else {
+          Timber.e("File not found anywhere for: ${downloadData.title}")
+        }
+        return
+      }
+
+      playWithInternalPlayer(fragment, file, downloadData)
 
     } catch (e: Exception) {
       Timber.e(e, "Error playing downloaded file: ${downloadData.title}")
@@ -360,6 +397,21 @@ class DownloadsViewModel @Inject constructor(
     }
   }
 
+  @OptIn(UnstableApi::class)
+  private fun playWithInternalPlayer(fragment: DownloadsFragment, file: File, downloadData: DownloadData) {
+    val streamUrl = downloadData.filePath ?: file.absolutePath
+    if (streamUrl.isNotBlank()) {
+      // Navigate to PlayerFragment to play the stream
+      val video = Video.RemoteVideo(uri = streamUrl, title = streamUrl)
+      val mediaItem = AVPMediaItem.VideoItem(video)
+      fragment.navigate(
+        PlayerFragment.newInstance(
+          mediaItems = listOf(mediaItem),
+          selectedMediaIdx = 0,
+        )
+      )
+    }
+  }
   /**
    * Update download item with correct file path
    */

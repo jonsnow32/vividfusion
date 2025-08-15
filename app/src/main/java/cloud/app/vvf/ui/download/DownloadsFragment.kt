@@ -1,7 +1,6 @@
 package cloud.app.vvf.ui.download
 
 import android.os.Bundle
-import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,11 +10,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
+import cloud.app.vvf.ads.AdManager
 import cloud.app.vvf.databinding.FragmentDownloadsBinding
 import cloud.app.vvf.services.downloader.DownloadData
 import cloud.app.vvf.services.downloader.DownloadStatus
 import cloud.app.vvf.ui.widget.dialog.ActionSelectionDialog
-import cloud.app.vvf.ui.widget.dialog.SelectionDialog
 import cloud.app.vvf.ui.widget.dialog.actionOption.IconTextItem
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.setupTransition
@@ -23,12 +22,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class DownloadsFragment : Fragment() {
   private var binding by autoCleared<FragmentDownloadsBinding>()
   private val viewModel: DownloadsViewModel by viewModels()
   private lateinit var downloadsAdapter: DownloadsAdapter
+
+  @Inject
+  lateinit var adManager: AdManager
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -49,8 +52,23 @@ class DownloadsFragment : Fragment() {
     setupTransition(view)
     setupRecyclerView()
     setupClickListeners()
+    setupBannerAd()
     observeDownloads()
     observeStorageInfo()
+  }
+
+  private fun setupBannerAd() {
+    try {
+      val bannerAd = adManager.createBannerAd(requireContext())
+      // Add banner ad to your layout - you'll need to add an AdView container to your layout
+      // For now, I'll show you how to add it programmatically
+
+      // Note: You should add a proper container in your layout file for better control
+      // This is just an example of programmatic addition
+
+    } catch (e: Exception) {
+      Timber.w(e, "Failed to setup banner ad in DownloadsFragment")
+    }
   }
 
   private fun setupRecyclerView() {
@@ -61,7 +79,7 @@ class DownloadsFragment : Fragment() {
         DownloadAction.CANCEL -> viewModel.cancelDownload(downloadItem.id)
         DownloadAction.RETRY -> viewModel.retryDownload(downloadItem.id)
         DownloadAction.REMOVE -> viewModel.removeDownload(downloadItem.id)
-        DownloadAction.PLAY -> viewModel.playDownloadedFile(requireContext(), downloadItem)
+        DownloadAction.PLAY -> viewModel.play(this, downloadItem)
         else -> showOptionDialog(downloadItem)
       }
     }
@@ -82,8 +100,10 @@ class DownloadsFragment : Fragment() {
     if (downloadItem.status == DownloadStatus.DOWNLOADING)
       items.add(IconTextItem(R.drawable.pause_24dp, R.string.action_pause))
 
-    if (downloadItem.status == DownloadStatus.COMPLETED)
+    if (downloadItem.status == DownloadStatus.COMPLETED) {
       items.add(IconTextItem(R.drawable.rounded_play_arrow_24, R.string.action_play))
+      items.add(IconTextItem(R.drawable.open_in_new_24dp, R.string.open_with))
+    }
 
     if (downloadItem.status == DownloadStatus.COMPLETED)
       items.add(IconTextItem(R.drawable.folder_24dp, R.string.action_open_folder))
@@ -113,10 +133,12 @@ class DownloadsFragment : Fragment() {
               .show()
           }
 
-          R.string.action_play -> viewModel.playDownloadedFile(requireContext(), downloadItem)
+          R.string.action_play -> viewModel.play(this, downloadItem)
           R.string.action_pause -> viewModel.pauseDownload(downloadItem.id)
           R.string.action_resume -> viewModel.resumeDownload(downloadItem.id)
           R.string.action_open_folder -> viewModel.openLocation(requireContext(), downloadItem)
+          R.string.open_with -> viewModel.openWith(requireContext(), downloadItem)
+          else -> Timber.w("Unhandled action for download item: ${selectedItem.textRes}")
         }
       }).show(parentFragmentManager)
 

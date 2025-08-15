@@ -120,8 +120,8 @@ class DownloadsAdapter(
           val speedText = if (data.downloadSpeed > 0) data.downloadSpeedFormatted else "0 B/s"
           "$progressText • $sizeText • $speedText"
         }
-        DownloadStatus.PAUSED -> "Paused • ${data.progressPercent}%"
-        DownloadStatus.COMPLETED -> "Completed • ${formatFileSize(data.totalBytes)}"
+        DownloadStatus.PAUSED -> context.getString(R.string.paused_format,data.progressPercent)
+        DownloadStatus.COMPLETED -> context.getString(R.string.completed_format,formatFileSize(data.totalBytes))
         else -> data.status.name.lowercase().replaceFirstChar { it.uppercase() }
       }
     }
@@ -173,7 +173,7 @@ class DownloadsAdapter(
         tvTitle.text =  data.title ?: data.url
 
         // HTTP-specific info
-        tvConnections.text = "Connections: ${data.connections}"
+        tvConnections.text = context.getString(R.string.completed_format,data.connections)
         tvResumeSupport.text = if (data.resumeSupported) "Resume: Yes" else "Resume: No"
         tvResumeSupport.setTextColor(
           if (data.resumeSupported)
@@ -231,19 +231,19 @@ class DownloadsAdapter(
             tvStatus.text = "$progressText • $sizeText"
             tvSpeed.text = speedText
             tvEta.text = etaText
-            tvConnections.text = "Connections: ${data.connections}"
+            tvConnections.text = context.getString(R.string.connections_format, data.connections)
             tvStatus.setTextColor(getStatusColor(data.status))
           }
 
           DownloadStatus.PAUSED -> {
-            tvStatus.text = "Paused • ${data.progressPercent}%"
+            tvStatus.text = context.getString(R.string.paused_format, data.progressPercent)
             tvSpeed.text = ""
             tvEta.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
           }
 
           DownloadStatus.COMPLETED -> {
-            tvStatus.text = "Completed • ${formatFileSize(data.totalBytes)}"
+            tvStatus.text = context.getString(R.string.completed_format,formatFileSize(data.totalBytes))
             tvSpeed.text = ""
             tvEta.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
@@ -274,10 +274,10 @@ class DownloadsAdapter(
         tvTitle.text =  data.title ?: data.url
 
         // HLS-specific info
-        tvQuality.text = "Quality: ${data.quality}"
+        tvQuality.text = binding.root.context.getString(R.string.quality, data.quality)
         tvSegments.text = data.getSegmentProgress()
         if (data.encryption != null) {
-          tvEncryption.text = "Encrypted: ${data.encryption}"
+          tvEncryption.text = context.getString(R.string.encrypted, data.encryption)
           tvEncryption.visibility = View.VISIBLE
         } else {
           tvEncryption.visibility = View.GONE
@@ -348,7 +348,7 @@ class DownloadsAdapter(
 
           DownloadStatus.COMPLETED -> {
             tvStatus.text = context.getString(
-              R.string.download_progress, context.getString(R.string.completed),
+              R.string.completed_format,
               formatFileSize(data.totalBytes)
             )
             tvSpeed.text = ""
@@ -432,17 +432,23 @@ class DownloadsAdapter(
             val progressText = "${data.progressPercent}%"
             val downSpeed = if (data.downloadSpeed > 0) "↓ ${formatSpeed(data.downloadSpeed)}" else "↓ 0 B/s"
             val upSpeed = if (data.uploadSpeed > 0) "↑ ${formatSpeed(data.uploadSpeed)}" else "↑ 0 B/s"
-            tvStatus.text = "Downloading • $progressText • ${formatFileSize(data.downloadedBytes)} / ${formatFileSize(data.totalBytes)}"
+            tvStatus.text = context.getString(
+              R.string.downloading_format,
+              progressText,
+              formatFileSize(data.downloadedBytes),
+              formatFileSize(data.totalBytes)
+            )
             tvSpeeds.text = "$downSpeed • $upSpeed"
             tvStatus.setTextColor(getStatusColor(data.status))
           }
           DownloadStatus.PAUSED -> {
-            tvStatus.text = "Paused • ${data.progressPercent}%"
-            tvSpeeds.text = ""
+            tvStatus.text = context.getString(R.string.paused_format, data.progressPercent)
             tvStatus.setTextColor(getStatusColor(data.status))
+            tvSpeeds.text = ""
           }
           DownloadStatus.COMPLETED -> {
-            tvStatus.text = "Completed �� ${formatFileSize(data.totalBytes)}"
+            tvStatus.text =
+              context.getString(R.string.completed_format, formatFileSize(data.totalBytes))
             val upSpeed = if (data.uploadSpeed > 0) "↑ ${formatSpeed(data.uploadSpeed)}" else ""
             tvSpeeds.text = upSpeed
             tvStatus.setTextColor(getStatusColor(data.status))

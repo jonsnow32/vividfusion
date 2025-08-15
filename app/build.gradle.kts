@@ -82,7 +82,6 @@ dependencies {
   // Torrent Support
   implementation(libs.torrentserver)
 
-
   //UI
   implementation(libs.material)
   implementation(libs.glide)
@@ -115,5 +114,8 @@ dependencies {
   implementation(libs.androidx.browser)
   implementation(libs.glide.transformations)
   implementation(libs.fastscroll.library)
+
+  // Google AdMob
+  implementation("com.google.android.gms:play-services-ads:22.6.0")
 
 }

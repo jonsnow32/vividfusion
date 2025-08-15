@@ -56,6 +56,7 @@ class DownloadNotificationManager(private val context: Context) {
       .setPriority(NotificationCompat.PRIORITY_LOW)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
       .setOnlyAlertOnce(true) // Prevent repeated alerts
+
   }
 
   init {
@@ -110,10 +111,21 @@ class DownloadNotificationManager(private val context: Context) {
     status: DownloadStatus = DownloadStatus.DOWNLOADING
   ): ForegroundInfo {
     val notificationId = getNotificationId(downloadId)
+
+    // Add content intent to open DownloadsFragment when notification is clicked
+    val openIntent = createOpenDownloadsIntent()
+    val openPendingIntent = PendingIntent.getActivity(
+      context,
+      downloadId.hashCode(),
+      openIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
     val notification = createNotificationBuilder()
       .setContentTitle(getNotificationTitle(status, displayName))
       .setContentText(subtitle)
       .setProgress(100, progress, progress == 0)
+      .setContentIntent(openPendingIntent) // Add this line to make notification clickable
       .addAction(createCancelAction(downloadId))
       .build()
 
@@ -249,16 +261,14 @@ class DownloadNotificationManager(private val context: Context) {
         Timber.e(e, "Failed to create file URI for notification: $path")
         null
       }
-    }
+    } ?: createOpenDownloadsIntent()
 
-    val openPendingIntent = openIntent?.let { intent ->
-      PendingIntent.getActivity(
-        context,
-        downloadId.hashCode(),
-        intent,
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-      )
-    }
+    val openPendingIntent = PendingIntent.getActivity(
+      context,
+      downloadId.hashCode(),
+      openIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
 
     val notification = createNotificationBuilder()
       .setContentTitle("Download Complete")
@@ -267,10 +277,8 @@ class DownloadNotificationManager(private val context: Context) {
       .setOngoing(false)
       .setAutoCancel(true)
       .apply {
-        openPendingIntent?.let { setContentIntent(it) }
-        if (openPendingIntent != null) {
-          addAction(R.drawable.ic_play_arrow_24, "Open", openPendingIntent)
-        }
+        setContentIntent(openPendingIntent)
+        addAction(R.drawable.ic_play_arrow_24, "Open", openPendingIntent)
       }
       .build()
 
@@ -278,6 +286,43 @@ class DownloadNotificationManager(private val context: Context) {
       notificationManager.notify(notificationId, notification)
     } catch (e: Exception) {
       Timber.w(e, "Failed to show completion notification for $downloadId")
+    }
+  }
+
+  /**
+   * Helper to create an intent that opens MainActivity and navigates to DownloadsFragment
+   */
+  private fun createOpenDownloadsIntent(): Intent {
+    val intent = Intent(context, Class.forName("cloud.app.vvf.MainActivity"))
+    intent.action = Intent.ACTION_VIEW
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    intent.putExtra("navigate_to", "downloads")
+    return intent
+  }
+
+  fun showDownloadsNavigationNotification(title: String, message: String) {
+    if (!hasPermission()) return
+    val notificationId = getNotificationId("downloads_navigation")
+    val openIntent = createOpenDownloadsIntent()
+    val openPendingIntent = PendingIntent.getActivity(
+      context,
+      "downloads_navigation".hashCode(),
+      openIntent,
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+    val notification = createNotificationBuilder()
+      .setContentTitle(title)
+      .setContentText(message)
+      .setOngoing(false)
+      .setAutoCancel(true)
+      .setProgress(0, 0, false)
+      .setContentIntent(openPendingIntent)
+      .addAction(R.drawable.ic_download_24, "Open Downloads", openPendingIntent)
+      .build()
+    try {
+      notificationManager.notify(notificationId, notification)
+    } catch (e: Exception) {
+      Timber.w(e, "Failed to show downloads navigation notification")
     }
   }
 

@@ -28,10 +28,12 @@ import cloud.app.vvf.databinding.ConfirmExitDialogBinding
 import cloud.app.vvf.extension.builtIn.local.MediaUtils
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.features.playerManager.PlayerManager
+import cloud.app.vvf.ui.download.DownloadsFragment
 import cloud.app.vvf.utils.TV
 import cloud.app.vvf.utils.IntentHandler
 import cloud.app.vvf.utils.Utils.isAndroidTV
 import cloud.app.vvf.utils.isLayout
+import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.openItemFragmentFromUri
 import cloud.app.vvf.utils.setDefaultFocus
 import cloud.app.vvf.utils.setLocale
@@ -276,5 +278,14 @@ class MainActivity : AppCompatActivity() {
     return super.onKeyUp(keyCode, event)
   }
 
+  // Add this method to allow navigation to DownloadsFragment from anywhere (e.g., IntentHandler)
+  fun navigateToDownloadsFragment() {
+    val fragment = DownloadsFragment()
+    navigate(DownloadsFragment())
+//    supportFragmentManager.beginTransaction()
+//      .replace(binding.root.id, fragment, "DownloadsFragment")
+//      .addToBackStack(null)
+//      .commitAllowingStateLoss()
+  }
 
 }

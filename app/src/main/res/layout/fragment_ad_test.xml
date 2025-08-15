@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Header -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ad Testing Screen"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Banner Ad Container -->
+    <LinearLayout
+        android:id="@+id/banner_ad_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@android:color/darker_gray"
+        android:padding="8dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Banner Ad Space"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp" />
+
+        <!-- AdView will be added programmatically here -->
+
+    </LinearLayout>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="16dp">
+
+        <Button
+            android:id="@+id/btn_show_interstitial"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show Interstitial Ad"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@android:color/holo_blue_dark" />
+
+        <Button
+            android:id="@+id/btn_show_rewarded"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Show Rewarded Ad"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@android:color/holo_green_dark" />
+
+        <Button
+            android:id="@+id/btn_test_download_complete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Download Complete Ad"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@android:color/holo_orange_dark" />
+
+        <Button
+            android:id="@+id/btn_test_player_exit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Test Player Exit Ad"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="@android:color/holo_purple" />
+
+    </LinearLayout>
+
+    <!-- Ad Status Display -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/background_light"
+        android:padding="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ad Status:"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_interstitial_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Interstitial: Loading..."
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_rewarded_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rewarded: Loading..."
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_banner_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Banner: Loading..."
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tv_action_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Action Count: 0"
+            android:textColor="@android:color/holo_red_dark" />
+
+    </LinearLayout>
+
+    <!-- Test Actions Counter -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/btn_increment_action"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="+ Action"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btn_reset_counter"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Reset Counter"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

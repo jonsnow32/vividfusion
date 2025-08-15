@@ -407,7 +407,7 @@
   <string name="stream">Stream</string>
   <string name="path">Path</string>
   <string name="free">free</string>
-    <string name="no_downloads_yet">No downloads yet</string>
+  <string name="no_downloads_yet">No downloads yet</string>
   <string name="downloaded_media_will_appear_here">Downloaded media will appear here</string>
   <string name="download_storage_text">Internal Storage</string>
   <string name="select_all">Select all</string>
@@ -425,14 +425,18 @@
   <string name="download_progress" translatable="false">%1$s • %2$s</string>
   <string name="downloading">Downloading</string>
   <string name="paused">Paused</string>
-  <string name="completed">Completed</string>
   <string name="action_open_folder">Open Location</string>
   <string name="download_path">Download Path</string>
-    <string name="peers_seeds">%1$d peers, %2$d seeds</string>
-    <string name="quality">Quality: %1$s</string>
+  <string name="peers_seeds">%1$d peers, %2$d seeds</string>
+  <string name="quality">Quality: %1$s</string>
   <string name="hls_options">Hls options</string>
   <string name="download_batch_size">Batch size</string>
   <string name="download_batch_size_sumary">Number of segments to download concurrently</string>
+  <string name="encrypted">Encrypted: %1$s</string>
+  <string name="completed_format">Completed • %1$s</string>
+  <string name="paused_format">Paused • %1$d%%</string>
+  <string name="downloading_format">Downloading • %1$s • %2$s / %3$s</string>
+  <string name="connections_format">Connections: %1$d</string>
 
 
 </resources>
