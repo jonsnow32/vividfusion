@@ -26,7 +26,8 @@ class HttpDownloader @AssistedInject constructor(
   @Assisted workerParameters: WorkerParameters
 ) : CoroutineWorker(context, workerParameters) {
 
-  @Inject lateinit var sharedPreferences: SharedPreferences
+  @Inject
+  lateinit var sharedPreferences: SharedPreferences
 
   companion object {
     const val KEY_DOWNLOAD_ID = "key_download_id"
@@ -91,29 +92,53 @@ class HttpDownloader @AssistedInject constructor(
 
     // Use parallel download
     var lastProgress = 0L
+    var lastUpdateTime = 0L
+    var lastDownloadedBytes = 0L
     val keys = DownloadData.Companion.Keys
     val threadCount = sharedPreferences.getInt(
-      context.getString(R.string.download_batch_size),
+      context.getString(R.string.pref_download_batch_size),
       Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
     )
     httpClient.downloadFileParallel(
       params.downloadUrl,
       mediaFile,
-      threadCount = threadCount ,
+      threadCount = threadCount,
       progressCallback = { downloaded, total ->
         if (isStopped) return@downloadFileParallel
-        if (total > 0 && downloaded > 0 && downloaded != lastProgress) {
+        val percent = ((downloaded - lastProgress) * 100 / total).toInt()
+        val now = System.currentTimeMillis()
+        // Calculate download speed (bytes per second, smoothed over 1s)
+        val timeDiff = now - lastUpdateTime
+        val bytesDiff = downloaded - lastDownloadedBytes
+        val downloadSpeed = if (timeDiff > 0 && lastUpdateTime > 0) {
+          (bytesDiff * 1000) / timeDiff
+        } else 0L
+        Timber.d("Download progress: $percent% ($downloaded / $total bytes) for ${params.downloadId}, speed: ${formatFileSize(downloadSpeed)}/s")
+        if (total > 0 && downloaded > 0 && percent > 1) {
           lastProgress = downloaded
+          lastDownloadedBytes = downloaded
+          lastUpdateTime = now
           val progress = ((downloaded * 100) / total).toInt()
+
           setProgressAsync(
             workDataOf(
               keys.PROGRESS to progress,
               keys.DOWNLOADED_BYTES to downloaded,
               keys.TOTAL_BYTES to total,
+              keys.DOWNLOAD_SPEED to downloadSpeed,
               keys.DOWNLOAD_ID to params.downloadId,
-              keys.DISPLAY_NAME to (mediaFile.name ?: mediaFile.uri.toString())
+              keys.DISPLAY_NAME to (mediaFile.name ?: mediaFile.uri.toString()),
+              keys.CONNECTIONS to threadCount
             )
           )
+//          notificationManager.updateNotification(
+//            this,
+//            params.downloadId,
+//            (mediaFile.name ?: mediaFile.uri.toString()),
+//            progress,
+//            DownloadStatus.DOWNLOADING,
+//            "Downloading... $progress% • ${formatFileSize(downloaded)} / ${formatFileSize(total)}"
+//          )
         }
       }
     )
@@ -136,79 +161,7 @@ class HttpDownloader @AssistedInject constructor(
     )
   }
 
-  private var lastProgressUpdateTime = 0L
-  private var lastDownloadedBytes = 0L
 
-  private suspend fun updateProgress(
-    downloadId: String,
-    fileName: String,
-    downloadedBytes: Long,
-    totalBytes: Long
-  ) {
-    val now = System.currentTimeMillis()
-    if (now - lastProgressUpdateTime < 1000) return // Only update once per second
-
-    // Calculate download speed
-    val timeDiff = now - lastProgressUpdateTime
-    val bytesDiff = downloadedBytes - lastDownloadedBytes
-    val downloadSpeed = if (timeDiff > 0) {
-      (bytesDiff * 1000) / timeDiff // bytes per second
-    } else 0L
-
-    lastProgressUpdateTime = now
-    lastDownloadedBytes = downloadedBytes
-
-    val progress = if (totalBytes > 0) {
-      ((downloadedBytes * 100) / totalBytes).toInt()
-    } else 0
-
-    val keys = DownloadData.Companion.Keys
-    setProgressAsync(
-      workDataOf(
-        keys.PROGRESS to progress,
-        keys.DOWNLOADED_BYTES to downloadedBytes,
-        keys.TOTAL_BYTES to totalBytes,
-        keys.DOWNLOAD_SPEED to downloadSpeed,
-        keys.DOWNLOAD_ID to downloadId,
-        keys.DISPLAY_NAME to fileName
-      )
-    )
-
-    // Update notification using optimized notification manager
-    notificationManager.updateNotification(
-      this,
-      downloadId,
-      fileName,
-      progress,
-      DownloadStatus.DOWNLOADING,
-      "Downloading... $progress% • ${formatFileSize(downloadedBytes)} / ${formatFileSize(totalBytes)}"
-    )
-  }
-
-  private suspend fun updateFinalProgress(
-    downloadId: String,
-    fileName: String,
-    filePath: String,
-    localPath: String,
-    fileSize: Long
-  ) {
-    val keys = DownloadData.Companion.Keys
-    setProgressAsync(
-      workDataOf(
-        keys.PROGRESS to 100,
-        keys.DOWNLOADED_BYTES to fileSize,
-        keys.TOTAL_BYTES to fileSize,
-        keys.DOWNLOAD_ID to downloadId,
-        keys.DISPLAY_NAME to fileName,
-        keys.FILE_PATH to localPath,
-        keys.FILE_PATH to filePath,
-        keys.FILE_SIZE to fileSize
-      )
-    )
-
-    // Show completion notification
-    notificationManager.showCompletionNotification(downloadId, fileName, localPath)
-  }
 
   private fun formatFileSize(bytes: Long): String {
     if (bytes <= 0) return "0 B"

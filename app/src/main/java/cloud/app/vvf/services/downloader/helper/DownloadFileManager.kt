@@ -73,8 +73,10 @@ class DownloadFileManager(private val context: Context) {
     return if (isResuming && resumeBytes > 0) {
       handleResumeFile(downloadsDir, fullFileName, resumeBytes)
     } else {
-      val newFile = contentType?.let { downloadsDir.createFile(fullFileName, it) }
-        ?: throw IOException("Failed to create media file")
+      // Use default content type if null
+      val safeContentType = contentType ?: "application/octet-stream"
+      val newFile = downloadsDir.createFile(fullFileName, safeContentType)
+        ?: throw IOException("Failed to create media file with name: $fullFileName")
       Pair(newFile, false)
     }
   }

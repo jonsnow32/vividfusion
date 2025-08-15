@@ -272,9 +272,30 @@ class HttpDownloadClient {
     val request = createRequest(url, existingSize)
     val response = client.newCall(request).execute()
 
+    // Handle HTTP 416 (Range Not Satisfiable) gracefully
     if (!validateResponse(response, existingSize > 0)) {
+      if (response.code == 416) {
+        // If file is already fully downloaded, treat as success
+        val contentRange = response.header("Content-Range")
+        val contentLengthHeader = response.header("Content-Length")
+        val fileLength = outputFile.length() ?: 0L
+        val remoteLength = when {
+          contentRange != null -> contentRange.substringAfterLast("/").toLongOrNull()
+          contentLengthHeader != null -> contentLengthHeader.toLongOrNull()
+          else -> null
+        }
+        if (remoteLength != null && fileLength >= remoteLength) {
+          Timber.w("HTTP 416 but file already complete: $fileLength/$remoteLength")
+          response.close()
+          return
+        } else if (remoteLength == null && fileLength > 0L) {
+          Timber.w("HTTP 416, no remote length info, but file exists. Treating as complete.")
+          response.close()
+          return
+        }
+      }
       response.close()
-      throw IOException("Invalid response for single download")
+      throw IOException("Invalid response for single download (code: ${response.code})")
     }
 
     response.body.byteStream().use { inputStream ->

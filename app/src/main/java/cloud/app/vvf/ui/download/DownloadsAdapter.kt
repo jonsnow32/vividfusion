@@ -231,6 +231,7 @@ class DownloadsAdapter(
             tvStatus.text = "$progressText • $sizeText"
             tvSpeed.text = speedText
             tvEta.text = etaText
+            tvConnections.text = "Connections: ${data.connections}"
             tvStatus.setTextColor(getStatusColor(data.status))
           }
 
