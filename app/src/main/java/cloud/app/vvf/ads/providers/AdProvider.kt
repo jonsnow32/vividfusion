@@ -18,7 +18,7 @@ interface AdProvider {
     }
 
     val providerType: ProviderType
-    val priority: Int // Thứ tự ưu tiên (1 = cao nhất)
+    val priority: Int // Priority order (1 = highest)
 
     /**
      * Khởi tạo ad provider

@@ -17,10 +17,10 @@ import kotlin.coroutines.resume
 class AdMobProvider : AdProvider {
 
     override val providerType = AdProvider.ProviderType.ADMOB
-    override val priority = 1 // Ưu tiên cao nhất
+    override val priority = 1 // Highest priority
 
     companion object {
-        // Test Ad Unit IDs - thay bằng ID thật khi production
+        // Test Ad Unit IDs - replace with real IDs in production
         const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
         const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
         const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
@@ -57,7 +57,7 @@ class AdMobProvider : AdProvider {
         return when (adType) {
             AdProvider.AdType.INTERSTITIAL -> withContext(Dispatchers.Main) { preloadInterstitial(context) }
             AdProvider.AdType.REWARDED -> withContext(Dispatchers.Main) { preloadRewarded(context) }
-            AdProvider.AdType.BANNER -> true // Banner được load khi cần
+            AdProvider.AdType.BANNER -> true // Banner is loaded on demand
         }
     }
 

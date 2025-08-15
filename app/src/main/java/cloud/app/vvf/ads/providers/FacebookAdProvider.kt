@@ -11,10 +11,10 @@ import kotlin.coroutines.resume
 class FacebookAdProvider : AdProvider {
 
     override val providerType = AdProvider.ProviderType.FACEBOOK
-    override val priority = 2 // Ưu tiên thứ 2
+    override val priority = 2 // Priority 2
 
     companion object {
-        // Test Placement IDs - thay bằng ID thật khi production
+        // Test Placement IDs - replace with real IDs in production
         const val BANNER_PLACEMENT_ID = "YOUR_PLACEMENT_ID"
         const val INTERSTITIAL_PLACEMENT_ID = "YOUR_PLACEMENT_ID"
         const val REWARDED_PLACEMENT_ID = "YOUR_PLACEMENT_ID"
@@ -26,8 +26,8 @@ class FacebookAdProvider : AdProvider {
 
     override suspend fun initialize(context: Context): Boolean = suspendCancellableCoroutine { continuation ->
         try {
-            // Facebook AudienceNetwork không cần initialization callback
-            // Chỉ cần gọi initialize
+            // Facebook AudienceNetwork does not require an initialization callback
+            // Just call initialize
             AudienceNetworkAds.initialize(context)
             isInitialized = true
             Timber.d("Facebook Audience Network initialized")
@@ -221,7 +221,7 @@ class FacebookAdProvider : AdProvider {
         return try {
             val showListener = object : RewardedVideoAdListener {
                 override fun onRewardedVideoCompleted() {
-                    onRewardEarned(1) // Facebook không cung cấp số lượng reward cụ thể
+                    onRewardEarned(1) // Facebook does not provide a specific reward amount
                 }
 
                 override fun onRewardedVideoClosed() {

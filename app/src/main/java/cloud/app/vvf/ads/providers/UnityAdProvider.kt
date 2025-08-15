@@ -14,10 +14,10 @@ import kotlin.coroutines.resume
 class UnityAdProvider : AdProvider {
 
     override val providerType = AdProvider.ProviderType.UNITY
-    override val priority = 3 // Ưu tiên thứ 3
+    override val priority = 3 // Priority 3
 
     companion object {
-        const val GAME_ID = "4374881" // Test Game ID - thay bằng ID thật
+        const val GAME_ID = "4374881" // Test Game ID - replace with real ID
         const val BANNER_PLACEMENT_ID = "banner"
         const val INTERSTITIAL_PLACEMENT_ID = "video"
         const val REWARDED_PLACEMENT_ID = "rewardedVideo"
@@ -49,7 +49,7 @@ class UnityAdProvider : AdProvider {
         if (!isInitialized) return false
 
         return when (adType) {
-            AdProvider.AdType.BANNER -> true // Banner luôn sẵn sàng nếu đã init
+            AdProvider.AdType.BANNER -> true // Banner is always ready if initialized
             AdProvider.AdType.INTERSTITIAL -> UnityAds.isInitialized() && UnityAds.getDebugMode() != null
             AdProvider.AdType.REWARDED -> UnityAds.isInitialized() && UnityAds.getDebugMode() != null
         }
@@ -180,7 +180,7 @@ class UnityAdProvider : AdProvider {
             override fun onUnityAdsShowComplete(placementId: String?, state: UnityAds.UnityAdsShowCompletionState?) {
                 Timber.d("Unity rewarded completed with state: $state")
                 if (state == UnityAds.UnityAdsShowCompletionState.COMPLETED) {
-                    onRewardEarned(1) // Unity thường cho 1 reward
+                    onRewardEarned(1) // Unity usually gives 1 reward
                 }
                 onAdClosed()
                 continuation.resume(true)

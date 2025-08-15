@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
+import cloud.app.vvf.ads.AdManager
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.databinding.FragmentNetworkStreamBinding
@@ -27,6 +28,7 @@ import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import javax.inject.Inject
 
 @UnstableApi
 @AndroidEntryPoint
@@ -51,6 +53,9 @@ class NetworkStreamFragment : Fragment() {
         }
       }
     }
+
+  @Inject
+  lateinit var adManager: AdManager
 
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -169,6 +174,18 @@ class NetworkStreamFragment : Fragment() {
       }
       false
     }
+
+    // Load banner ad
+    viewLifecycleOwner.lifecycleScope.launch {
+      try {
+        val success = adManager.createBannerAd(requireContext(), binding.bannerAdContainer)
+        if (!success) {
+          requireContext().showToast("Banner ad failed to load")
+        }
+      } catch (e: Exception) {
+        requireContext().showToast("Banner ad error: ${e.message}")
+      }
+    }
   }
 
   private fun checkValidUrl(uri: String): Boolean {
@@ -204,6 +221,12 @@ class NetworkStreamFragment : Fragment() {
     }
   }
 
+  private fun showInterstitialAdIfNeeded() {
+    adManager.showInterstitialAd(requireActivity()) {
+      requireContext().showToast("Interstitial ad closed")
+    }
+  }
+
   @UnstableApi
   private fun streamTorrentFile(torrentUri: String) {
     // Create a video item for the torrent file
@@ -221,6 +244,8 @@ class NetworkStreamFragment : Fragment() {
         selectedMediaIdx = 0,
       )
     )
+
+    showInterstitialAdIfNeeded()
   }
 
   fun addNetworkStream(stream: String) {
