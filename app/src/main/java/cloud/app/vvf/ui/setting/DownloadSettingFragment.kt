@@ -77,24 +77,34 @@ class DownloadSettingFragment : BaseSettingsFragment() {
         preferenceScreen.addPreference(this)
       }
 
-
-      PreferenceCategory(context).apply {
-        title = getString(R.string.hls_options)
-        key = "hls_option"
+      MaterialSliderPreference(context, 1, 10, 1, allowOverride = false).apply {
+        key = getString(R.string.pref_download_batch_size)
+        title = getString(R.string.download_batch_size)
+        summary = getString(R.string.download_batch_size_sumary)
+        icon = AppCompatResources.getDrawable(context, R.drawable.outline_segment_24)
+        suffixSummary = ""
         isIconSpaceReserved = false
-        layoutResource = R.layout.preference_category
+        setDefaultValue(Runtime.getRuntime().availableProcessors().coerceAtLeast(1))
         screen.addPreference(this)
-
-        MaterialSliderPreference(context, 1, 10, 1, allowOverride = false).apply {
-          key = getString(R.string.pref_hls_download_batch_size)
-          title = getString(R.string.hls_download_batch_size)
-          summary = getString(R.string.hls_download_batch_size_sumary)
-          suffixSummary = ""
-          isIconSpaceReserved = false
-          setDefaultValue(1)
-          addPreference(this)
-        }
       }
+
+//      PreferenceCategory(context).apply {
+//        title = getString(R.string.hls_options)
+//        key = "hls_option"
+//        isIconSpaceReserved = false
+//        layoutResource = R.layout.preference_category
+//        screen.addPreference(this)
+//
+//        MaterialSliderPreference(context, 1, 10, 1, allowOverride = false).apply {
+//          key = getString(R.string.pref_download_batch_size)
+//          title = getString(R.string.download_batch_size)
+//          summary = getString(R.string.download_batch_size_sumary)
+//          suffixSummary = ""
+//          isIconSpaceReserved = false
+//          setDefaultValue(1)
+//          addPreference(this)
+//        }
+//      }
     }
 
     private fun updateDownloadPathPreference(uri: Uri) {

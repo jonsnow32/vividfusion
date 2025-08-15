@@ -1,11 +1,13 @@
 package cloud.app.vvf.services.downloader
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import cloud.app.vvf.R
 import cloud.app.vvf.services.downloader.helper.DownloadFileManager
 import cloud.app.vvf.services.downloader.helper.DownloadFileManager.Companion.uriToSlug
 import cloud.app.vvf.services.downloader.helper.DownloadNotificationManager
@@ -13,14 +15,18 @@ import cloud.app.vvf.services.downloader.helper.HttpDownloadClient
 import cloud.app.vvf.utils.KUniFile
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import java.io.File
 import okhttp3.ResponseBody
 import timber.log.Timber
+import javax.inject.Inject
 
 @HiltWorker
 class HttpDownloader @AssistedInject constructor(
   @Assisted val context: Context,
   @Assisted workerParameters: WorkerParameters
 ) : CoroutineWorker(context, workerParameters) {
+
+  @Inject lateinit var sharedPreferences: SharedPreferences
 
   companion object {
     const val KEY_DOWNLOAD_ID = "key_download_id"
@@ -75,89 +81,57 @@ class HttpDownloader @AssistedInject constructor(
       throw InterruptedException("Download was stopped")
     }
 
-    // Create HTTP client with progress callback
-    val client = httpClient.createClient { _, _ ->
-      // Progress callback handled in performDownload
-    }
-
-    // Create request with resume support
-    val request = httpClient.createRequest(params.downloadUrl, params.resumeBytes)
-    val response = client.newCall(request).execute()
-
-    if (isStopped) {
-      response.close()
-      throw InterruptedException("Download was stopped2")
-    }
-
-    // Validate response
-    if (!httpClient.validateResponse(response, params.isResuming)) {
-      response.close()
-      throw IllegalStateException(
-        "Invalid response for download: ${params.downloadUrl} (Code: ${response.code})"
-      )
-    }
-
-    val responseBody = response.body
-
     // Create or get file for download
     val (mediaFile, _) = fileManager.createOrGetFile(
       params.downloadUrl.uriToSlug(),
-      responseBody.contentType()?.toString(),
+      null,
       params.isResuming,
       params.resumeBytes
     )
 
-    return try {
-      performDownload(responseBody, mediaFile, params, params.resumeBytes)
-    } finally {
-      responseBody.close()
-    }
-  }
-
-  private suspend fun performDownload(
-    response: ResponseBody,
-    outputFile: KUniFile,
-    params: HttpDownloadParams,
-    startByte: Long = 0L
-  ): Data {
-    val totalSize = (response.contentLength() + startByte).takeIf { it > 0 } ?: -1L
-    var downloadedSize = startByte
-
-    response.byteStream().use { inputStream ->
-      outputFile.openOutputStream(startByte > 0).use { outputStream ->
-        val buffer = ByteArray(8192)
-        var bytesRead: Int
-
-        while (inputStream.read(buffer).also { bytesRead = it } != -1 && !isStopped) {
-          outputStream.write(buffer, 0, bytesRead)
-          downloadedSize += bytesRead
-
-          // Update progress directly
-          updateProgress(
-            params.downloadId,
-            outputFile.name ?: outputFile.uri.toString(),
-            downloadedSize,
-            totalSize
+    // Use parallel download
+    var lastProgress = 0L
+    val keys = DownloadData.Companion.Keys
+    val threadCount = sharedPreferences.getInt(
+      context.getString(R.string.download_batch_size),
+      Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
+    )
+    httpClient.downloadFileParallel(
+      params.downloadUrl,
+      mediaFile,
+      threadCount = threadCount ,
+      progressCallback = { downloaded, total ->
+        if (isStopped) return@downloadFileParallel
+        if (total > 0 && downloaded > 0 && downloaded != lastProgress) {
+          lastProgress = downloaded
+          val progress = ((downloaded * 100) / total).toInt()
+          setProgressAsync(
+            workDataOf(
+              keys.PROGRESS to progress,
+              keys.DOWNLOADED_BYTES to downloaded,
+              keys.TOTAL_BYTES to total,
+              keys.DOWNLOAD_ID to params.downloadId,
+              keys.DISPLAY_NAME to (mediaFile.name ?: mediaFile.uri.toString())
+            )
           )
         }
       }
-    }
+    )
 
-    val filename = outputFile.name ?: outputFile.uri.toString().substringAfterLast('/')
+    val filename = mediaFile.name ?: mediaFile.uri.toString().substringAfterLast('/')
     notificationManager.showCompletionNotification(
       params.downloadId,
       filename,
-      (outputFile.uri.path ?: outputFile.uri.toString()),
+      (mediaFile.uri.path ?: mediaFile.uri.toString()),
     )
-    val keys = DownloadData.Companion.Keys
     return workDataOf(
       keys.DOWNLOAD_ID to params.downloadId,
-      keys.FILE_PATH to (outputFile.uri.path ?: outputFile.uri.toString()),
+      keys.FILE_PATH to (mediaFile.uri.path ?: mediaFile.uri.toString()),
       keys.DISPLAY_NAME to filename,
-      keys.FILE_PATH to outputFile.uri.toString(),
-      keys.FILE_SIZE to downloadedSize,
-      keys.DOWNLOADED_BYTES to totalSize,
-      keys.TOTAL_BYTES to totalSize,
+      keys.FILE_PATH to mediaFile.uri.toString(),
+      keys.FILE_SIZE to (mediaFile.length() ?: 0L),
+      keys.DOWNLOADED_BYTES to (mediaFile.length() ?: 0L),
+      keys.TOTAL_BYTES to (mediaFile.length() ?: 0L),
       keys.PROGRESS to 100,
     )
   }

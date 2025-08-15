@@ -34,6 +34,7 @@ data class DownloadData(
   val createdAt: Long = System.currentTimeMillis(),
   val updatedAt: Long = System.currentTimeMillis(),
 
+  val threadCount : Int = Runtime.getRuntime().availableProcessors().coerceAtLeast(1), // Number of threads used for download, default is 1
   // Download type
   val type: DownloadType = DownloadType.HTTP,
 
@@ -88,6 +89,8 @@ data class DownloadData(
       const val NOTE = "note"
       const val ERROR = "error"
 
+      const val THREAD_COUNT = "threadCount"
+
     }
 
     /**
@@ -108,6 +111,7 @@ data class DownloadData(
       private var createdAt: Long = System.currentTimeMillis()
       private var updatedAt: Long = System.currentTimeMillis()
       private var type: DownloadType = DownloadType.HTTP
+      private var threadCount = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
 
       fun progress(progress: Int) = apply { this.progress = progress }
       fun downloadedBytes(bytes: Long) = apply { this.downloadedBytes = bytes }
@@ -122,7 +126,8 @@ data class DownloadData(
       fun createdAt(timestamp: Long) = apply { this.createdAt = timestamp }
       fun updatedAt(timestamp: Long) = apply { this.updatedAt = timestamp }
       fun type(type: DownloadType) = apply { this.type = type }
-
+      fun threadCount(count: Int) =
+        apply { this.threadCount = count.coerceAtLeast(1) } // Ensure at least 1 thread
       // Torrent-specific builders
       fun uploadSpeed(speed: Long) =
         apply { typeSpecificData[Keys.UPLOAD_SPEED] = JsonPrimitive(speed) }
@@ -198,6 +203,7 @@ data class DownloadData(
         createdAt = createdAt,
         updatedAt = updatedAt,
         type = type,
+        threadCount = threadCount,
         typeSpecificData = typeSpecificData.toMap()
       )
     }

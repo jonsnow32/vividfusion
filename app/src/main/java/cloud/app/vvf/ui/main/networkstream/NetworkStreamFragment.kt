@@ -104,7 +104,8 @@ class NetworkStreamFragment : Fragment() {
         context?.showToast("Pasted from clipboard")
       }
     }
-    binding.etStreamUrl.setText("https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.mp4/.m3u8")
+    binding.etStreamUrl.setText("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
+//    binding.etStreamUrl.setText("https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.mp4/.m3u8")
 //    binding.etStreamUrl.setText("https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8")
 //    binding.etStreamUrl.setText("magnet:?xt=urn:btih:53A4A411DECDAF7E1BE919607B7A4187987BF0BB")
 //    binding.etStreamUrl.setText("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")

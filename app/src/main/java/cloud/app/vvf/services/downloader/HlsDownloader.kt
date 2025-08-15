@@ -46,7 +46,8 @@ class HlsDownloader @AssistedInject constructor(
 
   private val httpClient = HttpDownloadClient()
 
-  @Inject lateinit var sharedPreferences: SharedPreferences
+  @Inject
+  lateinit var sharedPreferences: SharedPreferences
 
   override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
     val downloadParams = extractDownloadParams()
@@ -152,7 +153,13 @@ class HlsDownloader @AssistedInject constructor(
       totalSegments * 3 * 1024 * 1024L
     }
 
-    Timber.d("Estimated total size: ${formatFileSize(estimatedTotalBytes)} for $totalSegments segments (sampled $successfulSamples segments, avg: ${if (successfulSamples > 0) formatFileSize(totalSampleSize / successfulSamples) else "unknown"})")
+    Timber.d(
+      "Estimated total size: ${formatFileSize(estimatedTotalBytes)} for $totalSegments segments (sampled $successfulSamples segments, avg: ${
+        if (successfulSamples > 0) formatFileSize(
+          totalSampleSize / successfulSamples
+        ) else "unknown"
+      })"
+    )
 
     // Speed calculation variables
     val downloadStartTime = System.currentTimeMillis()
@@ -170,8 +177,10 @@ class HlsDownloader @AssistedInject constructor(
     // Download segments and merge
     outputFile.openOutputStream().use { outputStream ->
       // Download segments in parallel with batch processing
-      val batchSize = sharedPreferences.getInt(context.getString(R.string.pref_hls_download_batch_size), 3)
-      val segmentDataMap = mutableMapOf<Int, ByteArray>() // Store segments by index for ordered writing
+      val batchSize =
+        sharedPreferences.getInt(context.getString(R.string.pref_download_batch_size), 3)
+      val segmentDataMap =
+        mutableMapOf<Int, ByteArray>() // Store segments by index for ordered writing
       val semaphore = Semaphore(batchSize) // Control concurrency
 
       // Process segments in batches to maintain order
@@ -232,7 +241,17 @@ class HlsDownloader @AssistedInject constructor(
                   totalSegment = totalSegments
                 )
 
-                Timber.d("Downloaded segment ${globalIndex + 1}/$totalSegments (${segmentData.size} bytes, ${formatSpeed(currentSpeed)}) - Total: ${formatFileSize(downloadedBytes.get())}/${formatFileSize(estimatedTotalBytes)}")
+                Timber.d(
+                  "Downloaded segment ${globalIndex + 1}/$totalSegments (${segmentData.size} bytes, ${
+                    formatSpeed(
+                      currentSpeed
+                    )
+                  }) - Total: ${formatFileSize(downloadedBytes.get())}/${
+                    formatFileSize(
+                      estimatedTotalBytes
+                    )
+                  }"
+                )
 
                 // Return segment data with its index
                 Pair(globalIndex, segmentData)
@@ -264,7 +283,8 @@ class HlsDownloader @AssistedInject constructor(
       }
     }
 
-    val finalSize = downloadedBytes.get() // Use actual downloaded bytes instead of outputFile.length()
+    val finalSize =
+      downloadedBytes.get() // Use actual downloaded bytes instead of outputFile.length()
     val filePath = outputFile.uri.path ?: outputFile.uri.toString()
     notificationManager.showCompletionNotification(params.downloadId, displayName, filePath)
 
@@ -371,7 +391,7 @@ class HlsDownloader @AssistedInject constructor(
     val hasMediaSegments = lines.any { line ->
       val trimmed = line.trim()
       !trimmed.startsWith("#") && trimmed.isNotBlank() &&
-      (trimmed.endsWith(".ts") || trimmed.endsWith(".m4s") || trimmed.endsWith(".mp4"))
+        (trimmed.endsWith(".ts") || trimmed.endsWith(".m4s") || trimmed.endsWith(".mp4"))
     }
 
     if (hasMediaSegments) {
@@ -543,7 +563,11 @@ class HlsDownloader @AssistedInject constructor(
    * Parse display name from HLS playlist files
    * Priority: EXT-X-TITLE > filename from URL > segments filename > fallback
    */
-  private fun parseDisplayNameFromHls(masterPlaylist: String, segmentPlaylist: String, hlsUrl: String): String {
+  private fun parseDisplayNameFromHls(
+    masterPlaylist: String,
+    segmentPlaylist: String,
+    hlsUrl: String
+  ): String {
     // 1. Try to extract title from EXT-X-TITLE or EXT-X-MEDIA tags
     val titleFromPlaylist = extractTitleFromPlaylist(masterPlaylist)
       ?: extractTitleFromPlaylist(segmentPlaylist)
@@ -565,7 +589,8 @@ class HlsDownloader @AssistedInject constructor(
     }
 
     // 4. Fallback to URL slug
-    return hlsUrl.uriToSlug().takeIf { it.isNotBlank() } ?: "hls_video_${System.currentTimeMillis()}"
+    return hlsUrl.uriToSlug().takeIf { it.isNotBlank() }
+      ?: "hls_video_${System.currentTimeMillis()}"
   }
 
   /**
@@ -812,7 +837,10 @@ class HlsDownloader @AssistedInject constructor(
   private fun createRequestWithHeaders(url: String): Request {
     return Request.Builder()
       .url(url)
-      .header("User-Agent", "Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36")
+      .header(
+        "User-Agent",
+        "Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+      )
       .header("Accept", "*/*")
       .header("Accept-Language", "en-US,en;q=0.9")
       .header("Accept-Encoding", "gzip, deflate, br")

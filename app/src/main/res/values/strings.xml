@@ -431,7 +431,8 @@
     <string name="peers_seeds">%1$d peers, %2$d seeds</string>
     <string name="quality">Quality: %1$s</string>
   <string name="hls_options">Hls options</string>
-  <string name="hls_download_batch_size">Batch size</string>
-  <string name="hls_download_batch_size_sumary">Number of segments to download concurrently</string>
+  <string name="download_batch_size">Batch size</string>
+  <string name="download_batch_size_sumary">Number of segments to download concurrently</string>
+
 
 </resources>
