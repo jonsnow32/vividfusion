@@ -14,6 +14,8 @@ import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import cloud.app.vvf.ads.AdManager
+import cloud.app.vvf.ads.AdPreloadManager
+import cloud.app.vvf.ads.providers.AdProvider
 import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.extension.ExtensionLoader
@@ -50,8 +52,14 @@ class VVFApplication : Application(), Configuration.Provider, Application.Activi
   @Inject
   lateinit var adManager: AdManager
 
+  @Inject
+  lateinit var adPreloadManager: AdPreloadManager
+
   private val scope = MainScope() + CoroutineName("Application")
   private var currentActivity: Activity? = null
+  private var isAppInForeground = false
+  private var activeActivities = 0
+
   override fun onCreate() {
     super.onCreate()
     registerActivityLifecycleCallbacks(this)
@@ -73,11 +81,36 @@ class VVFApplication : Application(), Configuration.Provider, Application.Activi
     applyUiChanges(sharedPreferences, currentActivity = currentActivity)
     extensionLoader.initialize()
 
-    // Initialize AdManager
-    adManager.initialize(this)
-    // Note: AdManager lifecycle will be managed through activity lifecycle callbacks
+    // Initialize AdManager and Enhanced Preload System
+    scope.launch {
+      try {
+        adManager.initialize(this@VVFApplication)
+
+        // Initialize preload manager after AdManager is ready
+        adPreloadManager.initialize(this@VVFApplication)
+
+        // Start intelligent preload
+        adPreloadManager.startIntelligentPreload(isAppInForeground = true)
+
+        Timber.i("Ad system with enhanced preload initialized successfully")
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to initialize ad system")
+      }
+    }
   }
 
+  override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+    // Activity lifecycle tracking for preload optimization
+  }
+
+  override fun onActivityStarted(activity: Activity) {
+    activeActivities++
+    if (activeActivities == 1) {
+      // App came to foreground
+      isAppInForeground = true
+      onAppForeground()
+    }
+  }
 
   override fun onActivityResumed(activity: Activity) {
     currentActivity = activity
@@ -87,12 +120,54 @@ class VVFApplication : Application(), Configuration.Provider, Application.Activi
     if (currentActivity == activity) currentActivity = null
   }
 
-  override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
-  override fun onActivityStarted(activity: Activity) {}
-  override fun onActivityStopped(activity: Activity) {}
+  override fun onActivityStopped(activity: Activity) {
+    activeActivities--
+    if (activeActivities == 0) {
+      // App went to background
+      isAppInForeground = false
+      onAppBackground()
+    }
+  }
+
   override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+
   override fun onActivityDestroyed(activity: Activity) {
     if (currentActivity == activity) currentActivity = null
+  }
+
+  /**
+   * Called when app comes to foreground
+   */
+  private fun onAppForeground() {
+    Timber.d("App came to foreground - optimizing ad preload")
+    scope.launch {
+      try {
+        // Restart intelligent preload with foreground settings
+        adPreloadManager.startIntelligentPreload(isAppInForeground = true)
+
+        // Preload critical ads immediately
+        currentActivity?.let { activity ->
+          adPreloadManager.preloadOnDemand(activity, AdProvider.AdType.INTERSTITIAL)
+        }
+      } catch (e: Exception) {
+        Timber.e(e, "Error optimizing preload on foreground")
+      }
+    }
+  }
+
+  /**
+   * Called when app goes to background
+   */
+  private fun onAppBackground() {
+    Timber.d("App went to background - switching to background preload mode")
+    scope.launch {
+      try {
+        // Switch to background preload mode (less frequent)
+        adPreloadManager.startIntelligentPreload(isAppInForeground = false)
+      } catch (e: Exception) {
+        Timber.e(e, "Error switching to background preload")
+      }
+    }
   }
 
   override val workManagerConfiguration: Configuration

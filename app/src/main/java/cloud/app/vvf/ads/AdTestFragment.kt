@@ -188,7 +188,7 @@ class AdTestFragment : Fragment() {
             "Banner: Failed ❌"
         }
 
-        // Hiển thị thống kê providers
+        // Display provider statistics
         displayProviderStats()
     }
 
