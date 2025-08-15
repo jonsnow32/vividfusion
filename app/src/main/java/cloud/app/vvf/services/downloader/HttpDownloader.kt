@@ -3,6 +3,7 @@ package cloud.app.vvf.services.downloader
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.Data
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import cloud.app.vvf.services.downloader.helper.DownloadFileManager
@@ -56,26 +57,22 @@ class HttpDownloader @AssistedInject constructor(
 
     return try {
       val result = downloadFile(downloadParams)
-      val keys = DownloadData.Companion.Keys
-      Result.success(workDataOf(
-        keys.DOWNLOAD_ID to result[keys.DOWNLOAD_ID],
-        keys.FILE_PATH to result[keys.FILE_PATH],
-        keys.DISPLAY_NAME to result[keys.DISPLAY_NAME],
-        keys.FILE_SIZE to result[keys.FILE_SIZE]
-      ))
+      Result.success(result)
     } catch (e: Exception) {
       Timber.e(e, "HTTP download failed for ${downloadParams.downloadId}")
       val keys = DownloadData.Companion.Keys
-      Result.failure(workDataOf(
-        keys.ERROR to (e.message ?: "Unknown HTTP download error"),
-        keys.DOWNLOAD_ID to downloadParams.downloadId
-      ))
+      Result.failure(
+        workDataOf(
+          keys.ERROR to (e.message ?: "Unknown HTTP download error"),
+          keys.DOWNLOAD_ID to downloadParams.downloadId
+        )
+      )
     }
   }
 
-  private suspend fun downloadFile(params: HttpDownloadParams): Map<String, Any> {
+  private suspend fun downloadFile(params: HttpDownloadParams): Data {
     if (isStopped) {
-      return emptyMap()
+      throw InterruptedException("Download was stopped")
     }
 
     // Create HTTP client with progress callback
@@ -89,13 +86,15 @@ class HttpDownloader @AssistedInject constructor(
 
     if (isStopped) {
       response.close()
-      return emptyMap()
+      throw InterruptedException("Download was stopped2")
     }
 
     // Validate response
     if (!httpClient.validateResponse(response, params.isResuming)) {
       response.close()
-      return emptyMap()
+      throw IllegalStateException(
+        "Invalid response for download: ${params.downloadUrl} (Code: ${response.code})"
+      )
     }
 
     val responseBody = response.body
@@ -120,7 +119,7 @@ class HttpDownloader @AssistedInject constructor(
     outputFile: KUniFile,
     params: HttpDownloadParams,
     startByte: Long = 0L
-  ): Map<String, Any> {
+  ): Data {
     val totalSize = (response.contentLength() + startByte).takeIf { it > 0 } ?: -1L
     var downloadedSize = startByte
 
@@ -134,27 +133,32 @@ class HttpDownloader @AssistedInject constructor(
           downloadedSize += bytesRead
 
           // Update progress directly
-          updateProgress(params.downloadId, outputFile.name ?: outputFile.uri.toString(), downloadedSize, totalSize)
+          updateProgress(
+            params.downloadId,
+            outputFile.name ?: outputFile.uri.toString(),
+            downloadedSize,
+            totalSize
+          )
         }
       }
     }
 
     val filename = outputFile.name ?: outputFile.uri.toString().substringAfterLast('/')
-    // Final progress update
-    updateFinalProgress(
+    notificationManager.showCompletionNotification(
       params.downloadId,
       filename,
-      outputFile.uri.toString(),
-      outputFile.uri.path ?: outputFile.uri.toString(),
-      downloadedSize
+      (outputFile.uri.path ?: outputFile.uri.toString()),
     )
-
     val keys = DownloadData.Companion.Keys
-    return mapOf(
+    return workDataOf(
       keys.DOWNLOAD_ID to params.downloadId,
       keys.FILE_PATH to (outputFile.uri.path ?: outputFile.uri.toString()),
       keys.DISPLAY_NAME to filename,
-      keys.FILE_SIZE to downloadedSize
+      keys.FILE_PATH to outputFile.uri.toString(),
+      keys.FILE_SIZE to downloadedSize,
+      keys.DOWNLOADED_BYTES to totalSize,
+      keys.TOTAL_BYTES to totalSize,
+      keys.PROGRESS to 100,
     )
   }
 
@@ -185,14 +189,16 @@ class HttpDownloader @AssistedInject constructor(
     } else 0
 
     val keys = DownloadData.Companion.Keys
-    setProgressAsync(workDataOf(
-      keys.PROGRESS to progress,
-      keys.DOWNLOADED_BYTES to downloadedBytes,
-      keys.TOTAL_BYTES to totalBytes,
-      keys.DOWNLOAD_SPEED to downloadSpeed,
-      keys.DOWNLOAD_ID to downloadId,
-      keys.DISPLAY_NAME to fileName
-    ))
+    setProgressAsync(
+      workDataOf(
+        keys.PROGRESS to progress,
+        keys.DOWNLOADED_BYTES to downloadedBytes,
+        keys.TOTAL_BYTES to totalBytes,
+        keys.DOWNLOAD_SPEED to downloadSpeed,
+        keys.DOWNLOAD_ID to downloadId,
+        keys.DISPLAY_NAME to fileName
+      )
+    )
 
     // Update notification using optimized notification manager
     notificationManager.updateNotification(
@@ -213,16 +219,18 @@ class HttpDownloader @AssistedInject constructor(
     fileSize: Long
   ) {
     val keys = DownloadData.Companion.Keys
-    setProgressAsync(workDataOf(
-      keys.PROGRESS to 100,
-      keys.DOWNLOADED_BYTES to fileSize,
-      keys.TOTAL_BYTES to fileSize,
-      keys.DOWNLOAD_ID to downloadId,
-      keys.DISPLAY_NAME to fileName,
-      keys.FILE_PATH to localPath,
-      keys.FILE_PATH to filePath,
-      keys.FILE_SIZE to fileSize
-    ))
+    setProgressAsync(
+      workDataOf(
+        keys.PROGRESS to 100,
+        keys.DOWNLOADED_BYTES to fileSize,
+        keys.TOTAL_BYTES to fileSize,
+        keys.DOWNLOAD_ID to downloadId,
+        keys.DISPLAY_NAME to fileName,
+        keys.FILE_PATH to localPath,
+        keys.FILE_PATH to filePath,
+        keys.FILE_SIZE to fileSize
+      )
+    )
 
     // Show completion notification
     notificationManager.showCompletionNotification(downloadId, fileName, localPath)
