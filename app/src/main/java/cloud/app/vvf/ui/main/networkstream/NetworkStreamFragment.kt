@@ -28,6 +28,8 @@ import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import timber.log.Timber
+import java.util.Timer
 import javax.inject.Inject
 
 @UnstableApi
@@ -180,10 +182,12 @@ class NetworkStreamFragment : Fragment() {
       try {
         val success = adManager.createBannerAd(requireContext(), binding.bannerAdContainer)
         if (!success) {
+          Timber.d("Banner ad failed to load")
           requireContext().showToast("Banner ad failed to load")
         }
       } catch (e: Exception) {
-        requireContext().showToast("Banner ad error: ${e.message}")
+        Timber.e(e, "Failed to load banner ad")
+        //requireContext().showToast("Banner ad error: ${e.message}")
       }
     }
   }

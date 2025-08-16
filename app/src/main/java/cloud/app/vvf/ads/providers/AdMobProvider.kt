@@ -110,13 +110,23 @@ class AdMobProvider : AdProvider {
         onAdFailed: (String) -> Unit
     ): Boolean = withContext(Dispatchers.Main) {
         try {
+            // Remove any previous ad views
+            container.removeAllViews()
+            // Calculate the container width in dp for adaptive banner
+            val displayMetrics = context.resources.displayMetrics
+            val containerWidthPx = container.width
+            val containerWidthDp = if (containerWidthPx > 0) {
+                (containerWidthPx / displayMetrics.density).toInt()
+            } else {
+                // fallback to screen width if container width is not measured yet
+                (displayMetrics.widthPixels / displayMetrics.density).toInt()
+            }
             val adView = AdView(context).apply {
-                setAdSize(AdSize.BANNER)
                 adUnitId = BANNER_AD_UNIT_ID
-
+                setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, containerWidthDp))
                 adListener = object : AdListener() {
                     override fun onAdLoaded() {
-                        Timber.d("AdMob banner loaded")
+                        Timber.d("AdMob adaptive banner loaded")
                         onAdLoaded()
                     }
 
