@@ -40,6 +40,9 @@ jsoup = "1.18.1"
 fragment = "1.8.6"
 juniversalchardet = "2.5.0"
 torrentserver = "7861970e038b35cd8c6918384e49caf26903e09e"
+# Firebase
+firebase-bom = "33.7.0"
+google-services = "4.4.2"
 
 [libraries]
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
@@ -120,6 +123,16 @@ glide-compiler = { group = "com.github.bumptech.glide", name = "ksp", version.re
 nestedscrollwebview = { module = "com.telefonica:nestedscrollwebview", version = "0.1.6" }
 pikolo = { module = "com.github.madrapps:pikolo", version.ref = "pikolo" }
 
+# Firebase
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+firebase-config = { group = "com.google.firebase", name = "firebase-config" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -130,7 +143,11 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebase-crashlytics-plugin = { id = "com.google.firebase.crashlytics", version = "3.0.2" }
 
 [bundles]
 media3 = ["media3-cast", "media3-common", "media3-datasource-okhttp", "media3-exoplayer", "media3-exoplayer-dash", "media3-exoplayer-hls", "media3-exoplayer-smoothstreaming", "media3-exoplayer-rtsp", "media3-extractor", "media3-session", "media3-ui"]
 nextlibMedia3 = ["nextlib-media3ext", "nextlib-mediainfo"]
+firebase-core = ["firebase-analytics", "firebase-crashlytics"]
+firebase-extended = ["firebase-auth", "firebase-firestore", "firebase-messaging", "firebase-config", "firebase-storage"]

@@ -4,6 +4,8 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.dagger.hilt)
   kotlin("plugin.serialization")
+  alias(libs.plugins.google.services)
+  alias(libs.plugins.firebase.crashlytics.plugin)
 }
 
 android {
@@ -118,17 +120,24 @@ dependencies {
   // Google AdMob
   implementation("com.google.android.gms:play-services-ads:22.6.0")
 
-  // Facebook Audience Network (Meta) - Cập nhật version
+  // Facebook Audience Network (Meta) -
   implementation("com.facebook.android:audience-network-sdk:6.15.0")
 
-  // Unity Ads - Cập nhật version
+  // Unity Ads -
   implementation("com.unity3d.ads:unity-ads:4.8.0")
 
-  // IronSource - Version ổn định hơn
+  // IronSource -
   implementation("com.ironsource.sdk:mediationsdk:7.3.1")
 
-  // AppLovin MAX - Version mới nhất
+  // AppLovin MAX -
   implementation("com.applovin:applovin-sdk:11.11.3")
+
+  // Firebase - BOM for version management
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.bundles.firebase.core)
+
+  // Optional: Add additional Firebase services as needed
+  // implementation(libs.bundles.firebase.extended)
 
   // Bỏ Vungle tạm thời vì có vấn đề với repository
   // implementation("com.vungle:vungle-android-sdk:7.1.0")

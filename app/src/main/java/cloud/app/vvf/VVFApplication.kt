@@ -22,6 +22,9 @@ import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.utils.setLocale
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
+import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
@@ -97,6 +100,15 @@ class VVFApplication : Application(), Configuration.Provider, Application.Activi
         Timber.e(e, "Failed to initialize ad system")
       }
     }
+
+    // Initialize Firebase
+    FirebaseApp.initializeApp(this)
+    val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+    val crashlytics = FirebaseCrashlytics.getInstance()
+
+    // Optional: Set up Firebase Analytics and Crashlytics
+    firebaseAnalytics.setAnalyticsCollectionEnabled(true)
+    crashlytics.setCrashlyticsCollectionEnabled(true)
   }
 
   override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {

@@ -75,12 +75,14 @@ class SettingsRootFragment : BaseSettingsFragment() {
       TransitionPreference(context).add {
         title = getString(R.string.download)
         key = "download"
+        summary = getString(R.string.download_summary)
         icon = AppCompatResources.getDrawable(context, R.drawable.download_2_24dp)
       }
 
       TransitionPreference(context).add {
         title = getString(R.string.backup_updates)
         key = "backup_updates"
+        summary = getString(R.string.update_backup_summary)
         icon = AppCompatResources.getDrawable(context, R.drawable.database_24dp)
       }
 
@@ -90,6 +92,14 @@ class SettingsRootFragment : BaseSettingsFragment() {
         summary = getString(R.string.about_summary)
         icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
       }
+
+      TransitionPreference(context).add {
+        title = getString(R.string.development)
+        key = "development"
+        summary = getString(R.string.development_summary)
+        icon = AppCompatResources.getDrawable(context, R.drawable.settings_outlined_2dp)
+      }
+
     }
 
     class TransitionPreference(
@@ -112,6 +122,7 @@ class SettingsRootFragment : BaseSettingsFragment() {
         "general" -> GeneralSettingsFragment()
         "backup_updates" -> BackupUpdateFragment()
         "download" -> DownloadSettingFragment()
+        "development" -> DevelopmentSettingFragment()
         else -> null
       }
       fragment ?: return false
@@ -123,4 +134,3 @@ class SettingsRootFragment : BaseSettingsFragment() {
   }
 
 }
-

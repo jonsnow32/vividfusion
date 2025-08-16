@@ -49,4 +49,8 @@
   <!--Download-->
   <string name="pref_download_folder">pref_download_folder</string>
   <string name="pref_download_batch_size">pref_download_batch_size</string>
+
+  <!--Developement-->
+  <string name="pref_use_firebase_analytics">use_firebase_analytics</string>
+  <string name="pref_use_show_app_crash_log">pref_use_show_app_crash_log</string>
 </resources>

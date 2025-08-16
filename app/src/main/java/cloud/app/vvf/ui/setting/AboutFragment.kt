@@ -68,20 +68,7 @@ class AboutFragment : BaseSettingsFragment() {
         screen.addPreference(this)
       }
 
-      if(BuildConfig.DEBUG) {
-        Preference(context).apply {
-          key = "ads_test"
-          title = "ads_test"
-          summary = "goto ads test fragment"
-          onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            parentFragment?.navigate(AdTestFragment.newInstance())
-            true
-          }
-          layoutResource = R.layout.preference
-          icon = AppCompatResources.getDrawable(context, R.drawable.outline_ads_click_24)
-          screen.addPreference(this)
-        }
-      }
+
     }
   }
 }

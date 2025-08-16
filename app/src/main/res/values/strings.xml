@@ -437,6 +437,13 @@
   <string name="paused_format">Paused • %1$d%%</string>
   <string name="downloading_format">Downloading • %1$s • %2$s / %3$s</string>
   <string name="connections_format">Connections: %1$d</string>
-
-
+  <string name="firebase">Tracking</string>
+  <string name="firebase_analytics">Firebase Analytics</string>
+  <string name="firebase_analytics_summary">Enable or disable Firebase Analytics for tracking app usage.</string>
+  <string name="development">Development</string>
+  <string name="development_summary">Settings for developers and debugging tools.</string>
+  <string name="show_app_crash_log">Show App Crash Log</string>
+  <string name="show_app_crash_log_summary">Enable or disable the display of app crash logs for debugging purposes.</string>
+  <string name="update_backup_summary">Update your app and back up your data to keep everything safe and current.</string>
+  <string name="download_summary">Manage and monitor your downloads for quick and easy access to your files.</string>
 </resources>
