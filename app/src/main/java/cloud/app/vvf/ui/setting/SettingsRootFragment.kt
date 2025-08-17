@@ -87,17 +87,17 @@ class SettingsRootFragment : BaseSettingsFragment() {
       }
 
       TransitionPreference(context).add {
-        title = getString(R.string.about)
-        key = "about"
-        summary = getString(R.string.about_summary)
-        icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
-      }
-
-      TransitionPreference(context).add {
         title = getString(R.string.development)
         key = "development"
         summary = getString(R.string.development_summary)
         icon = AppCompatResources.getDrawable(context, R.drawable.settings_outlined_2dp)
+      }
+
+      TransitionPreference(context).add {
+        title = getString(R.string.about)
+        key = "about"
+        summary = getString(R.string.about_summary)
+        icon = AppCompatResources.getDrawable(context, R.drawable.ic_info)
       }
 
     }

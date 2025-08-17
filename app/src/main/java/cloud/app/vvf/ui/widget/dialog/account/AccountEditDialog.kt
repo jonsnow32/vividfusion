@@ -4,11 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.AccountEditDialogBinding
 import cloud.app.vvf.datastore.account.Account
-import cloud.app.vvf.extension.ExtensionAssetResponse
 import cloud.app.vvf.ui.widget.dialog.DockingDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.dismissSafe
@@ -54,12 +52,13 @@ class AccountEditDialog : DockingDialog() {
       cancelBtt.setOnClickListener { dialog.dismissSafe(activity) }
 
       applyBtt.setOnClickListener {
+        val drawableStr = avatarAdapter.items.find { it.selected }?.drawableStr ?: AVATAR_LIST.first()
         newAccount = Account(
           id = account?.id ?: System.currentTimeMillis(),
           name = if (accountName.text.toString()
               .isEmpty()
           ) accountName.hint.toString() else accountName.text.toString(),
-          avatar = avatarAdapter.items.find { it.selected }?.resId ?: R.drawable.funemoji_2,
+          avatar = drawableStr,
           lockPin = if(lockAccount.isChecked) pin.text.toString().takeIf { it.isNotEmpty() } else null,
           isActive = account?.isActive == true
         )
@@ -79,7 +78,7 @@ class AccountEditDialog : DockingDialog() {
 
   companion object {
     private val AVATAR_LIST = (1..17).map { i ->
-      R.drawable::class.java.getField("funemoji_$i").getInt(null)
+      "funemoji_$i"
     }
 
     private val RANDOM_NAMES = listOf(

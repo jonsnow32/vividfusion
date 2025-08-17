@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.databinding.ItemAccountAvatarBinding
+import cloud.app.vvf.utils.loadFromDrawableStr
 
 class AvatarAdapter(val items: List<AvatarItem>) :
   RecyclerView.Adapter<AvatarAdapter.AvatarViewHolder>() {
@@ -35,7 +36,7 @@ class AvatarAdapter(val items: List<AvatarItem>) :
   class AvatarViewHolder(val binding: ItemAccountAvatarBinding) :
     RecyclerView.ViewHolder(binding.root) {
     fun bind(avatarItem: AvatarItem) {
-      binding.avatarImage.setImageResource(avatarItem.resId)
+      binding.avatarImage.loadFromDrawableStr(avatarItem.drawableStr)
       binding.isSelected.visibility = if (avatarItem.selected) View.VISIBLE else View.GONE
       binding.avatarImage.alpha = if (avatarItem.selected) 1f else 0.6f
     }

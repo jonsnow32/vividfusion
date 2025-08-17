@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
@@ -20,11 +21,13 @@ import cloud.app.vvf.common.helpers.network.HttpHelper
 import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.utils.setLocale
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
@@ -35,7 +38,8 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
-class VVFApplication : Application(), Configuration.Provider, Application.ActivityLifecycleCallbacks {
+class VVFApplication : Application(), Configuration.Provider,
+  Application.ActivityLifecycleCallbacks {
 
   @Inject
   lateinit var workerFactory: HiltWorkerFactory
@@ -68,7 +72,13 @@ class VVFApplication : Application(), Configuration.Provider, Application.Activi
     registerActivityLifecycleCallbacks(this)
     Thread.setDefaultUncaughtExceptionHandler { _, exception ->
       exception.printStackTrace()
-      ExceptionActivity.start(this, exception, true)
+
+      val isShowException = sharedPreferences.getBoolean(
+        getString(R.string.pref_use_show_app_crash_log), true
+      )
+      if(isShowException) {
+        ExceptionActivity.start(this, exception, true)
+      }
       Runtime.getRuntime().exit(0)
     }
 
@@ -107,8 +117,32 @@ class VVFApplication : Application(), Configuration.Provider, Application.Activi
     val crashlytics = FirebaseCrashlytics.getInstance()
 
     // Optional: Set up Firebase Analytics and Crashlytics
-    firebaseAnalytics.setAnalyticsCollectionEnabled(true)
-    crashlytics.setCrashlyticsCollectionEnabled(true)
+    firebaseAnalytics.setAnalyticsCollectionEnabled(
+      sharedPreferences.getBoolean(
+        "pref_use_firebase_analytics",
+        true
+      )
+    )
+    crashlytics.isCrashlyticsCollectionEnabled =
+      sharedPreferences.getBoolean("pref_use_show_app_crash_log", true)
+
+
+    if (BuildConfig.DEBUG) {
+      FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+        if (!task.isSuccessful) {
+          //Timber.w("Fetching FCM registration token failed", task.exception)
+          return@OnCompleteListener
+        }
+
+        // Get new FCM registration token
+        val token = task.result
+
+        // Log and toast
+        val msg = getString(R.string.msg_token_fmt, token)
+        Timber.d(msg)
+        Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+      })
+    }
   }
 
   override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {

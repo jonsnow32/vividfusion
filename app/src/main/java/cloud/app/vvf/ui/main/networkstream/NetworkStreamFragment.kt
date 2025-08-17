@@ -28,6 +28,7 @@ import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import cloud.app.vvf.utils.Utils.hideKeyboard
 import timber.log.Timber
 import java.util.Timer
 import javax.inject.Inject
@@ -211,6 +212,7 @@ class NetworkStreamFragment : Fragment() {
   fun stream(uri: String) {
     val streamUrl = uri
     if (streamUrl.isNotBlank()) {
+      hideKeyboard(binding.etStreamUrl)
       // Navigate to PlayerFragment to play the stream
       val video = Video.RemoteVideo(uri = streamUrl, title = streamUrl)
       val mediaItem = AVPMediaItem.VideoItem(video)

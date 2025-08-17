@@ -66,6 +66,16 @@ class DevelopmentSettingFragment : BaseSettingsFragment() {
           setDefaultValue(true)
           screen.addPreference(this)
         }
+        SwitchPreferenceCompat(context).apply {
+          key = getString(R.string.pref_use_crashlytics)
+          title = getString(R.string.send_crash_report)
+          summary = getString(R.string.send_crash_report_summary)
+          layoutResource = R.layout.preference_switch
+          isIconSpaceReserved = false
+          icon = AppCompatResources.getDrawable(context, R.drawable.outline_bug_report_24)
+          setDefaultValue(true)
+          screen.addPreference(this)
+        }
 
         if(BuildConfig.DEBUG) {
           Preference(context).apply {
@@ -74,6 +84,18 @@ class DevelopmentSettingFragment : BaseSettingsFragment() {
             summary = "goto ads test fragment"
             onPreferenceClickListener = Preference.OnPreferenceClickListener {
               parentFragment?.navigate(AdTestFragment.newInstance())
+              true
+            }
+            layoutResource = R.layout.preference
+            icon = AppCompatResources.getDrawable(context, R.drawable.outline_ads_click_24)
+            screen.addPreference(this)
+          }
+          Preference(context).apply {
+            key = "crash_test"
+            title = "crash_test"
+            summary = "crash_test"
+            onPreferenceClickListener = Preference.OnPreferenceClickListener {
+              throw RuntimeException("This is a crash test")
               true
             }
             layoutResource = R.layout.preference

@@ -135,6 +135,8 @@ dependencies {
   // Firebase - BOM for version management
   implementation(platform(libs.firebase.bom))
   implementation(libs.bundles.firebase.core)
+  implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
+  implementation("com.google.firebase:firebase-messaging")
 
   // Optional: Add additional Firebase services as needed
   // implementation(libs.bundles.firebase.extended)

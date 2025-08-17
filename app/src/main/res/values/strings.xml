@@ -446,4 +446,7 @@
   <string name="show_app_crash_log_summary">Enable or disable the display of app crash logs for debugging purposes.</string>
   <string name="update_backup_summary">Update your app and back up your data to keep everything safe and current.</string>
   <string name="download_summary">Manage and monitor your downloads for quick and easy access to your files.</string>
+  <string name="msg_token_fmt">msg_token_fmt = %s</string>
+  <string name="send_crash_report_summary">Send the crash log to Crashlytics to help developers fix the bug.</string>
+  <string name="send_crash_report">Send the crash report</string>
 </resources>

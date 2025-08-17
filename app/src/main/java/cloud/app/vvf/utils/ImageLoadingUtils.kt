@@ -130,3 +130,12 @@ class ViewTarget<T : View>(val target: T, private val onDrawable: (Drawable?) ->
   }
 }
 
+fun ImageView.loadFromDrawableStr(drawableName: String) {
+  val resId = context.resources.getIdentifier(drawableName, "drawable", context.packageName)
+  if (resId != 0) {
+    Glide.with(this).load(resId).into(this)
+  } else {
+    Glide.with(this).clear(this)
+    this.setImageDrawable(null)
+  }
+}

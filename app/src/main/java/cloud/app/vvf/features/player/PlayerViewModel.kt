@@ -136,8 +136,6 @@ class PlayerViewModel @Inject constructor(
     require(selectedSubtitleIdx in subtitles.indices || subtitles.isEmpty()) { "selectedSubtitleIdx must be within subtitles range or subtitles can be empty" }
 
     // Initialize cache with ExoDatabaseProvider
-    val cacheSizeBytes = currentPrefDiskSize  // Convert MB to bytes
-    val databaseProvider = StandaloneDatabaseProvider(context)
     simpleCache = PlayerCacheProvider.getInstance(context)
 
     delayedFactory = DelayedSubtitleParserFactory(DefaultSubtitleParserFactory())
@@ -154,7 +152,7 @@ class PlayerViewModel @Inject constructor(
       .setConstantBitrateSeekingEnabled(true)
       .setAdtsExtractorFlags(0)
       .setFlacExtractorFlags(FlacExtractor.FLAG_DISABLE_ID3_METADATA)
-      .setMatroskaExtractorFlags(MatroskaExtractor.FLAG_DISABLE_SEEK_FOR_CUES)
+//      .setMatroskaExtractorFlags(MatroskaExtractor.FLAG_DISABLE_SEEK_FOR_CUES)
       .setMp4ExtractorFlags(Mp4Extractor.FLAG_WORKAROUND_IGNORE_EDIT_LISTS)
       .setFragmentedMp4ExtractorFlags(FragmentedMp4Extractor.FLAG_WORKAROUND_IGNORE_EDIT_LISTS)
       .setTsExtractorFlags(0) // Use default flags for TS extractor

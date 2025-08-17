@@ -14,7 +14,7 @@ const val ACCOUNTS_FOLDER = "accounts"
 data class Account(
   val id : Long,
   val name: String,
-  val avatar: Int,
+  val avatar: String, // Lưu tên resource thay vì resId
   val lockPin: String? = null,
   var isActive: Boolean = false,
 ) {
@@ -60,7 +60,7 @@ class AccountDataStore(val context: Context) :
     val defaultAccount = Account(
       id = 0,
       name = "Default",
-      avatar = R.drawable.funemoji_2,
+      avatar = "funemoji_2",
       lockPin = null,
       isActive = true
     )

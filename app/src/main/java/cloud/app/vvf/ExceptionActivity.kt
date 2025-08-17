@@ -2,6 +2,7 @@ package cloud.app.vvf
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
@@ -17,6 +18,7 @@ import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.Serializable
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ExceptionActivity : AppCompatActivity() {
@@ -25,6 +27,9 @@ class ExceptionActivity : AppCompatActivity() {
   private val stackTrace: String by lazy { intent.getStringExtra(EXTRA_STACKTRACE)!! }
   private val title: String by lazy { intent.getStringExtra(EXTRA_TITLE)!! }
   private val mainActivityViewModel by viewModels<MainActivityViewModel>()
+
+  @Inject
+  lateinit var sharedPreferences: SharedPreferences
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

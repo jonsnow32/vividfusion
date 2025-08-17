@@ -53,4 +53,5 @@
   <!--Developement-->
   <string name="pref_use_firebase_analytics">use_firebase_analytics</string>
   <string name="pref_use_show_app_crash_log">pref_use_show_app_crash_log</string>
+  <string name="pref_use_crashlytics">pref_use_crashlytics</string>
 </resources>

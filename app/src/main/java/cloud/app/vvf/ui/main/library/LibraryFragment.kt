@@ -14,6 +14,7 @@ import cloud.app.vvf.ui.main.configureFeedUI
 import cloud.app.vvf.ui.widget.dialog.account.AccountDialog
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.firstVisible
+import cloud.app.vvf.utils.loadFromDrawableStr
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.scrollTo
 import cloud.app.vvf.utils.setupTransition
@@ -56,7 +57,7 @@ class LibraryFragment : Fragment() {
     }
 
     observe(viewModel.dataFlow) {
-      binding.accountImage.setImageResource(it.account.avatar)
+      binding.accountImage.loadFromDrawableStr(it.account.avatar)
     }
   }
   override fun onStop() {

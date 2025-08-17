@@ -27,6 +27,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player.STATE_BUFFERING
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.media3.common.Player.STATE_IDLE
@@ -67,6 +68,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -95,6 +97,7 @@ class PlayerFragment : Fragment() {
   private var hideUnlockBtnJob: Job? = null
   private var playerView: PlayerView? = null
   private var backPressedCallback: OnBackPressedCallback? = null
+  private var hasShownSeekUnsupportedDialog = false
 
   companion object {
     fun newInstance(
@@ -240,31 +243,29 @@ class PlayerFragment : Fragment() {
 
     // Ensure managers (and torrentPlayerHelper) are initialized before any usage
     setupManagers()
-    // --- Begin torrent/magnet integration ---
-    val mediaItem = mediaItems.getOrNull(currentMediaIdx)
-    if (mediaItem != null) {
+
+    // Check if any media item is a torrent/magnet link
+    val hasTorrentItems = mediaItems.any { mediaItem ->
       val url = when (mediaItem) {
         is AVPMediaItem.VideoItem -> mediaItem.video.uri
         is AVPMediaItem.TrackItem -> mediaItem.track.uri
         else -> null
       }
-      if (url != null && (url.startsWith("magnet:") || url.endsWith(
-          ".torrent",
-          ignoreCase = true
-        ))
-      ) {
-        if (!TorrentManager.hasAcceptedTorrentForThisSession) {
-          showTorrentConsentDialog(mediaItems, subtitles)
-          return
-        }
+      url != null && (url.startsWith("magnet:") || url.endsWith(".torrent", ignoreCase = true))
+    }
+
+    if (hasTorrentItems) {
+      if (!TorrentManager.hasAcceptedTorrentForThisSession) {
+        showTorrentConsentDialog(mediaItems, subtitles)
+        return
       }
+
+      // Process all media items
       lifecycleScope.launch {
-        val transformedMediaItem = torrentPlayerViewModel.processMediaItem(mediaItem)
-        if (transformedMediaItem != null) {
-          continuePlayerInit(listOf(transformedMediaItem), subtitles)
-        } else {
-          continuePlayerInit(mediaItems, subtitles)
+        val processedMediaItems = mediaItems.map { mediaItem ->
+          torrentPlayerViewModel.processMediaItem(mediaItem) ?: mediaItem
         }
+        continuePlayerInit(processedMediaItems, subtitles)
       }
     } else {
       continuePlayerInit(mediaItems, subtitles)
@@ -486,8 +487,74 @@ class PlayerFragment : Fragment() {
       playerControlBinding.btnAudioTrack.isGone = audios.isEmpty()
       playerControlBinding.btnVideoTrack.isGone = videos.size < 2
     }
+
+    observe(viewModel.playbackException) { exception ->
+      if (exception != null) {
+        // Log the exception for diagnostics
+        Timber.e(exception, "Playback error")
+
+        // Map error codes to user-friendly messages
+        val errorMessage = when (exception.errorCode) {
+          PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED,
+          PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT -> getString(R.string.no_internet)
+          PlaybackException.ERROR_CODE_DECODER_INIT_FAILED -> getString(R.string.incompatible_class_error)
+          else -> exception.localizedMessage ?: getString(R.string.unknown)
+        }
+
+        // Optionally report to Crashlytics
+        try {
+          com.google.firebase.crashlytics.FirebaseCrashlytics.getInstance().recordException(exception)
+        } catch (_: Exception) { /* Ignore if Crashlytics is not available */ }
+
+        MaterialAlertDialogBuilder(requireContext())
+          .setTitle(R.string.error)
+          .setMessage(errorMessage)
+          .setPositiveButton(R.string.ok) { dialog: DialogInterface, _: Int ->
+            dialog.dismiss()
+            parentFragmentManager.popBackStack()
+          }
+          .setOnCancelListener {
+            parentFragmentManager.popBackStack()
+          }
+          .show().setDefaultFocus()
+      }
+    }
+
+    // Check if video supports seeking
+    viewModel.player?.addListener(object : androidx.media3.common.Player.Listener {
+      override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        super.onMediaItemTransition(mediaItem, reason)
+        checkSeekCapability()
+      }
+
+      override fun onPlaybackStateChanged(playbackState: Int) {
+        super.onPlaybackStateChanged(playbackState)
+        if (playbackState == androidx.media3.common.Player.STATE_READY) {
+          checkSeekCapability()
+        }
+      }
+    })
   }
 
+  private fun checkSeekCapability() {
+    viewModel.player?.let { player ->
+      if (!hasShownSeekUnsupportedDialog && !player.isCurrentMediaItemSeekable && player.duration > 0) {
+        showSeekUnsupportedDialog()
+        hasShownSeekUnsupportedDialog = true
+      }
+    }
+  }
+
+  private fun showSeekUnsupportedDialog() {
+    val context = context ?: return
+    MaterialAlertDialogBuilder(context)
+      .setTitle(R.string.player)
+      .setMessage("This video does not support seeking. You can only play it from the beginning.")
+      .setPositiveButton(R.string.ok) { dialog, _ ->
+        dialog.dismiss()
+      }
+      .show()
+  }
 
   private fun resize(mode: ResizeMode, showToast: Boolean) {
     playerGestureHelper.resetExoContentFrameWidthAndHeight()

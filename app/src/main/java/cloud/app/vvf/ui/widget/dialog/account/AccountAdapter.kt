@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.databinding.AccountItemBinding
 import cloud.app.vvf.datastore.account.Account
 import cloud.app.vvf.ui.widget.dialog.account.AccountAdapter.AccountViewHolder
+import cloud.app.vvf.utils.loadFromDrawableStr
 
 class AccountAdapter(val listener: AccountClickListener) :
   ListAdapter<Account, AccountViewHolder>(AccountDiffCallback) {
@@ -46,12 +47,11 @@ class AccountAdapter(val listener: AccountClickListener) :
     }
   }
 
-
   inner class AccountViewHolder(val binding: AccountItemBinding) :
     RecyclerView.ViewHolder(binding.root) {
     fun bind(account: Account) {
       binding.accountName.text = account.name
-      binding.accountImage.setImageResource(account.avatar)
+      binding.accountImage.loadFromDrawableStr(account.avatar)
       binding.accountImage.alpha = if (account.isActive) 1f else 0.6f
       binding.lockIcon.visibility = if (account.lockPin != null) View.VISIBLE else View.GONE
       binding.isActive.visibility = if (account.isActive) View.VISIBLE else View.GONE
