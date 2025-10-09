@@ -66,7 +66,7 @@ class TmdbTvdbClient : DatabaseClient, StreamClient, HttpHelperProvider, Message
   companion object {
 
     val metadata = ExtensionMetadata(
-      className = Companion::class.java.toString(),
+      className = TmdbTvdbClient::class.java.toString(),
       path = "",
       importType = ImportType.BuiltIn,
       name = "TMDB,TVDB Wrapper",
@@ -108,77 +108,9 @@ class TmdbTvdbClient : DatabaseClient, StreamClient, HttpHelperProvider, Message
   private lateinit var tvdb: AppTheTvdb
   private lateinit var trakt: AppTrakt
 
-  override val defaultSettings: List<Setting> = listOf(
-    SettingCategory(
-      title = "API Access",
-      key = "",
-      items = listOf(
-        SettingTextInput(
-          "TMDB API Key", PREF_TMDB_API_KEY,
-          "Enter your TMDB API key to access movie and TV show data from The Movie Database.",
-          defaultValue = "4ef60b9d635f533695cbcaccb6603a57"
-        ),
-        SettingTextInput(
-          "TVDB API Key", PREF_TVDB_API_KEY,
-          "Enter your TVDB API key to access data from The TV Database for TV shows.",
-          defaultValue = null
-        )
-      )
-    ),
-
-    SettingCategory(
-      title = "Media content", key = "media_content_key",
-      items = listOf(
-        SettingSwitch(
-          "Include Adult Content",
-          PREF_INCLUDE_ADULT,
-          "Include adult-rated movies and TV shows in your library.",
-          false
-        ),
-        SettingSwitch(
-          "Show Special Seasons",
-          PREF_SHOW_SPECIAL_SEASON,
-          "Display special seasons for TV shows, such as behind-the-scenes or bonus episodes.",
-          true
-        ),
-        SettingSwitch(
-          "Show Unaired Episodes",
-          PREF_SHOW_UNAIRD_EPISODE,
-          "Include episodes that are scheduled to air but haven't been broadcast yet.",
-          true
-        ),
-        SettingList(
-          "Metadata Language",
-          PREF_METADATA_LANGUAGE,
-          "Select the language for displaying movie and TV show metadata, such as titles, descriptions, and other details.",
-          entryTitles = languageI3691Map.values.toList(),
-          entryValues = languageI3691Map.keys.toList(),
-          defaultEntryIndex = languageI3691Map.keys.indexOf("en")
-        )
-      )
-    ),
-
-    SettingCategory(
-      title = "JustWatch",
-      key = "",
-      items = listOf(
-        SettingList(
-          "Region",
-          PREF_REGION,
-          "Select the region to filter content availability based on your location.",
-          entryTitles = popularCountriesIsoToEnglishName.values.toList(),
-          entryValues = popularCountriesIsoToEnglishName.keys.toList(),
-          defaultEntryIndex = 0
-        )
-      )
-    )
-  )
 
   private lateinit var prefSettings: PrefSettings
 
-  override fun init(prefSettings: PrefSettings) {
-    this.prefSettings = prefSettings
-  }
 
   override fun setHttpHelper(httpHelper: HttpHelper) {
     tmdb = AppTmdb(
@@ -202,18 +134,6 @@ class TmdbTvdbClient : DatabaseClient, StreamClient, HttpHelperProvider, Message
 
   override fun setMessageFlow(messageFlow: MutableSharedFlow<Message>) {
     this.messageFlow = messageFlow;
-  }
-
-  override fun onSettingsChanged(key: String, value: Any) {
-    when (key) {
-      PREF_TVDB_API_KEY -> {
-        tvdb.apiKey(value.toString())
-      }
-
-      PREF_TMDB_API_KEY -> {
-        tmdb.apiKey(value.toString())
-      }
-    }
   }
 
 
@@ -1130,5 +1050,88 @@ class TmdbTvdbClient : DatabaseClient, StreamClient, HttpHelperProvider, Message
       premiumType = PremiumType.JustWatch.ordinal,
     )
   }
+
+  override fun setSetting(prefSettings: PrefSettings) {
+    this.prefSettings = prefSettings
+  }
+
+  override suspend fun getSettingItems() = listOf(
+    SettingCategory(
+      title = "API Access",
+      key = "",
+      items = listOf(
+        SettingTextInput(
+          "TMDB API Key", PREF_TMDB_API_KEY,
+          "Enter your TMDB API key to access movie and TV show data from The Movie Database.",
+          defaultValue = "4ef60b9d635f533695cbcaccb6603a57"
+        ),
+        SettingTextInput(
+          "TVDB API Key", PREF_TVDB_API_KEY,
+          "Enter your TVDB API key to access data from The TV Database for TV shows.",
+          defaultValue = null
+        )
+      )
+    ),
+
+    SettingCategory(
+      title = "Media content", key = "media_content_key",
+      items = listOf(
+        SettingSwitch(
+          "Include Adult Content",
+          PREF_INCLUDE_ADULT,
+          "Include adult-rated movies and TV shows in your library.",
+          false
+        ),
+        SettingSwitch(
+          "Show Special Seasons",
+          PREF_SHOW_SPECIAL_SEASON,
+          "Display special seasons for TV shows, such as behind-the-scenes or bonus episodes.",
+          true
+        ),
+        SettingSwitch(
+          "Show Unaired Episodes",
+          PREF_SHOW_UNAIRD_EPISODE,
+          "Include episodes that are scheduled to air but haven't been broadcast yet.",
+          true
+        ),
+        SettingList(
+          "Metadata Language",
+          PREF_METADATA_LANGUAGE,
+          "Select the language for displaying movie and TV show metadata, such as titles, descriptions, and other details.",
+          entryTitles = languageI3691Map.values.toList(),
+          entryValues = languageI3691Map.keys.toList(),
+          defaultEntryIndex = languageI3691Map.keys.indexOf("en")
+        )
+      )
+    ),
+
+    SettingCategory(
+      title = "JustWatch",
+      key = "",
+      items = listOf(
+        SettingList(
+          "Region",
+          PREF_REGION,
+          "Select the region to filter content availability based on your location.",
+          entryTitles = popularCountriesIsoToEnglishName.values.toList(),
+          entryValues = popularCountriesIsoToEnglishName.keys.toList(),
+          defaultEntryIndex = 0
+        )
+      )
+    )
+  )
+
+  override suspend fun onSettingsChanged(key: String, value: Any?) {
+    when (key) {
+      PREF_TVDB_API_KEY -> {
+        tvdb.apiKey(value.toString())
+      }
+
+      PREF_TMDB_API_KEY -> {
+        tmdb.apiKey(value.toString())
+      }
+    }
+  }
+
 
 }

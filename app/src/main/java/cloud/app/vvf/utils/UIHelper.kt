@@ -3,6 +3,7 @@ package cloud.app.vvf.utils
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
+import android.content.res.Resources
 import android.os.Build
 import android.view.View
 import android.view.WindowInsets
@@ -114,5 +115,14 @@ object UIHelper {
       false // No notch or API < 28
     }
   }
-
+  fun Context.resolveStyledDimension(attr: Int): Int {
+    val typed = theme.obtainStyledAttributes(intArrayOf(attr))
+    val itemWidth = typed.getDimensionPixelSize(typed.getIndex(0), 0)
+    return itemWidth
+  }
 }
+
+val Int.toPx : Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+val Float.toPx: Float get() = (this * Resources.getSystem().displayMetrics.density)
+val Int.toDp: Int get() = (this / Resources.getSystem().displayMetrics.density).toInt()
+val Float.toDp: Float get() = (this / Resources.getSystem().displayMetrics.density)

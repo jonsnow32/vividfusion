@@ -1,19 +1,29 @@
 package cloud.app.vvf.common.clients
 
+import cloud.app.vvf.common.clients.provider.SettingProvider
+import cloud.app.vvf.common.helpers.Injectable
 import cloud.app.vvf.common.models.extension.ExtensionType
 import cloud.app.vvf.common.models.extension.ExtensionMetadata
-import cloud.app.vvf.common.settings.PrefSettings
-import cloud.app.vvf.common.settings.Setting
 
 
 /**
  * Represents a base client for interacting with an extension.
  */
-interface BaseClient {
-  val defaultSettings: List<Setting>
-  fun init(prefSettings: PrefSettings)
-  fun onSettingsChanged(key: String, value: Any)
-  suspend fun onExtensionSelected()
+interface BaseClient : SettingProvider{
+
+  /**
+   * Only called when an extension is selected by the user, not when the extension is loaded
+   * Use the `onInitialize` for doing stuff to initialize the extension
+   *
+   * can be called multiple times, if the user re-selects the extension
+   */
+  suspend fun onExtensionSelected() {}
+
+  /**
+   * Called when the extension is loaded, called after all the injections are done.
+   * Only called once
+   */
+  suspend fun onInitialize() {}
 }
 
 /**
@@ -29,12 +39,13 @@ interface BaseClient {
  */
 open class Extension<T : BaseClient>(
   open val metadata: ExtensionMetadata,
-  open val instance: Lazy<Result<T>>
+  open val instance: Injectable<T>
 ) {
 
   val id : String get() = metadata.className
   val name : String get() = metadata.name
-  val icon : String? get() = metadata.iconUrl
+  val iconUrl : String? get() = metadata.iconUrl
+  val iconRes : Int? get() = metadata.iconRes
   val types: List<ExtensionType> get() = metadata.types
 
 }

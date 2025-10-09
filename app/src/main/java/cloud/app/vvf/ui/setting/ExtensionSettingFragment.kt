@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
@@ -44,7 +45,10 @@ import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.loadWith
 import cloud.app.vvf.utils.setupTransition
 import cloud.app.vvf.viewmodels.SnackBarViewModel.Companion.createSnack
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.math.log
 
 class ExtensionSettingFragment : BaseSettingsFragment() {
 
@@ -164,11 +168,16 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
       binding.extensionTypes.text = extensionMetadata.types.toString()
       binding.extensionDescription.text = extensionMetadata.description
 
-      if (extension?.isClient<LoginClient>() == true) {
-        val loginViewModel by activityViewModels<LoginUserViewModel>()
-        loginViewModel.currentExtension.value = extension
-        binding.extensionLoginUser.bind(this@ExtensionDetail) {}
-      } else binding.extensionLoginUser.root.isVisible = false
+      lifecycleScope.launch {
+        val loginClient = withContext(Dispatchers.IO) {
+          extension?.isClient<LoginClient>() == true
+        }
+        if (loginClient) {
+          val loginViewModel by activityViewModels<LoginUserViewModel>()
+          loginViewModel.currentExtension.value = extension
+          binding.extensionLoginUser.bind(this@ExtensionDetail) {}
+        } else binding.extensionLoginUser.root.isVisible = false
+      }
 
       childFragmentManager.beginTransaction()
         .add(R.id.settingsFragment, creator())
@@ -197,7 +206,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
               extensionId,
               throwableFlow
             ) {
-              defaultSettings.forEach { setting ->
+              getSettingItems().forEach { setting ->
                 setting.addPreferenceTo(screen)
               }
 //            val prefs = preferenceManager.sharedPreferences ?: return@run
@@ -212,7 +221,8 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
         Preference.OnPreferenceChangeListener { pref, new ->
           val viewModel by activityViewModels<ExtensionViewModel>()
           val client = viewModel.extListFlow.getExtension(extensionId)
-          client?.instance?.value?.getOrNull()?.onSettingsChanged(pref.key, new)
+          lifecycleScope.launch(Dispatchers.IO) { client?.instance?.value?.onSettingsChanged(pref.key, new) }
+
           true
         }
 
@@ -322,6 +332,7 @@ class ExtensionSettingFragment : BaseSettingsFragment() {
               preferenceGroup.addPreference(it)
             }
           }
+
           else -> throw IllegalArgumentException("Unsupported setting type")
         }
       }

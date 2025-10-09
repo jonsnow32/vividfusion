@@ -45,7 +45,6 @@ class MovieFragment : Fragment() {
   private val extensionId by lazy { args.getString("extensionId")!! }
   private val shortItem by lazy { args.getSerialized<AVPMediaItem.MovieItem>("mediaItem")!! }
 
-
   override fun onCreateView(
     inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
   ): View {

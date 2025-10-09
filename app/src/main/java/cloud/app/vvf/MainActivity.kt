@@ -20,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.media3.common.util.UnstableApi
-import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.databinding.ActivityMainBinding
@@ -29,12 +28,11 @@ import cloud.app.vvf.extension.builtIn.local.MediaUtils
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.features.playerManager.PlayerManager
 import cloud.app.vvf.ui.download.DownloadsFragment
-import cloud.app.vvf.utils.TV
 import cloud.app.vvf.utils.IntentHandler
+import cloud.app.vvf.utils.TV
 import cloud.app.vvf.utils.Utils.isAndroidTV
 import cloud.app.vvf.utils.isLayout
 import cloud.app.vvf.utils.navigate
-import cloud.app.vvf.utils.openItemFragmentFromUri
 import cloud.app.vvf.utils.setDefaultFocus
 import cloud.app.vvf.utils.setLocale
 import cloud.app.vvf.utils.tv.screenHeight

@@ -56,11 +56,11 @@ class ManageExtensionsFragment : BaseSettingsFragment() {
         }
 
         override fun onDelete(extension: Extension<*>) {
-          viewModel.uninstall(requireActivity(), extension) {
-//          if (it) createSnack(getString(R.string.extension_uninstalled_successfully))
-//          else createSnack(getString(R.string.extension_uninstalled_fail))
-            if (it) viewModel.refresh()
-          }
+//          viewModel.uninstall(requireActivity(), extension) {
+////          if (it) createSnack(getString(R.string.extension_uninstalled_successfully))
+////          else createSnack(getString(R.string.extension_uninstalled_fail))
+//            if (it) viewModel.refresh()
+//          }
         }
       })
 

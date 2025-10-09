@@ -55,7 +55,6 @@ android {
 dependencies {
 
   implementation(project(":common"))
-  implementation(libs.plugger)
   //Android
   implementation(libs.androidx.core.ktx)
   implementation(libs.androidx.appcompat)
@@ -117,31 +116,18 @@ dependencies {
   implementation(libs.glide.transformations)
   implementation(libs.fastscroll.library)
 
-  // Google AdMob
-  implementation("com.google.android.gms:play-services-ads:22.6.0")
-
-  // Facebook Audience Network (Meta) -
-  implementation("com.facebook.android:audience-network-sdk:6.15.0")
-
-  // Unity Ads -
-  implementation("com.unity3d.ads:unity-ads:4.8.0")
-
-  // IronSource -
-  implementation("com.ironsource.sdk:mediationsdk:7.3.1")
-
-  // AppLovin MAX -
-  implementation("com.applovin:applovin-sdk:11.11.3")
+  // Ads
+  implementation(libs.admob)
+  implementation(libs.facebook.audience.network)
+  implementation(libs.ironsource.mediationsdk)
+  implementation(libs.applovin)
+  implementation(libs.unity.ads)
+  implementation(libs.vungle)
 
   // Firebase - BOM for version management
   implementation(platform(libs.firebase.bom))
   implementation(libs.bundles.firebase.core)
-  implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
-  implementation("com.google.firebase:firebase-messaging")
-
-  // Optional: Add additional Firebase services as needed
-  // implementation(libs.bundles.firebase.extended)
-
-  // Bỏ Vungle tạm thời vì có vấn đề với repository
-  // implementation("com.vungle:vungle-android-sdk:7.1.0")
+  implementation(platform(libs.firebase.bom))
+  implementation(libs.firebase.messaging)
 
 }

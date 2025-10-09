@@ -16,6 +16,7 @@ data class ExtensionMetadata(
   var author: String,
   var authorUrl: String? = null,
   var iconUrl: String? = null,
+  var iconRes: Int? = null,
   var repoUrl: String? = null,
   var updateUrl: String? = null,
 

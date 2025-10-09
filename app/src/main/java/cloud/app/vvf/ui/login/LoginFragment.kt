@@ -86,7 +86,7 @@ class LoginFragment : Fragment() {
     private suspend inline fun <reified T : LoginClient> Extension<*>.getClient(
         button: MaterialButton, noinline configure: FragmentLoginBinding.(T) -> Unit
     ) = run {
-        val client = instance.value.getOrNull()
+        val client = instance.value().getOrNull()
         if (client !is T) null
         else Pair(button) { configure(binding, client) }
     }

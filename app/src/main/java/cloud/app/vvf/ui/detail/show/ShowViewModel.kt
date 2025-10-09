@@ -42,6 +42,10 @@ class ShowViewModel @Inject constructor(
   fun getItemDetails(shortItem: AVPMediaItem, extensionId: String) {
     viewModelScope.launch(Dispatchers.IO) {
       extensionFlow.collect { extensions ->
+        if (extensions.isNullOrEmpty()) {
+          // No extensions available, do nothing or handle as needed
+          return@collect
+        }
         loading.emit(true)
         val showDetail = extensions?.runClient<DatabaseClient, AVPMediaItem?>(extensionId, throwableFlow) {
           getMediaDetail(shortItem)

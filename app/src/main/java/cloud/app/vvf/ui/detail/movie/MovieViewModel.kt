@@ -29,6 +29,9 @@ class MovieViewModel @Inject constructor(
   fun getItemDetails(shortItem: AVPMediaItem, extensionId: String) {
     viewModelScope.launch(Dispatchers.IO) {
       extensionFlow.collect { extensions ->
+        if (extensions.isNullOrEmpty()) {
+          return@collect
+        }
         loading.value = true
         val movieDetails = extensions.runClient<DatabaseClient, AVPMediaItem?>(extensionId, throwableFlow) {
           getMediaDetail(shortItem)

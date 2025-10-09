@@ -15,10 +15,9 @@ import cloud.app.vvf.MainActivityViewModel.Companion.applyContentInsets
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.appVersion
-import cloud.app.vvf.common.exceptions.AppPermissionRequiredException
 import cloud.app.vvf.databinding.FragmentExceptionBinding
-import cloud.app.vvf.extension.ExtensionLoadingException
-import cloud.app.vvf.extension.RequiredExtensionsException
+import cloud.app.vvf.extension.exception.ExtensionLoadingException
+import cloud.app.vvf.extension.exception.RequiredExtensionsException
 import cloud.app.vvf.utils.ContinuationCallback.Companion.await
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized

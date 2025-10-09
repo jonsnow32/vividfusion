@@ -32,7 +32,7 @@ class AdTestFragment : Fragment() {
   @Inject
   lateinit var adPlacementHelper: AdPlacementHelper
 
-  private var bannerAd: AdView? = null
+  private var bannerAdStatus: Boolean? = false
   private var actionCount = 0
 
   override fun onCreateView(
@@ -65,6 +65,7 @@ class AdTestFragment : Fragment() {
         } else {
           "Banner: All Providers Failed ❌"
         }
+        bannerAdStatus = success
         Timber.d("Banner waterfall result: $success")
       } catch (e: Exception) {
         binding.tvBannerStatus.text = "Banner: Error - ${e.message}"
@@ -190,7 +191,7 @@ class AdTestFragment : Fragment() {
       "Rewarded: Loading... ⏳"
     }
 
-    binding.tvBannerStatus.text = if (bannerAd != null) {
+    binding.tvBannerStatus.text = if (bannerAdStatus == true) {
       "Banner: Loaded ✅"
     } else {
       "Banner: Failed ❌"
@@ -221,7 +222,6 @@ class AdTestFragment : Fragment() {
   }
 
   override fun onDestroyView() {
-    bannerAd = null
     super.onDestroyView()
   }
 

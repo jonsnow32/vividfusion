@@ -127,22 +127,22 @@ class VVFApplication : Application(), Configuration.Provider,
       sharedPreferences.getBoolean("pref_use_show_app_crash_log", true)
 
 
-    if (BuildConfig.DEBUG) {
-      FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-        if (!task.isSuccessful) {
-          //Timber.w("Fetching FCM registration token failed", task.exception)
-          return@OnCompleteListener
-        }
-
-        // Get new FCM registration token
-        val token = task.result
-
-        // Log and toast
-        val msg = getString(R.string.msg_token_fmt, token)
-        Timber.d(msg)
-        Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-      })
-    }
+//    if (BuildConfig.DEBUG) {
+//      FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+//        if (!task.isSuccessful) {
+//          //Timber.w("Fetching FCM registration token failed", task.exception)
+//          return@OnCompleteListener
+//        }
+//
+//        // Get new FCM registration token
+//        val token = task.result
+//
+//        // Log and toast
+//        val msg = getString(R.string.msg_token_fmt, token)
+//        Timber.d(msg)
+//        Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
+//      })
+//    }
   }
 
   override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {

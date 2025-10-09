@@ -287,34 +287,11 @@ class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
     return true
   }
 
-  override val defaultSettings: List<Setting>
-    get() = listOf(
-      SettingSwitch(
-        context.getString(R.string.refresh_library_on_reload),
-        "refresh_library",
-        context.getString(R.string.refresh_library_on_reload_summary),
-        false
-      ),
-      SettingSlider(
-        title = context.getString(R.string.min_media_duration),
-        key = "pref_min_media_duration",
-        summary = context.getString(R.string.pref_min_media_duration_summary),
-        defaultValue = 30,
-        from = 0,
-        to = 3600,
-      )
-    )
+
 
   private lateinit var prefSettings: PrefSettings
   private lateinit var messageFlow: MutableSharedFlow<Message>
 
-  override fun init(prefSettings: PrefSettings) {
-    this.prefSettings = prefSettings
-  }
-
-  override fun onSettingsChanged(key: String, value: Any) {
-    TODO("Not yet implemented")
-  }
 
   override suspend fun onExtensionSelected() {
     TODO("Not yet implemented")
@@ -335,12 +312,37 @@ class BuiltInClient(val context: Context) : DatabaseClient, SubtitleClient,
       description = "",
       version = "1.0.0",
       author = "Avp",
-      iconUrl = (R.mipmap.ic_launcher).toString(),
+      iconRes = R.mipmap.ic_launcher,
       types = listOf(ExtensionType.DATABASE, ExtensionType.SUBTITLE)
     )
   }
 
   override fun setHttpHelper(httpHelper: HttpHelper) {
     this.httpHelper = httpHelper
+  }
+
+  override fun setSetting(prefSettings: PrefSettings) {
+    this.prefSettings = prefSettings
+  }
+
+  override suspend fun getSettingItems() = listOf(
+    SettingSwitch(
+      context.getString(R.string.refresh_library_on_reload),
+      "refresh_library",
+      context.getString(R.string.refresh_library_on_reload_summary),
+      false
+    ),
+    SettingSlider(
+      title = context.getString(R.string.min_media_duration),
+      key = "pref_min_media_duration",
+      summary = context.getString(R.string.pref_min_media_duration_summary),
+      defaultValue = 30,
+      from = 0,
+      to = 3600,
+    )
+  )
+
+  override suspend fun onSettingsChanged(key: String, value: Any?) {
+    TODO("Not yet implemented")
   }
 }

@@ -1,11 +1,9 @@
 package cloud.app.vvf.utils
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.OptIn
-import cloud.app.vvf.ExtensionOpenerActivity.Companion.openExtensionInstaller
 import timber.log.Timber
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
@@ -13,11 +11,23 @@ import cloud.app.vvf.MainActivity
 import cloud.app.vvf.ui.detail.torrent.TorrentInfoFragment
 import cloud.app.vvf.features.player.PlayerFragment
 import cloud.app.vvf.common.models.AVPMediaItem
+import cloud.app.vvf.common.models.movie.GeneralInfo
+import cloud.app.vvf.common.models.movie.Ids
+import cloud.app.vvf.common.models.movie.Movie
+import cloud.app.vvf.common.models.movie.Show
+import cloud.app.vvf.extension.tmdb.TmdbTvdbClient
+import cloud.app.vvf.ui.detail.movie.MovieFragment
+import cloud.app.vvf.ui.detail.show.ShowFragment
+import com.google.firebase.analytics.FirebaseAnalytics
 
 /**
  * Handles various types of intents and URIs for the application
  */
 class IntentHandler(private val mainActivity: MainActivity) {
+
+  private val firebaseAnalytics: FirebaseAnalytics by lazy {
+    FirebaseAnalytics.getInstance(mainActivity)
+  }
 
   /**
    * Main entry point for handling intents
@@ -28,6 +38,14 @@ class IntentHandler(private val mainActivity: MainActivity) {
     val uri = intent.data
     val action = intent.action
     val type = intent.type
+
+    // Log Firebase event for intent handling
+    val bundle = Bundle().apply {
+      putString("action", action)
+      putString("uri", uri?.toString())
+      putString("type", type ?: "")
+    }
+    firebaseAnalytics.logEvent("intent_handled", bundle)
 
     Timber.d("Handling intent - Action: $action, URI: $uri, Type: $type")
 
@@ -94,7 +112,14 @@ class IntentHandler(private val mainActivity: MainActivity) {
         Timber.d("Opening AVP repository link: $uri")
         // Special domain for the app
       }
-
+      "www.themoviedb.org", "themoviedb.org" -> {
+        Timber.d("Opening TMDB link: $uri")
+        handleTmdbLink(uri)
+      }
+      "www.imdb.com", "imdb.com" -> {
+        Timber.d("Opening IMDB link: $uri")
+        handleImdbLink(uri)
+      }
       else -> {
         // External web links
         Timber.d("Opening external web link: $uri")
@@ -102,6 +127,93 @@ class IntentHandler(private val mainActivity: MainActivity) {
       }
     }
   }
+
+  private fun generateMovieItem(tmdbId: Int? = null, imdbId: String? = null): AVPMediaItem.MovieItem {
+    // Placeholder function to generate a MovieItem from TMDB id
+    val ids = Ids(tmdbId = tmdbId, imdbId = imdbId )
+   return  AVPMediaItem.MovieItem(
+      Movie(
+        ids = ids,
+        generalInfo = GeneralInfo(
+          title = "Movie $ids",
+          originalTitle = "Movie $ids",
+          overview = "This is a placeholder movie item with ID $ids. Wait for real data!",
+          releaseDateMsUTC = 0L,
+          poster = null,
+          backdrop = null,
+          rating = 0.0,
+          genres = emptyList(),
+          homepage = null,
+          voteCount = 0,
+          voteAverage = 0.0
+        )
+      )
+    )
+  }
+  private fun generateShowItem(tmdbId: Int? = null, imdbId: String? = null): AVPMediaItem.ShowItem {
+    // Placeholder function to generate a ShowItem from TMDB id
+    val ids = Ids(tmdbId = tmdbId, imdbId = imdbId )
+    return AVPMediaItem.ShowItem(
+      Show(
+        ids = ids,
+        generalInfo = GeneralInfo(
+          title = "Show $ids",
+          originalTitle = "Show $tmdbId",
+          overview = "This is a placeholder show item with ID $ids. Wait for real data!",
+          releaseDateMsUTC = 0L,
+          poster = null,
+          backdrop = null,
+          rating = 0.0,
+          genres = emptyList(),
+          homepage = null,
+          voteCount = 0,
+          voteAverage = 0.0
+        )
+      )
+    )
+  }
+  private fun handleTmdbLink(uri: Uri) {
+    val segments = uri.pathSegments
+    if (segments.size >= 2) {
+      val type = segments[0] // "movie" or "tv"
+      val id = segments[1].split("-").first().toIntOrNull()
+      if (id != null) {
+        Timber.i("Extracted TMDB $type id: $id")
+
+        val bundle = Bundle().apply {
+          putString("extensionId", TmdbTvdbClient::class.java.toString())
+        }
+
+        when (type) {
+          "movie" -> {
+            bundle.putSerialized("mediaItem", generateMovieItem(id))
+            val fragment = MovieFragment()
+            fragment.arguments = bundle
+            mainActivity.navigate(fragment)
+          }
+          "tv" -> {
+            bundle.putSerialized("mediaItem", generateShowItem(id))
+            val fragment = ShowFragment()
+            fragment.arguments = bundle
+            mainActivity.navigate(fragment)
+          }
+        }
+      }
+    }
+  }
+
+  private fun handleImdbLink(uri: Uri) {
+    // Example IMDB URLs:
+    // https://www.imdb.com/title/tt1234567/
+    val segments = uri.pathSegments
+    val titleIdx = segments.indexOf("title")
+    if (titleIdx != -1 && segments.size > titleIdx + 1) {
+      val imdbId = segments[titleIdx + 1]
+      Timber.i("Extracted IMDB id: $imdbId")
+      mainActivity.showToast("Sorry!! Missing imdb extension")
+    }
+  }
+
 
   private fun handleTorrentUri(uri: Uri) {
     Timber.i("Torrent URI received: $uri")

@@ -30,25 +30,21 @@ suspend inline fun <reified T> Fragment.applyClient(
 ): MediaContainerAdapter? {
   swipeRefresh.isEnabled = selectedExt != null
 
-  if (extList == null) { //loading
+  if (extList.isNullOrEmpty()) { //loading
     recyclerView.adapter = ExtensionLoadingAdapter()
   } else { //loaded
-    if (extList.isEmpty()) {
-      recyclerView.adapter = ExtensionEmptyAdapter(parentFragment)
-    } else {
-      if (selectedExt == null) {
-        recyclerView.adapter = ExtensionUnselected(parentFragment)
-      } else if (selectedExt.instance.value.getOrNull() !is T) {
-        recyclerView.adapter = ExtensionNotSupportedAdapter(selectedExt, T::class.java.toString())
-      } else
-        return MediaContainerAdapter(
-          selectedExt,
-          parentFragment as Fragment,
-          recyclerView.context.getString(id),
-          id.toString(),
-        ).also { recyclerView.adapter = it.withLoaders() }
+    if (selectedExt == null) {
+      recyclerView.adapter = ExtensionUnselected(parentFragment)
+    } else if (selectedExt.instance.value().getOrNull() !is T) {
+      recyclerView.adapter = ExtensionNotSupportedAdapter(selectedExt, T::class.java.toString())
+    } else
+      return MediaContainerAdapter(
+        selectedExt,
+        parentFragment as Fragment,
+        recyclerView.context.getString(id),
+        id.toString(),
+      ).also { recyclerView.adapter = it.withLoaders() }
 
-    }
   }
   return null
 }

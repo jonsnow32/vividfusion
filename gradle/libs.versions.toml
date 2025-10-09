@@ -21,7 +21,7 @@ mediahome = "1.0.0"
 navigation = "2.8.9"
 lifecycle = "2.8.7"
 pikolo = "2.0.2"
-plugger = "82e00ea5a4"
+plugger = "48a2d43106"
 slf4jApi = "2.0.13"
 tvprovider = "1.0.0"
 work = "2.10.0"
@@ -43,6 +43,13 @@ torrentserver = "7861970e038b35cd8c6918384e49caf26903e09e"
 # Firebase
 firebase-bom = "33.7.0"
 google-services = "4.4.2"
+admob = "22.6.0"
+facebook-audience = "6.20.0"
+unity-ads = "4.8.0"
+ironsource = "8.10.0"
+applovin = "13.3.1"
+vungle = "7.5.1"
+firebase-messaging = "23.4.1" # Use the latest or your current version if needed
 
 [libraries]
 androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
@@ -97,11 +104,10 @@ mediahome-video = { module = "com.google.android.mediahome:video", version.ref =
 torrentserver = { module = "com.github.recloudstream:torrentserver", version.ref = "torrentserver" }
 
 # Logging
-
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 
 #Pluger
-plugger = { module = "com.github.jeelpatel231:plugger", version.ref = "plugger" }
+plugger = { module = "com.github.jonsnow32:plugger", version.ref = "plugger" }
 
 # service
 tmdb = { group = "com.uwetrottmann.tmdb2", name = "tmdb-java", version.ref = "tmdb" }
@@ -122,6 +128,15 @@ glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "gl
 glide-compiler = { group = "com.github.bumptech.glide", name = "ksp", version.ref = "glide" }
 nestedscrollwebview = { module = "com.telefonica:nestedscrollwebview", version = "0.1.6" }
 pikolo = { module = "com.github.madrapps:pikolo", version.ref = "pikolo" }
+
+# ads
+admob = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "admob" }
+facebook-audience-network = { group = "com.facebook.android", name = "audience-network-sdk", version.ref = "facebook-audience" }
+unity-ads = { group = "com.unity3d.ads", name = "unity-ads", version.ref = "unity-ads" }
+ironsource-mediationsdk = { group = "com.ironsource.sdk", name = "mediationsdk", version.ref = "ironsource" }
+applovin = { group = "com.applovin", name = "applovin-sdk", version.ref = "applovin" }
+vungle = { group = "com.vungle", name = "vungle-ads", version.ref = "vungle" }
+
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }

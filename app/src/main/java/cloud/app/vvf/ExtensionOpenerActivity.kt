@@ -1,40 +1,30 @@
 package cloud.app.vvf
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.provider.Settings
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.core.net.toFile
-import androidx.core.net.toUri
-import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.lifecycleScope
-import cloud.app.vvf.ui.extension.ExtensionInstallerBottomSheet
-import cloud.app.vvf.ui.extension.ExtensionViewModel
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.launch
+import cloud.app.vvf.datastore.DataStore.Companion.getTempApkDir
+import cloud.app.vvf.extension.InstallationUtils.getTempFile
 import java.io.File
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
-import cloud.app.vvf.extension.getPackageName
-import cloud.app.vvf.ui.extension.widget.InstallStatus
-import cloud.app.vvf.utils.showToast
 
 class ExtensionOpenerActivity : Activity() {
   override fun onStart() {
     super.onStart()
     val uri = intent.data
 
-    val file = when (uri?.scheme) {
-      "content" -> getTempFile(uri)
-      "file" -> getTempFile(uri.toFile())
-      else -> null
-    }
+    val file = runCatching {
+      when (uri?.scheme) {
+        "content" -> getTempFile(uri)
+        "file" -> getTempFile(uri.toFile())
+        else -> null
+      }
+    }.getOrNull()
 
-    if (file == null)
-      showToast(R.string.file_not_found)
+    if (file == null) Toast.makeText(
+      this, getString(R.string.could_not_find_the_file), Toast.LENGTH_SHORT
+    ).show()
 
     finish()
     val startIntent = Intent(this, MainActivity::class.java)
@@ -43,86 +33,10 @@ class ExtensionOpenerActivity : Activity() {
     startActivity(startIntent)
   }
 
-  private fun getTempFile(bytes: ByteArray): File {
-    val tempFile = File.createTempFile("temp", ".apk", getTempApkDir())
-    tempFile.writeBytes(bytes)
+  private fun getTempFile(file: File): File {
+    val tempFile = getTempApkDir()
+    file.copyTo(tempFile)
     return tempFile
   }
 
-  private fun getTempFile(uri: Uri): File? {
-    val stream = contentResolver.openInputStream(uri) ?: return null
-    val bytes = stream.readBytes()
-    return getTempFile(bytes)
-  }
-
-  private fun getTempFile(file: File): File {
-    val bytes = file.readBytes()
-    return getTempFile(bytes)
-  }
-
-  companion object {
-    const val EXTENSION_INSTALLER = "extensionInstaller"
-
-    fun Context.getTempApkDir() = File(cacheDir, "apks").apply { mkdirs() }
-
-    fun Context.cleanupTempApks() {
-      getTempApkDir().deleteRecursively()
-    }
-
-    fun FragmentActivity.openExtensionInstaller(uri: Uri) {
-      lifecycleScope.launch {
-        installExtension(uri.toString())
-      }
-    }
-
-    suspend fun FragmentActivity.installExtension(fileString: String) = suspendCoroutine {
-      ExtensionInstallerBottomSheet.newInstance(fileString)
-        .show(supportFragmentManager, null)
-
-      supportFragmentManager.setFragmentResultListener(EXTENSION_INSTALLER, this) { _, b ->
-        val file = b.getString("file")?.toUri()?.toFile()
-        val install = b.getBoolean("install")
-        val installAsApk = b.getBoolean("installAsApk")
-        val links = b.getStringArrayList("links").orEmpty()
-        val context = this
-        if (install && file != null) {
-          val extensionViewModel by viewModels<ExtensionViewModel>()
-          lifecycleScope.launch {
-            val result = extensionViewModel.install(context, file, installAsApk)
-            if (result && installAsApk) {
-              context.createLinksDialog(file, links)
-            }
-            if (result)
-              it.resume(InstallStatus.INSTALLED)
-            else
-              it.resume(InstallStatus.FAILED)
-          }
-        } else
-          it.resume(InstallStatus.CANCELED)
-      }
-    }
-
-    private suspend fun Context.createLinksDialog(
-      file: File, links: List<String>
-    ) = suspendCoroutine { cont ->
-      MaterialAlertDialogBuilder(this)
-        .setTitle(getString(R.string.allow_opening_links))
-        .setMessage(
-          links.joinToString("\n") + "\n" +
-            getString(R.string.open_links_instruction)
-        )
-        .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
-          val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-          val packageName = getPackageName(file.path)
-          intent.setData(Uri.parse("package:$packageName"))
-          startActivity(intent)
-          dialog.dismiss()
-        }
-        .setNegativeButton(getString(R.string.cancel)) { dialog, _ -> dialog.dismiss() }
-        .setOnDismissListener {
-          cont.resume(Unit)
-        }
-        .show()
-    }
-  }
 }

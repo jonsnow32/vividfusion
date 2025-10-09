@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * Checks if the client of this extension is of the specified type.
  */
-inline fun <reified T> Extension<*>.isClient(): Boolean = instance.value.getOrNull() is T
+suspend inline fun <reified T> Extension<*>.isClient(): Boolean = instance.value().getOrNull() is T
 
 /**
  * Finds an extension by its ID in the stored list.
@@ -32,7 +32,7 @@ suspend inline fun <reified T : BaseClient, R> Extension<*>.run(
   noinline block: suspend T.() -> R
 ): R? {
   return try {
-    val client = instance.value.getOrThrow() as T
+    val client = instance.value().getOrThrow() as T
     block(client)
   } catch (e: Throwable) {
     throwableFlow.emit(e.toAppException(this))

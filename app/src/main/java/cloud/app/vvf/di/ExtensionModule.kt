@@ -40,14 +40,16 @@ class ExtensionModule {
     throwableFlow: MutableSharedFlow<Throwable>,
     extensionsFlow: MutableStateFlow<List<Extension<*>>>,
     messageFlow: MutableSharedFlow<Message>,
-    refresher: MutableSharedFlow<Boolean>
+    refresher: MutableSharedFlow<Boolean>,
+    sharedPreferences: SharedPreferences,
   ) = ExtensionLoader(
     context.applicationContext,
     httpHelper,
     throwableFlow,
     extensionsFlow,
     messageFlow,
-    refresher
+    refresher,
+    sharedPreferences
   )
 
 }

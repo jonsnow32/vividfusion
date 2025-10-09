@@ -77,7 +77,6 @@ class StreamFragment : DockingDialog(), StreamAdapter.ItemClickListener {
       if (it != null) {
         binding.filterLanguageText.setTextWithVisibility(it)
         viewModel.loadStream(mediaItem)}
-
     }
 
     observe(viewModel.isLoading) { isLoading ->

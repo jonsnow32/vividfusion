@@ -449,4 +449,16 @@
   <string name="msg_token_fmt">msg_token_fmt = %s</string>
   <string name="send_crash_report_summary">Send the crash log to Crashlytics to help developers fix the bug.</string>
   <string name="send_crash_report">Send the crash report</string>
+
+  <string name="x_permission_required">%1$s Permission Required</string>
+  <string name="x_was_not_granted">%1$s was not granted</string>
+  <string name="audio">Audio</string>
+  <string name="audio_permission_summary">To access your local music library</string>
+  <string name="read_storage">Read Storage</string>
+  <string name="write_storage">Write Storage</string>
+  <string name="write_storage_permission_summary">To create and edit local playlists</string>
+  <string name="notifications">Notifications</string>
+  <string name="notifications_permission_summary">To show notification for downloads and music</string>
+  <string name="could_not_find_the_file">Could not find the file.</string>
+
 </resources>

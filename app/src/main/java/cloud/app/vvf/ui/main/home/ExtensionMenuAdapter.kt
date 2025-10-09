@@ -11,7 +11,14 @@ import cloud.app.vvf.R
 import cloud.app.vvf.common.models.ImageHolder.Companion.toImageHolder
 import cloud.app.vvf.utils.loadInto
 
-data class DropdownItem(val icon: String?, val text: String, val extensionId: String, val selected: Boolean = false)
+data class DropdownItem(
+  val text: String,
+  val extensionId: String,
+  val iconUrl: String?,
+  val iconRes: Int? = null,
+  val selected: Boolean = false
+)
+
 class ExtensionMenuAdapter(private val context: Context, private val items: List<DropdownItem>) :
   BaseAdapter() {
   override fun getCount(): Int = items.size
@@ -27,7 +34,14 @@ class ExtensionMenuAdapter(private val context: Context, private val items: List
     val item = items[position]
     textView.text = item.text
     val itemIcon = view.findViewById<ImageView>(R.id.itemIcon)
-    item.icon?.toImageHolder().loadInto(itemIcon)
+
+    if (item.iconRes != null) {
+      itemIcon.setImageResource(item.iconRes)
+    } else if (!item.iconUrl.isNullOrEmpty()) {
+      item.iconUrl.toImageHolder().loadInto(itemIcon)
+    } else {
+      itemIcon.setImageResource(R.drawable.ic_extension_24dp)
+    }
 
     return view
   }

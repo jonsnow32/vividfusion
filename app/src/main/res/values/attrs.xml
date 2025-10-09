@@ -7,8 +7,9 @@
 
   <attr name="navBackground" format="reference|color" />
   <attr name="appBackground" format="reference|color" />
+    <attr name="itemCoverSize" />
 
-  <declare-styleable name="FlowLayout_Layout">
+    <declare-styleable name="FlowLayout_Layout">
     <attr name="itemSpacing" format="dimension" />
   </declare-styleable>
   <declare-styleable name="FlowLayout_Layout_layout_space" />

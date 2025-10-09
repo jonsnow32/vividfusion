@@ -1,4 +1,4 @@
-package cloud.app.vvf.extension
+package cloud.app.vvf.extension.exception
 
 import cloud.app.vvf.common.models.extension.ExtensionMetadata
 

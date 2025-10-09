@@ -68,7 +68,13 @@ class HomeFragment : Fragment() {
     }
 
     observe(extensionViewModel.selectedExtension) {
-      binding.selectedExtension.loadWith(it?.icon?.toImageHolder())
+      if(it?.iconRes != null) {
+        binding.selectedExtension.setImageResource(it.iconRes!!)
+      } else if (it?.iconUrl == null) {
+        binding.selectedExtension.loadWith(it?.iconUrl?.toImageHolder())
+      } else {
+        binding.selectedExtension.setImageResource(R.drawable.ic_extension_24dp)
+      }
     }
 
   }
@@ -79,7 +85,7 @@ class HomeFragment : Fragment() {
     val selectedExtension = extensionViewModel.selectedExtension.value ?: return
 
     val dropdownItems = extensions?.map {
-      DropdownItem(it.icon, it.name, it.id, it.id == selectedExtension.id)
+      DropdownItem(it.name, it.id, it.iconUrl, it.iconRes,it.id == selectedExtension.id)
     } ?: return
 
     val layoutInflater = LayoutInflater.from(activity)
