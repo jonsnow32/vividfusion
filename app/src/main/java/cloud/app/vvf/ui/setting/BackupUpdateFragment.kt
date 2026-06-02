@@ -10,7 +10,6 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import cloud.app.vvf.R
-import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.datastore.account.AccountDataStore
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.services.BackupWorker
@@ -47,9 +46,6 @@ class BackupUpdateFragment : BaseSettingsFragment() {
 
     @Inject
     lateinit var accountDataStore: MutableStateFlow<AccountDataStore>
-
-    @Inject
-    lateinit var extensionsFlow: MutableStateFlow<List<Extension<*>>>
 
     @Inject
     lateinit var fileHelper: FileHelper

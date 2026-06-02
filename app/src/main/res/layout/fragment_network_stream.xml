@@ -1,148 +1,233 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="?attr/colorSurface">
 
-  android:layout_height="match_parent">
-
-  <LinearLayout
+  <!-- Scrollable content -->
+  <androidx.core.widget.NestedScrollView
     android:layout_width="match_parent"
-
     android:layout_height="match_parent"
-    android:layout_margin="8dp"
-    android:orientation="vertical">
-
-    <TextView
-      style="@style/TextAppearance.MaterialComponents.Headline2"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_margin="8dp"
-      android:text="@string/network_stream"
-      android:textColor="?attr/colorPrimary" />
+    android:clipToPadding="false"
+    android:fillViewport="true">
 
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:gravity="center_horizontal"
-      android:orientation="horizontal">
-
-      <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="4dp"
-        android:drawablePadding="4dp"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        android:text="@string/http_link"
-        app:drawableStartCompat="@drawable/link_4_svgrepo_com" />
-
-      <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="4dp"
-        android:drawablePadding="4dp"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        android:text="@string/magnet_link"
-        app:drawableStartCompat="@drawable/magnet_svgrepo_com" />
-
-      <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="4dp"
-        android:drawablePadding="4dp"
-        android:ellipsize="end"
-        android:gravity="center_vertical"
-        android:maxLines="1"
-        android:padding="8dp"
-        android:text="@string/torrent_file"
-        app:drawableStartCompat="@drawable/utorrent_logotype_svgrepo_com" />
-    </LinearLayout>
-    <LinearLayout
-      android:id="@+id/linearLayout4"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:background="@drawable/outline_container"
       android:orientation="vertical"
-      android:padding="4dp">
+      android:paddingStart="24dp"
+      android:paddingEnd="24dp"
+      android:paddingBottom="24dp">
 
-      <EditText
-        android:id="@+id/etStreamUrl"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:drawableEnd="@drawable/outline_folder_open_24"
-        android:drawablePadding="4dp"
-        android:focusable="true"
-        android:hint="@string/enter_url_or_file"
-        android:inputType="textUri"
-        android:maxLines="4"
-        android:padding="16dp"
-        android:textColor="?attr/colorPrimary"
-        android:textSize="16sp" />
-
+      <!-- ── HEADER ── -->
       <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="end"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:paddingTop="40dp"
+        android:paddingBottom="8dp">
 
-        <com.google.android.material.button.MaterialButton
-          android:id="@+id/btnStreaming"
-          style="@style/Widget.Material3.Button.OutlinedButton"
-          android:layout_width="wrap_content"
+        <!-- Icon + Title row -->
+        <LinearLayout
+          android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
-          app:icon="@drawable/play_arrow_24dp"
-          android:text="@string/streaming" />
+          android:gravity="center_vertical"
+          android:orientation="horizontal">
 
-        <com.google.android.material.button.MaterialButton
-          android:id="@+id/btnDownload"
-          style="@style/Widget.Material3.Button.OutlinedButton"
-          android:layout_width="wrap_content"
+          <ImageView
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="14dp"
+            android:src="@drawable/anim_stream"
+            android:tint="?attr/colorPrimary"
+            app:tint="?attr/colorPrimary"
+            tools:ignore="ContentDescription" />
+
+          <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.01"
+            android:text="@string/network_stream"
+            android:textColor="?attr/colorOnSurface"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Subtitle -->
+        <TextView
+          android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_gravity="center_horizontal"
-          android:text="@string/download"
-          app:icon="@drawable/download_2_24dp" />
+          android:layout_marginTop="6dp"
+          android:paddingStart="58dp"
+          android:text="@string/stream_subtitle"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          android:textSize="14sp" />
+
       </LinearLayout>
 
+      <!-- ── INPUT CARD ── -->
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_stream_input_selector"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:padding="4dp">
+
+        <!-- URL EditText -->
+        <EditText
+          android:id="@+id/etStreamUrl"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="@android:color/transparent"
+          android:clickable="true"
+          android:drawableEnd="@drawable/outline_folder_open_24"
+          android:drawablePadding="8dp"
+          android:drawableTint="?attr/colorOnSurfaceVariant"
+          android:focusable="true"
+          android:hint="@string/enter_url_or_file"
+          android:inputType="textUri"
+          android:maxLines="3"
+          android:minLines="2"
+          android:padding="16dp"
+          android:textColor="?attr/colorOnSurface"
+          android:textColorHint="?attr/colorOutline"
+          android:textSize="16sp" />
+
+        <!-- Divider -->
+        <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="16dp"
+          android:layout_marginEnd="16dp"
+          android:background="?attr/colorOutlineVariant" />
+
+        <!-- Type chips row -->
+        <HorizontalScrollView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:paddingStart="12dp"
+          android:paddingTop="8dp"
+          android:paddingEnd="12dp"
+          android:paddingBottom="8dp"
+          android:scrollbars="none">
+
+          <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.chip.Chip
+              style="@style/Widget.Material3.Chip.Assist"
+              android:layout_width="wrap_content"
+              android:layout_height="32dp"
+              android:layout_marginEnd="8dp"
+              android:text="@string/http_link"
+              app:chipIcon="@drawable/link_4_svgrepo_com"
+              app:chipIconTint="?attr/colorPrimary"
+              app:chipMinTouchTargetSize="0dp" />
+
+            <com.google.android.material.chip.Chip
+              style="@style/Widget.Material3.Chip.Assist"
+              android:layout_width="wrap_content"
+              android:layout_height="32dp"
+              android:layout_marginEnd="8dp"
+              android:text="@string/magnet_link"
+              app:chipIcon="@drawable/magnet_svgrepo_com"
+              app:chipIconTint="?attr/colorPrimary"
+              app:chipMinTouchTargetSize="0dp" />
+
+            <com.google.android.material.chip.Chip
+              style="@style/Widget.Material3.Chip.Assist"
+              android:layout_width="wrap_content"
+              android:layout_height="32dp"
+              android:text="@string/torrent_file"
+              app:chipIcon="@drawable/utorrent_logotype_svgrepo_com"
+              app:chipIconTint="?attr/colorPrimary"
+              app:chipMinTouchTargetSize="0dp" />
+
+          </LinearLayout>
+        </HorizontalScrollView>
+
+      </LinearLayout>
+
+      <!-- ── ACTION BUTTONS ── -->
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnStreaming"
+        style="@style/Widget.Material3.Button"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/play_now"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:cornerRadius="14dp"
+        app:icon="@drawable/ic_play_arrow_24"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp" />
+
+      <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnDownload"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="10dp"
+        android:text="@string/download"
+        android:textSize="15sp"
+        app:cornerRadius="14dp"
+        app:icon="@drawable/download_2_24dp"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp" />
+
+      <!-- ── AD BANNER ── -->
+      <FrameLayout
+        android:id="@+id/bannerAdContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="4dp" />
+
+      <!-- ── HISTORY HEADER ── -->
+      <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+          android:id="@+id/txtHistory"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:fontFamily="sans-serif-medium"
+          android:letterSpacing="0.08"
+          android:paddingTop="8dp"
+          android:paddingBottom="8dp"
+          android:text="@string/history"
+          android:textAllCaps="true"
+          android:textColor="?attr/colorOnSurfaceVariant"
+          android:textSize="11sp" />
+
+      </LinearLayout>
+
+      <!-- ── HISTORY LIST ── -->
+      <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvUriHistory"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:nestedScrollingEnabled="false" />
 
     </LinearLayout>
+  </androidx.core.widget.NestedScrollView>
 
-    <FrameLayout
-      android:id="@+id/bannerAdContainer"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="12dp"
-      android:layout_marginBottom="8dp" />
-
-
-    <TextView
-      android:id="@+id/txtHistory"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="16dp"
-      android:text="@string/history" />
-
-    <com.google.android.material.divider.MaterialDivider
-      android:layout_width="match_parent"
-      android:layout_height="2dp">
-
-    </com.google.android.material.divider.MaterialDivider>
-
-
-    <com.google.android.material.divider.MaterialDivider
-      android:layout_width="match_parent"
-      android:layout_height="2dp">
-    </com.google.android.material.divider.MaterialDivider>
-
-    <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/rvUriHistory"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:clipToPadding="false" />
-
-
-  </LinearLayout>
-
-</androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

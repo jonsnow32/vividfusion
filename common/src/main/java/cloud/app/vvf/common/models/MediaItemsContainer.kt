@@ -3,7 +3,6 @@ package cloud.app.vvf.common.models
 import cloud.app.vvf.common.helpers.PagedData
 
 sealed class MediaItemsContainer {
-
   data class Category(
     val title: String,
     val subtitle: String? = null,

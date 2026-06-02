@@ -7,7 +7,7 @@ import androidx.media3.common.MediaMetadata
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.music.Track
 import cloud.app.vvf.common.models.video.Video
-import cloud.app.vvf.extension.builtIn.local.MediaUtils
+
 
 
 object MediaItemUtils {
@@ -53,7 +53,7 @@ object MediaItemUtils {
 
   private fun Track.toMetaData(): MediaMetadata {
     return MediaMetadata.Builder()
-      .setArtworkUri(cover?.toUri() ?: MediaUtils.getPlaylistThumbnail(album)?.toUri())
+      .setArtworkUri(cover?.toUri())
       .setTitle(title)
       .build()
   }

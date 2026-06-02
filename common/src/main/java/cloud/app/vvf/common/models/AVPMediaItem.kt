@@ -166,6 +166,8 @@ sealed class AVPMediaItem {
       title: String, subtitle: String? = null, more: PagedData<AVPMediaItem>? = null
     ) = MediaItemsContainer.Category(title, subtitle, more)
 
+    fun AVPMediaItem.toItemContainer() = MediaItemsContainer.Item(this)
+
     fun List<AVPMediaItem>.toPaged() = PagedData.Single { this }
 
   }
@@ -192,8 +194,8 @@ sealed class AVPMediaItem {
       is ActorItem -> actor.name
       is MovieItem -> movie.generalInfo.title
       is ShowItem -> show.generalInfo.title
-      is EpisodeItem -> if (episode.generalInfo.title.isEmpty()) "Episode ${episode.episodeNumber}" else episode.generalInfo.title
-      is SeasonItem -> if (season.generalInfo.title.isEmpty()) "Season ${season.number}" else season.generalInfo.title
+      is EpisodeItem -> episode.generalInfo.title.ifEmpty { "Episode ${episode.episodeNumber}" }
+      is SeasonItem -> season.generalInfo.title.ifEmpty { "Season ${season.number}" }
       is TrailerItem -> video.title
       is PlaybackProgress -> getName()
       is VideoCollectionItem -> album.title

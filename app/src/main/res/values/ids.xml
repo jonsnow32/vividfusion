@@ -8,16 +8,7 @@
   <item name="mainFragment" type="id"/>
   <item name="mainActivity" type="id"/>
   <item name="torrentInfoFragment" type="id"/>
-  <item name="movieFragment" type="id"/>
-  <item name="showFragment" type="id"/>
-  <item name="homeFragment" type="id"/>
-  <item name="browseFragment" type="id"/>
-  <item name="searchFragment" type="id"/>
-  <item name="libraryFragment" type="id"/>
+  <item name="downloadsFragment" type="id"/>
   <item name="exceptionFragment" type="id"/>
-  <item name="extensionFragment" type="id"/>
-  <item name="extensionInfoFragment" type="id"/>
-  <item name="manageExtensionsFragment" type="id"/>
-  <item name="streamFragment" type="id"/>
 
 </resources>

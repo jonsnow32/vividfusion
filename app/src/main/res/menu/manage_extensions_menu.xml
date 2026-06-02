@@ -3,6 +3,12 @@
   xmlns:android="http://schemas.android.com/apk/res/android">
 
   <item
+    android:id="@+id/menu_browse_featured"
+    android:icon="@drawable/ic_search_outline"
+    android:title="@string/browse_featured_plugins"
+    app:showAsAction="ifRoom" />
+
+  <item
     android:id="@+id/menu_refresh"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

@@ -16,8 +16,6 @@ import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.R
 import cloud.app.vvf.VVFApplication.Companion.appVersion
 import cloud.app.vvf.databinding.FragmentExceptionBinding
-import cloud.app.vvf.extension.exception.ExtensionLoadingException
-import cloud.app.vvf.extension.exception.RequiredExtensionsException
 import cloud.app.vvf.utils.ContinuationCallback.Companion.await
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.getSerialized
@@ -106,53 +104,10 @@ class ExceptionFragment : Fragment() {
     fun Context.getTitle(throwable: Throwable): String = when (throwable) {
       is IncompatibleClassChangeError -> getString(R.string.incompatible_class_error)
       is UnknownHostException, is UnresolvedAddressException -> getString(R.string.no_internet)
-      is ExtensionLoadingException -> "${getString(R.string.invalid_extension)} : ${throwable.metadata?.className}"
-      is RequiredExtensionsException -> getString(
-        R.string.extension_requires,
-        throwable.name,
-        throwable.requiredExtensions.joinToString(", ")
-      )
-
-      is AppException -> throwable.run {
-        when (this) {
-          is AppException.Unauthorized ->
-            getString(R.string.unauthorized, extensionId.name)
-
-          is AppException.LoginRequired ->
-            getString(R.string.login_required, extensionId.name)
-
-          is AppException.NotSupported ->
-            getString(R.string.not_supported, operation, extensionId.name)
-
-          is AppException.Other -> "${extensionId.name} : ${getTitle(cause)}"
-        }
-      }
       else -> throwable.message ?: getString(R.string.error)
     }
 
-    fun Context.getDetails(throwable: Throwable): String = when (throwable) {
-      is RequiredExtensionsException -> """
-          Extension : ${throwable.name}
-          Required Extensions : ${throwable.requiredExtensions.joinToString(", ")}
-          """.trimIndent()
-
-      is AppException -> """
-          Extension : ${throwable.extensionId.name}
-          Id : ${throwable.extensionId.name}
-          Type : ${
-        throwable.extensionId.metadata.types?.joinToString(
-          prefix = "[\"",
-          postfix = "\"]",
-          separator = "\", \""
-        ) { it.feature } ?: "[]"
-      }
-          Version : ${throwable.extensionId.metadata.version}
-          App Version : ${appVersion()}
-          ${getDetails(throwable.cause)}
-          """.trimIndent()
-
-      else -> throwable.stackTraceToString()
-    }
+    fun Context.getDetails(throwable: Throwable): String = throwable.stackTraceToString()
 
     fun newInstance(context: Context, throwable: Throwable) = ExceptionFragment().apply {
       arguments = Bundle().apply {

@@ -11,8 +11,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.ExceptionActivity
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.extension.Message
 import cloud.app.vvf.ui.exception.ExceptionFragment.Companion.getTitle
+import cloud.app.vvf.ui.widget.Message
 import cloud.app.vvf.utils.observe
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,10 +24,12 @@ import javax.inject.Inject
 @HiltViewModel
 class SnackBarViewModel @Inject constructor(
   mutableThrowableFlow: MutableSharedFlow<Throwable>,
-  val mutableMessageFlow: MutableSharedFlow<Message>
 ) : ViewModel() {
 
   val throwableFlow = mutableThrowableFlow.asSharedFlow()
+
+  private val mutableMessageFlow = MutableSharedFlow<Message>()
+  val messageFlow = mutableMessageFlow.asSharedFlow()
 
   private val messages = mutableListOf<Message>()
 
@@ -49,14 +51,9 @@ class SnackBarViewModel @Inject constructor(
     fun AppCompatActivity.configureSnackBar(anchorView: View) {
       val viewModel by viewModels<SnackBarViewModel>()
       fun createSnackBar(message: Message) {
-        val snackBar = Snackbar.make(
-          anchorView,
-          message.message,
-          Snackbar.LENGTH_LONG
-        )
+        val snackBar = Snackbar.make(anchorView, message.message, Snackbar.LENGTH_LONG)
         snackBar.animationMode = Snackbar.ANIMATION_MODE_SLIDE
-        snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = 0}
-        //if (anchorView !is NavigationRailView) snackBar.anchorView = anchorView
+        snackBar.view.updateLayoutParams<ViewGroup.MarginLayoutParams> { bottomMargin = 0 }
         message.action?.run { snackBar.setAction(name) { handler() } }
         snackBar.addCallback(object : Snackbar.Callback() {
           override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
@@ -66,9 +63,7 @@ class SnackBarViewModel @Inject constructor(
         snackBar.show()
       }
 
-      observe(viewModel.mutableMessageFlow) { message ->
-        createSnackBar(message)
-      }
+      observe(viewModel.messageFlow) { createSnackBar(it) }
 
       observe(viewModel.throwableFlow) { throwable ->
         throwable.printStackTrace()
@@ -87,12 +82,7 @@ class SnackBarViewModel @Inject constructor(
       viewModel.create(message)
     }
 
-    fun Fragment.createSnack(message: String) {
-      createSnack(Message(message))
-    }
-
-    fun Fragment.createSnack(message: Int) {
-      createSnack(getString(message))
-    }
+    fun Fragment.createSnack(message: String) = createSnack(Message(message))
+    fun Fragment.createSnack(message: Int) = createSnack(getString(message))
   }
 }

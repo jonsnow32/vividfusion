@@ -6,7 +6,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.CaptionStyleCompat
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgress
-import cloud.app.vvf.common.models.extension.ExtensionMetadata
 import cloud.app.vvf.common.models.SearchItem
 import cloud.app.vvf.common.models.user.User
 import cloud.app.vvf.datastore.DataStore
@@ -21,7 +20,6 @@ import cloud.app.vvf.services.downloader.DownloadData
 import cloud.app.vvf.services.downloader.DownloadStatus
 
 
-const val ExtensionFolder = "extensionDir"
 const val FAVORITE_FOLDER = "favorites"
 const val SEARCH_HISTORY_FOLDER = "search_history"
 const val URI_HISTORY_FOLDER = "uri_history"
@@ -63,35 +61,6 @@ class AppDataStore(val context: Context, val account: Account) :
     removeKey(
       "$BOOKMARK_FOLDER/${avpMediaItem.id}"
     )
-  }
-
-
-  fun getExtension(className: String): ExtensionMetadata? {
-    return getExtensions()?.firstOrNull { it.className == className }
-  }
-
-  fun getExtensions(): List<ExtensionMetadata>? {
-    return getAll<ExtensionMetadata>("$ExtensionFolder/")
-  }
-
-  fun saveExtensions(extensions: List<ExtensionMetadata>) {
-    for (extension in extensions) {
-      set("$ExtensionFolder/${extension.className}", extension)
-    }
-  }
-
-  fun saveExtension(extension: ExtensionMetadata) {
-    extension.lastUpdated = System.currentTimeMillis()
-    return set("$ExtensionFolder/${extension.className}", extension)
-  }
-
-  fun getCurrentDBExtension(): ExtensionMetadata? {
-    return get<ExtensionMetadata>("$ExtensionFolder/defaultDB/")
-  }
-
-  fun setCurrentDBExtension(extension: ExtensionMetadata): Boolean {
-    set("$ExtensionFolder/defaultDB/", extension)
-    return true
   }
 
 

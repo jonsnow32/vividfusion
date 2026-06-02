@@ -15,16 +15,16 @@
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent">
 
-    <ImageView
-      android:id="@+id/selectedExtension"
-      android:layout_width="50dp"
-      android:layout_height="match_parent"
-      android:layout_gravity="center_vertical"
-      android:gravity="center"
-      android:contentDescription="@string/extension"
-      android:foreground="@drawable/ripple_item_container"
-      android:src="@drawable/ic_extension_24dp"
-      android:paddingHorizontal="4dp"/>
+<!--    <ImageView-->
+<!--      android:id="@+id/selectedExtension"-->
+<!--      android:layout_width="50dp"-->
+<!--      android:layout_height="match_parent"-->
+<!--      android:layout_gravity="center_vertical"-->
+<!--      android:gravity="center"-->
+<!--      android:contentDescription="@string/extension"-->
+<!--      android:foreground="@drawable/ripple_item_container"-->
+<!--      android:src="@drawable/ic_extension_24dp"-->
+<!--      android:paddingHorizontal="4dp"/>-->
 
     <View
       android:layout_width="1dp"

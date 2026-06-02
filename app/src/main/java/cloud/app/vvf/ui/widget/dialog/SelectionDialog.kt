@@ -117,7 +117,6 @@ class SelectionDialog : DockingDialog() {
         listview1.setSelection(it)
       }
 
-
       listview1.setOnItemClickListener { _, _, which, _ ->
         if (realShowApply) {
           if (!isMultiSelect) listview1.setItemChecked(which, true)

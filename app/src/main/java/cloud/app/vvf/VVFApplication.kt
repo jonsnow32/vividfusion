@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.hilt.work.HiltWorkerFactory
@@ -18,10 +17,7 @@ import cloud.app.vvf.ads.AdManager
 import cloud.app.vvf.ads.AdPreloadManager
 import cloud.app.vvf.ads.providers.AdProvider
 import cloud.app.vvf.common.helpers.network.HttpHelper
-import cloud.app.vvf.common.models.extension.Message
-import cloud.app.vvf.extension.ExtensionLoader
 import cloud.app.vvf.utils.setLocale
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.color.DynamicColorsOptions
 import com.google.firebase.FirebaseApp
@@ -46,9 +42,6 @@ class VVFApplication : Application(), Configuration.Provider,
 
   @Inject
   lateinit var throwableFlow: MutableSharedFlow<Throwable>
-
-  @Inject
-  lateinit var extensionLoader: ExtensionLoader
 
   @Inject
   lateinit var sharedPreferences: SharedPreferences
@@ -92,8 +85,6 @@ class VVFApplication : Application(), Configuration.Provider,
       }
     }
     applyUiChanges(sharedPreferences, currentActivity = currentActivity)
-    extensionLoader.initialize()
-
     // Initialize AdManager and Enhanced Preload System
     scope.launch {
       try {
@@ -127,22 +118,11 @@ class VVFApplication : Application(), Configuration.Provider,
       sharedPreferences.getBoolean("pref_use_show_app_crash_log", true)
 
 
-//    if (BuildConfig.DEBUG) {
-//      FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-//        if (!task.isSuccessful) {
-//          //Timber.w("Fetching FCM registration token failed", task.exception)
-//          return@OnCompleteListener
-//        }
-//
-//        // Get new FCM registration token
-//        val token = task.result
-//
-//        // Log and toast
-//        val msg = getString(R.string.msg_token_fmt, token)
-//        Timber.d(msg)
-//        Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
-//      })
-//    }
+    FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+      if (task.isSuccessful) {
+        Timber.d("FCM token: ${task.result}")
+      }
+    }
   }
 
   override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
@@ -287,14 +267,6 @@ class VVFApplication : Application(), Configuration.Provider,
       startActivity(mainIntent)
       Runtime.getRuntime().exit(0)
     }
-
-    fun Context.noClient() = Message(
-      getString(R.string.extension_empty)
-    )
-
-    fun Context.loginNotSupported(client: String) = Message(
-      getString(R.string.not_supported, getString(R.string.login), client)
-    )
 
     fun Context.createNotificationChannel(
       channelId: String,

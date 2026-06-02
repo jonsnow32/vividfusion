@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
+import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.vvf.R
 import cloud.app.vvf.ads.AdManager
 import cloud.app.vvf.databinding.FragmentDownloadsBinding
@@ -50,6 +51,7 @@ class DownloadsFragment : Fragment() {
       binding.rvDownloads.setPadding(0, 0, 0, it.bottom)
     }
     setupTransition(view)
+    applyInsets { binding.root.applyInsets(it) }
     setupRecyclerView()
     setupClickListeners()
     setupBannerAd() // Now enabled with proper banner container

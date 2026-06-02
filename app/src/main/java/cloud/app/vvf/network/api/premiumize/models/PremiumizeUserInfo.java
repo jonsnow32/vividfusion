@@ -2,9 +2,9 @@ package cloud.app.vvf.network.api.premiumize.models;
 
 import com.google.gson.annotations.SerializedName;
 
-import org.threeten.bp.Instant;
-import org.threeten.bp.OffsetDateTime;
-import org.threeten.bp.ZoneOffset;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 public class PremiumizeUserInfo {
     /**

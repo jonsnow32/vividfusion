@@ -24,9 +24,7 @@ import cloud.app.vvf.MainActivityViewModel.Companion.isNightMode
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.databinding.ActivityMainBinding
 import cloud.app.vvf.databinding.ConfirmExitDialogBinding
-import cloud.app.vvf.extension.builtIn.local.MediaUtils
 import cloud.app.vvf.features.player.PlayerFragment
-import cloud.app.vvf.features.playerManager.PlayerManager
 import cloud.app.vvf.ui.download.DownloadsFragment
 import cloud.app.vvf.utils.IntentHandler
 import cloud.app.vvf.utils.TV
@@ -64,16 +62,7 @@ class MainActivity : AppCompatActivity() {
   private lateinit var intentHandler: IntentHandler
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    PlayerManager.getInstance().setActivityResultRegistry(activityResultRegistry)
-    lifecycle.addObserver(PlayerManager.getInstance())
     super.onCreate(savedInstanceState)
-
-    MediaUtils.setActivity(this)
-    PlayerManager.getInstance()
-      .inject(
-        sharedPreferences,
-        this
-      ) // call after activity injected
 
     // Initialize intent handler
     intentHandler = IntentHandler(this)

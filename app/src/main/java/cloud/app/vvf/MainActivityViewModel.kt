@@ -11,7 +11,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.datastore.app.helper.BookmarkItem

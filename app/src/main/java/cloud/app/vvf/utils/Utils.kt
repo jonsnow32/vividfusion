@@ -28,10 +28,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
-import com.uwetrottmann.trakt5.TraktLink
-import org.threeten.bp.chrono.IsoChronology
-import org.threeten.bp.format.DateTimeFormatterBuilder
-import org.threeten.bp.format.FormatStyle
+import java.time.chrono.IsoChronology
+import java.time.format.DateTimeFormatterBuilder
+import java.time.format.FormatStyle
 import timber.log.Timber
 import java.io.DataOutputStream
 import java.io.File
@@ -149,22 +148,6 @@ object Utils {
 
   fun tmdbPersonLink(tmdbId: Int): String {
     return TMDB_BASE_URL + TMDB_PATH_PERSON + tmdbId
-  }
-
-  fun traktShowUrl(showTmdbId: Int): String? {
-    return TraktLink.tmdb(showTmdbId) + "?id_type=show"
-  }
-
-  fun traktEpisodeUrl(episodeTmdbId: Int): String? {
-    return TraktLink.tmdb(episodeTmdbId) + "?id_type=episode"
-  }
-
-  fun traktEpisodetvdbUrl(episodeTmdbId: Int): String? {
-    return TraktLink.tvdb(episodeTmdbId) + "?id_type=episode"
-  }
-
-  fun traktMovieUrl(movieTmdbId: Int): String? {
-    return TraktLink.tmdb(movieTmdbId) + "?id_type=movie"
   }
 
   fun metacriticMovie(title: String): String {

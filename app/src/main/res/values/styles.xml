@@ -10,7 +10,7 @@
     <item name="layout_scrollFlags">scroll|exitUntilCollapsed|snap</item>
   </style>
 
-  <style name="CollapsingBar" parent="TopCollapsingBar"></style>
+  <style name="CollapsingBar" parent="TopCollapsingBar"/>
 
   <style name="Toolbar" parent="Widget.Material3.Toolbar">
     <item name="android:layout_marginStart">8dp</item>

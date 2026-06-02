@@ -1,9 +1,7 @@
 package cloud.app.vvf.common.helpers.network.utils
 
-import cloud.app.vvf.common.VVFExtension
 import kotlin.math.pow
 
-@VVFExtension
 object JsUnpacker {
   /**
    * Regex to detect packed functions.

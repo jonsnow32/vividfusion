@@ -18,7 +18,6 @@ import cloud.app.vvf.utils.AppUpdater
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
-import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 
@@ -88,13 +86,6 @@ class NetworkModule {
         HttpLoggingInterceptor.Level.NONE
       }
     }
-
-  @Provides
-  fun provideGson(): Gson = Gson()
-
-  @Provides
-  fun provideGsonConverterFactory(gson: Gson): GsonConverterFactory =
-    GsonConverterFactory.create(gson)
 
   @Provides
   fun provideCookieJar(context: Context): PersistentCookieJar =

@@ -15,6 +15,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import androidx.core.net.toUri
 
 /**
  * A unified file abstraction for Android, forked from https://github.com/seven332/UniFile/tree/master
@@ -190,7 +191,7 @@ abstract class KUniFile(val context: Context) {
               else -> path
             }
           }?.replace("primary:", "storage/emulated/0/")?.replace(":", "/")
-          pathSegment?.let { "/$it" } ?: null
+          pathSegment?.let { "/$it" }
         } else {
           val documentId = try {
             DocumentsContract.getDocumentId(uri)
@@ -325,7 +326,7 @@ abstract class KUniFile(val context: Context) {
         get() {
           val metadata = queryMetadata()
           if (metadata.exists) return metadata.displayName
-          val pathName = relativePath.split(File.separator).filter { it.isNotBlank() }.lastOrNull()
+          val pathName = relativePath.split(File.separator).lastOrNull { it.isNotBlank() }
           return pathName ?: when (mediaCollection) {
             MediaCollection.DOWNLOADS -> "Downloads"
             MediaCollection.PICTURES -> "Pictures"
@@ -355,7 +356,7 @@ abstract class KUniFile(val context: Context) {
           "${Environment.getExternalStorageDirectory().absolutePath}/$relativePath"
         }
       override val isDirectory: Boolean
-        get() = relativePath.split(File.separator).filter { it.isNotBlank() }.isEmpty() || (resolveUri() == collection && cachedUri == null)
+        get() = relativePath.split(File.separator).none { it.isNotBlank() } || (resolveUri() == collection && cachedUri == null)
       override val isFile: Boolean get() = queryMetadata().exists
       override fun lastModified(): Long = queryMetadata().lastModified
       override fun length(): Long = queryMetadata().size
@@ -429,7 +430,7 @@ abstract class KUniFile(val context: Context) {
     class AssetKUniFile(context: Context, private val assets: AssetManager, private val filename: String) : KUniFile(context) {
       override fun createFile(displayName: String, mimeType: String): KUniFile? = null
       override fun createDirectory(displayName: String): KUniFile? = null
-      override val uri: Uri get() = Uri.parse("file:///android_asset/$filename")
+      override val uri: Uri get() = "file:///android_asset/$filename".toUri()
       override val name: String? get() = filename.substringAfterLast("/")
       override val type: String? get() = context.contentResolver.getType(uri) ?: "application/octet-stream"
       override val filePath: String? get() = null
@@ -452,7 +453,7 @@ abstract class KUniFile(val context: Context) {
     class ResourceKUniFile(context: Context, private val resId: Int) : KUniFile(context) {
       override fun createFile(displayName: String, mimeType: String): KUniFile? = null
       override fun createDirectory(displayName: String): KUniFile? = null
-      override val uri: Uri get() = Uri.parse("android.resource://${context.packageName}/$resId")
+      override val uri: Uri get() = "android.resource://${context.packageName}/$resId".toUri()
       override val name: String? get() = context.resources.getResourceEntryName(resId)
       override val type: String? get() = context.contentResolver.getType(uri) ?: "application/octet-stream"
       override val filePath: String? get() = null

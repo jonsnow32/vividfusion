@@ -6,7 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import cloud.app.vvf.base.CatchingViewModel
-import cloud.app.vvf.common.clients.Extension
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.features.player.torrent.TorrentManager
@@ -22,7 +21,6 @@ import javax.inject.Inject
 @HiltViewModel
 class TorrentInfoViewModel @Inject constructor(
   throwableFlow: MutableSharedFlow<Throwable>,
-  val extensionFlow: MutableStateFlow<List<Extension<*>>?>,
   val updateUIFlow: MutableStateFlow<AVPMediaItem?>,
   val torrentManager: TorrentManager,
   val application: Application,
@@ -42,33 +40,20 @@ class TorrentInfoViewModel @Inject constructor(
     viewModelScope.launch {
       try {
         _isLoading.value = true
-        Timber.d("Loading torrent info from uri: $uri")
         val file = when (uri.scheme?.lowercase()) {
           "file" -> File(uri.path ?: "")
           "content" -> {
-            // Handle content uri: copy to temp file
-            try {
-              val inputStream = application.contentResolver.openInputStream(uri)
-              if (inputStream != null) {
-                val tempFile = File.createTempFile("torrent_", ".torrent", application.cacheDir)
-                tempFile.outputStream().use { output ->
-                  inputStream.copyTo(output)
-                }
-                tempFile
-              } else null
-            } catch (e: Exception) {
-              Timber.e(e, "Failed to copy content uri to temp file: $uri")
-              null
+            application.contentResolver.openInputStream(uri)?.use { input ->
+              val tempFile = File.createTempFile("torrent_", ".torrent", application.cacheDir)
+              tempFile.outputStream().use { input.copyTo(it) }
+              tempFile
             }
           }
-          else -> null // TODO: handle other uri schemes if needed
+          else -> null
         }
         if (file != null && file.exists()) {
-          val torrentInfo = BencodeParser().parseTorrent(file.absolutePath)
-          _torrentInfo.value = torrentInfo
-          Timber.d("Successfully decoded torrent info: ${torrentInfo.name}")
+          _torrentInfo.value = BencodeParser().parseTorrent(file.absolutePath)
         } else {
-          Timber.w("File not found for uri: $uri")
           _torrentInfo.value = null
         }
       } catch (e: Exception) {
@@ -85,16 +70,7 @@ class TorrentInfoViewModel @Inject constructor(
     viewModelScope.launch {
       try {
         _isLoading.value = true
-        Timber.d("Loading torrent status for hash: $hash")
-
-        val status = torrentManager.get(hash)
-        _torrentStatus.value = status
-
-        if (status != null) {
-          Timber.d("Successfully loaded torrent status: ${status.name}")
-        } else {
-          Timber.w("No torrent found for hash: $hash")
-        }
+        _torrentStatus.value = torrentManager.get(hash)
       } catch (e: Exception) {
         Timber.e(e, "Error loading torrent status")
         throwableFlow.tryEmit(e)

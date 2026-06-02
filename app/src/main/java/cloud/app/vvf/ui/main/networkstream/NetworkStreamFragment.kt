@@ -28,6 +28,7 @@ import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
 import cloud.app.vvf.utils.Utils.hideKeyboard
 import timber.log.Timber
 import java.util.Timer
@@ -72,8 +73,7 @@ class NetworkStreamFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     setupTransition(view)
-    applyInsetsMain(binding.root, binding.rvUriHistory)
-
+    applyInsets { binding.root.applyInsets(it) }
 
     uriHistoryAdapter = UriHistoryAdapter(
       emptyList(),

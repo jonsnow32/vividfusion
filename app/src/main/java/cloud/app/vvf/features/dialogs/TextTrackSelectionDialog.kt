@@ -23,7 +23,6 @@ class TextTrackSelectionDialog(
   private val tracks: Tracks,
   private val onTrackSelected: (trackIndex: Int) -> Unit,
   private val openLocalSubtitle: () -> Unit,
-  private val openOnlineSubtitle: () -> Unit,
   private val openSubtitleOffsetDialog: () -> Unit,
 ) : DockingDialog() {
   override val widthPercentage: Float
@@ -78,10 +77,7 @@ class TextTrackSelectionDialog(
         dialog?.dismissSafe(activity)
       }
 
-      onlineSubtitleBtn.setOnClickListener {
-        openOnlineSubtitle()
-        dialog?.dismissSafe(activity)
-      }
+      onlineSubtitleBtn.isVisible = false
       subtitleOffsetBtn.setOnClickListener {
         openSubtitleOffsetDialog()
         dialog?.dismissSafe(activity)

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
   <string name="app_name">ViVidFusion</string>
+  <string name="browse_featured_plugins">Browse Featured Plugins</string>
+  <string name="featured_plugins">Featured Plugins</string>
+  <string name="onboarding_title">Get started with VividFusion</string>
+  <string name="onboarding_message">Add your first plugin to start streaming. Tap \'Browse Featured\' to explore community plugins.</string>
   <string name="home">Home</string>
   <string name="search">Search</string>
   <string name="library">Library</string>
@@ -389,6 +393,7 @@
   <string name="mark_watched">Mark watched</string>
   <string name="history">History</string>
   <string name="enter_url_or_file">Enter url</string>
+  <string name="stream_subtitle">Paste a URL, magnet link or open a file</string>
   <string name="streaming">Streaming</string>
   <string name="network_stream">Start streaming</string>
   <string name="torrent_singular">Torrent</string>
@@ -460,5 +465,6 @@
   <string name="notifications">Notifications</string>
   <string name="notifications_permission_summary">To show notification for downloads and music</string>
   <string name="could_not_find_the_file">Could not find the file.</string>
+  <string name="video_cover">video cover image</string>
 
 </resources>

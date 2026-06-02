@@ -1,7 +1,7 @@
 package cloud.app.vvf.network.api.realdebrid.model
 
 import cloud.app.vvf.utils.TimeUtils
-import org.threeten.bp.Instant
+import java.time.Instant
 
 class RealDebridUserInfor(
     var avatar: String,

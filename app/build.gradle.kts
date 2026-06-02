@@ -16,8 +16,8 @@ android {
     applicationId = "cloud.app.vvf"
     minSdk = 24
     targetSdk = 35
-    versionCode = 104
-    versionName = "1.0.4"
+    versionCode = 105
+    versionName = "1.0.5"
     buildConfigField("int", "VERSION_CODE", "$versionCode")
     buildConfigField("String", "AUTHORITY_FILE_PROVIDER", "\"${applicationId}.fileprovider\"")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -97,10 +97,10 @@ dependencies {
   //logging
   implementation(libs.timber)
 
-  //service
-  implementation(libs.tmdb)
-  implementation(libs.trakt)
-  implementation(libs.thetvdb)
+  // Retrofit2 + Gson (used by debrid/torrent API clients)
+  implementation("com.squareup.retrofit2:retrofit:2.9.0")
+  implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+  implementation("com.google.code.gson:gson:2.10.1")
 
   //network
   implementation(libs.squareup.okhttp)

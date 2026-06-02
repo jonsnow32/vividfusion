@@ -1,36 +1,64 @@
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+  xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  android:layout_width="match_parent"
+  android:id="@+id/cardVideo"
+  android:layout_width="@dimen/video_width"
   android:layout_height="wrap_content"
   android:layout_margin="8dp"
-  xmlns:tools="http://schemas.android.com/tools">
+  app:cardCornerRadius="16dp"
+  app:cardElevation="4dp"
+  app:strokeWidth="0dp"
+  app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.MediumComponent">
 
-  <androidx.cardview.widget.CardView
-    android:id="@+id/background"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
-    android:backgroundTint="@android:color/transparent"
-    android:foreground="@drawable/outline_drawable"
-    app:cardCornerRadius="35dp"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintDimensionRatio="16:9" >
-    <ImageButton
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:contentDescription="@string/item_video"
-      android:src="@drawable/play_arrow_24dp"
-      android:layout_gravity="center"/>
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- Cover with 16:9 ratio -->
+    <FrameLayout
+      android:id="@+id/frameCover"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      app:layout_constraintDimensionRatio="16:9"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toEndOf="parent">
+
+      <ImageView
+        android:id="@+id/imageCover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/video_cover" />
+
+      <!-- Centered play icon -->
+      <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/iconPlay"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="center"
+        android:padding="12dp"
+        android:contentDescription="@string/play"
+        app:srcCompat="@drawable/ic_play_circle"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.None"
+        app:tint="?attr/colorOnSurfaceVariant" />
+    </FrameLayout>
+
+    <!-- Video title -->
     <TextView
-      android:id="@+id/videoTitle"
-      android:layout_width="match_parent"
+      android:id="@+id/textTitle"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_gravity="start|bottom"
-      android:gravity="center"
-      tools:text="@tools:sample/lorem">
-
-    </TextView>
-  </androidx.cardview.widget.CardView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+      android:padding="8dp"
+      android:text="Sample Video Title"
+      android:textAppearance="?attr/textAppearanceBodyLarge"
+      android:textColor="?attr/colorOnSurface"
+      android:ellipsize="end"
+      android:maxLines="1"
+      app:layout_constraintTop_toBottomOf="@id/frameCover"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintBottom_toBottomOf="parent" />
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

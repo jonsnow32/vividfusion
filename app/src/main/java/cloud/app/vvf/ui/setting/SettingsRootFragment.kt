@@ -115,7 +115,6 @@ class SettingsRootFragment : BaseSettingsFragment() {
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
       val fragment = when (preference.key) {
         "about" -> AboutFragment()
-        "extension" -> ManageExtensionsFragment()
         "ui" -> UiSettingFragment()
         "content" -> ContentSettingFragment()
         "player" -> PlayerSettingFragment()
