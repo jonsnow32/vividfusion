@@ -173,7 +173,7 @@ class DownloadsAdapter(
         tvTitle.text =  data.title ?: data.url
 
         // HTTP-specific info
-        tvConnections.text = context.getString(R.string.completed_format,data.connections)
+        tvConnections.text = context.getString(R.string.completed_format, data.connections.toString())
         tvResumeSupport.text = if (data.resumeSupported) "Resume: Yes" else "Resume: No"
         tvResumeSupport.setTextColor(
           if (data.resumeSupported)

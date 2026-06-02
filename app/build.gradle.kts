@@ -29,6 +29,11 @@ android {
     buildConfigField("int", "VERSION_CODE", "$versionCode")
     buildConfigField("String", "AUTHORITY_FILE_PROVIDER", "\"${applicationId}.fileprovider\"")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    multiDexEnabled = true
+  }
+
+  compileOptions {
+    isCoreLibraryDesugaringEnabled = true
   }
 
   signingConfigs {
@@ -64,6 +69,12 @@ android {
     jvmToolchain(17)
   }
 
+  lint {
+    lintConfig = file("lint.xml")
+    abortOnError = true
+    warningsAsErrors = false
+  }
+
   viewBinding {
     enable = true
   }
@@ -73,6 +84,8 @@ android {
 }
 
 dependencies {
+
+  coreLibraryDesugaring(libs.android.desugar.jdk.libs)
 
   implementation(project(":common"))
   //Android

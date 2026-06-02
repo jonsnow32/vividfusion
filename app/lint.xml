@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Deep link intent-filters with custom schemes (avp.watch.next, magnet, file)
+         are intentional and do not need App Link verification hosts. -->
+    <issue id="AppLinkUrlError" severity="ignore" />
+
+    <!-- typeSpecificData is Map<String, JsonElement>; Gson's JsonElement correctly
+         implements structural equals(), so DiffUtil comparison is valid. -->
+    <issue id="DiffUtilEquals" severity="ignore" />
+</lint>
