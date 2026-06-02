@@ -15,6 +15,7 @@ import cloud.app.vvf.MainActivityViewModel
 import cloud.app.vvf.R
 import cloud.app.vvf.databinding.FragmentMainBinding
 import cloud.app.vvf.ui.download.DownloadsFragment
+import cloud.app.vvf.ui.main.files.FilesFragment
 import cloud.app.vvf.ui.main.networkstream.NetworkStreamFragment
 import cloud.app.vvf.ui.setting.SettingsRootFragment
 import cloud.app.vvf.utils.autoCleared
@@ -103,6 +104,7 @@ class MainFragment : Fragment() {
   private fun createFragment(@IdRes id: Int): Fragment = when (id) {
     R.id.networkStreamFragment -> NetworkStreamFragment()
     R.id.downloadsFragment -> DownloadsFragment()
+    R.id.filesFragment -> FilesFragment()
     R.id.settingsFragment -> SettingsRootFragment()
     else -> throw IllegalArgumentException("Invalid nav item: $id")
   }

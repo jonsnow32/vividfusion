@@ -9,6 +9,7 @@
   <item name="mainActivity" type="id"/>
   <item name="torrentInfoFragment" type="id"/>
   <item name="downloadsFragment" type="id"/>
+  <item name="filesFragment" type="id"/>
   <item name="exceptionFragment" type="id"/>
 
 </resources>

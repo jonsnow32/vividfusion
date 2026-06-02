@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import cloud.app.vvf.R
 import cloud.app.vvf.datastore.app.helper.UriHistoryItem
@@ -14,6 +15,7 @@ class UriHistoryAdapter(
   private val onLongClick: (UriHistoryItem) -> Unit,
   private val onDelete: (UriHistoryItem) -> Unit,
 ) : RecyclerView.Adapter<UriHistoryAdapter.UriHistoryViewHolder>() {
+
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): UriHistoryViewHolder {
     val view = LayoutInflater.from(parent.context)
       .inflate(R.layout.item_uri_history, parent, false)
@@ -22,9 +24,12 @@ class UriHistoryAdapter(
 
   override fun onBindViewHolder(holder: UriHistoryViewHolder, position: Int) {
     val item = items[position]
-    holder.textView.text = item.uri
+    val hasTitle = !item.title.isNullOrBlank()
+    holder.titleView.isVisible = hasTitle
+    holder.titleView.text = item.title
+    holder.urlView.text = if (hasTitle) item.uri else item.uri
     holder.itemView.setOnClickListener { onClick(item) }
-    holder.itemView.setOnLongClickListener { onLongClick(item) ; true }
+    holder.itemView.setOnLongClickListener { onLongClick(item); true }
     holder.deleteButton.setOnClickListener { onDelete(item) }
   }
 
@@ -36,7 +41,8 @@ class UriHistoryAdapter(
   }
 
   class UriHistoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    val textView: TextView = itemView.findViewById(R.id.tvUriHistory)
+    val titleView: TextView = itemView.findViewById(R.id.tvUriTitle)
+    val urlView: TextView = itemView.findViewById(R.id.tvUriHistory)
     val deleteButton: View = itemView.findViewById(R.id.btnDeleteHistory)
   }
 }

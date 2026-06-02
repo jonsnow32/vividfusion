@@ -12,6 +12,11 @@
     android:title="@string/downloads" />
 
   <item
+    android:id="@id/filesFragment"
+    android:icon="@drawable/ic_folder_24"
+    android:title="@string/files" />
+
+  <item
     android:id="@id/settingsFragment"
     android:icon="@drawable/settings_outlined_2dp"
     android:title="@string/settings" />

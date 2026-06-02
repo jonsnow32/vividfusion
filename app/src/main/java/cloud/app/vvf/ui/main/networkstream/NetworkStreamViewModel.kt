@@ -29,7 +29,22 @@ class NetworkStreamViewModel @Inject constructor(
   val downloads: StateFlow<Map<String, DownloadData>> = downloadManager.downloads
 
   fun saveToUriHistory(streamUrl: String) {
-    dataFlow.value.saveUriHistory(UriHistoryItem(streamUrl))
+    val title = extractTitleFromUri(streamUrl)
+    dataFlow.value.saveUriHistory(UriHistoryItem(uri = streamUrl, title = title))
+  }
+
+  private fun extractTitleFromUri(uri: String): String? {
+    return when {
+      uri.startsWith("magnet:") -> {
+        val dn = Regex("[?&]dn=([^&]+)").find(uri)?.groupValues?.getOrNull(1)
+        dn?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+      }
+      else -> {
+        val path = uri.substringBefore("?").substringAfterLast("/")
+        path.substringBeforeLast(".").replace(Regex("[_.-]+"), " ").trim()
+          .takeIf { it.isNotBlank() }
+      }
+    }
   }
 
   fun clearUriHistory() {
