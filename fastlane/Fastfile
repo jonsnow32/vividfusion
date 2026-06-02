@@ -26,7 +26,7 @@ platform :android do
       signing_props = {
         "android.injected.signing.store.file"     => ENV["STORE_FILE"],
         "android.injected.signing.store.password" => ENV["STORE_PASSWORD"],
-        "android.injected.signing.store.type"     => ENV.fetch("STORE_TYPE", "PKCS12"),
+        "android.injected.signing.store.type"     => ENV.fetch("STORE_TYPE", "JKS"),
         "android.injected.signing.key.alias"      => ENV["KEY_ALIAS"],
         "android.injected.signing.key.password"   => ENV["KEY_PASSWORD"],
       }

@@ -31,17 +31,19 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > app/release.jks
 
-      - name: Re-encode keystore to legacy PKCS12
+      - name: Convert keystore PKCS12 → JKS
         run: |
-          openssl pkcs12 -legacy -in app/release.jks \
-            -passin "pass:${{ secrets.STORE_PASSWORD }}" \
-            -nodes -out /tmp/key.pem
-          openssl pkcs12 -legacy -export \
-            -in /tmp/key.pem \
-            -passout "pass:${{ secrets.STORE_PASSWORD }}" \
-            -name "${{ secrets.KEY_ALIAS }}" \
-            -out app/release.jks
-          rm -f /tmp/key.pem
+          keytool -importkeystore \
+            -srckeystore app/release.jks \
+            -srcstoretype PKCS12 \
+            -srcstorepass "${{ secrets.STORE_PASSWORD }}" \
+            -destkeystore app/release-jks.jks \
+            -deststoretype JKS \
+            -deststorepass "${{ secrets.STORE_PASSWORD }}" \
+            -destkeypass "${{ secrets.KEY_PASSWORD }}" \
+            -alias "${{ secrets.KEY_ALIAS }}" \
+            -noprompt 2>&1 | grep -v "Warning\|Deprecated\|Migration"
+          mv app/release-jks.jks app/release.jks
 
       - name: Build release AAB
         run: bundle exec fastlane build_release
