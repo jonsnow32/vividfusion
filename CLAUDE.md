@@ -6,6 +6,9 @@
 Invoke with `/video-architect <question>` to activate the elite Video Player Architect persona.
 Covers: ExoPlayer/Media3, HLS/DASH, adaptive bitrate, subtitle systems, Android TV, DRM, OTT architecture, performance optimization, monetization, AI recommendations.
 
+Installed globally at `~/.claude/skills/video-architect/SKILL.md` — available in all projects without restart.
+Also available project-level at `.claude/commands/video-architect.md`.
+
 Example: `/video-architect how should I implement adaptive bitrate buffering for weak networks?`
 
 ---
