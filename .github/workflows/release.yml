@@ -29,21 +29,13 @@ jobs:
         run: echo "${{ secrets.GOOGLE_SERVICES_JSON }}" | base64 -d > app/google-services.json
 
       - name: Decode keystore
-        run: echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > app/release.jks
-
-      - name: Convert keystore PKCS12 → JKS
         run: |
-          keytool -importkeystore \
-            -srckeystore app/release.jks \
-            -srcstoretype PKCS12 \
-            -srcstorepass "${{ secrets.STORE_PASSWORD }}" \
-            -destkeystore app/release-jks.jks \
-            -deststoretype JKS \
-            -deststorepass "${{ secrets.STORE_PASSWORD }}" \
-            -destkeypass "${{ secrets.KEY_PASSWORD }}" \
-            -alias "${{ secrets.KEY_ALIAS }}" \
-            -noprompt 2>&1 | grep -v "Warning\|Deprecated\|Migration"
-          mv app/release-jks.jks app/release.jks
+          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > app/release.jks
+          if [ ! -s app/release.jks ]; then
+            echo "ERROR: Keystore file is empty — check RELEASE_KEYSTORE secret"
+            exit 1
+          fi
+          echo "Keystore decoded: $(wc -c < app/release.jks) bytes"
 
       - name: Build release AAB
         run: bundle exec fastlane build_release
