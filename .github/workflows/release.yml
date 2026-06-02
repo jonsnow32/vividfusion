@@ -34,7 +34,7 @@ jobs:
       - name: Build release AAB
         run: bundle exec fastlane build_release
         env:
-          STORE_FILE: release.jks
+          STORE_FILE: ${{ github.workspace }}/app/release.jks
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
