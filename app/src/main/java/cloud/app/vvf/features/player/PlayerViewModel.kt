@@ -18,6 +18,7 @@ import androidx.media3.common.TrackSelectionOverride
 import androidx.media3.common.Tracks
 import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaSession
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.CacheDataSource
@@ -211,6 +212,8 @@ class PlayerViewModel @Inject constructor(
         }
         prepare()
       }
+
+    PlayerService.mediaSession = MediaSession.Builder(application, player!!).build()
   }
 
   fun parseSubtitles(context: Context, onResult: (Boolean) -> Unit) {
@@ -297,8 +300,11 @@ class PlayerViewModel @Inject constructor(
   }
 
   override fun onCleared() {
+    PlayerService.mediaSession?.release()
+    PlayerService.mediaSession = null
     player?.release()
     player = null
+    simpleCache = null
     playerListener.release()
     super.onCleared()
   }

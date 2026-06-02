@@ -2,14 +2,17 @@ package cloud.app.vvf.features.player
 
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
+import android.app.PictureInPictureParams
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.media.AudioManager
+import android.os.Build
 import android.os.Bundle
 import android.text.format.Formatter.formatShortFileSize
+import android.util.Rational
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +24,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -97,6 +101,7 @@ class PlayerFragment : Fragment() {
   private var playerView: PlayerView? = null
   private var backPressedCallback: OnBackPressedCallback? = null
   private var hasShownSeekUnsupportedDialog = false
+  private var isBackgroundMode = false
 
   companion object {
     fun newInstance(
@@ -327,6 +332,29 @@ class PlayerFragment : Fragment() {
     playerForward.setOnClickListener { viewModel.seekToNext() }
     btnResize.setOnClickListener { viewModel.toggleResizeMode() }
     btnRotate.setOnClickListener { rotateScreen() }
+
+    // Picture-in-Picture
+    btnPip.isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+    btnPip.setOnClickListener {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val ratio = viewModel.videoSize.value
+          ?.let { Rational(it.width, it.height) }
+          ?: Rational(16, 9)
+        requireActivity().enterPictureInPictureMode(
+          PictureInPictureParams.Builder().setAspectRatio(ratio).build()
+        )
+      }
+    }
+
+    // Background playback
+    btnBackground.isVisible = true
+    btnBackground.setOnClickListener {
+      isBackgroundMode = true
+      requireContext().startService(
+        Intent(requireContext(), PlayerService::class.java)
+      )
+      requireActivity().moveTaskToBack(true)
+    }
     btnAudioTrack.setOnClickListener {
       AudioVideoTrackSelectionDialog(
         viewModel.player?.currentTracks ?: return@setOnClickListener,
@@ -695,14 +723,26 @@ class PlayerFragment : Fragment() {
 
   override fun onResume() {
     super.onResume()
+    isBackgroundMode = false
     if (viewModel.isPlaying.value) {
       viewModel.play()
     }
   }
 
   override fun onPause() {
-    viewModel.pause()
+    val inPiP = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+      && requireActivity().isInPictureInPictureMode
+    if (!isBackgroundMode && !inPiP) {
+      viewModel.pause()
+    }
     super.onPause()
+  }
+
+  fun onPipModeChanged(isInPiP: Boolean) {
+    playerView?.useController = !isInPiP
+    if (!isInPiP) {
+      currentActivity.hideSystemUI(viewModel.fullscreenNotch.value)
+    }
   }
 
   override fun onDestroyView() {

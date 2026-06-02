@@ -1,5 +1,60 @@
 # CLAUDE.md
 
+Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-specific instructions as needed.
+
+Tradeoff: These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+1. Think Before Coding
+Don't assume. Don't hide confusion. Surface tradeoffs.
+
+Before implementing:
+
+State your assumptions explicitly. If uncertain, ask.
+If multiple interpretations exist, present them - don't pick silently.
+If a simpler approach exists, say so. Push back when warranted.
+If something is unclear, stop. Name what's confusing. Ask.
+2. Simplicity First
+Minimum code that solves the problem. Nothing speculative.
+
+No features beyond what was asked.
+No abstractions for single-use code.
+No "flexibility" or "configurability" that wasn't requested.
+No error handling for impossible scenarios.
+If you write 200 lines and it could be 50, rewrite it.
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+3. Surgical Changes
+Touch only what you must. Clean up only your own mess.
+
+When editing existing code:
+
+Don't "improve" adjacent code, comments, or formatting.
+Don't refactor things that aren't broken.
+Match existing style, even if you'd do it differently.
+If you notice unrelated dead code, mention it - don't delete it.
+When your changes create orphans:
+
+Remove imports/variables/functions that YOUR changes made unused.
+Don't remove pre-existing dead code unless asked.
+The test: Every changed line should trace directly to the user's request.
+
+4. Goal-Driven Execution
+Define success criteria. Loop until verified.
+
+Transform tasks into verifiable goals:
+
+"Add validation" → "Write tests for invalid inputs, then make them pass"
+"Fix the bug" → "Write a test that reproduces it, then make it pass"
+"Refactor X" → "Ensure tests pass before and after"
+For multi-step tasks, state a brief plan:
+
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+These guidelines are working if: fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
 ## Custom Skills
 
 ### /video-architect
@@ -39,38 +94,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-VividFusion / VVF (`cloud.app.vvf`) is an Android media app for browsing, streaming,
-and playing movies/TV. Content sources are **not hardcoded** — they come from
-**extensions** that implement a small set of client interfaces. Extensions are either
-built-in or installed as separate APK plugins. The app shell owns the UI, playback
-(Media3/ExoPlayer), persistence, downloads, and debrid/network integrations;
-extensions supply the actual catalog, stream links, and subtitles.
-
-It is intentionally architected after the [Echo](https://github.com/brahmkshatriya/Echo)
-player's plugin model.
-
-## Modules
-
-Only two Gradle modules are included (`settings.gradle.kts`):
-
-- `:app` — the Android application.
-- `:common` — pure Kotlin/Android library shared with extensions. Defines the client
-  interfaces, data models, settings abstraction, and network helpers (`HttpHelper`)
-  that every extension compiles against.
-
-**Treat `:common` as a public API surface.** Installed third-party plugin APKs are
-compiled against it, so changing its interfaces or models (`AVPMediaItem`,
-`MediaItemsContainer`, `PagedData`, the `*Client` interfaces, `ExtensionMetadata`)
-can break already-installed plugins. Models/DTOs that cross the app↔extension boundary
-belong here, not in `:app`.
+VividFusion / VVF (`cloud.app.vvf`) is an Android **debrid-powered media player**. It
+streams and plays video/audio from HTTP(S) URLs, HLS/DASH streams, magnet links, and
+torrent files. Debrid services (RealDebrid, AllDebrid, Premiumize) and subtitle
+downloads (OpenSubtitles) are first-class integrations. There is **no extension/plugin
+system** and **no content database** (no TMDB/Trakt/TVDB/IMDB).
 
 > Note: a top-level `features/` directory exists on disk but is **not** an included
 > Gradle module — don't treat it as live code.
 
+## Modules
+
+Two Gradle modules (`settings.gradle.kts`):
+
+- `:app` — the Android application.
+- `:common` — pure Kotlin library. Contains utilities (`HttpHelper`, exceptions,
+  serialization), stream models (`Streamable`, `MagnetObject`, `Resolution`,
+  `PremiumType`), subtitle models (`SubtitleData`), and generic media models
+  (`AVPMediaItem` with `VideoItem`/`TrackItem`/`VideoCollectionItem`/`PlaybackProgress`).
+  No extension interfaces here.
+
 ## Build & Run
 
 JDK 17 required. compileSdk/targetSdk 35, minSdk 24. No product flavors.
-`app/google-services.json` must be present (Firebase + Crashlytics are applied).
+`app/google-services.json` must be present (Firebase + Crashlytics).
 `local.properties` supplies `sdk.dir`.
 
 ```bash
@@ -79,103 +126,76 @@ JDK 17 required. compileSdk/targetSdk 35, minSdk 24. No product flavors.
 ./gradlew lint                     # Android lint
 ./gradlew bundleRelease            # release AAB (R8 minify + resource shrink enabled)
 ./gradlew :app:testDebugUnitTest   # JVM unit tests
-./gradlew connectedAndroidTest     # instrumented tests on a device
 ```
-
-There are currently **no test sources** (`src/test`/`src/androidTest` exist but are
-empty). When adding the first test, run a single one with:
-`./gradlew :app:testDebugUnitTest --tests "cloud.app.vvf.SomeTest"`.
 
 ## Architecture
 
-### Extension / plugin system (the core abstraction)
+### Core User Flow
 
-Everything content-related flows through extensions. Build features against the client
-interfaces in `:common`, not against any specific extension.
+1. User enters URL / magnet / torrent file → `NetworkStreamFragment`
+2. Optionally resolve through debrid (RealDebrid / AllDebrid / Premiumize)
+3. Tap "Play Now" → `PlayerFragment` (Media3/ExoPlayer)
+4. Tap "Download" → `DownloadsFragment` via `HlsDownloader`/`HttpDownloader`/`TorrentDownloader`
 
-- **Client interfaces** (`common/.../clients/`) all extend `BaseClient`
-  (`onInitialize` runs once at load; `onExtensionSelected` runs each time the user
-  picks it; settings come via `SettingProvider`):
-  - `mvdatabase/DatabaseClient` — catalog/metadata + feeds (`getHomeFeed`,
-    `getMediaDetail`, `searchFeed`, `getRecommended`, …), all paged via `PagedData`.
-  - `streams/StreamClient` — `loadLinks(...)` resolves playable streams.
-  - `subtitles/SubtitleClient` — `loadSubtitles(...)`.
-  - `provider/*` — capability interfaces the host injects into clients
-    (`HttpHelperProvider`, `SettingProvider`, `MessageFlowProvider`,
-    `ExtractorFlowProvider`).
-- **`ExtensionType`** (`common`): `DATABASE`, `STREAM`, `SUBTITLE` — what a given
-  extension advertises (one extension may advertise several).
-- **`Extension<T : BaseClient>`** (`common/.../clients/BaseClient.kt`): wraps
-  `ExtensionMetadata` + a lazily-`Injectable<T>` client instance.
-
-#### Loading pipeline (`app/.../extension/`)
-
-- **`ExtensionLoader`** is the single entry point. It combines repositories, injects
-  host dependencies (`HttpHelper`, throwable/message flows, prefs) into each client,
-  exposes the live extensions as flows filtered/typed per `ExtensionType`, and keeps a
-  `priorityMap` (user-ordered preference per type, persisted in SharedPreferences).
-- **`extension/repo/`** is the actual loading mechanism:
-  - `CombinedRepository` merges built-in clients + `AppRepository` (installed APK
-    plugins discovered via `PackageManager`) + `FileRepository` (loose `.apk` files in
-    a folder).
-  - `ExtensionParser` reads plugin metadata from an APK and instantiates its
-    `BaseClient`; `DexLoader` does the class loading and extracts native libs from the
-    APK for the device ABI.
-- **`extension/builtIn/`**: in-app extensions implementing the same interfaces without
-  being separate APKs — `local/BuiltInClient` (on-device media) and the TMDB-based
-  database client (`extension/tmdb/`, `TmdbTvdbClient`).
-- **`ApkDownloader` / `InstallationUtils` / `UpdateChecker`**: download, install, and
-  update plugin APKs.
-
-### Dependency injection (Hilt)
+### Dependency Injection (Hilt)
 
 `VVFApplication` is the `@HiltAndroidApp` entry; `MainActivity` is the single activity
-host. App-wide singletons live in `app/.../di/` (`AppModule`, `NetworkModule`,
-`ExtensionModule`, `DataStoreModule`, `WorkManagerModule`) plus per-API modules in
-`app/.../network/di/`. `AppModule` notably provides shared `MutableSharedFlow`s for
-cross-cutting `Throwable`/`Message` events and a UI-update flow. Add new singletons
-here rather than constructing them ad hoc.
+host. Singletons in `app/.../di/` (`AppModule`, `NetworkModule`, `DataStoreModule`,
+`WorkManagerModule`) plus per-API modules in `app/.../network/di/`. `AppModule`
+provides shared `MutableSharedFlow`s for `Throwable`/`Message` events. Add new
+singletons here rather than constructing them ad hoc.
 
 ### Persistence
 
-`datastore/` (`DataStore.kt`, `app/`, `account/`) is the app's own key/value + account
-persistence layer. Extension settings are bridged through the settings abstraction in
-`:common` so plugins read/write settings without touching app internals.
+`datastore/` (`DataStore.kt`, `app/`, `account/`) — SharedPreferences-backed key/value
+store. `AppDataStore` stores: URI history (`UriHistoryItem`), player settings
+(`PlayerSettingItem`), download state (`DownloadData`), and video playback progress
+(`PlaybackProgress`). Account credentials for debrid services live in
+`datastore/account/`.
 
 ### Playback
 
-Media3/ExoPlayer (+ NextLib FFmpeg decoders for extra codecs, torrent streaming via
-`torrentserver`). Player logic lives in the `app/.../features/player/` and
-`features/playerManager/` **packages** (under `:app`, distinct from the orphaned
-top-level `features/` dir). HLS/DASH/SmoothStreaming and subtitle rendering are
-supported.
+Media3/ExoPlayer + NextLib FFmpeg decoders. Player code in `features/player/`:
+- `PlayerFragment` — full-screen player UI with custom controller
+- `PlayerViewModel` — player state, track selection, playback speed
+- `PlayerService` — `MediaSessionService` stub (background playback not yet implemented)
+- `features/player/subtitle/` — local subtitle support (SRT/VTT/ASS/TTML), offset UI
+- `features/player/torrent/` — torrent streaming overlay
+- `features/dialogs/` — audio/video/subtitle track selection dialogs
 
-### Networking & integrations
+### Networking & Integrations
 
-OkHttp-based, centralized in `common`'s `HttpHelper` (injected into extensions).
-`app/.../network/api/` hosts first-party service clients: debrid providers
-(`realdebrid`, `alldebrid`, `premiumize`), `openSubtitle`, `trakt`, `torrentserver`,
-and GitHub (for plugin repos/updates). TMDB/Trakt/TheTVDB SDKs back the built-in
-database extension.
+OkHttp-based (no Retrofit). `common/HttpHelper` wraps OkHttp.
+`app/.../network/api/`:
+- `realdebrid/`, `alldebrid/`, `premiumize/` — debrid unrestrict APIs
+- `torrentserver/` — local torrent server (torrent streaming)
+- (OpenSubtitles infrastructure exists in network layer, not yet wired to UI)
 
-### Background work
+`app/.../network/di/` — Hilt modules for each API client.
 
-`services/`: `downloader/` (`HlsDownloader`, `HttpDownloader`, `TorrentDownloader`
-with a `stateMachine/`), plus WorkManager workers (`BackupWorker`,
-`SubscriptionWorkManager`, `ApkDownloader`).
+### Downloads
+
+`services/downloader/`: `HlsDownloader`, `HttpDownloader`, `TorrentDownloader` with a
+`stateMachine/`. `DownloadData` model tracks status, progress, file path. WorkManager:
+`ApkDownloader` (self-update), `BackupWorker`.
 
 ### UI
 
-Single-activity, Fragment-based with ViewBinding (Compose enabled but used sparingly).
-Feature areas under `ui/`: `main/` (home, browse, search, library, networkstream),
-`detail/` (movie/show/season/episode/actor/torrent), `stream/` (stream selection),
-`media/` (paged media adapters), `extension/` (manage plugins), `download/`,
-`setting/`, and `widget/dialog/`.
+Single-activity, Fragment-based with ViewBinding.
+Navigation: bottom nav with 3 tabs (manual add/show/hide in `MainFragment`):
+- **Stream** (`NetworkStreamFragment`) — URL/magnet/torrent input, play history
+- **Downloads** (`DownloadsFragment`) — download queue with storage visualization
+- **Settings** (`SettingsRootFragment`) — general, UI, player, download, backup, about
+
+Detail screen: `ui/detail/torrent/TorrentInfoFragment` (torrent metadata before play).
+Dialogs in `ui/widget/dialog/` — account (debrid), action selection, input, exit confirm.
 
 ## Conventions
 
 - Kotlin official code style (`kotlin.code.style=official`); match surrounding files.
-- `kotlinx.serialization` + `kotlin-parcelize` are used for models — annotate new model
-  classes consistently with their neighbors.
+- `kotlinx.serialization` + `kotlin-parcelize` for models — annotate consistently.
 - KSP (not kapt) drives Hilt and Glide code generation.
 - Timber is the logging facade.
+- No Jetpack Navigation — fragment transactions are manual (`MainFragment.showTab`,
+  `navigate` extension in `NavUtils.kt`).
+- Flow observation: use `observe(viewModel.flow) { }` from `FlowUtils.kt`.

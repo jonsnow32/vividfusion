@@ -11,9 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.datastore.app.AppDataStore
-import cloud.app.vvf.datastore.app.helper.BookmarkItem
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.toPx
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -156,11 +154,4 @@ class MainActivityViewModel @Inject constructor(
   }
 
 
-  fun addToBookmark(item: AVPMediaItem, type: String) {
-    dataFlow.value.addToBookmark(item, type)
-  }
-
-  fun getBookmark(item: AVPMediaItem): BookmarkItem? {
-    return dataFlow.value.findBookmark(item)
-  }
 }

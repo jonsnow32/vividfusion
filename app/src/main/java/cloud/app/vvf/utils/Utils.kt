@@ -27,7 +27,6 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import cloud.app.vvf.R
-import cloud.app.vvf.common.models.AVPMediaItem
 import java.time.chrono.IsoChronology
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.FormatStyle
@@ -572,12 +571,4 @@ object Utils {
     }
   }
 
-  fun Context.getEpisodeShortTitle(episodeItem: AVPMediaItem.EpisodeItem?): String {
-    episodeItem ?: return ""
-    return getString(
-      R.string.episode_short_format,
-      episodeItem.seasonItem.season.number,
-      episodeItem.episode.episodeNumber
-    )
-  }
 }

@@ -250,6 +250,19 @@ class MainActivity : AppCompatActivity() {
 
 
   @OptIn(UnstableApi::class)
+  override fun onPictureInPictureModeChanged(
+    isInPictureInPictureMode: Boolean,
+    newConfig: android.content.res.Configuration
+  ) {
+    super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+    val playerFragment = supportFragmentManager.fragments
+      .flatMap { it.childFragmentManager.fragments + listOf(it) }
+      .filterIsInstance<PlayerFragment>()
+      .firstOrNull()
+    playerFragment?.onPipModeChanged(isInPictureInPictureMode)
+  }
+
+  @OptIn(UnstableApi::class)
   override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
     val currentFragment = supportFragmentManager.fragments.find { it.isVisible }
     if (currentFragment is PlayerFragment)

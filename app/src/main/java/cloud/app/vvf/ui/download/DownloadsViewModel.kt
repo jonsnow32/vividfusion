@@ -11,7 +11,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.getMediaType
 import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.features.player.PlayerFragment
@@ -377,9 +376,9 @@ class DownloadsViewModel @Inject constructor(
       val mimeType = when {
         file.extension.lowercase() in listOf("mp4", "mkv", "avi", "mov", "webm", "m4v") -> "video/*"
         file.extension.lowercase() in listOf("mp3", "m4a", "wav", "flac", "ogg") -> "audio/*"
-        else -> when (downloadData.mediaItem?.getMediaType()) {
-          "movie", "episode", "video" -> "video/*"
-          "audio" -> "audio/*"
+        else -> when (downloadData.mediaItem) {
+          is AVPMediaItem.VideoItem -> "video/*"
+          is AVPMediaItem.TrackItem -> "audio/*"
           else -> "*/*"
         }
       }

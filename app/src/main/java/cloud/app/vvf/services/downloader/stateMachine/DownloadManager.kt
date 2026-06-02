@@ -537,8 +537,6 @@ class DownloadManager @Inject constructor(
   private fun generateDownloadId(mediaItem: AVPMediaItem, downloadUrl: String): String {
     // Create deterministic ID based on media item and URL to prevent duplicates
     val mediaId = when (mediaItem) {
-      is AVPMediaItem.MovieItem -> "movie-${mediaItem.id}"
-      is AVPMediaItem.EpisodeItem -> "episode-${mediaItem.id}"
       is AVPMediaItem.VideoItem -> "video-${mediaItem.id}"
       is AVPMediaItem.TrackItem -> "track-${mediaItem.id}"
       else -> "media-${mediaItem.title}-${mediaItem.hashCode()}"
@@ -573,25 +571,8 @@ class DownloadManager @Inject constructor(
 
   private fun generateFileName(mediaItem: AVPMediaItem, quality: String): String {
     val baseName = when (mediaItem) {
-      is AVPMediaItem.MovieItem -> {
-        "${mediaItem.movie.generalInfo.title} (${mediaItem.releaseYear ?: "Unknown"})"
-      }
-
-      is AVPMediaItem.EpisodeItem -> {
-        val show = mediaItem.seasonItem.showItem.show.generalInfo.title
-        val season = mediaItem.seasonItem.season.number
-        val episode = mediaItem.episode.episodeNumber
-        "${show} - S${season.toString().padStart(2, '0')}E${episode.toString().padStart(2, '0')}"
-      }
-
-      is AVPMediaItem.VideoItem -> {
-        mediaItem.video.title
-      }
-
-      is AVPMediaItem.TrackItem -> {
-        mediaItem.track.title
-      }
-
+      is AVPMediaItem.VideoItem -> mediaItem.video.title
+      is AVPMediaItem.TrackItem -> mediaItem.track.title
       else -> "Media_${System.currentTimeMillis()}"
     }
 

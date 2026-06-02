@@ -116,7 +116,6 @@ class SettingsRootFragment : BaseSettingsFragment() {
       val fragment = when (preference.key) {
         "about" -> AboutFragment()
         "ui" -> UiSettingFragment()
-        "content" -> ContentSettingFragment()
         "player" -> PlayerSettingFragment()
         "general" -> GeneralSettingsFragment()
         "backup_updates" -> BackupUpdateFragment()

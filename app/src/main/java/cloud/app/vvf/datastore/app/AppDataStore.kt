@@ -6,12 +6,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.CaptionStyleCompat
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.AVPMediaItem.PlaybackProgress
-import cloud.app.vvf.common.models.SearchItem
-import cloud.app.vvf.common.models.user.User
 import cloud.app.vvf.datastore.DataStore
 import cloud.app.vvf.datastore.account.Account
-import cloud.app.vvf.datastore.app.helper.BOOKMARK_FOLDER
-import cloud.app.vvf.datastore.app.helper.BookmarkItem
 import cloud.app.vvf.datastore.app.helper.PlayerSettingItem
 import cloud.app.vvf.datastore.app.helper.UriHistoryItem
 import cloud.app.vvf.features.player.subtitle.DEF_SUBS_ELEVATION
@@ -20,174 +16,53 @@ import cloud.app.vvf.services.downloader.DownloadData
 import cloud.app.vvf.services.downloader.DownloadStatus
 
 
-const val FAVORITE_FOLDER = "favorites"
-const val SEARCH_HISTORY_FOLDER = "search_history"
 const val URI_HISTORY_FOLDER = "uri_history"
 const val PLAYER_SETTING_FOLDER = "player_setting"
-const val USERS_FOLDER = "users"
 const val PlaybackProgressFolder = "history_progress"
 const val DOWNLOAD_FOLDER = "downloads"
 
 class AppDataStore(val context: Context, val account: Account) :
   DataStore(context.getSharedPreferences("account_${account.getSlug()}", Context.MODE_PRIVATE)) {
 
-  fun getAllBookmarks(): List<BookmarkItem>? {
-    return getAll<BookmarkItem>("$BOOKMARK_FOLDER/")?.sortedByDescending { it.lastUpdated }
-  }
-
-  fun addToBookmark(data: BookmarkItem?) {
-    if (data == null) return
-    set("$BOOKMARK_FOLDER/${data.item.id}", data)
-  }
-
-  fun addToBookmark(avpMediaItem: AVPMediaItem?, type: String) {
-    if (avpMediaItem == null) return
-    when (type) {
-      "Watching" -> addToBookmark(BookmarkItem.Watching(0, null, avpMediaItem))
-      "Completed" -> addToBookmark(BookmarkItem.Completed(null, avpMediaItem))
-      "OnHold" -> addToBookmark(BookmarkItem.OnHold(avpMediaItem))
-      "Dropped" -> addToBookmark(BookmarkItem.Dropped(avpMediaItem))
-      "PlanToWatch" -> addToBookmark(BookmarkItem.PlanToWatch(avpMediaItem))
-      else -> removeBookmark(avpMediaItem)
-    }
-  }
-
-  fun findBookmark(avpMediaItem: AVPMediaItem?): BookmarkItem? {
-    return get<BookmarkItem>("$BOOKMARK_FOLDER/${avpMediaItem?.id}")
-  }
-
-  fun removeBookmark(avpMediaItem: AVPMediaItem?) {
-    if (avpMediaItem == null) return
-    removeKey(
-      "$BOOKMARK_FOLDER/${avpMediaItem.id}"
-    )
-  }
-
-
-  fun addFavoritesData(data: AVPMediaItem?) {
-    if (data == null) return
-    set("$FAVORITE_FOLDER/${data.id}", data)
-  }
-
-  fun removeFavoritesData(data: AVPMediaItem?) {
-    if (data == null) return
-    removeKey(
-      "$FAVORITE_FOLDER/${data.id}"
-    )
-  }
-
-  fun getFavorites(): List<AVPMediaItem>? {
-    return getAll<AVPMediaItem>(FAVORITE_FOLDER)
-  }
-
-  fun getFavoritesData(slug: String?): Boolean {
-    if (slug == null) return false
-    val data = get<AVPMediaItem>("$FAVORITE_FOLDER/${slug}")
-    return data != null;
-  }
-
   fun updateProgress(data: PlaybackProgress): Boolean {
     data.lastUpdated = System.currentTimeMillis()
-    if (data.item is AVPMediaItem.EpisodeItem || data.item is AVPMediaItem.MovieItem || data.item is AVPMediaItem.VideoItem) {
+    if (data.item is AVPMediaItem.VideoItem) {
       set("$PlaybackProgressFolder/${data.item.id}", data)
       return true
     }
     return false
   }
 
-  fun findPlaybackProgress(seasonItem: AVPMediaItem.SeasonItem?): List<PlaybackProgress>? {
-    if (seasonItem == null) return null
-    return getAll<PlaybackProgress>(
-      "$PlaybackProgressFolder/"
-    )?.mapNotNull { item ->
-      when (item.item) {
-        is AVPMediaItem.EpisodeItem -> {
-          if ((item.item as AVPMediaItem.EpisodeItem).seasonItem.id == seasonItem.id)
-            item
-          else
-            null
-        }
-
-        else -> null
-      }
-    }
-    return null
-  }
-
   fun findPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgress? =
     when (mediaItem) {
-      is AVPMediaItem.EpisodeItem,
-      is AVPMediaItem.MovieItem,
-      is AVPMediaItem.VideoItem -> getAll<PlaybackProgress>("$PlaybackProgressFolder/${mediaItem.id}")?.maxByOrNull { it.lastUpdated }
-
+      is AVPMediaItem.VideoItem ->
+        getAll<PlaybackProgress>("$PlaybackProgressFolder/${mediaItem.id}")?.maxByOrNull { it.lastUpdated }
       else -> null
     }
 
   fun findPlaybackProgress(slug: String): PlaybackProgress? =
     getAll<PlaybackProgress>("$PlaybackProgressFolder/$slug")?.maxByOrNull { it.lastUpdated }
 
-  fun getWatchedEpisodeCount(seasonItem: AVPMediaItem.SeasonItem): Int {
-    return count("$PlaybackProgressFolder/${seasonItem.id}")
-  }
-
-  fun getLatestPlaybackProgress(mediaItem: AVPMediaItem): PlaybackProgress? = when (mediaItem) {
-    is AVPMediaItem.SeasonItem,
-    is AVPMediaItem.ShowItem -> getAll<PlaybackProgress>("$PlaybackProgressFolder/${mediaItem.id}")?.maxByOrNull { it.lastUpdated }
-    else -> null
-  }
-
   fun getALlPlayback(): List<PlaybackProgress>? {
-    val data = getAll<PlaybackProgress>("$PlaybackProgressFolder/")
-
-    val episodePlayback = data?.filter { it.item is AVPMediaItem.EpisodeItem }
-      ?.groupBy { (it.item as AVPMediaItem.EpisodeItem).seasonItem.showItem.getSlug() }
-      ?.map { entry -> entry.value.first() }
-    //?.maxBy { entry -> entry.value.maxBy { it.lastUpdated }.lastUpdated }
-
-    val moviePlayback = data?.filter { it.item is AVPMediaItem.MovieItem }
-    return episodePlayback?.plus(moviePlayback ?: emptyList())
-      ?.sortedBy { item -> item.lastUpdated }
-  }
-
-  fun getSearchHistory(): List<SearchItem>? {
-    return getAll<SearchItem>(
-      "$SEARCH_HISTORY_FOLDER/"
-    )?.sortedByDescending { it.searchedAt }
-  }
-
-  fun deleteHistorySearch(item: SearchItem) {
-    return removeKey("$SEARCH_HISTORY_FOLDER/${item.id}")
-  }
-
-  fun clearHistorySearch() {
-    return removeKey("$SEARCH_HISTORY_FOLDER/")
-  }
-
-  fun saveSearchHistory(item: SearchItem) {
-    return set("$SEARCH_HISTORY_FOLDER/${item.id}", item)
+    return getAll<PlaybackProgress>("$PlaybackProgressFolder/")
+      ?.filter { it.item is AVPMediaItem.VideoItem }
+      ?.sortedByDescending { it.lastUpdated }
   }
 
   fun saveUriHistory(item: UriHistoryItem) {
     return set("$URI_HISTORY_FOLDER/${item.id}", item)
   }
+
   fun getUriHistory(): List<UriHistoryItem>? {
-    return getAll<UriHistoryItem>(
-      "$URI_HISTORY_FOLDER/"
-    )?.sortedByDescending { it.lastUpdated }
+    return getAll<UriHistoryItem>("$URI_HISTORY_FOLDER/")?.sortedByDescending { it.lastUpdated }
   }
+
   fun deleteUriHistory(item: UriHistoryItem) {
     return removeKey("$URI_HISTORY_FOLDER/${item.id}")
   }
+
   fun cleanUriHistory() {
     return removeKey("$URI_HISTORY_FOLDER/")
-  }
-
-  fun getCurrentUser(id: String?): User? {
-    return get<User>("$USERS_FOLDER/${id}")
-  }
-
-  fun getAllUsers(id: String?): List<User>? {
-    return getAll<User>("$USERS_FOLDER/")
   }
 
   @UnstableApi
@@ -217,15 +92,12 @@ class AppDataStore(val context: Context, val account: Account) :
     }
   }
 
-  // Download functionality methods
   fun getAllDownloads(): List<DownloadData>? {
     return getAll<DownloadData>("$DOWNLOAD_FOLDER/")?.sortedByDescending { it.updatedAt }
   }
 
   fun saveDownload(downloadData: DownloadData) {
-    val updateData = downloadData.copy(
-      updatedAt = System.currentTimeMillis()
-    )
+    val updateData = downloadData.copy(updatedAt = System.currentTimeMillis())
     set("$DOWNLOAD_FOLDER/${updateData.id}", updateData)
   }
 
@@ -242,26 +114,13 @@ class AppDataStore(val context: Context, val account: Account) :
   }
 
   fun updateDownloadProgress(downloadId: String, progress: Int, downloadedBytes: Long) {
-    val downloadData = getDownload(downloadId)
-    downloadData?.let { data ->
-      val updatedData = data.copy(
-        progress = progress,
-        downloadedBytes = downloadedBytes,
-        updatedAt = System.currentTimeMillis()
-      )
-      saveDownload(updatedData)
-    }
+    val downloadData = getDownload(downloadId) ?: return
+    saveDownload(downloadData.copy(progress = progress, downloadedBytes = downloadedBytes))
   }
 
   fun updateDownloadStatus(downloadId: String, status: DownloadStatus) {
-    val downloadData = getDownload(downloadId)
-    downloadData?.let { data ->
-      val updatedData = data.copy(
-        status = status,
-        updatedAt = System.currentTimeMillis()
-      )
-      saveDownload(updatedData)
-    }
+    val downloadData = getDownload(downloadId) ?: return
+    saveDownload(downloadData.copy(status = status))
   }
 
   fun getDownloadsByStatus(status: DownloadStatus): List<DownloadData>? {
