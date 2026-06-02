@@ -1,5 +1,14 @@
 # CLAUDE.md
 
+## Custom Skills
+
+### /video-architect
+Invoke with `/video-architect <question>` to activate the elite Video Player Architect persona.
+Covers: ExoPlayer/Media3, HLS/DASH, adaptive bitrate, subtitle systems, Android TV, DRM, OTT architecture, performance optimization, monetization, AI recommendations.
+
+Example: `/video-architect how should I implement adaptive bitrate buffering for weak networks?`
+
+---
 
 ## Subagents
 
