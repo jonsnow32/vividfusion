@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.media3.common.util.UnstableApi
 import androidx.recyclerview.widget.GridLayoutManager
+import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import cloud.app.vvf.R
 import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.databinding.FragmentBrowseBinding
@@ -23,7 +24,6 @@ import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.navigate
 import cloud.app.vvf.utils.observe
 import cloud.app.vvf.utils.setupTransition
-import cloud.app.vvf.MainActivityViewModel.Companion.applyInsetsMain
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -32,11 +32,16 @@ class FilesFragment : Fragment() {
   private var binding by autoCleared<FragmentBrowseBinding>()
   private val viewModel by viewModels<FilesViewModel>()
   private val parent by lazy { parentFragment as Fragment }
+  private lateinit var filesAdapter: FilesAdapter
 
   private val permissionLauncher = registerForActivityResult(
     ActivityResultContracts.RequestMultiplePermissions()
   ) { grants ->
-    if (grants.values.any { it }) loadFiles()
+    if (grants.values.any { it }) {
+      loadFiles()
+    } else {
+      showEmptyState("Storage permission denied.\nGrant permission to browse local videos.")
+    }
   }
 
   override fun onCreateView(
@@ -52,22 +57,31 @@ class FilesFragment : Fragment() {
     applyInsetsMain(binding.appBarLayoutCustom, binding.recyclerView)
 
     binding.backBtn.isVisible = false
-    binding.title.text = getString(R.string.files)
     binding.filter.isVisible = false
+    binding.title.text = getString(R.string.files)
 
-    val adapter = FilesAdapter(emptyList()) { item -> playFile(item) }
-    binding.recyclerView.adapter = adapter
+    filesAdapter = FilesAdapter(emptyList()) { item -> playFile(item) }
     binding.recyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
+    binding.recyclerView.adapter = filesAdapter
 
     binding.swipeRefresh.setOnRefreshListener { checkPermissionAndLoad() }
 
     observe(viewModel.files) { files ->
-      adapter.submitList(files)
       binding.swipeRefresh.isRefreshing = false
+      filesAdapter.submitList(files)
+      if (files.isEmpty()) {
+        showEmptyState("No video files found")
+      } else {
+        binding.emptyState.isVisible = false
+        binding.recyclerView.isVisible = true
+      }
     }
 
     observe(viewModel.isLoading) { loading ->
-      if (loading) binding.swipeRefresh.isRefreshing = true
+      if (loading) {
+        binding.swipeRefresh.isRefreshing = true
+        binding.emptyState.isVisible = false
+      }
     }
 
     checkPermissionAndLoad()
@@ -87,6 +101,13 @@ class FilesFragment : Fragment() {
 
   private fun loadFiles() {
     viewModel.loadFiles(requireContext())
+  }
+
+  private fun showEmptyState(message: String) {
+    binding.swipeRefresh.isRefreshing = false
+    binding.emptyState.isVisible = true
+    binding.recyclerView.isVisible = false
+    binding.emptyStateText.text = message
   }
 
   @OptIn(UnstableApi::class)

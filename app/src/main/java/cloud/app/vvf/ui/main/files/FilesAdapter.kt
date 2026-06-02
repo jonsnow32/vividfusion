@@ -28,8 +28,9 @@ class FilesAdapter(
     val video = item.video
     holder.title.text = video.title
     holder.subtitle.text = formatDuration(video.duration)
+    val thumbUri = video.thumbnailUri?.let { Uri.parse(it) }
     Glide.with(holder.thumbnail)
-      .load(Uri.parse(video.thumbnailUri))
+      .load(thumbUri)
       .placeholder(R.drawable.ic_video)
       .error(R.drawable.ic_video)
       .centerCrop()
