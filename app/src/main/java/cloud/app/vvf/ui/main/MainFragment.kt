@@ -49,11 +49,13 @@ class MainFragment : Fragment() {
     setupTransition(view)
     val navView = binding.navView as NavigationBarView
 
-    selectedItemId = savedInstanceState?.getInt("selectedItemId", R.id.networkStreamFragment)
-      ?: R.id.networkStreamFragment
+    // Always restore to default tab after recreate to avoid fragment state corruption
+    // (add/show/hide pattern doesn't restore cleanly after Activity.recreate())
+    selectedItemId = R.id.networkStreamFragment
 
     // Show the selected tab (add/show/hide keeps fragments alive so launchers stay registered)
     showTab(selectedItemId)
+    navView.setSelectedItemId(selectedItemId)
 
     navView.setOnItemSelectedListener { menuItem ->
       if (menuItem.itemId != selectedItemId) {
@@ -95,10 +97,6 @@ class MainFragment : Fragment() {
     transaction.show(target).commitNow()
   }
 
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    outState.putInt("selectedItemId", selectedItemId)
-  }
 
   @OptIn(UnstableApi::class)
   private fun createFragment(@IdRes id: Int): Fragment = when (id) {
