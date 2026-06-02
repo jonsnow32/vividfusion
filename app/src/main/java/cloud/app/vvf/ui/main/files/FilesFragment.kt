@@ -1,9 +1,12 @@
 package cloud.app.vvf.ui.main.files
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,13 +37,17 @@ class FilesFragment : Fragment() {
   private val parent by lazy { parentFragment as Fragment }
   private lateinit var filesAdapter: FilesAdapter
 
+  private var permissionDeniedPermanently = false
+
   private val permissionLauncher = registerForActivityResult(
     ActivityResultContracts.RequestMultiplePermissions()
   ) { grants ->
     if (grants.values.any { it }) {
       loadFiles()
     } else {
-      showEmptyState("Storage permission denied.\nGrant permission to browse local videos.")
+      // Check if permanently denied (shouldShowRequestPermissionRationale returns false after permanent denial)
+      permissionDeniedPermanently = !shouldShowRationale()
+      showPermissionDenied()
     }
   }
 
@@ -108,6 +115,40 @@ class FilesFragment : Fragment() {
     binding.emptyState.isVisible = true
     binding.recyclerView.isVisible = false
     binding.emptyStateText.text = message
+    binding.emptyStateAction.isVisible = false
+  }
+
+  private fun showPermissionDenied() {
+    binding.swipeRefresh.isRefreshing = false
+    binding.emptyState.isVisible = true
+    binding.recyclerView.isVisible = false
+    binding.emptyStateText.text =
+      "Storage permission is required\nto browse local video files."
+    binding.emptyStateAction.isVisible = true
+
+    if (permissionDeniedPermanently) {
+      binding.emptyStateAction.text = "Open Settings"
+      binding.emptyStateAction.setOnClickListener { openAppSettings() }
+    } else {
+      binding.emptyStateAction.text = "Grant Permission"
+      binding.emptyStateAction.setOnClickListener { checkPermissionAndLoad() }
+    }
+  }
+
+  private fun shouldShowRationale(): Boolean {
+    val perm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+      Manifest.permission.READ_MEDIA_VIDEO
+    else
+      Manifest.permission.READ_EXTERNAL_STORAGE
+    return shouldShowRequestPermissionRationale(perm)
+  }
+
+  private fun openAppSettings() {
+    startActivity(
+      Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+        data = Uri.fromParts("package", requireContext().packageName, null)
+      }
+    )
   }
 
   @OptIn(UnstableApi::class)
