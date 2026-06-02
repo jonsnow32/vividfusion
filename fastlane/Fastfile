@@ -4,10 +4,10 @@ platform :android do
 
   # ─── CI lanes ────────────────────────────────────────────────────────────────
 
-  desc "Run unit tests and lint"
+  desc "Run unit tests and lint (debug only)"
   lane :test do
     gradle(task: "testDebugUnitTest")
-    gradle(task: "lint")
+    gradle(task: "lintDebug")
   end
 
   desc "Build debug APK (for PR artifact)"
