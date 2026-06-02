@@ -31,6 +31,18 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > app/release.jks
 
+      - name: Re-encode keystore to legacy PKCS12
+        run: |
+          openssl pkcs12 -legacy -in app/release.jks \
+            -passin "pass:${{ secrets.STORE_PASSWORD }}" \
+            -nodes -out /tmp/key.pem
+          openssl pkcs12 -legacy -export \
+            -in /tmp/key.pem \
+            -passout "pass:${{ secrets.STORE_PASSWORD }}" \
+            -name "${{ secrets.KEY_ALIAS }}" \
+            -out app/release.jks
+          rm -f /tmp/key.pem
+
       - name: Build release AAB
         run: bundle exec fastlane build_release
         env:
