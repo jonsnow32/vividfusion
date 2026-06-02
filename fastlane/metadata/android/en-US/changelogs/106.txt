@@ -1,0 +1,3 @@
+• CI/CD pipeline with GitHub Actions and Fastlane
+• Automated build, test, and release workflow
+• Bug fixes and performance improvements
