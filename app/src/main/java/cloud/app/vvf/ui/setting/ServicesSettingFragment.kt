@@ -26,7 +26,9 @@ class ServicesSettingFragment : BaseSettingsFragment() {
 
   val viewModel: ServicesViewModel by viewModels()
 
-  inner class ServicesPreference : PreferenceFragmentCompat() {
+  class ServicesPreference : PreferenceFragmentCompat() {
+
+    private val vm get() = (requireParentFragment() as ServicesSettingFragment).viewModel
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
       val ctx = preferenceManager.context
@@ -46,7 +48,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
       // RealDebrid
       Preference(ctx).apply {
         title = "RealDebrid"
-        summary = viewModel.rdSummary()
+        summary = vm.rdSummary()
         key = "rd"
         layoutResource = R.layout.preference
         icon = AppCompatResources.getDrawable(ctx, R.drawable.ic_extension_24dp)
@@ -60,7 +62,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
       // AllDebrid
       Preference(ctx).apply {
         title = "AllDebrid"
-        summary = viewModel.adSummary()
+        summary = vm.adSummary()
         key = "ad"
         layoutResource = R.layout.preference
         icon = AppCompatResources.getDrawable(ctx, R.drawable.ic_extension_24dp)
@@ -74,7 +76,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
       // Premiumize
       Preference(ctx).apply {
         title = "Premiumize"
-        summary = viewModel.pmSummary()
+        summary = vm.pmSummary()
         key = "pm"
         layoutResource = R.layout.preference
         icon = AppCompatResources.getDrawable(ctx, R.drawable.ic_extension_24dp)
@@ -96,7 +98,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
       // OpenSubtitles
       Preference(ctx).apply {
         title = "OpenSubtitles"
-        summary = viewModel.osSummary()
+        summary = vm.osSummary()
         key = "os"
         layoutResource = R.layout.preference
         icon = AppCompatResources.getDrawable(ctx, R.drawable.outline_subtitles_24)
@@ -110,22 +112,22 @@ class ServicesSettingFragment : BaseSettingsFragment() {
 
     private fun refreshSummaries() {
       preferenceScreen?.apply {
-        findPreference<Preference>("rd")?.summary = viewModel.rdSummary()
-        findPreference<Preference>("ad")?.summary = viewModel.adSummary()
-        findPreference<Preference>("pm")?.summary = viewModel.pmSummary()
-        findPreference<Preference>("os")?.summary = viewModel.osSummary()
+        findPreference<Preference>("rd")?.summary = vm.rdSummary()
+        findPreference<Preference>("ad")?.summary = vm.adSummary()
+        findPreference<Preference>("pm")?.summary = vm.pmSummary()
+        findPreference<Preference>("os")?.summary = vm.osSummary()
       }
     }
 
     // ── RealDebrid OAuth device flow ───────────────────────────────
 
     private fun showRDDialog(ctx: Context) {
-      if (viewModel.isRDConnected()) {
+      if (vm.isRDConnected()) {
         MaterialAlertDialogBuilder(ctx)
           .setTitle("RealDebrid")
           .setMessage("You are connected to RealDebrid.")
           .setNeutralButton("Disconnect") { _, _ ->
-            viewModel.rdDisconnect()
+            vm.rdDisconnect()
             refreshSummaries()
           }
           .setPositiveButton("OK", null)
@@ -141,7 +143,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
         .show()
 
       lifecycleScope.launch {
-        val code = viewModel.rdStartAuth()
+        val code = vm.rdStartAuth()
         loadingDialog.dismiss()
 
         if (code == null) {
@@ -177,7 +179,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
         .show()
 
       lifecycleScope.launch {
-        val ok = viewModel.rdPollCredentials(deviceCode)
+        val ok = vm.rdPollCredentials(deviceCode)
         polling.dismiss()
         if (ok) {
           ctx.showToast("RealDebrid connected!")
@@ -191,12 +193,12 @@ class ServicesSettingFragment : BaseSettingsFragment() {
     // ── AllDebrid PIN flow ─────────────────────────────────────────
 
     private fun showADDialog(ctx: Context) {
-      if (viewModel.isADConnected()) {
+      if (vm.isADConnected()) {
         MaterialAlertDialogBuilder(ctx)
           .setTitle("AllDebrid")
           .setMessage("You are connected to AllDebrid.")
           .setNeutralButton("Disconnect") { _, _ ->
-            viewModel.adDisconnect()
+            vm.adDisconnect()
             refreshSummaries()
           }
           .setPositiveButton("OK", null)
@@ -211,7 +213,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
         .show()
 
       lifecycleScope.launch {
-        val pin = viewModel.adStartAuth()
+        val pin = vm.adStartAuth()
         loading.dismiss()
 
         if (pin?.data == null) {
@@ -245,7 +247,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
         .show()
 
       lifecycleScope.launch {
-        val ok = viewModel.adPollToken(check, pin)
+        val ok = vm.adPollToken(check, pin)
         polling.dismiss()
         if (ok) {
           ctx.showToast("AllDebrid connected!")
@@ -259,10 +261,10 @@ class ServicesSettingFragment : BaseSettingsFragment() {
     // ── Premiumize API key ─────────────────────────────────────────
 
     private fun showPMDialog(ctx: Context) {
-      val currentKey = if (viewModel.isPMConnected()) "" else ""
+      val currentKey = if (vm.isPMConnected()) "" else ""
       val editText = EditText(ctx).apply {
         hint = "Paste your Premiumize API key"
-        if (viewModel.isPMConnected()) hint = "Current key hidden — paste new to replace"
+        if (vm.isPMConnected()) hint = "Current key hidden — paste new to replace"
         setSingleLine(true)
       }
       val container = LinearLayout(ctx).apply {
@@ -276,16 +278,16 @@ class ServicesSettingFragment : BaseSettingsFragment() {
         .setPositiveButton("Save") { _, _ ->
           val key = editText.text.toString().trim()
           if (key.isNotEmpty()) {
-            viewModel.pmSaveKey(key)
+            vm.pmSaveKey(key)
             refreshSummaries()
             ctx.showToast("Premiumize API key saved")
           }
         }
         .setNegativeButton("Cancel", null)
 
-      if (viewModel.isPMConnected()) {
+      if (vm.isPMConnected()) {
         builder.setNeutralButton("Disconnect") { _, _ ->
-          viewModel.pmDisconnect()
+          vm.pmDisconnect()
           refreshSummaries()
         }
       }
@@ -297,7 +299,7 @@ class ServicesSettingFragment : BaseSettingsFragment() {
     private fun showOSDialog(ctx: Context) {
       val editText = EditText(ctx).apply {
         hint = "OpenSubtitles API key (optional)"
-        if (viewModel.isOSConfigured()) hint = "Current key hidden — paste new to replace"
+        if (vm.isOSConfigured()) hint = "Current key hidden — paste new to replace"
         setSingleLine(true)
       }
       val container = LinearLayout(ctx).apply {
@@ -315,16 +317,16 @@ class ServicesSettingFragment : BaseSettingsFragment() {
         .setPositiveButton("Save") { _, _ ->
           val key = editText.text.toString().trim()
           if (key.isNotEmpty()) {
-            viewModel.osSaveKey(key)
+            vm.osSaveKey(key)
             refreshSummaries()
             ctx.showToast("OpenSubtitles API key saved")
           }
         }
         .setNegativeButton("Cancel", null)
 
-      if (viewModel.isOSConfigured()) {
+      if (vm.isOSConfigured()) {
         builder.setNeutralButton("Remove key") { _, _ ->
-          viewModel.osClear()
+          vm.osClear()
           refreshSummaries()
         }
       }
