@@ -19,15 +19,21 @@ platform :android do
 
   desc "Build and sign release AAB"
   lane :build_release do
-    gradle(
-      task: "bundle",
-      build_type: "Release",
-      properties: {
+    # In CI: pass signing via env vars (STORE_FILE, STORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD)
+    # Locally: signing is read from key.properties by build.gradle.kts
+    signing_props = {}
+    if ENV["STORE_FILE"]
+      signing_props = {
         "android.injected.signing.store.file"     => ENV["STORE_FILE"],
         "android.injected.signing.store.password" => ENV["STORE_PASSWORD"],
         "android.injected.signing.key.alias"      => ENV["KEY_ALIAS"],
         "android.injected.signing.key.password"   => ENV["KEY_PASSWORD"],
       }
+    end
+    gradle(
+      task:       "bundle",
+      build_type: "Release",
+      properties: signing_props
     )
   end
 
@@ -37,31 +43,29 @@ platform :android do
     build_release
     version_code = android_get_version_code(gradle_file: "app/build.gradle.kts")
     upload_to_play_store(
-      track:            "internal",
-      aab:              "app/build/outputs/bundle/release/app-release.aab",
-      skip_upload_apk:  true,
-      whatsnew_paths:   ["fastlane/metadata/android/en-US/changelogs/#{version_code}.txt"],
+      track:           "internal",
+      aab:             "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk: true,
+      whatsnew_paths:  ["fastlane/metadata/android/en-US/changelogs/#{version_code}.txt"],
     )
   end
 
   desc "Promote internal build to production"
   lane :deploy_production do
     upload_to_play_store(
-      track:        "internal",
+      track:            "internal",
       track_promote_to: "production",
       skip_upload_apk:  true,
       skip_upload_aab:  true,
     )
   end
 
-  # ─── Metadata ────────────────────────────────────────────────────────────────
-
   desc "Upload store listing metadata only (no build)"
   lane :upload_metadata do
     upload_to_play_store(
-      skip_upload_apk:      true,
-      skip_upload_aab:      true,
-      skip_upload_images:   true,
+      skip_upload_apk:         true,
+      skip_upload_aab:         true,
+      skip_upload_images:      true,
       skip_upload_screenshots: true,
     )
   end

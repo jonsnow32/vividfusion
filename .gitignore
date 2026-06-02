@@ -13,3 +13,11 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Signing — never commit real values
+key.properties
+*.jks
+*.keystore
+
+# Play Store service account
+play-store-credentials.json

@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.jetbrains.kotlin.android)
@@ -6,6 +9,11 @@ plugins {
   kotlin("plugin.serialization")
   alias(libs.plugins.google.services)
   alias(libs.plugins.firebase.crashlytics.plugin)
+}
+
+val keyProps = Properties().also { props ->
+  val keyFile = rootProject.file("key.properties")
+  if (keyFile.exists()) props.load(FileInputStream(keyFile))
 }
 
 android {
@@ -23,8 +31,20 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  signingConfigs {
+    create("release") {
+      if (keyProps.isNotEmpty()) {
+        storeFile = file(keyProps["storeFile"] as String)
+        storePassword = keyProps["storePassword"] as String
+        keyAlias = keyProps["keyAlias"] as String
+        keyPassword = keyProps["keyPassword"] as String
+      }
+    }
+  }
+
   buildTypes {
     release {
+      signingConfig = signingConfigs.getByName("release")
       isMinifyEnabled = true
       isShrinkResources = true
       isDebuggable = false
