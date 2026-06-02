@@ -43,6 +43,7 @@ android {
         storePassword = keyProps["storePassword"] as String
         keyAlias = keyProps["keyAlias"] as String
         keyPassword = keyProps["keyPassword"] as String
+        storeType = keyProps.getProperty("storeType", "PKCS12")
       }
     }
   }
