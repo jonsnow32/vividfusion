@@ -80,6 +80,13 @@ class SettingsRootFragment : BaseSettingsFragment() {
       }
 
       TransitionPreference(context).add {
+        title = getString(R.string.services)
+        key = "services"
+        summary = getString(R.string.services_summary)
+        icon = AppCompatResources.getDrawable(context, R.drawable.ic_extension_24dp)
+      }
+
+      TransitionPreference(context).add {
         title = getString(R.string.backup_updates)
         key = "backup_updates"
         summary = getString(R.string.update_backup_summary)
@@ -120,6 +127,7 @@ class SettingsRootFragment : BaseSettingsFragment() {
         "general" -> GeneralSettingsFragment()
         "backup_updates" -> BackupUpdateFragment()
         "download" -> DownloadSettingFragment()
+        "services" -> ServicesSettingFragment()
         "development" -> DevelopmentSettingFragment()
         else -> null
       }

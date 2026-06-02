@@ -396,6 +396,8 @@
   <string name="stream_subtitle">Paste a URL, magnet link or open a file</string>
   <string name="streaming">Streaming</string>
   <string name="files">Files</string>
+  <string name="services">Services</string>
+  <string name="services_summary">RealDebrid, AllDebrid, Premiumize, OpenSubtitles</string>
   <string name="network_stream">Start streaming</string>
   <string name="torrent_singular">Torrent</string>
   <string name="download_size_format" formatted="true" translatable="false">%s / %s</string>
