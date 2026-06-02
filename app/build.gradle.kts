@@ -33,6 +33,8 @@ android {
   }
 
   compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     isCoreLibraryDesugaringEnabled = true
   }
 
@@ -62,11 +64,6 @@ android {
     }
   }
 
-  java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-  }
-
   kotlin {
     jvmToolchain(17)
   }
@@ -75,6 +72,7 @@ android {
     lintConfig = file("lint.xml")
     abortOnError = true
     warningsAsErrors = false
+    checkReleaseBuilds = false
   }
 
   viewBinding {

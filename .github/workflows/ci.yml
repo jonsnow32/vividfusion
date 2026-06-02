@@ -27,7 +27,7 @@ jobs:
         run: ./gradlew testDebugUnitTest
 
       - name: Run lint
-        run: ./gradlew lintDebug --stacktrace 2>&1 | tail -80
+        run: ./gradlew lintDebug
 
       - name: Build debug APK
         run: ./gradlew assembleDebug
