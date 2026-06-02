@@ -156,22 +156,38 @@ store. `AppDataStore` stores: URI history (`UriHistoryItem`), player settings
 ### Playback
 
 Media3/ExoPlayer + NextLib FFmpeg decoders. Player code in `features/player/`:
-- `PlayerFragment` — full-screen player UI with custom controller
-- `PlayerViewModel` — player state, track selection, playback speed
-- `PlayerService` — `MediaSessionService` stub (background playback not yet implemented)
-- `features/player/subtitle/` — local subtitle support (SRT/VTT/ASS/TTML), offset UI
+- `PlayerFragment` — full-screen player UI with custom controller, PiP button, background button
+- `PlayerViewModel` — player state, track selection, playback speed, MediaSession lifecycle
+- `PlayerService` — `MediaSessionService` providing background playback with notification controls
+- `features/player/subtitle/` — local subtitle support (SRT/VTT/ASS/TTML), offset UI, online subtitle search
 - `features/player/torrent/` — torrent streaming overlay
 - `features/dialogs/` — audio/video/subtitle track selection dialogs
+
+**Picture-in-Picture (PiP):** API 26+. `MainActivity` configured with `android:configChanges` including `uiMode`. 
+`PlayerFragment.onPipModeChanged()` hides overlay when PiP active.
+
+**Background Playback:** `PlayerService` holds `MediaSession` built from ExoPlayer. `PlayerFragment` starts 
+service and calls `moveTaskToBack(true)`. `onPause()` skips pause in background mode.
 
 ### Networking & Integrations
 
 OkHttp-based (no Retrofit). `common/HttpHelper` wraps OkHttp.
 `app/.../network/api/`:
-- `realdebrid/`, `alldebrid/`, `premiumize/` — debrid unrestrict APIs
+- `realdebrid/`, `alldebrid/`, `premiumize/` — debrid unrestrict + torrent APIs
 - `torrentserver/` — local torrent server (torrent streaming)
-- (OpenSubtitles infrastructure exists in network layer, not yet wired to UI)
+- `opensubtitles/` — OpenSubtitles REST API v1 (search, download with optional API key)
 
 `app/.../network/di/` — Hilt modules for each API client.
+`app/.../network/debrid/DebridResolver` — @Singleton that tries RD → AD → PM in order, 
+returns `Resolved`/`NotConfigured`/`Error` for unrestricting HTTP(S) URLs.
+
+**Debrid Stream Resolution:** `NetworkStreamViewModel` injects `DebridResolver`. When user taps Play 
+on HTTP URL with debrid configured, `NetworkStreamFragment.stream()` resolves asynchronously, shows 
+provider toast, plays unrestricted URL.
+
+**Online Subtitles:** `OnlineSubtitleDialog` searches OpenSubtitles by query (pre-fills from current 
+video title). Tap result → downloads → loads into player via `PlayerViewModel.addSubtitleData()`. 
+Anonymous search (rate-limited), optional API key for higher limits.
 
 ### Downloads
 
@@ -182,13 +198,25 @@ OkHttp-based (no Retrofit). `common/HttpHelper` wraps OkHttp.
 ### UI
 
 Single-activity, Fragment-based with ViewBinding.
-Navigation: bottom nav with 3 tabs (manual add/show/hide in `MainFragment`):
-- **Stream** (`NetworkStreamFragment`) — URL/magnet/torrent input, play history
+Navigation: bottom nav with 4 tabs (manual add/show/hide in `MainFragment`):
+- **Stream** (`NetworkStreamFragment`) — URL/magnet/torrent input, URI history with titles
+- **Files** (`FilesFragment`) — local video browsing via MediaStore, grid layout with Glide thumbnails
 - **Downloads** (`DownloadsFragment`) — download queue with storage visualization
-- **Settings** (`SettingsRootFragment`) — general, UI, player, download, backup, about
+- **Settings** (`SettingsRootFragment`) — general, UI, player, download, Services (debrid/subtitle config), backup, about
+
+**Tab State Management:** `MainFragment.showTab()` uses add/show/hide pattern to keep fragments alive across 
+tab switches (preserves launcher registrations). `onViewCreated()` always resets to default tab after `Activity.recreate()` 
+(from theme change) to avoid fragment state corruption. Child fragment back stacks of hidden tabs are cleared when 
+switching to prevent navigation conflicts.
 
 Detail screen: `ui/detail/torrent/TorrentInfoFragment` (torrent metadata before play).
 Dialogs in `ui/widget/dialog/` — account (debrid), action selection, input, exit confirm.
+
+**Services Tab:** `ServicesSettingFragment` manages API credentials:
+- RealDebrid: OAuth device code flow (24×5s polling, stores access/refresh tokens)
+- AllDebrid: PIN flow (24×5s polling, stores API key)
+- Premiumize: API key input dialog
+- OpenSubtitles: Optional API key (5 downloads/day anonymous, 20/day with key)
 
 ## Conventions
 
@@ -199,3 +227,19 @@ Dialogs in `ui/widget/dialog/` — account (debrid), action selection, input, ex
 - No Jetpack Navigation — fragment transactions are manual (`MainFragment.showTab`,
   `navigate` extension in `NavUtils.kt`).
 - Flow observation: use `observe(viewModel.flow) { }` from `FlowUtils.kt`.
+
+## Theme & Configuration
+
+**Theme Changes:** `UiSettingFragment` → `applyUiChanges()` → `AppCompatDelegate.setDefaultNightMode()` + `currentActivity?.recreate()`.
+`MainActivity.AndroidManifest.xml` has `android:configChanges="...uiMode"` so system dark mode changes trigger 
+`onConfigurationChanged()` without auto-recreate (we call it manually once).
+
+**Fragment State After Recreate:** After `Activity.recreate()`, `MainFragment.onViewCreated()` **always** 
+resets to default tab (Streaming) instead of restoring from savedInstanceState. This prevents add/show/hide 
+fragment state corruption. When switching tabs, hidden tabs' child back stacks are cleared to prevent navigation conflicts.
+
+## Recent Implementations (Phase 2 & 3)
+
+- **Phase 2:** PiP (API 26+), Background Playback with MediaSessionService, Media button controls
+- **Phase 3:** Rich URI History (title extraction), Debrid URL resolution, Online subtitle search, Services settings screen
+- **Files Tab:** Local video browsing via MediaStore.Video.Media, permission handling (READ_MEDIA_VIDEO), empty state with Glide thumbnails
