@@ -45,6 +45,7 @@ import cloud.app.vvf.common.models.subtitle.SubtitleData
 import cloud.app.vvf.databinding.CustomControllerBinding
 import cloud.app.vvf.databinding.FragmentPlayerBinding
 import cloud.app.vvf.features.dialogs.AudioVideoTrackSelectionDialog
+import cloud.app.vvf.features.dialogs.OnlineSubtitleDialog
 import cloud.app.vvf.features.dialogs.TextTrackSelectionDialog
 import cloud.app.vvf.features.gesture.BrightnessManager
 import cloud.app.vvf.features.gesture.PlayerGestureHelper
@@ -411,6 +412,15 @@ class PlayerFragment : Fragment() {
               }
             }
           }
+        },
+        openOnlineSubtitle = {
+          val title = viewModel.mediaMetaData.value?.title?.toString()
+          OnlineSubtitleDialog(
+            initialQuery = title,
+            onSubtitleSelected = { subtitleData ->
+              viewModel.addSubtitleData(requireContext(), listOf(subtitleData))
+            }
+          ).show(parentFragmentManager, "OnlineSubtitleDialog")
         }
       ).show(parentFragmentManager, "TextTrackSelectionDialog")
     }

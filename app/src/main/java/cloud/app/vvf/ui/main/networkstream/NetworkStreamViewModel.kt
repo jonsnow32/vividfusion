@@ -6,6 +6,7 @@ import cloud.app.vvf.common.models.AVPMediaItem
 import cloud.app.vvf.common.models.video.Video
 import cloud.app.vvf.datastore.app.AppDataStore
 import cloud.app.vvf.datastore.app.helper.UriHistoryItem
+import cloud.app.vvf.network.debrid.DebridResolver
 import cloud.app.vvf.services.downloader.DownloadData
 import cloud.app.vvf.services.downloader.stateMachine.DownloadManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,13 +21,18 @@ import javax.inject.Inject
 class NetworkStreamViewModel @Inject constructor(
   val throwableFlow: MutableSharedFlow<Throwable>,
   val dataFlow: MutableStateFlow<AppDataStore>,
-  private val downloadManager: DownloadManager
+  private val downloadManager: DownloadManager,
+  private val debridResolver: DebridResolver,
 ) : ViewModel() {
 
   private val _streamUris = MutableStateFlow<List<UriHistoryItem>?>(null)
   val streamUris get() = _streamUris
 
   val downloads: StateFlow<Map<String, DownloadData>> = downloadManager.downloads
+
+  fun isDebridConfigured() = debridResolver.isConfigured()
+  fun debridProviderName() = debridResolver.providerName()
+  suspend fun resolveWithDebrid(url: String) = debridResolver.unrestrict(url)
 
   fun saveToUriHistory(streamUrl: String) {
     val title = extractTitleFromUri(streamUrl)

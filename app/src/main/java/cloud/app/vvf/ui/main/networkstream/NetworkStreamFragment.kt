@@ -29,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
 import cloud.app.vvf.MainActivityViewModel.Companion.applyInsets
+import cloud.app.vvf.network.debrid.DebridResolver
 import cloud.app.vvf.utils.Utils.hideKeyboard
 import timber.log.Timber
 import java.util.Timer
@@ -210,21 +211,39 @@ class NetworkStreamFragment : Fragment() {
 
   @UnstableApi
   fun stream(uri: String) {
-    val streamUrl = uri
-    if (streamUrl.isNotBlank()) {
-      hideKeyboard(binding.etStreamUrl)
-      // Navigate to PlayerFragment to play the stream
-      val video = Video.RemoteVideo(uri = streamUrl, title = streamUrl)
-      val mediaItem = AVPMediaItem.VideoItem(video)
-      viewModel.saveToUriHistory(streamUrl) // Save the stream URL to history
-      viewModel.refresh()
-      parent.navigate(
-        PlayerFragment.newInstance(
-          mediaItems = listOf(mediaItem),
-          selectedMediaIdx = 0,
-        )
-      )
+    if (uri.isBlank()) return
+    hideKeyboard(binding.etStreamUrl)
+    viewModel.saveToUriHistory(uri)
+    viewModel.refresh()
+
+    val isHttp = uri.startsWith("http://", ignoreCase = true) ||
+      uri.startsWith("https://", ignoreCase = true)
+
+    if (isHttp && viewModel.isDebridConfigured()) {
+      binding.btnStreaming.isEnabled = false
+      lifecycleScope.launch {
+        when (val result = viewModel.resolveWithDebrid(uri)) {
+          is DebridResolver.Result.Resolved -> {
+            val label = result.filename ?: uri.substringAfterLast("/")
+            context?.showToast("${result.provider}: $label")
+            launchPlayer(result.url, result.filename)
+          }
+          else -> launchPlayer(uri)
+        }
+        binding.btnStreaming.isEnabled = true
+      }
+    } else {
+      launchPlayer(uri)
     }
+  }
+
+  @UnstableApi
+  private fun launchPlayer(uri: String, title: String? = null) {
+    val video = Video.RemoteVideo(uri = uri, title = title ?: uri)
+    val mediaItem = AVPMediaItem.VideoItem(video)
+    parent.navigate(
+      PlayerFragment.newInstance(mediaItems = listOf(mediaItem), selectedMediaIdx = 0)
+    )
   }
 
   private fun showInterstitialAdIfNeeded() {
