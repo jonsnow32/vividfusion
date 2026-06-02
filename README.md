@@ -1,35 +1,77 @@
-# VVF (ViVidFusion)
+# VividFusion
 
-## Disclaimer
-**This application is solely for educational and experimental purposes. It does not contain any copyrighted audio or video content.** Users are responsible for ensuring that any plugins or content they add comply with applicable copyright laws and regulations. The developers of this application do not endorse or condone any unauthorized use of copyrighted materials.
+A standalone Android media player supporting direct stream URLs, torrents, and debrid services.
 
 ## Features
 
-* **Plugin Support:** The core application provides a framework for loading and managing external plugins.
-* **Educational Focus:** The application is primarily intended for educational and research purposes, facilitating the learning and development of audio/video processing techniques.
-* **Open Source:** The source code is publicly available, encouraging community contributions and further development.
+- **Stream Playback** — Play HTTP/HTTPS, HLS, DASH, SmoothStreaming, and direct media URLs
+- **Torrent Streaming** — Built-in torrent engine via TorrentServer
+- **Debrid Integration** — Real-Debrid, AllDebrid, Premiumize
+- **Downloads** — HLS, HTTP, and torrent downloads with pause/resume support
+- **Subtitles** — External subtitle file support with rendering via Media3
+- **Extended Codec Support** — FFmpeg decoders for formats not natively supported by Android (via NextLib)
+- **Settings** — Player, UI, download, and developer options
 
+## Requirements
 
-## Inspiration
+- Android 7.0+ (API 24)
+- Target SDK 35
 
-This project was inspired by and draws some ideas from the [Echo](https://github.com/brahmkshatriya/Echo) project on GitHub. While VVF aims to achieve similar goals in audio/video playback, it introduces unique features and design choices tailored to specific requirements.
+## Build
 
-## Acknowledgements
+JDK 17 required. `app/google-services.json` must be present (Firebase).
 
-*   [Echo](https://github.com/brahmkshatriya/Echo): Thank you for the inspiration and for providing a valuable reference point for Android media player development.
+```bash
+./gradlew assembleDebug        # debug APK
+./gradlew bundleRelease        # release AAB (requires signing config)
+./gradlew testDebugUnitTest    # unit tests
+./gradlew lintDebug            # lint
+```
 
+### Local signing
 
-## Building and Running
+Copy `key.properties.example` to `key.properties` and fill in your keystore details:
 
-1.  Clone the repository.
-2.  Open the project in Android Studio.
-3.  Build and run the application on an Android device or emulator.
+```
+storeFile=app/release.jks
+storePassword=...
+keyAlias=...
+keyPassword=...
+```
 
-## Contributing
+## CI/CD
 
-Contributions are welcome! If you'd like to contribute to this project, please:
+| Trigger | Workflow | Result |
+|---|---|---|
+| PR / push to `master` | `ci.yml` | Tests + lint + debug APK artifact |
+| `git tag v*` | `release.yml` | Build + sign AAB + GitHub Release |
 
-1.  Fork the repository.
-2.  Create a new branch for your feature or bug fix.
-3.  Submit a pull request.
+### Required GitHub Secrets
 
+| Secret | Description |
+|---|---|
+| `GOOGLE_SERVICES_JSON` | `base64 -i app/google-services.json` |
+| `RELEASE_KEYSTORE` | `base64 -i release.jks` (JKS format) |
+| `STORE_PASSWORD` | Keystore password |
+| `KEY_ALIAS` | Key alias |
+| `KEY_PASSWORD` | Key password |
+
+> **Note:** If your keystore is PKCS12 format, convert to JKS first:
+> ```bash
+> keytool -importkeystore -srckeystore your.jks -srcstoretype PKCS12 \
+>   -destkeystore release-jks.jks -deststoretype JKS -noprompt
+> ```
+
+## Tech Stack
+
+- **Player** — Media3 / ExoPlayer + NextLib FFmpeg decoders
+- **DI** — Hilt
+- **Networking** — OkHttp
+- **Background** — WorkManager
+- **Logging** — Timber
+- **Crash reporting** — Firebase Crashlytics
+- **Ads** — AdMob, Meta Audience Network, IronSource, AppLovin, Unity, Vungle
+
+## Disclaimer
+
+This application does not host or distribute any copyrighted content. Users are responsible for ensuring their use of any streamed content complies with applicable laws.
