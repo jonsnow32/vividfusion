@@ -1,0 +1,4 @@
+• Improved extension loading and management
+• Added Crashlytics for faster bug fixes
+• UI performance improvements
+• Enhanced ad waterfall for a smoother experience

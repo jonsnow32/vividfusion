@@ -1,0 +1,29 @@
+VividFusion là thay thế Kodi hiện đại được xây dựng cho Android — một hub phát trực tuyến có thể mở rộng, nơi bạn kết nối bất kỳ nguồn nội dung nào thông qua plugin, phát qua Real-Debrid và theo dõi mọi thứ với Trakt.
+
+ĐIỂM KHÁC BIỆT
+
+Không giống MX Player hay VLC chỉ phát file cục bộ, VividFusion khám phá và phát nội dung từ bất kỳ nguồn nào bạn chọn:
+
+• Hệ thống Plugin/Extension — Thêm bất kỳ plugin nào trong vài giây. Plugin cộng đồng thêm nguồn phát mới mà không cần cập nhật app. Chỉ cần một URL.
+• Real-Debrid, AllDebrid & Premiumize tích hợp sẵn — Mở khóa torrent và tải với tốc độ premium ngay trong trình phát.
+• Phát torrent trực tiếp — Phát file .torrent và magnet link mà không cần tải về trước.
+• TMDB + Trakt + TheTVDB — Thông tin phim phong phú, poster, đánh giá và đồng bộ lịch sử xem tự động lên Trakt.
+• OpenSubtitles — Tự động tải phụ đề bằng bất kỳ ngôn ngữ nào.
+
+TÍNH NĂNG PHÁT
+
+• Media3/ExoPlayer với FFmpeg decoder cho codec đặc biệt
+• HLS, DASH, SmoothStreaming và link trực tiếp
+• Hỗ trợ Picture-in-Picture
+• Điều chỉnh kiểu dáng và độ trễ phụ đề
+• DNS-over-HTTPS để vượt chặn ISP
+• Android TV & Leanback UI
+
+MỞ & RIÊNG TƯ
+
+• 100% mã nguồn mở
+• Không có nội dung được cố định — bạn chọn nguồn
+• DNS-over-HTTPS cho quyền riêng tư
+• Hỗ trợ 54+ ngôn ngữ
+
+Cài đặt VividFusion và thêm plugin đầu tiên của bạn trong dưới một phút.

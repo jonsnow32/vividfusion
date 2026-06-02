@@ -1,0 +1,37 @@
+VividFusion is the modern Kodi alternative built for Android — an extensible streaming hub where you connect any content source through plugins, stream via Real-Debrid, and track everything with Trakt.
+
+WHAT MAKES IT DIFFERENT
+
+Unlike MX Player or VLC that just play local files, VividFusion discovers and streams content from any source you choose:
+
+• Plugin/Extension system — Add any plugin in seconds. Community plugins add new streaming sources without touching the core app. One URL install.
+• Real-Debrid, AllDebrid & Premiumize built-in — Unrestrict torrents and get premium download speeds directly inside the player.
+• Native torrent streaming — Stream .torrent files and magnet links without downloading first.
+• TMDB + Trakt + TheTVDB — Rich metadata, posters, ratings, and automatic watch-history sync to Trakt.
+• OpenSubtitles — Auto-fetch subtitles in any language.
+
+PLAYER FEATURES
+
+• Media3/ExoPlayer with FFmpeg decoders for obscure codecs
+• HLS, DASH, SmoothStreaming, and direct links
+• Picture-in-picture support
+• Subtitle styling and delay adjustment
+• DNS-over-HTTPS to bypass ISP blocks
+• Android TV & Leanback UI
+
+OPEN & PRIVATE
+
+• 100% open source
+• No hardcoded content — you choose your sources
+• DNS-over-HTTPS for privacy
+• 54+ languages supported
+
+DEBRID POWER USERS
+
+Connect your Real-Debrid, AllDebrid, or Premiumize account once and all torrent links in any plugin automatically resolve to premium cached streams — no waiting, no seeding, instant playback.
+
+PLUGIN DEVELOPERS
+
+The common SDK is published on JitPack. Build your own plugin extension in Kotlin and share it with the community via a single install URL.
+
+Install VividFusion and add your first plugin in under a minute.
