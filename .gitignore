@@ -21,3 +21,9 @@ key.properties
 
 # Play Store service account
 play-store-credentials.json
+
+# Build artifacts
+/app/release/*.aab
+
+# IDE noise (JetBrains AI / Copilot migration markers)
+/.idea/copilot.data.migration.*.xml
