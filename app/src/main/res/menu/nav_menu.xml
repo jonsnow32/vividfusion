@@ -13,7 +13,7 @@
 
   <item
     android:id="@id/filesFragment"
-    android:icon="@drawable/ic_folder_24"
+    android:icon="@drawable/file_24dp"
     android:title="@string/files" />
 
   <item

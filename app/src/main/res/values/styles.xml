@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+  <style name="TextAppearance.App.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+    <item name="android:fontFamily">@font/google_sans</item>
+  </style>
+
+
   <style name="TopCollapsingBar" parent="Widget.Material3.CollapsingToolbar.Large">
     <item name="contentScrim">?colorSurface</item>
     <item name="expandedTitleMarginBottom">20dp</item>

@@ -234,22 +234,18 @@ class VVFApplication : Application(), Configuration.Provider,
 
       DynamicColors.applyToActivitiesIfAvailable(this, builder.build())
 
-      val previousNightMode = AppCompatDelegate.getDefaultNightMode()
-      val newNightMode = when (theme) {
-        "light" -> AppCompatDelegate.MODE_NIGHT_NO
-        "dark" -> AppCompatDelegate.MODE_NIGHT_YES
-        else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+      when (theme) {
+        "light" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        "dark" -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
       }
-      AppCompatDelegate.setDefaultNightMode(newNightMode)
 
       val code = preferences.getString(getString(R.string.pref_locale), "en")
       code?.let { setLocale(it) }
 
-      // AppCompat 1.3+ automatically calls recreate() when night mode changes.
-      // Only call it manually if the mode didn't change (e.g. color/locale-only update).
-      if (previousNightMode == newNightMode) {
-        (this as VVFApplication).currentActivity?.recreate()
-      }
+      // uiMode is in configChanges so AppCompat will NOT auto-recreate.
+      // We trigger exactly one recreation here.
+      (this as VVFApplication).currentActivity?.recreate()
     }
 
 

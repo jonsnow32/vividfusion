@@ -3,6 +3,7 @@ package cloud.app.vvf
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Rect
 import android.hardware.input.InputManager
@@ -149,6 +150,13 @@ class MainActivity : AppCompatActivity() {
     val localeCode = sharedPreferences.getString(getString(R.string.pref_locale), "en")
     setLocale(localeCode)
     checkUpdate()
+  }
+
+  override fun onConfigurationChanged(newConfig: Configuration) {
+    super.onConfigurationChanged(newConfig)
+    // When the system toggles dark/light mode (uiMode is in configChanges so the
+    // activity is not automatically recreated). Recreate once so the theme updates.
+    recreate()
   }
 
   private fun checkUpdate() {

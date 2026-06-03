@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.annotation.IdRes
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.media3.common.util.UnstableApi
 import cloud.app.vvf.MainActivityViewModel
@@ -29,6 +30,7 @@ class MainFragment : Fragment() {
   private var binding by autoCleared<FragmentMainBinding>()
   private lateinit var mainActivityViewModel: MainActivityViewModel
   private var selectedItemId: Int = R.id.networkStreamFragment
+  private var previousItemId: Int = R.id.networkStreamFragment
 
   private var navInsets: MainActivityViewModel.Insets = MainActivityViewModel.Insets(0, 0, 0, 0)
 
@@ -49,16 +51,26 @@ class MainFragment : Fragment() {
     setupTransition(view)
     val navView = binding.navView as NavigationBarView
 
-    // Always restore to default tab after recreate to avoid fragment state corruption
-    // (add/show/hide pattern doesn't restore cleanly after Activity.recreate())
     selectedItemId = R.id.networkStreamFragment
+    previousItemId = R.id.networkStreamFragment
 
-    // Show the selected tab (add/show/hide keeps fragments alive so launchers stay registered)
+    // After Activity.recreate() (e.g. theme change), the child FragmentManager restores all
+    // tab fragments in whatever show/hide state they had before. Rather than trying to patch
+    // that restored state, wipe it completely so showTab always starts from a clean slate.
+    childFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+    val restored = childFragmentManager.fragments.toList()
+    if (restored.isNotEmpty()) {
+      childFragmentManager.beginTransaction()
+        .also { tx -> restored.forEach { tx.remove(it) } }
+        .commitNow()
+    }
+
     showTab(selectedItemId)
     navView.setSelectedItemId(selectedItemId)
 
     navView.setOnItemSelectedListener { menuItem ->
       if (menuItem.itemId != selectedItemId) {
+        previousItemId = selectedItemId
         selectedItemId = menuItem.itemId
         showTab(selectedItemId)
       }
@@ -78,25 +90,44 @@ class MainFragment : Fragment() {
     navView.requestFocus()
   }
 
+  override fun onViewStateRestored(savedInstanceState: Bundle?) {
+    super.onViewStateRestored(savedInstanceState)
+    // BottomNavigationView restores its saved selected-item here without firing the
+    // listener, desyncing the visual state from selectedItemId. Re-apply ours.
+    (binding.navView as NavigationBarView).setSelectedItemId(selectedItemId)
+  }
+
   /**
    * Uses add/show/hide so each tab's Fragment is never destroyed when switching tabs.
    * This keeps ActivityResultLaunchers registered throughout the session.
+   *
+   * commitNow() is intentional: ensures visibility changes take effect before the next
+   * draw pass, preventing a flash of the wrong content.
    */
   @OptIn(UnstableApi::class)
   private fun showTab(@IdRes id: Int) {
-    val transaction = childFragmentManager.beginTransaction()
-
-    val target = childFragmentManager.findFragmentByTag(id.toString())
-      ?: createFragment(id).also { transaction.add(R.id.vpContainer, it, id.toString()) }
-
-    // Hide every other tab fragment
-    childFragmentManager.fragments.forEach { fragment ->
-      if (fragment.tag != id.toString()) transaction.hide(fragment)
+    val settingsId = R.id.settingsFragment
+    if (id == settingsId || previousItemId == settingsId) {
+      // Settings sub-screens are pushed onto MainFragment's childFragmentManager back
+      // stack via navigate(). Pop them all before switching tabs.
+      childFragmentManager.popBackStackImmediate(
+        null,
+        FragmentManager.POP_BACK_STACK_INCLUSIVE
+      )
     }
 
-    transaction.show(target).commitNow()
-  }
+    val fragmentManager = childFragmentManager
+    val transaction = fragmentManager.beginTransaction()
 
+    fragmentManager.fragments.forEach { transaction.hide(it) }
+
+    val tag = id.toString()
+    val selectedFragment = fragmentManager.findFragmentByTag(tag)
+      ?: createFragment(id).also { transaction.add(R.id.vpContainer, it, tag) }
+    transaction.show(selectedFragment)
+
+    transaction.commitNow()
+  }
 
   @OptIn(UnstableApi::class)
   private fun createFragment(@IdRes id: Int): Fragment = when (id) {

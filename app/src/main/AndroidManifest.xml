@@ -66,7 +66,7 @@
       android:launchMode="singleTask"
       android:resizeableActivity="true"
       android:supportsPictureInPicture="true"
-      android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+      android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|uiMode"
       android:windowSoftInputMode="adjustPan">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
