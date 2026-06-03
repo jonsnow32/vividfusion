@@ -1,3 +1,8 @@
+---
+title: Privacy Policy
+description: How VividFusion handles your data
+---
+
 # Privacy Policy for VividFusion
 
 _Last updated: 2026-06-03_
