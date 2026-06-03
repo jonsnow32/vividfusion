@@ -126,7 +126,26 @@ JDK 17 required. compileSdk/targetSdk 35, minSdk 24. No product flavors.
 ./gradlew lint                     # Android lint
 ./gradlew bundleRelease            # release AAB (R8 minify + resource shrink enabled)
 ./gradlew :app:testDebugUnitTest   # JVM unit tests
+./gradlew :app:testDebugUnitTest --tests "cloud.app.vvf.SomeTest"  # single test class
 ```
+
+### Release, signing & CI
+
+- **Signing**: release builds read `key.properties` (root, gitignored) for
+  `storeFile`/`storePassword`/`keyAlias`/`keyPassword`. Absent → release is unsigned but
+  still builds.
+- **AdMob IDs** (App ID + banner/interstitial/rewarded ad units) are resolved in
+  `app/build.gradle.kts` in order: **gradle `-P` property → `local.properties` → env var →
+  Google test IDs**. Debug always uses test IDs (clicking real ads in debug violates AdMob
+  policy); release uses real IDs when supplied. `AndroidManifest.xml` injects the App ID via
+  the `${admobAppId}` manifest placeholder; ad unit IDs come from `BuildConfig.ADMOB_*`.
+- **Fastlane** (`fastlane/Fastfile`): lanes `test`, `build_debug`, `build_release`,
+  `deploy_internal` (→ Play internal track), `deploy_production`, `upload_metadata`. CI
+  signing + AdMob IDs are passed via env vars / gradle properties.
+- **GitHub Actions**: `.github/workflows/ci.yml` (test + lint + debug APK on push/PR) and
+  `release.yml` (on `v*` tag → signed AAB via Fastlane, with AdMob IDs from repo secrets).
+- **Store listing**: `fastlane/metadata/android/{en-US,vi}/`. Privacy policy is hosted on
+  GitHub Pages from `docs/` (`.nojekyll`, static HTML).
 
 ## Architecture
 
@@ -194,6 +213,16 @@ Anonymous search (rate-limited), optional API key for higher limits.
 `services/downloader/`: `HlsDownloader`, `HttpDownloader`, `TorrentDownloader` with a
 `stateMachine/`. `DownloadData` model tracks status, progress, file path. WorkManager:
 `ApkDownloader` (self-update), `BackupWorker`.
+
+### Ads
+
+`ads/` is a **mediation waterfall**, not a single ad SDK. `AdManager` (@Singleton,
+lifecycle observer) is the entry point — it enforces frequency caps (`AD_FREQUENCY_LIMIT`,
+`MIN_TIME_BETWEEN_ADS`) and delegates to `AdWaterfallManager`, which tries providers in
+priority order: AdMob → Facebook → Unity → Vungle (each implements `AdProvider` in
+`ads/providers/`). `AdPreloadManager`/`AdPreloader`/`AdLoadStrategy` handle intelligent
+preloading; `AdPlacementHelper` wires interstitials to user actions. `AdManager.initialize()`
+is called once at startup. Ad unit IDs come from `BuildConfig.ADMOB_*` (see Release section).
 
 ### UI
 
