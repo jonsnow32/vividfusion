@@ -51,7 +51,6 @@ class DownloadsFragment : Fragment() {
       binding.rvDownloads.setPadding(0, 0, 0, it.bottom)
     }
     setupTransition(view)
-    applyInsets { binding.root.applyInsets(it) }
     setupRecyclerView()
     setupClickListeners()
     setupBannerAd() // Now enabled with proper banner container
