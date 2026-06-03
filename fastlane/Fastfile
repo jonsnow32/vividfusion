@@ -31,10 +31,17 @@ platform :android do
         "android.injected.signing.key.password"   => ENV["KEY_PASSWORD"],
       }
     end
+
+    # Inject real AdMob IDs from env vars (build.gradle.kts falls back to test IDs if unset).
+    admob_props = {}
+    %w[ADMOB_APP_ID ADMOB_BANNER_AD_UNIT_ID ADMOB_INTERSTITIAL_AD_UNIT_ID ADMOB_REWARDED_AD_UNIT_ID].each do |key|
+      admob_props[key] = ENV[key] unless (ENV[key] || "").empty?
+    end
+
     gradle(
       task:       "bundle",
       build_type: "Release",
-      properties: signing_props
+      properties: signing_props.merge(admob_props)
     )
   end
 

@@ -1,37 +1,34 @@
-VividFusion is the modern Kodi alternative built for Android — an extensible streaming hub where you connect any content source through plugins, stream via Real-Debrid, and track everything with Trakt.
+VividFusion is a powerful, modern video player for Android. Play your own media files and the stream links you provide — direct URLs, HLS/DASH streams, magnet links and .torrent files — with a polished player built on Media3/ExoPlayer.
 
-WHAT MAKES IT DIFFERENT
+VividFusion does not host, index or provide any content. You bring your own links and accounts; the app simply plays them.
 
-Unlike MX Player or VLC that just play local files, VividFusion discovers and streams content from any source you choose:
+PLAYER
 
-• Plugin/Extension system — Add any plugin in seconds. Community plugins add new streaming sources without touching the core app. One URL install.
-• Real-Debrid, AllDebrid & Premiumize built-in — Unrestrict torrents and get premium download speeds directly inside the player.
-• Native torrent streaming — Stream .torrent files and magnet links without downloading first.
-• TMDB + Trakt + TheTVDB — Rich metadata, posters, ratings, and automatic watch-history sync to Trakt.
-• OpenSubtitles — Auto-fetch subtitles in any language.
-
-PLAYER FEATURES
-
-• Media3/ExoPlayer with FFmpeg decoders for obscure codecs
-• HLS, DASH, SmoothStreaming, and direct links
-• Picture-in-picture support
+• Media3/ExoPlayer with FFmpeg decoders for a wide range of codecs
+• HLS, DASH, SmoothStreaming and direct HTTP(S) links
+• Picture-in-Picture and background playback with media controls
+• Audio / video / subtitle track selection
 • Subtitle styling and delay adjustment
-• DNS-over-HTTPS to bypass ISP blocks
-• Android TV & Leanback UI
+• Android TV & Leanback support
 
-OPEN & PRIVATE
+DEBRID SUPPORT
 
-• 100% open source
-• No hardcoded content — you choose your sources
-• DNS-over-HTTPS for privacy
-• 54+ languages supported
+Connect your own Real-Debrid, AllDebrid or Premiumize account to unrestrict the links you already have into fast, direct streams — entirely under your control. Accounts and links are provided by you.
 
-DEBRID POWER USERS
+TORRENT STREAMING
 
-Connect your Real-Debrid, AllDebrid, or Premiumize account once and all torrent links in any plugin automatically resolve to premium cached streams — no waiting, no seeding, instant playback.
+Open a magnet link or .torrent file you provide and stream it through the built-in torrent engine, without downloading the whole file first.
 
-PLUGIN DEVELOPERS
+SUBTITLES
 
-The common SDK is published on JitPack. Build your own plugin extension in Kotlin and share it with the community via a single install URL.
+Search and load subtitles from OpenSubtitles in many languages, or load your own SRT/VTT/ASS/TTML files.
 
-Install VividFusion and add your first plugin in under a minute.
+LOCAL FILES
+
+Browse and play the video files already on your device.
+
+PRIVACY
+
+VividFusion does not collect the content you play. See our privacy policy for details on diagnostics and advertising.
+
+Bring your own links and start playing in seconds.

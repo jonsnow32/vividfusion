@@ -1,0 +1,3 @@
+• Refreshed store listing and app description
+• UI polish: consistent fonts and navigation bar labels
+• Stability and performance improvements

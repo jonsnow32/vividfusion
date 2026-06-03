@@ -1,29 +1,34 @@
-VividFusion là thay thế Kodi hiện đại được xây dựng cho Android — một hub phát trực tuyến có thể mở rộng, nơi bạn kết nối bất kỳ nguồn nội dung nào thông qua plugin, phát qua Real-Debrid và theo dõi mọi thứ với Trakt.
+VividFusion là một trình phát video mạnh mẽ, hiện đại cho Android. Phát các file media của bạn và những link bạn cung cấp — URL trực tiếp, stream HLS/DASH, magnet link và file .torrent — với trình phát dựa trên Media3/ExoPlayer.
 
-ĐIỂM KHÁC BIỆT
+VividFusion không lưu trữ, lập chỉ mục hay cung cấp bất kỳ nội dung nào. Bạn tự mang link và tài khoản của mình; ứng dụng chỉ phát chúng.
 
-Không giống MX Player hay VLC chỉ phát file cục bộ, VividFusion khám phá và phát nội dung từ bất kỳ nguồn nào bạn chọn:
+TRÌNH PHÁT
 
-• Hệ thống Plugin/Extension — Thêm bất kỳ plugin nào trong vài giây. Plugin cộng đồng thêm nguồn phát mới mà không cần cập nhật app. Chỉ cần một URL.
-• Real-Debrid, AllDebrid & Premiumize tích hợp sẵn — Mở khóa torrent và tải với tốc độ premium ngay trong trình phát.
-• Phát torrent trực tiếp — Phát file .torrent và magnet link mà không cần tải về trước.
-• TMDB + Trakt + TheTVDB — Thông tin phim phong phú, poster, đánh giá và đồng bộ lịch sử xem tự động lên Trakt.
-• OpenSubtitles — Tự động tải phụ đề bằng bất kỳ ngôn ngữ nào.
-
-TÍNH NĂNG PHÁT
-
-• Media3/ExoPlayer với FFmpeg decoder cho codec đặc biệt
-• HLS, DASH, SmoothStreaming và link trực tiếp
-• Hỗ trợ Picture-in-Picture
+• Media3/ExoPlayer với FFmpeg decoder cho nhiều loại codec
+• HLS, DASH, SmoothStreaming và link HTTP(S) trực tiếp
+• Picture-in-Picture và phát nền với điều khiển media
+• Chọn track âm thanh / video / phụ đề
 • Điều chỉnh kiểu dáng và độ trễ phụ đề
-• DNS-over-HTTPS để vượt chặn ISP
-• Android TV & Leanback UI
+• Hỗ trợ Android TV & Leanback
 
-MỞ & RIÊNG TƯ
+HỖ TRỢ DEBRID
 
-• 100% mã nguồn mở
-• Không có nội dung được cố định — bạn chọn nguồn
-• DNS-over-HTTPS cho quyền riêng tư
-• Hỗ trợ 54+ ngôn ngữ
+Kết nối tài khoản Real-Debrid, AllDebrid hoặc Premiumize của riêng bạn để mở khóa những link bạn đã có thành stream trực tiếp tốc độ cao — hoàn toàn do bạn kiểm soát. Tài khoản và link do bạn cung cấp.
 
-Cài đặt VividFusion và thêm plugin đầu tiên của bạn trong dưới một phút.
+PHÁT TORRENT
+
+Mở magnet link hoặc file .torrent bạn cung cấp và phát qua engine torrent tích hợp, không cần tải toàn bộ file trước.
+
+PHỤ ĐỀ
+
+Tìm và tải phụ đề từ OpenSubtitles bằng nhiều ngôn ngữ, hoặc tải file SRT/VTT/ASS/TTML của riêng bạn.
+
+FILE CỤC BỘ
+
+Duyệt và phát các file video đã có trên thiết bị.
+
+QUYỀN RIÊNG TƯ
+
+VividFusion không thu thập nội dung bạn phát. Xem chính sách quyền riêng tư để biết chi tiết về dữ liệu chẩn đoán và quảng cáo.
+
+Mang link của bạn và bắt đầu phát trong vài giây.

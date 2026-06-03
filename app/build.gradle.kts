@@ -16,6 +16,26 @@ val keyProps = Properties().also { props ->
   if (keyFile.exists()) props.load(FileInputStream(keyFile))
 }
 
+// AdMob IDs are resolved (in order) from: a gradle -P property (injected by Fastlane/CI),
+// local.properties (not committed), then an env var, then Google's official test IDs.
+// Release builds use the real IDs when supplied; debug builds always use test IDs
+// (clicking real ads in debug violates AdMob policy).
+val localProps = Properties().also { props ->
+  val localFile = rootProject.file("local.properties")
+  if (localFile.exists()) props.load(FileInputStream(localFile))
+}
+val testAdmobAppId = "ca-app-pub-3940256099942544~3347511713"
+val testAdmobBannerId = "ca-app-pub-3940256099942544/6300978111"
+val testAdmobInterstitialId = "ca-app-pub-3940256099942544/1033173712"
+val testAdmobRewardedId = "ca-app-pub-3940256099942544/5224354917"
+fun admobId(key: String, fallback: String): String =
+  (findProperty(key) as String?) ?: localProps.getProperty(key) ?: System.getenv(key) ?: fallback
+
+val releaseAdmobAppId = admobId("ADMOB_APP_ID", testAdmobAppId)
+val releaseAdmobBannerId = admobId("ADMOB_BANNER_AD_UNIT_ID", testAdmobBannerId)
+val releaseAdmobInterstitialId = admobId("ADMOB_INTERSTITIAL_AD_UNIT_ID", testAdmobInterstitialId)
+val releaseAdmobRewardedId = admobId("ADMOB_REWARDED_AD_UNIT_ID", testAdmobRewardedId)
+
 android {
   namespace = "cloud.app.vvf"
   compileSdk = 35
@@ -24,12 +44,18 @@ android {
     applicationId = "cloud.app.vvf"
     minSdk = 24
     targetSdk = 35
-    versionCode = 106
-    versionName = "1.0.6"
+    versionCode = 107
+    versionName = "1.0.7"
     buildConfigField("int", "VERSION_CODE", "$versionCode")
     buildConfigField("String", "AUTHORITY_FILE_PROVIDER", "\"${applicationId}.fileprovider\"")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     multiDexEnabled = true
+
+    // Default to AdMob test IDs (used by debug and any build without real IDs).
+    manifestPlaceholders["admobAppId"] = testAdmobAppId
+    buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"$testAdmobBannerId\"")
+    buildConfigField("String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"$testAdmobInterstitialId\"")
+    buildConfigField("String", "ADMOB_REWARDED_AD_UNIT_ID", "\"$testAdmobRewardedId\"")
   }
 
   compileOptions {
@@ -60,6 +86,12 @@ android {
         getDefaultProguardFile("proguard-android-optimize.txt"),
         "proguard-rules.pro"
       )
+
+      // Real AdMob IDs (gradle property / local.properties / env var); test IDs otherwise.
+      manifestPlaceholders["admobAppId"] = releaseAdmobAppId
+      buildConfigField("String", "ADMOB_BANNER_AD_UNIT_ID", "\"$releaseAdmobBannerId\"")
+      buildConfigField("String", "ADMOB_INTERSTITIAL_AD_UNIT_ID", "\"$releaseAdmobInterstitialId\"")
+      buildConfigField("String", "ADMOB_REWARDED_AD_UNIT_ID", "\"$releaseAdmobRewardedId\"")
     }
   }
 

@@ -49,10 +49,10 @@
     android:theme="@style/AppTheme"
     tools:targetApi="tiramisu">
 
-    <!-- AdMob App ID (Replace with your actual AdMob App ID) -->
+    <!-- AdMob App ID (from local.properties ADMOB_APP_ID; test ID by default) -->
     <meta-data
       android:name="com.google.android.gms.ads.APPLICATION_ID"
-      android:value="ca-app-pub-3940256099942544~3347511713"/>
+      android:value="${admobAppId}"/>
 
     <!-- Fix for Firebase Analytics and AdMob conflict -->
     <property

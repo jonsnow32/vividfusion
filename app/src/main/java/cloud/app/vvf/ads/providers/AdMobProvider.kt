@@ -3,6 +3,7 @@ package cloud.app.vvf.ads.providers
 import android.app.Activity
 import android.content.Context
 import android.view.ViewGroup
+import cloud.app.vvf.BuildConfig
 import com.google.android.gms.ads.*
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
@@ -20,10 +21,10 @@ class AdMobProvider : AdProvider {
     override val priority = 1 // Highest priority
 
     companion object {
-        // Test Ad Unit IDs - replace with real IDs in production
-        const val BANNER_AD_UNIT_ID = "ca-app-pub-3940256099942544/6300978111"
-        const val INTERSTITIAL_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
-        const val REWARDED_AD_UNIT_ID = "ca-app-pub-3940256099942544/5224354917"
+        // Ad Unit IDs from build config (real IDs in release via local.properties, test IDs otherwise)
+        val BANNER_AD_UNIT_ID = BuildConfig.ADMOB_BANNER_AD_UNIT_ID
+        val INTERSTITIAL_AD_UNIT_ID = BuildConfig.ADMOB_INTERSTITIAL_AD_UNIT_ID
+        val REWARDED_AD_UNIT_ID = BuildConfig.ADMOB_REWARDED_AD_UNIT_ID
     }
 
     private var interstitialAd: InterstitialAd? = null

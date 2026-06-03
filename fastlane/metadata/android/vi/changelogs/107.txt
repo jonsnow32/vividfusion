@@ -1,0 +1,3 @@
+• Làm mới mô tả và trang giới thiệu ứng dụng
+• Tinh chỉnh giao diện: font và nhãn thanh điều hướng đồng nhất
+• Cải thiện độ ổn định và hiệu năng
