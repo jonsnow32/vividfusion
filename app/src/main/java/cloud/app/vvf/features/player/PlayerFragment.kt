@@ -338,6 +338,9 @@ class PlayerFragment : Fragment() {
     btnPip.isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     btnPip.setOnClickListener {
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        requireContext().startService(
+          Intent(requireContext(), PlayerService::class.java)
+        )
         val ratio = viewModel.videoSize.value
           ?.let { Rational(it.width, it.height) }
           ?: Rational(16, 9)

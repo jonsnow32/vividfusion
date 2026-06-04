@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap
 class DownloadNotificationManager(private val context: Context) {
 
   companion object {
-    private const val CHANNEL_ID = "media_download_channel_1"
+    private const val CHANNEL_ID = "media_download_channel_2"
     private const val CHANNEL_NAME = "Media Downloads"
     private const val CHANNEL_DESCRIPTION = "Media download notifications"
     private const val BASE_NOTIFICATION_ID = 187210
