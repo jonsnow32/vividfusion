@@ -86,6 +86,12 @@ class IntentHandler(private val mainActivity: MainActivity) {
         handleContentUri(uri)
       }
 
+      // Android TV Watch Next channel: avp.watch.next://hashCode
+      "avp.watch.next" -> {
+        Timber.d("Handling Watch Next URI: $uri")
+        handleWatchNextUri(uri)
+      }
+
       else -> {
         Timber.w("Unsupported URI scheme: ${uri.scheme} for URI: $uri")
         handleUnsupportedScheme(uri)
@@ -103,7 +109,7 @@ class IntentHandler(private val mainActivity: MainActivity) {
     when (uri.host?.lowercase()) {
       "avp.repo" -> {
         Timber.d("Opening AVP repository link: $uri")
-        // Special domain for the app
+        handleExternalWebLink(uri)
       }
       "www.themoviedb.org", "themoviedb.org" -> {
         Timber.d("Opening TMDB link: $uri")
@@ -114,11 +120,30 @@ class IntentHandler(private val mainActivity: MainActivity) {
         handleImdbLink(uri)
       }
       else -> {
-        // External web links
-        Timber.d("Opening external web link: $uri")
-        handleExternalWebLink(uri)
+        val path = uri.path?.lowercase() ?: ""
+        when {
+          isVideoFile(path) || path.endsWith(".m3u8") || path.endsWith(".mpd") -> {
+            Timber.d("Handling web video link: $uri")
+            handleMediaFile(uri, "video")
+          }
+          isAudioFile(path) -> {
+            Timber.d("Handling web audio link: $uri")
+            handleMediaFile(uri, "audio")
+          }
+          else -> {
+            Timber.d("Opening external web link: $uri")
+            handleExternalWebLink(uri)
+          }
+        }
       }
     }
+  }
+
+  private fun handleWatchNextUri(uri: Uri) {
+    // avp.watch.next://hashCode — look up the item in playback history by hash
+    val hashCode = uri.host ?: uri.pathSegments.firstOrNull()
+    Timber.d("Watch Next hashCode: $hashCode")
+    // TODO: resolve hashCode against stored playback history and resume playback
   }
 
   private fun handleTmdbLink(uri: Uri) {

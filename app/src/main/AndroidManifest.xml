@@ -164,31 +164,38 @@
         <data android:mimeType="audio/*" />
       </intent-filter>
 
-      <!-- Handle specific video file extensions -->
+      <!-- Handle specific video file extensions (scheme+pathPattern must be paired in same <data>) -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
-        <data android:scheme="file" />
-        <data android:scheme="content" />
-        <data android:pathPattern=".*\\.mp4" />
-        <data android:pathPattern=".*\\.mkv" />
-        <data android:pathPattern=".*\\.avi" />
-        <data android:pathPattern=".*\\.mov" />
-        <data android:pathPattern=".*\\.webm" />
-        <data android:pathPattern=".*\\.m4v" />
+        <data android:scheme="file" android:pathPattern=".*\\.mp4" />
+        <data android:scheme="content" android:pathPattern=".*\\.mp4" />
+        <data android:scheme="file" android:pathPattern=".*\\.mkv" />
+        <data android:scheme="content" android:pathPattern=".*\\.mkv" />
+        <data android:scheme="file" android:pathPattern=".*\\.avi" />
+        <data android:scheme="content" android:pathPattern=".*\\.avi" />
+        <data android:scheme="file" android:pathPattern=".*\\.mov" />
+        <data android:scheme="content" android:pathPattern=".*\\.mov" />
+        <data android:scheme="file" android:pathPattern=".*\\.webm" />
+        <data android:scheme="content" android:pathPattern=".*\\.webm" />
+        <data android:scheme="file" android:pathPattern=".*\\.m4v" />
+        <data android:scheme="content" android:pathPattern=".*\\.m4v" />
       </intent-filter>
 
-      <!-- Handle specific audio file extensions -->
+      <!-- Handle specific audio file extensions (scheme+pathPattern must be paired in same <data>) -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
-        <data android:scheme="file" />
-        <data android:scheme="content" />
-        <data android:pathPattern=".*\\.mp3" />
-        <data android:pathPattern=".*\\.m4a" />
-        <data android:pathPattern=".*\\.wav" />
-        <data android:pathPattern=".*\\.flac" />
-        <data android:pathPattern=".*\\.ogg" />
+        <data android:scheme="file" android:pathPattern=".*\\.mp3" />
+        <data android:scheme="content" android:pathPattern=".*\\.mp3" />
+        <data android:scheme="file" android:pathPattern=".*\\.m4a" />
+        <data android:scheme="content" android:pathPattern=".*\\.m4a" />
+        <data android:scheme="file" android:pathPattern=".*\\.wav" />
+        <data android:scheme="content" android:pathPattern=".*\\.wav" />
+        <data android:scheme="file" android:pathPattern=".*\\.flac" />
+        <data android:scheme="content" android:pathPattern=".*\\.flac" />
+        <data android:scheme="file" android:pathPattern=".*\\.ogg" />
+        <data android:scheme="content" android:pathPattern=".*\\.ogg" />
       </intent-filter>
 
       <!-- Handle media playback intents -->

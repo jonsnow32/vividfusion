@@ -61,9 +61,11 @@ class MainActivity : AppCompatActivity() {
   @Inject lateinit var updateUIFlow : MutableStateFlow<AVPMediaItem?>
 
   private lateinit var intentHandler: IntentHandler
+  private var lastNightMode = -1
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    lastNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
 
     // Initialize intent handler
     intentHandler = IntentHandler(this)
@@ -139,9 +141,13 @@ class MainActivity : AppCompatActivity() {
 
   override fun onConfigurationChanged(newConfig: Configuration) {
     super.onConfigurationChanged(newConfig)
-    // When the system toggles dark/light mode (uiMode is in configChanges so the
-    // activity is not automatically recreated). Recreate once so the theme updates.
-    recreate()
+    // Only recreate for dark/light mode changes. Recreating on every orientation/screenSize
+    // change causes an infinite loop when PlayerFragment sets requestedOrientation.
+    val newNightMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    if (newNightMode != lastNightMode) {
+      lastNightMode = newNightMode
+      recreate()
+    }
   }
 
   private fun checkUpdate() {

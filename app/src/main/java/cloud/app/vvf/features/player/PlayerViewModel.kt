@@ -213,7 +213,10 @@ class PlayerViewModel @Inject constructor(
         prepare()
       }
 
-    PlayerService.mediaSession = MediaSession.Builder(application, player!!).build()
+    PlayerService.mediaSession?.release()
+    PlayerService.mediaSession = MediaSession.Builder(application, player!!)
+      .setId("vvf")
+      .build()
   }
 
   fun parseSubtitles(context: Context, onResult: (Boolean) -> Unit) {
