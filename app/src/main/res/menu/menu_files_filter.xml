@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:id="@+id/filter_all" android:title="@string/filter_all" />
+  <item android:id="@+id/filter_video" android:title="@string/filter_video" />
+  <item android:id="@+id/filter_audio" android:title="@string/filter_audio" />
+</menu>

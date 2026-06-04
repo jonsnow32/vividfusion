@@ -150,6 +150,18 @@ class DownloadsAdapter(
       }
     }
 
+    protected fun setupItemClick(view: View) {
+      view.setOnClickListener {
+        currentData?.let { data ->
+          if (data.status == DownloadStatus.COMPLETED) {
+            onActionClick(DownloadAction.PLAY, data)
+          } else {
+            onActionClick(DownloadAction.UNKNOW, data)
+          }
+        }
+      }
+    }
+
     // Common long click setup
     protected fun setupLongClick(view: View) {
       view.setOnLongClickListener {
@@ -188,7 +200,8 @@ class DownloadsAdapter(
         // Setup download button widget
         setupDownloadButtonWidget(binding.downloadButtonWidget)
 
-        // Long click for remove
+        // Item click and long click
+        setupItemClick(root)
         setupLongClick(root)
       }
     }
@@ -233,6 +246,8 @@ class DownloadsAdapter(
             tvEta.text = etaText
             tvConnections.text = context.getString(R.string.connections_format, data.connections)
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.VISIBLE
+            progressBar.progress = data.progressPercent
           }
 
           DownloadStatus.PAUSED -> {
@@ -240,6 +255,8 @@ class DownloadsAdapter(
             tvSpeed.text = ""
             tvEta.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.VISIBLE
+            progressBar.progress = data.progressPercent
           }
 
           DownloadStatus.COMPLETED -> {
@@ -247,6 +264,7 @@ class DownloadsAdapter(
             tvSpeed.text = ""
             tvEta.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.GONE
           }
 
           else -> {
@@ -254,6 +272,7 @@ class DownloadsAdapter(
             tvSpeed.text = ""
             tvEta.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.GONE
           }
         }
       }
@@ -288,7 +307,8 @@ class DownloadsAdapter(
 
         // Setup download button widget
         setupDownloadButtonWidget(binding.downloadButtonWidget)
-        // Long click for remove
+        // Item click and long click
+        setupItemClick(root)
         setupLongClick(root)
       }
     }
@@ -334,6 +354,8 @@ class DownloadsAdapter(
               )
             tvSpeed.text = speedText
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.VISIBLE
+            progressBar.progress = data.progressPercent
           }
 
           DownloadStatus.PAUSED -> {
@@ -344,6 +366,8 @@ class DownloadsAdapter(
             )
             tvSpeed.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.VISIBLE
+            progressBar.progress = data.progressPercent
           }
 
           DownloadStatus.COMPLETED -> {
@@ -353,12 +377,14 @@ class DownloadsAdapter(
             )
             tvSpeed.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.GONE
           }
 
           else -> {
             tvStatus.text = data.status.name.lowercase().replaceFirstChar { it.uppercase() }
             tvSpeed.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.GONE
           }
         }
 
@@ -392,7 +418,8 @@ class DownloadsAdapter(
         // Setup download button widget
         setupDownloadButtonWidget(binding.downloadButtonWidget)
 
-        // Long click for remove
+        // Item click and long click
+        setupItemClick(root)
         setupLongClick(root)
       }
     }
@@ -440,11 +467,15 @@ class DownloadsAdapter(
             )
             tvSpeeds.text = "$downSpeed • $upSpeed"
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.VISIBLE
+            progressBar.progress = data.progressPercent
           }
           DownloadStatus.PAUSED -> {
             tvStatus.text = context.getString(R.string.paused_format, data.progressPercent)
             tvStatus.setTextColor(getStatusColor(data.status))
             tvSpeeds.text = ""
+            progressBar.visibility = View.VISIBLE
+            progressBar.progress = data.progressPercent
           }
           DownloadStatus.COMPLETED -> {
             tvStatus.text =
@@ -452,11 +483,13 @@ class DownloadsAdapter(
             val upSpeed = if (data.uploadSpeed > 0) "↑ ${formatSpeed(data.uploadSpeed)}" else ""
             tvSpeeds.text = upSpeed
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.GONE
           }
           else -> {
             tvStatus.text = data.status.name.lowercase().replaceFirstChar { it.uppercase() }
             tvSpeeds.text = ""
             tvStatus.setTextColor(getStatusColor(data.status))
+            progressBar.visibility = View.GONE
           }
         }
       }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:layout_marginHorizontal="8dp"
+  android:layout_marginVertical="4dp"
+  app:cardCornerRadius="12dp"
+  app:cardElevation="2dp"
+  app:strokeWidth="0dp">
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp">
+
+    <ImageView
+      android:id="@+id/albumArt"
+      android:layout_width="56dp"
+      android:layout_height="56dp"
+      android:contentDescription="@string/album_art"
+      android:scaleType="centerCrop"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+      android:id="@+id/audioTitle"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="12dp"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:textAppearance="?attr/textAppearanceBodyLarge"
+      android:textColor="?attr/colorOnSurface"
+      app:layout_constraintEnd_toStartOf="@id/audioDuration"
+      app:layout_constraintStart_toEndOf="@id/albumArt"
+      app:layout_constraintTop_toTopOf="@id/albumArt" />
+
+    <TextView
+      android:id="@+id/audioArtist"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="12dp"
+      android:layout_marginTop="4dp"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:textAppearance="?attr/textAppearanceBodySmall"
+      android:textColor="?attr/colorOnSurfaceVariant"
+      app:layout_constraintEnd_toStartOf="@id/audioDuration"
+      app:layout_constraintStart_toEndOf="@id/albumArt"
+      app:layout_constraintTop_toBottomOf="@id/audioTitle" />
+
+    <TextView
+      android:id="@+id/audioDuration"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:textAppearance="?attr/textAppearanceLabelSmall"
+      android:textColor="?attr/colorOnSurfaceVariant"
+      app:layout_constraintBottom_toBottomOf="@id/albumArt"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="@id/albumArt" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
