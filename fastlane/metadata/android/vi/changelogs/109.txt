@@ -1,0 +1,1 @@
+Sửa lỗi và cải tiến: sửa duyệt video trên Android 10-12, cải thiện thông báo phát nền và PiP, cập nhật thông tin ứng dụng.

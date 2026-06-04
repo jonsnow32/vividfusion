@@ -1,0 +1,1 @@
+Bug fixes and improvements: fixed local video browsing on Android 10-12, improved background playback and PiP notifications, updated store listing.
