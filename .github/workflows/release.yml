@@ -58,18 +58,28 @@ jobs:
           files: app/build/outputs/bundle/release/*.aab
           generate_release_notes: true
 
-      # Uncomment khi sẵn sàng upload lên Play Console:
-      # - name: Upload to Play Store (Internal)
-      #   run: bundle exec fastlane deploy_internal
-      #   env:
-      #     STORE_FILE: release.jks
-      #     STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-      #     KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-      #     KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-      #     ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
-      #     ADMOB_BANNER_AD_UNIT_ID: ${{ secrets.ADMOB_BANNER_AD_UNIT_ID }}
-      #     ADMOB_INTERSTITIAL_AD_UNIT_ID: ${{ secrets.ADMOB_INTERSTITIAL_AD_UNIT_ID }}
-      #     ADMOB_REWARDED_AD_UNIT_ID: ${{ secrets.ADMOB_REWARDED_AD_UNIT_ID }}
-      #     PLAY_KEY_FILE: play-store-credentials.json
-      #   # Cần thêm bước decode PLAY_SERVICE_ACCOUNT_JSON trước:
-      #   # run: echo "${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}" > play-store-credentials.json
+      # Upload to Play Console internal track — runs only when the Play service
+      # account secret is configured, so a release still succeeds without it.
+      - name: Check Play credentials
+        id: play_check
+        env:
+          PLAY_SA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -n "$PLAY_SA" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false (PLAY_SERVICE_ACCOUNT_JSON not set — skipping Play upload)"
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decode Play service account
+        if: steps.play_check.outputs.enabled == 'true'
+        env:
+          PLAY_SA: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: printf '%s' "$PLAY_SA" > play-store-credentials.json
+
+      - name: Upload to Play Store (Internal)
+        if: steps.play_check.outputs.enabled == 'true'
+        run: bundle exec fastlane upload_internal
+        env:
+          PLAY_KEY_FILE: play-store-credentials.json
