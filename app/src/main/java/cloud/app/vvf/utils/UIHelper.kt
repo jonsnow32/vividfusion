@@ -7,6 +7,7 @@ import android.content.res.Resources
 import android.os.Build
 import android.view.View
 import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import androidx.core.view.WindowInsetsCompat
@@ -60,21 +61,26 @@ object UIHelper {
 
   /**
    * Hides the system UI (status and navigation bars) using immersive sticky mode.
-   * Uses stable flags for compatibility across API levels.
    */
   fun Activity.hideSystemUI(overlapNotch: Boolean = false) {
     val window = window ?: return
-    val decorView = window.decorView
-    @Suppress("DEPRECATION")
-    decorView.systemUiVisibility = (
-      View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        or View.SYSTEM_UI_FLAG_FULLSCREEN
-      )
-    // Note: Consider migrating to WindowInsetsController for modern APIs in future stable releases
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      window.setDecorFitsSystemWindows(false)
+      window.insetsController?.let { controller ->
+        controller.hide(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+        controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+      }
+    } else {
+      @Suppress("DEPRECATION")
+      window.decorView.systemUiVisibility = (
+        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+          or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+          or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+          or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+          or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+          or View.SYSTEM_UI_FLAG_FULLSCREEN
+        )
+    }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && overlapNotch) {
       val params = window.attributes
       params.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -89,7 +95,6 @@ object UIHelper {
     val window = window ?: return
     requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_USER
 
-    // simply resets brightness and notch settings that might have been overridden
     val lp = window.attributes
     lp?.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -97,14 +102,17 @@ object UIHelper {
         WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT
     }
     window.attributes = lp
-    val decorView = window.decorView
-    @Suppress("DEPRECATION")
-    decorView.systemUiVisibility = (
-      View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-      )
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      window.setDecorFitsSystemWindows(true)
+      window.insetsController?.show(WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars())
+    } else {
+      @Suppress("DEPRECATION")
+      window.decorView.systemUiVisibility = (
+        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+          or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+        )
+    }
     changeStatusBarState(isLayout(EMULATOR))
-    // Note: Consider migrating to WindowInsetsController for modern APIs in future stable releases
   }
 
   fun View.hasNotch(): Boolean {

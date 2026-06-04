@@ -734,6 +734,7 @@ class PlayerFragment : Fragment() {
   override fun onResume() {
     super.onResume()
     isBackgroundMode = false
+    setupSystemUI()
     if (viewModel.isPlaying.value) {
       viewModel.play()
     }
