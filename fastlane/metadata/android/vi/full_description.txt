@@ -1,34 +1,41 @@
-VividFusion là một trình phát video mạnh mẽ, hiện đại cho Android. Phát các file media của bạn và những link bạn cung cấp — URL trực tiếp, stream HLS/DASH, magnet link và file .torrent — với trình phát dựa trên Media3/ExoPlayer.
+VividFusion là trình phát media mạnh mẽ cho Android — phát video từ URL trực tiếp, HLS stream, DASH stream, magnet link và file torrent. Tích hợp debrid để stream tốc độ cao không giới hạn.
 
-VividFusion không lưu trữ, lập chỉ mục hay cung cấp bất kỳ nội dung nào. Bạn tự mang link và tài khoản của mình; ứng dụng chỉ phát chúng.
+► PHÁT VIDEO ĐA NGUỒN
+• URL trực tiếp HTTP/HTTPS
+• HLS và DASH stream
+• Magnet link và file .torrent
+• Duyệt video nội bộ trên thiết bị
 
-TRÌNH PHÁT
+► TÍCH HỢP DEBRID TỐC ĐỘ CAO
+• RealDebrid – unrestrict link, torrent cache
+• AllDebrid – high-speed streaming
+• Premiumize – cloud torrent, direct links
+• Tự động resolve link khi có debrid cấu hình
 
-• Media3/ExoPlayer với FFmpeg decoder cho nhiều loại codec
-• HLS, DASH, SmoothStreaming và link HTTP(S) trực tiếp
-• Picture-in-Picture và phát nền với điều khiển media
-• Chọn track âm thanh / video / phụ đề
-• Điều chỉnh kiểu dáng và độ trễ phụ đề
-• Hỗ trợ Android TV & Leanback
+► TẢI XUỐNG LINH HOẠT
+• Tải HTTP/HTTPS, HLS stream, torrent
+• Theo dõi tiến trình chi tiết
+• Quản lý file tải xuống dễ dàng
 
-HỖ TRỢ DEBRID
+► PHỤ ĐỀ CHUYÊN NGHIỆP
+• Tìm kiếm từ OpenSubtitles (mọi ngôn ngữ)
+• Hỗ trợ SRT, VTT, ASS, TTML
+• Điều chỉnh thời gian đồng bộ phụ đề
 
-Kết nối tài khoản Real-Debrid, AllDebrid hoặc Premiumize của riêng bạn để mở khóa những link bạn đã có thành stream trực tiếp tốc độ cao — hoàn toàn do bạn kiểm soát. Tài khoản và link do bạn cung cấp.
+► TRÌNH PHÁT MẠNH MẼ
+• Media3/ExoPlayer + FFmpeg decoder
+• Picture-in-Picture (PiP)
+• Phát nền với điều khiển notification
+• Chọn track âm thanh, video, phụ đề
+• Tốc độ phát 0.25x – 2x
+• Chế độ ngang full-screen
 
-PHÁT TORRENT
+► GIAO DIỆN HIỆN ĐẠI
+• Dark mode / Light mode
+• Lịch sử URL đã phát
+• Xem thông tin torrent trước khi phát
+• Thiết kế tối giản, dễ dùng
 
-Mở magnet link hoặc file .torrent bạn cung cấp và phát qua engine torrent tích hợp, không cần tải toàn bộ file trước.
+VividFusion không lưu trữ hay phân phối nội dung. Ứng dụng chỉ là trình phát — người dùng tự cung cấp URL, magnet link hoặc file torrent.
 
-PHỤ ĐỀ
-
-Tìm và tải phụ đề từ OpenSubtitles bằng nhiều ngôn ngữ, hoặc tải file SRT/VTT/ASS/TTML của riêng bạn.
-
-FILE CỤC BỘ
-
-Duyệt và phát các file video đã có trên thiết bị.
-
-QUYỀN RIÊNG TƯ
-
-VividFusion không thu thập nội dung bạn phát. Xem chính sách quyền riêng tư để biết chi tiết về dữ liệu chẩn đoán và quảng cáo.
-
-Mang link của bạn và bắt đầu phát trong vài giây.
+Tải VividFusion ngay — trình phát video tốt nhất cho Android!

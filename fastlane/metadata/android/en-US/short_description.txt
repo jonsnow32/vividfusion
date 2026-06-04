@@ -1,1 +1,1 @@
-Powerful video player for streams, debrid links and torrents
+Stream videos from URL, HLS/DASH, torrents. Debrid integration & auto subtitles.

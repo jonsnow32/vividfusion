@@ -1,34 +1,41 @@
-VividFusion is a powerful, modern video player for Android. Play your own media files and the stream links you provide — direct URLs, HLS/DASH streams, magnet links and .torrent files — with a polished player built on Media3/ExoPlayer.
+VividFusion is a powerful media player for Android — play videos from direct URLs, HLS streams, DASH streams, magnet links, and torrent files. Built-in debrid integration for unlimited high-speed streaming.
 
-VividFusion does not host, index or provide any content. You bring your own links and accounts; the app simply plays them.
+► MULTI-SOURCE VIDEO PLAYBACK
+• Direct HTTP/HTTPS URLs
+• HLS and DASH streams
+• Magnet links and .torrent files
+• Browse local videos on your device
 
-PLAYER
+► HIGH-SPEED DEBRID INTEGRATION
+• RealDebrid – unrestrict links, torrent cache
+• AllDebrid – high-speed streaming
+• Premiumize – cloud torrent, direct links
+• Auto-resolves links when debrid is configured
 
-• Media3/ExoPlayer with FFmpeg decoders for a wide range of codecs
-• HLS, DASH, SmoothStreaming and direct HTTP(S) links
-• Picture-in-Picture and background playback with media controls
-• Audio / video / subtitle track selection
-• Subtitle styling and delay adjustment
-• Android TV & Leanback support
+► FLEXIBLE DOWNLOADS
+• Download HTTP/HTTPS, HLS streams, torrents
+• Real-time progress tracking
+• Manage downloaded files easily
 
-DEBRID SUPPORT
+► PROFESSIONAL SUBTITLES
+• Search OpenSubtitles (all languages)
+• Supports SRT, VTT, ASS, TTML formats
+• Sync subtitle timing offset
 
-Connect your own Real-Debrid, AllDebrid or Premiumize account to unrestrict the links you already have into fast, direct streams — entirely under your control. Accounts and links are provided by you.
+► POWERFUL PLAYER
+• Media3/ExoPlayer + FFmpeg decoder
+• Picture-in-Picture (PiP) support
+• Background playback with notification controls
+• Select audio, video, and subtitle tracks
+• Playback speed 0.25x – 2x
+• Full-screen landscape mode
 
-TORRENT STREAMING
+► CLEAN MODERN UI
+• Dark mode / Light mode
+• URL playback history
+• Torrent info preview before playing
+• Minimalist, easy-to-use design
 
-Open a magnet link or .torrent file you provide and stream it through the built-in torrent engine, without downloading the whole file first.
+VividFusion does not host or distribute any content. It is a player only — users provide their own URLs, magnet links, or torrent files.
 
-SUBTITLES
-
-Search and load subtitles from OpenSubtitles in many languages, or load your own SRT/VTT/ASS/TTML files.
-
-LOCAL FILES
-
-Browse and play the video files already on your device.
-
-PRIVACY
-
-VividFusion does not collect the content you play. See our privacy policy for details on diagnostics and advertising.
-
-Bring your own links and start playing in seconds.
+Download VividFusion — the ultimate video player for Android!

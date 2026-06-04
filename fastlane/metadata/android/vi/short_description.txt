@@ -1,1 +1,1 @@
-Trình phát video mạnh mẽ cho stream, link debrid và torrent
+Stream video từ URL, HLS/DASH, torrent. Tích hợp debrid & tải phụ đề tự động.

@@ -93,13 +93,13 @@ platform :android do
     )
   end
 
-  desc "Upload store listing metadata only (no build)"
+  desc "Upload store listing metadata, images and screenshots (no build)"
   lane :upload_metadata do
     upload_to_play_store(
       skip_upload_apk:         true,
       skip_upload_aab:         true,
-      skip_upload_images:      true,
-      skip_upload_screenshots: true,
+      skip_upload_images:      false,
+      skip_upload_screenshots: false,
     )
   end
 
