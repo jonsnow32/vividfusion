@@ -83,3 +83,9 @@ jobs:
         run: bundle exec fastlane upload_internal
         env:
           PLAY_KEY_FILE: play-store-credentials.json
+
+      - name: Upload to Play Store (Closed Testing / Alpha)
+        if: steps.play_check.outputs.enabled == 'true'
+        run: bundle exec fastlane upload_alpha
+        env:
+          PLAY_KEY_FILE: play-store-credentials.json
