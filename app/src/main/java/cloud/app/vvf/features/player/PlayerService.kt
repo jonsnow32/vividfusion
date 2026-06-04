@@ -9,6 +9,7 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -23,6 +24,7 @@ class PlayerService : MediaSessionService() {
     private const val NOTIFICATION_ID = 101
   }
 
+  @androidx.annotation.OptIn(UnstableApi::class)
   override fun onCreate() {
     super.onCreate()
     createNotificationChannel()
