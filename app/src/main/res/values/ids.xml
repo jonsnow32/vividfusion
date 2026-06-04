@@ -11,5 +11,6 @@
   <item name="downloadsFragment" type="id"/>
   <item name="filesFragment" type="id"/>
   <item name="exceptionFragment" type="id"/>
+  <item name="settings_sub_container" type="id"/>
 
 </resources>

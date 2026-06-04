@@ -21,7 +21,7 @@ import cloud.app.vvf.utils.FileFolderPicker.getChooseFileLauncher
 import cloud.app.vvf.utils.FileFolderPicker.getChooseFolderLauncher
 import cloud.app.vvf.utils.KUniFile
 import cloud.app.vvf.utils.Utils
-import cloud.app.vvf.utils.navigate
+import cloud.app.vvf.utils.navigateSettings
 import cloud.app.vvf.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -230,9 +230,7 @@ class BackupUpdateFragment : BaseSettingsFragment() {
             try {
               val latestRelease = appUpdater.checkForUpdate()
               if (latestRelease != null) {
-                parentFragment?.navigate(
-                  UpdateFragment.newInstance(latestRelease), null, true
-                ) ?: context.showToast(R.string.update_fail)
+                navigateSettings(UpdateFragment.newInstance(latestRelease))
               } else {
                 context.showToast(R.string.no_update_available)
 

@@ -9,7 +9,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceViewHolder
 import cloud.app.vvf.R
 import cloud.app.vvf.ui.widget.dialog.account.AccountDialog
-import cloud.app.vvf.utils.navigate
+import cloud.app.vvf.utils.navigateSettings
 
 class SettingsRootFragment : BaseSettingsFragment() {
   override val title get() = getString(R.string.settings)
@@ -29,6 +29,13 @@ class SettingsRootFragment : BaseSettingsFragment() {
         }
         else -> false
       }
+    }
+  }
+
+  override fun onHiddenChanged(hidden: Boolean) {
+    super.onHiddenChanged(hidden)
+    if (hidden) {
+      childFragmentManager.popBackStackImmediate(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE)
     }
   }
 
@@ -134,7 +141,7 @@ class SettingsRootFragment : BaseSettingsFragment() {
       fragment ?: return false
 
       val view = listView.findViewById<View>(preference.key.hashCode())
-      parentFragment?.navigate(fragment, view, true)
+      navigateSettings(fragment, view)
       return true
     }
   }

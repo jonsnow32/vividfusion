@@ -1,5 +1,7 @@
 package cloud.app.vvf.ui.download
 
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,6 +22,7 @@ import cloud.app.vvf.ui.widget.dialog.actionOption.IconTextItem
 import cloud.app.vvf.utils.autoCleared
 import cloud.app.vvf.utils.setupTransition
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -33,6 +36,8 @@ class DownloadsFragment : Fragment() {
 
   @Inject
   lateinit var adManager: AdManager
+
+  private var skeletonAnimator: ObjectAnimator? = null
 
   override fun onCreateView(
     inflater: LayoutInflater,
@@ -189,36 +194,54 @@ class DownloadsFragment : Fragment() {
     binding.layoutEmptyState.visibility = View.GONE
   }
 
-  /**
-   * Observe storage information changes and update UI
-   */
   private fun observeStorageInfo() {
     viewLifecycleOwner.lifecycleScope.launch {
-      viewModel.storageInfo.collect { storageInfo ->
-        updateStorageDisplay(storageInfo)
+      combine(viewModel.storageLoading, viewModel.storageInfo) { isLoading, info ->
+        isLoading to info
+      }.collect { (isLoading, storageInfo) ->
+        if (isLoading) {
+          showStorageSkeleton()
+        } else {
+          hideStorageSkeleton()
+          updateStorageDisplay(storageInfo)
+        }
       }
     }
   }
 
-  /**
-   * Update storage display in the UI
-   */
+  private fun showStorageSkeleton() {
+    binding.downloadStorageAppbar.visibility = View.VISIBLE
+    binding.storageSkeleton.visibility = View.VISIBLE
+    binding.storageRealContent.visibility = View.GONE
+    skeletonAnimator?.cancel()
+    skeletonAnimator = ObjectAnimator.ofFloat(binding.storageSkeleton, View.ALPHA, 0.3f, 1f).apply {
+      duration = 800
+      repeatMode = ValueAnimator.REVERSE
+      repeatCount = ValueAnimator.INFINITE
+      start()
+    }
+  }
+
+  private fun hideStorageSkeleton() {
+    skeletonAnimator?.cancel()
+    skeletonAnimator = null
+    binding.storageSkeleton.alpha = 1f
+    binding.storageSkeleton.visibility = View.GONE
+  }
+
   private fun updateStorageDisplay(storageInfo: StorageInfo?) {
     if (storageInfo == null || storageInfo.totalBytes == 0L) {
-      // Hide storage display if no storage info available
       binding.downloadStorageAppbar.visibility = View.GONE
       return
     }
 
-    // Show storage display
     binding.downloadStorageAppbar.visibility = View.VISIBLE
+    binding.storageRealContent.visibility = View.VISIBLE
 
-    // Calculate weights for the progress bars based on percentages
     val usedWeight = (storageInfo.usedPercentage / 100f).coerceIn(0f, 1f)
     val appWeight = (storageInfo.appUsedPercentage / 100f).coerceIn(0f, 1f)
     val freeWeight = (storageInfo.freePercentage / 100f).coerceIn(0f, 1f)
 
-    // Update progress bar weights
     val usedLayoutParams =
       binding.downloadUsed.layoutParams as android.widget.LinearLayout.LayoutParams
     usedLayoutParams.weight = usedWeight
@@ -234,28 +257,24 @@ class DownloadsFragment : Fragment() {
     freeLayoutParams.weight = freeWeight
     binding.downloadFree.layoutParams = freeLayoutParams
 
-    // Update text labels
     binding.downloadUsedTxt.text = getString(
       cloud.app.vvf.R.string.storage_used_format,
       StorageInfo.formatBytes(storageInfo.usedBytes)
     )
-
     binding.downloadAppTxt.text = getString(
       cloud.app.vvf.R.string.storage_app_format,
       StorageInfo.formatBytes(storageInfo.appUsedBytes)
     )
-
     binding.downloadFreeTxt.text = getString(
       cloud.app.vvf.R.string.storage_free_format,
       StorageInfo.formatBytes(storageInfo.freeBytes)
     )
   }
 
-  /**
-   * Manually refresh storage information
-   */
-  private fun refreshStorage() {
-    viewModel.refreshStorageInfo()
+  override fun onDestroyView() {
+    super.onDestroyView()
+    skeletonAnimator?.cancel()
+    skeletonAnimator = null
   }
 
 }

@@ -103,28 +103,13 @@ class MainActivity : AppCompatActivity() {
       this,
       object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-
-          var hasPoppedChild = false
-
-          // Loop through all fragments and pop child fragments first
-          for (fragment in supportFragmentManager.fragments) {
-            if (fragment.isVisible && fragment.childFragmentManager.backStackEntryCount > 0) {
-              fragment.childFragmentManager.popBackStack()
-              hasPoppedChild = true
-              break // Stop after popping one set of child fragments
-            }
-          }
-
-          if (!hasPoppedChild) {
-            if (!supportFragmentManager.popBackStackImmediate()) {
-              // If no fragments left, show exit confirmation
-              val canShowDialog =
-                sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
-              if (canShowDialog) {
-                showConfirmExitDialog(sharedPreferences)
-              } else {
-                moveTaskToBack(true) // Move app to background
-              }
+          if (!popDeepestBackStack()) {
+            val canShowDialog =
+              sharedPreferences.getBoolean(getString(R.string.pref_show_exit_confirm), true)
+            if (canShowDialog) {
+              showConfirmExitDialog(sharedPreferences)
+            } else {
+              moveTaskToBack(true)
             }
           }
         }
@@ -238,6 +223,21 @@ class MainActivity : AppCompatActivity() {
       }
     }
     return false
+  }
+
+  private fun popDeepestBackStack(): Boolean {
+    fun tryPop(fragment: androidx.fragment.app.Fragment): Boolean {
+      val visibleChild = fragment.childFragmentManager.fragments.lastOrNull { it.isVisible }
+      if (visibleChild != null && tryPop(visibleChild)) return true
+      if (fragment.childFragmentManager.backStackEntryCount > 0) {
+        fragment.childFragmentManager.popBackStack()
+        return true
+      }
+      return false
+    }
+    val topFrag = supportFragmentManager.fragments.lastOrNull { it.isVisible }
+    if (topFrag != null && tryPop(topFrag)) return true
+    return supportFragmentManager.popBackStackImmediate()
   }
 
   private fun showConfirmExitDialog(settingsManager: SharedPreferences) {

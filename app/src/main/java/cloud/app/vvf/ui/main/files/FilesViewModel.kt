@@ -1,79 +1,49 @@
 package cloud.app.vvf.ui.main.files
 
-import android.content.ContentUris
 import android.content.Context
-import android.provider.MediaStore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import cloud.app.vvf.common.models.AVPMediaItem
-import cloud.app.vvf.common.models.video.Video
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
+enum class MediaFilter { ALL, VIDEO, AUDIO }
+
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
-class FilesViewModel @Inject constructor() : ViewModel() {
+class FilesViewModel @Inject constructor(
+  @ApplicationContext private val context: Context,
+) : ViewModel() {
 
-  private val _files = MutableStateFlow<List<AVPMediaItem.VideoItem>>(emptyList())
-  val files: StateFlow<List<AVPMediaItem.VideoItem>> = _files
+  private val _filter = MutableStateFlow(MediaFilter.ALL)
+  val filter: StateFlow<MediaFilter> = _filter.asStateFlow()
 
-  private val _isLoading = MutableStateFlow(false)
-  val isLoading: StateFlow<Boolean> = _isLoading
+  private val _query = MutableStateFlow("")
 
-  fun loadFiles(context: Context) {
-    viewModelScope.launch(Dispatchers.IO) {
-      _isLoading.value = true
-      _files.value = queryLocalVideos(context)
-      _isLoading.value = false
-    }
-  }
+  fun setFilter(f: MediaFilter) { _filter.value = f }
+  fun setQuery(q: String) { _query.value = q }
 
-  private fun queryLocalVideos(context: Context): List<AVPMediaItem.VideoItem> {
-    val results = mutableListOf<AVPMediaItem.VideoItem>()
-    val collection = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-    val projection = arrayOf(
-      MediaStore.Video.Media._ID,
-      MediaStore.Video.Media.DISPLAY_NAME,
-      MediaStore.Video.Media.DURATION,
-      MediaStore.Video.Media.SIZE,
-      MediaStore.Video.Media.DATE_ADDED,
-      MediaStore.Video.Media.BUCKET_DISPLAY_NAME,
-    )
-    val sortOrder = "${MediaStore.Video.Media.DATE_ADDED} DESC"
-
-    context.contentResolver.query(collection, projection, null, null, sortOrder)?.use { cursor ->
-      val idCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
-      val nameCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DISPLAY_NAME)
-      val durationCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION)
-      val sizeCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.SIZE)
-      val dateCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATE_ADDED)
-      val bucketCol = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.BUCKET_DISPLAY_NAME)
-
-      while (cursor.moveToNext()) {
-        val id = cursor.getLong(idCol)
-        val name = cursor.getString(nameCol) ?: continue
-        val duration = cursor.getLong(durationCol)
-        val size = cursor.getLong(sizeCol)
-        val dateAdded = cursor.getLong(dateCol)
-        val bucket = cursor.getString(bucketCol) ?: ""
-        val contentUri = ContentUris.withAppendedId(collection, id)
-
-        val video = Video.LocalVideo(
-          uri = contentUri.toString(),
-          title = name.substringBeforeLast("."),
-          duration = duration,
-          thumbnailUri = contentUri.toString(),
-          id = id.toString(),
-          fileSize = size,
-          dateAdded = dateAdded,
-          album = bucket,
-        )
-        results.add(AVPMediaItem.VideoItem(video))
+  val files: Flow<PagingData<AVPMediaItem>> =
+    combine(_filter, _query.debounce(300)) { f, q -> f to q }
+      .flatMapLatest { (f, q) ->
+        Pager(
+          config = PagingConfig(pageSize = 30, enablePlaceholders = false),
+          pagingSourceFactory = { FilesPagingSource(context, f, q) }
+        ).flow
       }
-    }
-    return results
-  }
+      .cachedIn(viewModelScope)
 }

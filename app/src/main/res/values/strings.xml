@@ -469,5 +469,15 @@
   <string name="notifications_permission_summary">To show notification for downloads and music</string>
   <string name="could_not_find_the_file">Could not find the file.</string>
   <string name="video_cover">video cover image</string>
+  <string name="album_art">album art</string>
+  <string name="error_loading_files">Error loading files</string>
+  <string name="no_files_found">No media files found</string>
+  <string name="storage_permission_required">Storage permission is required\nto browse local media files.</string>
+  <string name="open_settings">Open Settings</string>
+  <string name="search_hint_title">Search by title…</string>
+  <string name="clear_search">Clear search</string>
+  <string name="filter_all">All</string>
+  <string name="filter_video">Video</string>
+  <string name="filter_audio">Audio</string>
 
 </resources>

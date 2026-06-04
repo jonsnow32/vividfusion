@@ -36,4 +36,10 @@
     android:nextFocusUp="@id/toolbar"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+  <!-- Full-screen overlay for settings sub-screen navigation (used by SettingsRootFragment only) -->
+  <FrameLayout
+    android:id="@+id/settings_sub_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

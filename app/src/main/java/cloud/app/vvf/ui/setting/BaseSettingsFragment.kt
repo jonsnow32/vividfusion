@@ -66,11 +66,11 @@ abstract class BaseSettingsFragment : Fragment() {
   protected fun setUpToolbar(title: String) {
     binding.toolbar.apply {
       setTitle(title)
-      val canNavigateBack = (this@BaseSettingsFragment !is SettingsRootFragment) && (parentFragment?.childFragmentManager?.backStackEntryCount ?: 0) > 0
+      val canNavigateBack = this@BaseSettingsFragment !is SettingsRootFragment
       if (canNavigateBack) {
         setNavigationIcon(R.drawable.ic_back)
         setNavigationOnClickListener {
-          parentFragment?.childFragmentManager?.popBackStack()
+          parentFragmentManager.popBackStack()
         }
       } else {
         navigationIcon = null

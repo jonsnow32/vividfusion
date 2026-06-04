@@ -106,16 +106,6 @@ class MainFragment : Fragment() {
    */
   @OptIn(UnstableApi::class)
   private fun showTab(@IdRes id: Int) {
-    val settingsId = R.id.settingsFragment
-    if (id == settingsId || previousItemId == settingsId) {
-      // Settings sub-screens are pushed onto MainFragment's childFragmentManager back
-      // stack via navigate(). Pop them all before switching tabs.
-      childFragmentManager.popBackStackImmediate(
-        null,
-        FragmentManager.POP_BACK_STACK_INCLUSIVE
-      )
-    }
-
     val fragmentManager = childFragmentManager
     val transaction = fragmentManager.beginTransaction()
 

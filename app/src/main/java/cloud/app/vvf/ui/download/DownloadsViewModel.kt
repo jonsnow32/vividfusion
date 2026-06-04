@@ -55,25 +55,21 @@ class DownloadsViewModel @Inject constructor(
   private val _storageInfo = MutableStateFlow<StorageInfo?>(null)
   val storageInfo: StateFlow<StorageInfo?> = _storageInfo
 
+  private val _storageLoading = MutableStateFlow(true)
+  val storageLoading: StateFlow<Boolean> = _storageLoading
+
   init {
-    // Load storage information when ViewModel is created
     loadStorageInfo()
   }
 
-  /**
-   * Load device storage information and update UI
-   */
-  fun loadStorageInfo() {
-    viewModelScope.launch {
+  private fun loadStorageInfo() {
+    viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+      _storageLoading.value = true
       try {
-        // Get downloads directory from Environment or app-specific directory
         val downloadsDir =
           android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
-
-        // Calculate storage info
         val storageInfo = StorageInfo.getDeviceStorageInfo(downloadsDir)
         _storageInfo.value = storageInfo
-
         Timber.d(
           "Storage info loaded - Total: ${StorageInfo.formatBytes(storageInfo.totalBytes)}, " +
             "Used: ${StorageInfo.formatBytes(storageInfo.usedBytes)}, " +
@@ -83,15 +79,22 @@ class DownloadsViewModel @Inject constructor(
       } catch (e: Exception) {
         Timber.e(e, "Failed to load storage information")
         _storageInfo.value = null
+      } finally {
+        _storageLoading.value = false
       }
     }
   }
 
-  /**
-   * Refresh storage information (call this when downloads complete/are deleted)
-   */
   fun refreshStorageInfo() {
-    loadStorageInfo()
+    viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+      try {
+        val downloadsDir =
+          android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
+        _storageInfo.value = StorageInfo.getDeviceStorageInfo(downloadsDir)
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to refresh storage information")
+      }
+    }
   }
 
   fun pauseDownload(downloadId: String) {

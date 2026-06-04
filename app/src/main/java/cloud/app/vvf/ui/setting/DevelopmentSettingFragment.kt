@@ -10,7 +10,7 @@ import androidx.preference.SwitchPreferenceCompat
 import cloud.app.vvf.BuildConfig
 import cloud.app.vvf.R
 import cloud.app.vvf.ads.AdTestFragment
-import cloud.app.vvf.utils.navigate
+import cloud.app.vvf.utils.navigateSettings
 import dagger.hilt.android.AndroidEntryPoint
 
 class DevelopmentSettingFragment : BaseSettingsFragment() {
@@ -83,7 +83,7 @@ class DevelopmentSettingFragment : BaseSettingsFragment() {
             title = "ads_test"
             summary = "goto ads test fragment"
             onPreferenceClickListener = Preference.OnPreferenceClickListener {
-              parentFragment?.navigate(AdTestFragment.newInstance())
+              navigateSettings(AdTestFragment.newInstance())
               true
             }
             layoutResource = R.layout.preference

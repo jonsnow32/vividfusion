@@ -3,11 +3,11 @@
   xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:id="@+id/cardVideo"
-  android:layout_width="@dimen/video_width"
+  android:layout_width="match_parent"
   android:layout_height="wrap_content"
-  android:layout_margin="8dp"
-  app:cardCornerRadius="16dp"
-  app:cardElevation="4dp"
+  android:layout_margin="4dp"
+  app:cardCornerRadius="12dp"
+  app:cardElevation="2dp"
   app:strokeWidth="0dp"
   app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.MediumComponent">
 
@@ -15,7 +15,6 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <!-- Cover with 16:9 ratio -->
     <FrameLayout
       android:id="@+id/frameCover"
       android:layout_width="0dp"
@@ -32,30 +31,31 @@
         android:scaleType="centerCrop"
         android:contentDescription="@string/video_cover" />
 
-      <!-- Centered play icon -->
-      <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/iconPlay"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_gravity="center"
-        android:padding="12dp"
-        android:contentDescription="@string/play"
-        app:srcCompat="@drawable/ic_play_circle"
-        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.None"
-        app:tint="?attr/colorOnSurfaceVariant" />
+      <TextView
+        android:id="@+id/textDuration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="4dp"
+        android:background="#B3000000"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="2dp"
+        android:textColor="#FFFFFF"
+        android:textSize="10sp"
+        android:textStyle="bold" />
+
     </FrameLayout>
 
-    <!-- Video title -->
     <TextView
       android:id="@+id/textTitle"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:padding="8dp"
-      android:text="Sample Video Title"
-      android:textAppearance="?attr/textAppearanceBodyLarge"
+      android:paddingHorizontal="6dp"
+      android:paddingVertical="4dp"
+      android:textAppearance="?attr/textAppearanceBodySmall"
       android:textColor="?attr/colorOnSurface"
       android:ellipsize="end"
-      android:maxLines="1"
+      android:maxLines="2"
       app:layout_constraintTop_toBottomOf="@id/frameCover"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
