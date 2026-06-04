@@ -67,10 +67,14 @@ platform :android do
   desc "Promote internal release to closed testing (alpha) track"
   lane :upload_alpha do
     upload_to_play_store(
-      track:            "internal",
-      track_promote_to: "alpha",
-      skip_upload_apk:  true,
-      skip_upload_aab:  true,
+      track:                   "internal",
+      track_promote_to:        "alpha",
+      skip_upload_apk:         true,
+      skip_upload_aab:         true,
+      skip_upload_metadata:    true,
+      skip_upload_changelogs:  true,
+      skip_upload_images:      true,
+      skip_upload_screenshots: true,
     )
   end
 
