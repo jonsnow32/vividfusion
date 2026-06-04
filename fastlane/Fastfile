@@ -64,15 +64,13 @@ platform :android do
     )
   end
 
-  desc "Upload an already-built AAB to the Play Store closed testing (alpha) track"
+  desc "Promote internal release to closed testing (alpha) track"
   lane :upload_alpha do
     upload_to_play_store(
-      track:                   "alpha",
-      aab:                     "app/build/outputs/bundle/release/app-release.aab",
-      skip_upload_apk:         true,
-      skip_upload_metadata:    true,
-      skip_upload_images:      true,
-      skip_upload_screenshots: true,
+      track:            "internal",
+      track_promote_to: "alpha",
+      skip_upload_apk:  true,
+      skip_upload_aab:  true,
     )
   end
 
