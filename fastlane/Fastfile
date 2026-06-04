@@ -49,23 +49,18 @@ platform :android do
   lane :deploy_internal do
     test
     build_release
-    version_code = android_get_version_code(gradle_file: "app/build.gradle.kts")
-    upload_to_play_store(
-      track:           "internal",
-      aab:             "app/build/outputs/bundle/release/app-release.aab",
-      skip_upload_apk: true,
-      whatsnew_paths:  ["fastlane/metadata/android/en-US/changelogs/#{version_code}.txt"],
-    )
+    upload_internal
   end
 
   desc "Upload an already-built AAB to the Play Store internal track (no rebuild)"
   lane :upload_internal do
-    version_code = android_get_version_code(gradle_file: "app/build.gradle.kts")
     upload_to_play_store(
-      track:           "internal",
-      aab:             "app/build/outputs/bundle/release/app-release.aab",
-      skip_upload_apk: true,
-      whatsnew_paths:  ["fastlane/metadata/android/en-US/changelogs/#{version_code}.txt"],
+      track:                   "internal",
+      aab:                     "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_apk:         true,
+      skip_upload_metadata:    true,
+      skip_upload_images:      true,
+      skip_upload_screenshots: true,
     )
   end
 
