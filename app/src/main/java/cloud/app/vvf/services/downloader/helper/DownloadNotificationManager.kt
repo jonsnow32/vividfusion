@@ -51,12 +51,10 @@ class DownloadNotificationManager(private val context: Context) {
       .setSmallIcon(R.drawable.ic_download_24)
       .setOngoing(true)
       .setAutoCancel(false)
-      .setSilent(true)
       .setCategory(NotificationCompat.CATEGORY_PROGRESS)
-      .setPriority(NotificationCompat.PRIORITY_LOW)
+      .setPriority(NotificationCompat.PRIORITY_DEFAULT)
       .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-      .setOnlyAlertOnce(true) // Prevent repeated alerts
-
+      .setOnlyAlertOnce(true)
   }
 
   init {
@@ -357,12 +355,12 @@ class DownloadNotificationManager(private val context: Context) {
       val channel = NotificationChannel(
         CHANNEL_ID,
         CHANNEL_NAME,
-        NotificationManager.IMPORTANCE_LOW
+        NotificationManager.IMPORTANCE_DEFAULT
       ).apply {
         description = CHANNEL_DESCRIPTION
         setSound(null, null)
         enableVibration(false)
-        setShowBadge(false)
+        setShowBadge(true)
         lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
       }
 
