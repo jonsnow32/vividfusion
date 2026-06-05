@@ -44,8 +44,8 @@ android {
     applicationId = "cloud.app.vvf"
     minSdk = 24
     targetSdk = 35
-    versionCode = 112
-    versionName = "1.1.2"
+    versionCode = 113
+    versionName = "1.1.3"
     buildConfigField("int", "VERSION_CODE", "$versionCode")
     buildConfigField("String", "AUTHORITY_FILE_PROVIDER", "\"${applicationId}.fileprovider\"")
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

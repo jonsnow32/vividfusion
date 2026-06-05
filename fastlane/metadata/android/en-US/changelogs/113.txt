@@ -1,0 +1,4 @@
+- Fixed deep links not opening media files (content://, file://, http/https)
+- Fixed HLS/m3u8 and video links from browser now open directly in player
+- Fixed app crash when opening multiple video links in succession
+- Fixed continuous screen rotation loop in player
